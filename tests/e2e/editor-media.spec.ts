@@ -57,3 +57,43 @@ test("rejects non-https avatar links with a visible reason", async ({ page }) =>
   await expect(about.getByRole("alert")).toContainText("https");
   await expect(about.locator(".about-avatar img")).toHaveCount(0);
 });
+
+test("picks sourced Windows icons on desktop and mobile and preserves legacy PNGs", async ({ page }) => {
+  const saves = await openEditor(page);
+  let draft = structuredClone(documentFixture);
+  await page.unroute("**/api/sites/site-1");
+  await page.route("**/api/sites/site-1", (route) => route.fulfill({ json: { site: { id: "site-1", username: "demo", site_name: "Demo Desk", draft_document: draft, draft_version: 1, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-15T00:00:00.000Z" } } }));
+  await page.getByRole("tab", { name: "圖示" }).click();
+  await expect(page.getByText("來源：trapd00r/win95-winxp_icons")).toBeVisible();
+  const search = page.getByLabel("搜尋 Windows 圖示");
+  await expect(search).toHaveAttribute("placeholder", /[0-9,]+/);
+  await search.fill("computer");
+  const result = page.locator(".win98-icon-grid button").first();
+  await expect(result).toBeVisible();
+  await result.click();
+  await expect.poll(() => saves.length).toBeGreaterThan(0);
+  draft = (saves.at(-1) as { document: typeof draft }).document;
+  const selectedPath = draft.windows[0].icon;
+  expect(selectedPath).toMatch(/^\/windows-icons\/[A-Za-z0-9._-]+\.(?:ico|png)$/);
+  await page.reload();
+  await expect(page.getByRole("dialog", { name: "About.exe" })).toBeVisible();
+  await page.getByRole("tab", { name: "圖示" }).click();
+  await expect(page.locator(".icon-picker").getByRole("button", { pressed: true })).toHaveCount(1);
+
+  const legacy = await page.evaluate(async () => {
+    const image = new Image();
+    image.src = "/win98-icons/computer_2_cool-4.png";
+    await new Promise<void>((resolve) => { image.onload = () => resolve(); image.onerror = () => resolve(); });
+    return { src: image.src, naturalWidth: image.naturalWidth };
+  });
+  expect(legacy.src).toContain("/win98-icons/computer_2_cool-4.png");
+  expect(legacy.naturalWidth).toBe(48);
+
+  await page.getByRole("button", { name: "手機版" }).click();
+  await page.getByRole("button", { name: "About.exe" }).click();
+  await page.getByRole("button", { name: "編輯此視窗" }).click();
+  await page.getByRole("button", { name: "完成編輯" }).click();
+  await page.locator(".m-toolbar").getByRole("button", { name: "編輯" }).click();
+  await expect(page.getByLabel("搜尋 Windows 圖示")).toBeVisible();
+  await expect(page.getByText("來源：trapd00r/win95-winxp_icons")).toBeVisible();
+});

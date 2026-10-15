@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { THEME_PRESETS, type DesktopWindow, type SiteDocument } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
-import { BUILTIN_ICON_KEYS } from "../../lib/icons";
+import { IconPicker } from "../modules/links/IconPicker";
 import { themeView } from "../../lib/themeView";
 import { registry, WINDOW_TYPES } from "../modules/registry";
 import { useEditorStore } from "../editor/store";
@@ -133,7 +133,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
                 </>
               ) : null}
               {sheet === "edit" ? (
-                selected ? <MobileEdit window={selected} count={ordered.length} /> : <span className="m-note">先點一下桌面上的圖示，選取要編輯的視窗。</span>
+                selected ? <MobileEdit window={selected} count={ordered.length} siteId={siteId} upload={upload} /> : <span className="m-note">先點一下桌面上的圖示，選取要編輯的視窗。</span>
               ) : null}
               {sheet === "edit" ? (
                 <div className="w98-field"><span className="w98-hint">圖示欄數</span>
@@ -151,16 +151,14 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   return <div className="visitor-mobile framed"><div className="m-bezel">{body}</div></div>;
 }
 
-function MobileEdit({ window, count }: { window: DesktopWindow; count: number }) {
+function MobileEdit({ window, count, siteId, upload }: { window: DesktopWindow; count: number; siteId?: string; upload?: (file: File, kind?: "image" | "icon") => Promise<string | null> }) {
   const store = useEditorStore();
   const patch = (change: Partial<DesktopWindow>, key?: string) => store.updateWindow(window.id, (current) => ({ ...current, ...change }) as DesktopWindow, key);
   return (
     <>
       <label className="w98-field"><span className="w98-hint">視窗標題</span><input className="w98-input m-input" value={window.title} onChange={(event) => patch({ title: event.target.value }, "mt" + window.id)} /></label>
       <span className="w98-hint">圖示</span>
-      <div className="m-icons-row">
-        {BUILTIN_ICON_KEYS.map((key) => <button key={key} type="button" className={"w98-btn m-ic" + (window.icon === key ? " on" : "")} aria-label={`圖示 ${key}`} aria-pressed={window.icon === key} onClick={() => patch({ icon: key })}><Icon name={key} size={28} /></button>)}
-      </div>
+      <IconPicker siteId={siteId} value={window.icon} upload={upload} size={28} onChange={(icon) => patch({ icon })} />
       <label className="check-row m-check"><input type="checkbox" checked={window.defaultOpen} onChange={(event) => patch({ defaultOpen: event.target.checked })} />訪客進站時自動開啟</label>
       <div className="m-actions">
         <button type="button" className="w98-btn" disabled={window.layout.mobile.order === 0} onClick={() => store.reorderMobile(window.id, -1)}>▲ 圖示往前</button>
