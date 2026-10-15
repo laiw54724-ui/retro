@@ -155,7 +155,12 @@ export function migrateSiteDocumentV2(raw: unknown, options: { siteId: string })
   if (!BoundedId.safeParse(options.siteId).success) return invalid(raw, [{ path: ["siteId"], message: "siteId must be a non-empty bounded string", code: "invalid" }]);
   const parsed = parseSiteDocument(raw);
   if (!parsed.ok) return parsed;
-  if (parsed.version === 2) return parsed;
+  if (parsed.version === 2) {
+    // Structural parsing may materialize Zod defaults. Migration of an already
+    // v2 document is intentionally a validation-only operation: preserve the
+    // caller's exact object and identity after validation succeeds.
+    return { ok: true, version: 2, document: raw as SiteDocumentV2 };
+  }
   const source = parsed.document, profiles: ProfileEntityV2[] = [], posts: PostEntityV2[] = [], profileIds = new Set<string>(), postIds = new Set<string>(), windowIds = new Set<string>();
   if (new Set(source.windows.map((w) => w.id)).size !== source.windows.length) return invalid(raw, [{ path: ["windows"], message: "Duplicate window id", code: "duplicate_id" }]);
   const windowIdMap = new Map<string, string>();

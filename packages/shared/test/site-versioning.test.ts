@@ -183,4 +183,22 @@ describe("versioned site document contract", () => {
     expect(linkWindow && linkWindow.type === "links" ? linkWindow.content.links[0].windowId : "").toBe(target?.id);
     expect(resolveEntityRef(migrated.document, { siteId: "site-a", id: target!.id, kind: "window" }, "site-a")).toMatchObject({ ok: true });
   });
+
+  it("validates v2 without injecting defaults or changing object identity", () => {
+    const migrated = migrateSiteDocumentV2(fixture(), { siteId: "site-a" });
+    expect(migrated.ok).toBe(true);
+    if (!migrated.ok) return;
+    const v2 = structuredClone(migrated.document) as typeof migrated.document;
+    delete v2.mobileColumns;
+    delete v2.entities.profiles[0].avatarUrl;
+    delete v2.entities.profiles[0].highlights;
+    delete v2.entities.posts[0].comments;
+    delete v2.entities.posts[0].extra;
+    const result = migrateSiteDocumentV2(v2, { siteId: "site-a" });
+    expect(result).toMatchObject({ ok: true, version: 2 });
+    if (result.ok) {
+      expect(result.document).toBe(v2);
+      expect(result.document).toEqual(v2);
+    }
+  });
 });
