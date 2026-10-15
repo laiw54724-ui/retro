@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { normalizeDocument, type SiteDocument } from "@retrodesk/shared";
 import { Navigate, useParams } from "react-router-dom";
 import { api } from "../lib/api";
+import { themeView } from "../lib/themeView";
 import { MobileScreen } from "../features/site/MobileScreen";
 import { VisitorDesktop } from "../features/site/VisitorDesktop";
 
@@ -26,17 +27,17 @@ export function PublicSitePage() {
   if (!document) return <div className="boot-screen">Loading desktop...</div>;
 
   const theme = document.theme;
-  const pattern = theme.pattern === "dots"
-    ? `radial-gradient(${theme.patternColor} 1.5px, transparent 1.7px)`
-    : theme.pattern === "checker"
-      ? `conic-gradient(${theme.patternColor} 25%, transparent 0 50%, ${theme.patternColor} 0 75%, transparent 0)`
-      : "none";
+  const tv = themeView(theme);
+  const imageWallpaper = theme.pattern === "image" && !!theme.wallImage;
   return (
     <main
       className="visitor-page"
       style={{
-        backgroundColor: theme.wall,
-        backgroundImage: theme.wallImage ? `url(${theme.wallImage})` : pattern
+        backgroundColor: tv.wall,
+        backgroundImage: tv.wallImageCss,
+        backgroundSize: tv.wallSize,
+        backgroundPosition: imageWallpaper ? "center" : "0 0",
+        backgroundRepeat: imageWallpaper ? "no-repeat" : "repeat"
       }}
     >
       <VisitorDesktop document={document} />

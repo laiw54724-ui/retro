@@ -2,7 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { documentFixture } from "./fixture";
 
-async function mockPublicSite(page: Page) {
+async function mockPublicSite(page: Page, publishedDocument = documentFixture) {
   await page.route("**/api/public/sites/demo", async (route) => {
     await route.fulfill({
       status: 200,
@@ -11,7 +11,7 @@ async function mockPublicSite(page: Page) {
         site: {
           username: "demo",
           site_name: "Demo Desk",
-          published_document: documentFixture,
+          published_document: publishedDocument,
           published_version: 1,
           published_at: "2026-10-15T00:00:00.000Z"
         }
@@ -19,6 +19,24 @@ async function mockPublicSite(page: Page) {
     });
   });
 }
+
+test("published image wallpaper covers the desktop without tiling", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await mockPublicSite(page, {
+    ...documentFixture,
+    theme: {
+      ...documentFixture.theme,
+      pattern: "image",
+      wallImage: "https://example.com/wallpaper.png"
+    }
+  });
+  await page.goto("/@demo");
+
+  const visitor = page.locator(".visitor-page");
+  await expect(visitor).toHaveCSS("background-size", "cover");
+  await expect(visitor).toHaveCSS("background-position", "50% 50%");
+  await expect(visitor).toHaveCSS("background-repeat", "no-repeat");
+});
 
 test("landing page has no critical accessibility violations", async ({ page }) => {
   await page.goto("/");

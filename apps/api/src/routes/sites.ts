@@ -167,6 +167,6 @@ sites.get("/public/sites/:username", async (c) => {
     .maybeSingle();
   if (error) return jsonError(c, 500, "db_error", "Could not load published site");
   if (!data?.published_document) return jsonError(c, 404, "not_found", "Site not found");
-  c.header("Cache-Control", "public, max-age=30, s-maxage=60, stale-while-revalidate=300");
+  c.header("Cache-Control", "no-store");
   return c.json({ site: data });
 });

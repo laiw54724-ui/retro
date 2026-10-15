@@ -83,7 +83,7 @@ export const api = {
   publicSite(username: string) {
     return request<{ site: { username: string; site_name: string; published_document: SiteDocument; published_version: number; published_at: string } }>(
       "/api/public/sites/" + encodeURIComponent(username),
-      {},
+      { cache: "no-store" },
       false
     );
   },
