@@ -2,9 +2,14 @@ import { describe, expect, it } from "vitest";
 import { createStarterDocument } from "../src/site";
 import {
   collectEntityReferrers,
+  createProfile,
+  deleteOrRetargetProfile,
+  duplicateProfile,
+  inspectProfileReferences,
   migrateSiteDocumentV2,
   parseSiteDocument,
   resolveEntityRef,
+  updateProfile,
 } from "../src/site-versioning";
 
 function fixture() {
@@ -54,7 +59,8 @@ describe("versioned site document contract", () => {
       const { profile: legacyProfile } = originalIg.content;
       const entity = result.document.entities.profiles[0];
       const { kind, id, siteId, visibility, ...profileFields } = entity;
-      expect(profileFields).toEqual(legacyProfile);
+      expect(profileFields).toMatchObject(legacyProfile);
+      expect(entity).toMatchObject({ handle: "alice", displayName: "Alice", legacyUsernameLabel: "alice", legacyFollowersLabel: "101", legacyFollowingLabel: "202" });
       const legacyPost = originalIg.content.images[0];
       const migratedPost = result.document.entities.posts[0];
       const { kind: pk, id: pid, siteId: ps, visibility: pv, authorProfileId, ...postFields } = migratedPost;
@@ -200,5 +206,50 @@ describe("versioned site document contract", () => {
       expect(result.document).toBe(v2);
       expect(result.document).toEqual(v2);
     }
+  });
+
+  it("deterministically disambiguates duplicate legacy handles without merging profiles", () => {
+    const input = fixture();
+    const first = input.windows.find((window) => window.id === "ig-1");
+    if (!first || first.type !== "instagram") throw new Error("fixture missing Instagram window");
+    input.windows.push({ ...first, id: "ig-2", title: "Instagram 2", layout: { ...first.layout, desktop: { ...first.layout.desktop, z: 9 }, mobile: { order: 9 } }, content: { ...first.content, profile: { ...first.content.profile, username: "ALICE", name: "愛麗絲" } } });
+    const migrated = migrateSiteDocumentV2(input, { siteId: "site-a" });
+    expect(migrated.ok).toBe(true);
+    if (!migrated.ok) return;
+    expect(migrated.document.entities.profiles.map((profile) => profile.handle)).toEqual(["alice", "alice-2"]);
+    expect(migrated.document.entities.profiles[1]).toMatchObject({ displayName: "愛麗絲", legacyUsernameLabel: "ALICE" });
+    expect(migrateSiteDocumentV2(migrated.document, { siteId: "site-a" })).toEqual(migrated);
+    expect(migrated.document.entities.posts).toHaveLength(2);
+  });
+
+  it("supports immutable profile CRUD and blocks or retargets deletion", () => {
+    const migrated = migrateSiteDocumentV2(fixture(), { siteId: "site-a" });
+    expect(migrated.ok).toBe(true);
+    if (!migrated.ok) return;
+    const original = structuredClone(migrated.document);
+    const sourceId = migrated.document.entities.profiles[0].id;
+    const created = createProfile(migrated.document, { handle: "中文角色", displayName: "新角色", name: "新角色", avatar: null }, { siteId: "site-a", id: "profile:new" });
+    expect(created.ok).toBe(false);
+    const validCreated = createProfile(migrated.document, { handle: "new-character", displayName: "新角色", name: "新角色", avatar: null }, { siteId: "site-a", id: "profile:new" });
+    expect(validCreated.ok).toBe(true);
+    if (!validCreated.ok) return;
+    const duplicated = duplicateProfile(validCreated.document, sourceId, { siteId: "site-a", id: "profile:copy", handle: "alice-copy" });
+    expect(duplicated.ok).toBe(true);
+    if (!duplicated.ok) return;
+    const updated = updateProfile(duplicated.document, "profile:copy", { displayName: "複製角色", pronouns: "they/them" }, { siteId: "site-a" });
+    expect(updated.ok).toBe(true);
+    const references = inspectProfileReferences(migrated.document, sourceId, "site-a");
+    expect(references.windowIds).toEqual(["ig-1"]);
+    expect(references.postIds).toEqual(["post:ig-1:p1"]);
+    const blocked = deleteOrRetargetProfile(migrated.document, sourceId, { siteId: "site-a" });
+    expect(blocked).toMatchObject({ ok: false, diagnostics: [{ code: "delete_blocked" }] });
+    const retargeted = deleteOrRetargetProfile(validCreated.document, sourceId, { siteId: "site-a", retargetProfileId: "profile:new" });
+    expect(retargeted.ok).toBe(true);
+    if (retargeted.ok) {
+      expect(retargeted.document.entities.profiles.some((profile) => profile.id === sourceId)).toBe(false);
+      expect(retargeted.document.windows.find((window) => window.id === "ig-1")).toMatchObject({ content: { profileRef: { id: "profile:new" } } });
+      expect(retargeted.document.entities.posts[0].authorProfileId).toBe("profile:new");
+    }
+    expect(migrated.document).toEqual(original);
   });
 });

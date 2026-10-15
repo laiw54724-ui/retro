@@ -22,6 +22,11 @@ import {
 } from "./site";
 
 const BoundedId = z.string().trim().min(1).max(160);
+/** Canonical OC handles are URL-safe, lower-case labels. Display names remain unrestricted. */
+export const ProfileHandleSchema = z.string().trim().toLowerCase().min(1, "Handle is required").max(64, "Handle must be 64 characters or fewer").regex(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/, "Use lowercase letters, numbers, or hyphens");
+export type ProfileHandle = z.infer<typeof ProfileHandleSchema>;
+export const ProfileCustomFieldSchema = z.object({ key: z.string().trim().min(1).max(80), value: z.string().max(500) }).strict();
+export const ProfileThemeOverrideSchema = z.object({ accent: z.string().regex(/^#[0-9a-fA-F]{6}$/), background: z.string().regex(/^#[0-9a-fA-F]{6}$/) }).strict();
 export const EntityKindSchema = z.enum(["window", "profile", "post"]);
 export type EntityKind = z.infer<typeof EntityKindSchema>;
 export const VisibilitySchema = z.enum(["published", "draft"]);
@@ -54,9 +59,20 @@ const StrictThemeSchema = z.object(ThemeSchema.shape).strict();
 const { highlights: _legacyHighlights, ...ProfileFields } = InstagramProfileSchema.shape;
 const { id: _legacyPostId, comments: _legacyComments, extra: _legacyExtra, ...PostFields } = IgPostSchema.shape;
 const StrictProfileFields = { ...ProfileFields, avatarCrop: StrictImageCropSchema.optional(), highlights: z.array(StrictHighlightSchema).max(20).default([]) };
+const ProfileAuthoringFields = {
+  handle: ProfileHandleSchema.optional(),
+  displayName: z.string().trim().min(1).max(160).optional(),
+  pronouns: z.string().max(120).default(""),
+  customFields: z.array(ProfileCustomFieldSchema).max(50).default([]),
+  worldTags: z.array(z.string().trim().min(1).max(64)).max(30).default([]),
+  themeOverride: ProfileThemeOverrideSchema.optional(),
+  legacyUsernameLabel: z.string().max(64).optional(),
+  legacyFollowersLabel: z.string().max(32).optional(),
+  legacyFollowingLabel: z.string().max(32).optional()
+};
 const StrictPostFields = { ...PostFields, comments: z.array(StrictCommentSchema).max(200).default([]), extra: z.array(StrictExtraImageSchema).max(9).default([]) };
 export const ProfileEntityV2Schema = z.object({
-  kind: z.literal("profile"), id: BoundedId, siteId: BoundedId, visibility: VisibilitySchema, ...StrictProfileFields
+  kind: z.literal("profile"), id: BoundedId, siteId: BoundedId, visibility: VisibilitySchema, ...StrictProfileFields, ...ProfileAuthoringFields
 }).strict();
 export const PostEntityV2Schema = z.object({
   kind: z.literal("post"), id: BoundedId, siteId: BoundedId, visibility: VisibilitySchema, authorProfileId: BoundedId, ...StrictPostFields
@@ -107,6 +123,33 @@ export type MigrateSiteDocumentResult =
   | { ok: true; version: 2; document: SiteDocumentV2Input }
   | InvalidResult | UnsupportedResult;
 
+export function normalizeProfileHandle(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+export function profileHandleKey(value: string): string {
+  return normalizeProfileHandle(value);
+}
+
+function legacyHandle(value: string, fallback: string): string {
+  const normalized = normalizeProfileHandle(value).replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
+  const candidate = normalized || `profile-${fallback.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "oc"}`;
+  const bounded = candidate.slice(0, 64).replace(/-+$/g, "");
+  return ProfileHandleSchema.safeParse(bounded).success ? bounded : "oc";
+}
+
+function uniqueProfileHandle(base: string, used: Set<string>): string {
+  const root = legacyHandle(base, "oc");
+  let candidate = root;
+  let suffix = 2;
+  while (used.has(profileHandleKey(candidate))) {
+    const tail = `-${suffix++}`;
+    candidate = `${root.slice(0, Math.max(1, 64 - tail.length))}${tail}`;
+  }
+  used.add(profileHandleKey(candidate));
+  return candidate;
+}
+
 function diagnosticsFrom(error: z.ZodError): Diagnostic[] {
   return error.issues.map((issue) => ({ path: issue.path.map((part) => typeof part === "symbol" ? String(part) : part), message: issue.message, code: issue.code }));
 }
@@ -127,7 +170,17 @@ function semanticDiagnostics(document: SiteDocumentV2): Diagnostic[] {
       if (!document.entities.profiles.some((p) => p.id === ref.id && p.siteId === ref.siteId)) out.push({ path: ["windows", i, "content", "profileRef"], message: "Missing profile", code: "missing_ref" });
     }
   }
-  for (const [i, profile] of document.entities.profiles.entries()) { if (profileIds.has(profile.id)) out.push({ path: ["entities", "profiles", i, "id"], message: "Duplicate entity id", code: "duplicate_id" }); profileIds.add(profile.id); }
+  const handles = new Map<string, number>();
+  for (const [i, profile] of document.entities.profiles.entries()) {
+    if (profileIds.has(profile.id)) out.push({ path: ["entities", "profiles", i, "id"], message: "Duplicate entity id", code: "duplicate_id" }); profileIds.add(profile.id);
+    if (profile.handle !== undefined) {
+      const parsedHandle = ProfileHandleSchema.safeParse(profile.handle);
+      if (!parsedHandle.success) out.push(...diagnosticsFrom(parsedHandle.error).map((issue) => ({ ...issue, path: ["entities", "profiles", i, "handle", ...issue.path] })));
+      const key = profileHandleKey(profile.handle);
+      if (handles.has(key)) out.push({ path: ["entities", "profiles", i, "handle"], message: "Duplicate profile handle", code: "duplicate_handle" });
+      handles.set(key, i);
+    }
+  }
   for (const [i, post] of document.entities.posts.entries()) {
     if (postIds.has(post.id)) out.push({ path: ["entities", "posts", i, "id"], message: "Duplicate entity id", code: "duplicate_id" }); postIds.add(post.id);
     if (!document.entities.profiles.some((p) => p.id === post.authorProfileId && p.siteId === post.siteId)) out.push({ path: ["entities", "posts", i, "authorProfileId"], message: mixedSiteScope ? "Cross-site author profile" : "Missing author profile", code: mixedSiteScope ? "cross_site" : "missing_ref" });
@@ -167,7 +220,7 @@ export function migrateSiteDocumentV2(raw: unknown, options: { siteId: string })
     // caller's exact object and identity after validation succeeds.
     return { ok: true, version: 2, document: raw as SiteDocumentV2Input };
   }
-  const source = parsed.document, profiles: ProfileEntityV2[] = [], posts: PostEntityV2[] = [], profileIds = new Set<string>(), postIds = new Set<string>(), windowIds = new Set<string>();
+  const source = parsed.document, profiles: ProfileEntityV2[] = [], posts: PostEntityV2[] = [], profileIds = new Set<string>(), postIds = new Set<string>(), windowIds = new Set<string>(), profileHandles = new Set<string>();
   if (new Set(source.windows.map((w) => w.id)).size !== source.windows.length) return invalid(raw, [{ path: ["windows"], message: "Duplicate window id", code: "duplicate_id" }]);
   const windowIdMap = new Map<string, string>();
   for (const window of source.windows) windowIdMap.set(window.id, boundedGeneratedId(window.id, windowIds));
@@ -180,7 +233,9 @@ export function migrateSiteDocumentV2(raw: unknown, options: { siteId: string })
       return DesktopWindowV2Schema.parse(normalized);
     }
     const profileId = boundedGeneratedId(`profile:${windowId}`, profileIds);
-    profiles.push({ kind: "profile", id: profileId, siteId: options.siteId, visibility: "published", ...window.content.profile });
+    const legacy = window.content.profile;
+    const handle = uniqueProfileHandle(legacy.username, profileHandles);
+    profiles.push({ kind: "profile", id: profileId, siteId: options.siteId, visibility: "published", ...legacy, handle, displayName: legacy.name || handle, pronouns: "", customFields: [], worldTags: [], legacyUsernameLabel: legacy.username, legacyFollowersLabel: legacy.followers, legacyFollowingLabel: legacy.following });
     for (const post of window.content.images) {
       const postId = boundedGeneratedId(`post:${windowId}:${post.id}`, postIds);
       posts.push({ kind: "post", siteId: options.siteId, visibility: "published", authorProfileId: profileId, ...post, id: postId });
@@ -208,3 +263,111 @@ export function collectEntityReferrers(document: SiteDocumentV2Input, ref: Entit
   for (const post of document.entities.posts) if (post.siteId === currentSiteId && post.authorProfileId === ref.id) out.push({ kind: "post", postId: post.id, field: "authorProfileId" });
   return out;
 }
+
+export type ProfileDiagnostic = Diagnostic;
+export type ProfileOperationResult =
+  | { ok: true; document: SiteDocumentV2Input; profile: ProfileEntityV2 }
+  | { ok: false; code: "invalid"; diagnostics: ProfileDiagnostic[] };
+export type ProfileReferenceReport = {
+  profileId: string;
+  referrers: EntityReferrer[];
+  postIds: string[];
+  windowIds: string[];
+};
+
+function profileError(path: (string | number)[], message: string, code: string): ProfileOperationResult & { ok: false } {
+  return { ok: false, code: "invalid", diagnostics: [{ path, message, code }] };
+}
+
+function validDocument(document: SiteDocumentV2Input): ProfileDiagnostic[] {
+  const parsed = SiteDocumentV2Schema.safeParse(document);
+  return parsed.success ? [] : diagnosticsFrom(parsed.error);
+}
+
+function profileInput(input: Record<string, unknown>, siteId: string, id: string, visibility: Visibility = "draft"): ProfileEntityV2 | ProfileDiagnostic[] {
+  const candidate = {
+    ...input,
+    kind: "profile", id, siteId, visibility,
+    username: typeof input.username === "string" ? input.username : String(input.handle ?? ""),
+    avatar: input.avatar ?? null,
+    name: typeof input.name === "string" ? input.name : String(input.displayName ?? ""),
+    alt: typeof input.alt === "string" ? input.alt : "",
+    bio: typeof input.bio === "string" ? input.bio : "",
+    followers: typeof input.followers === "string" ? input.followers : "0",
+    following: typeof input.following === "string" ? input.following : "0",
+    followedBy: typeof input.followedBy === "string" ? input.followedBy : "",
+    handle: input.handle,
+    displayName: input.displayName ?? input.name ?? input.handle,
+  };
+  const parsed = ProfileEntityV2Schema.safeParse(candidate);
+  return parsed.success ? parsed.data : diagnosticsFrom(parsed.error);
+}
+
+function profileHandleDiagnostics(document: SiteDocumentV2Input, handle: unknown, excludeId?: string): ProfileDiagnostic[] {
+  const parsed = ProfileHandleSchema.safeParse(handle);
+  if (!parsed.success) return diagnosticsFrom(parsed.error).map((diagnostic) => ({ ...diagnostic, path: ["handle", ...diagnostic.path] }));
+  const duplicate = document.entities.profiles.find((profile) => profile.id !== excludeId && profile.handle !== undefined && profileHandleKey(profile.handle) === profileHandleKey(parsed.data));
+  return duplicate ? [{ path: ["handle"], message: "Duplicate profile handle", code: "duplicate_handle" }] : [];
+}
+
+export function inspectProfileReferences(document: SiteDocumentV2Input, profileId: string, siteId: string): ProfileReferenceReport {
+  const ref = { siteId, id: profileId, kind: "profile" as const };
+  const referrers = collectEntityReferrers(document, ref, siteId);
+  return { profileId, referrers, postIds: referrers.filter((item) => item.kind === "post").map((item) => item.postId), windowIds: referrers.filter((item) => item.kind === "window").map((item) => item.windowId) };
+}
+
+export function createProfile(document: SiteDocumentV2Input, input: Record<string, unknown>, options: { siteId: string; id?: string } ): ProfileOperationResult {
+  const diagnostics = validDocument(document);
+  if (diagnostics.length) return { ok: false, code: "invalid", diagnostics };
+  const id = options.id ?? `profile:${crypto.randomUUID()}`;
+  if (document.entities.profiles.some((profile) => profile.id === id)) return profileError(["entities", "profiles"], "Profile id already exists", "duplicate_id");
+  const handleDiagnostics = profileHandleDiagnostics(document, input.handle);
+  if (handleDiagnostics.length) return { ok: false, code: "invalid", diagnostics: handleDiagnostics };
+  const profile = profileInput(input, options.siteId, id);
+  if (Array.isArray(profile)) return { ok: false, code: "invalid", diagnostics: profile };
+  const next = structuredClone(document);
+  next.entities.profiles = [...next.entities.profiles, profile];
+  return { ok: true, document: next, profile };
+}
+
+export function updateProfile(document: SiteDocumentV2Input, profileId: string, patch: Record<string, unknown>, options: { siteId: string }): ProfileOperationResult {
+  const diagnostics = validDocument(document);
+  if (diagnostics.length) return { ok: false, code: "invalid", diagnostics };
+  const index = document.entities.profiles.findIndex((profile) => profile.id === profileId && profile.siteId === options.siteId);
+  if (index < 0) return profileError(["entities", "profiles"], "Profile not found", "missing");
+  const handleDiagnostics = patch.handle === undefined ? [] : profileHandleDiagnostics(document, patch.handle, profileId);
+  if (handleDiagnostics.length) return { ok: false, code: "invalid", diagnostics: handleDiagnostics };
+  const candidate = { ...document.entities.profiles[index], ...patch, id: profileId, siteId: options.siteId, kind: "profile" };
+  const parsed = ProfileEntityV2Schema.safeParse(candidate);
+  if (!parsed.success) return { ok: false, code: "invalid", diagnostics: diagnosticsFrom(parsed.error) };
+  const next = structuredClone(document); next.entities.profiles[index] = parsed.data;
+  return { ok: true, document: next, profile: parsed.data };
+}
+
+export function duplicateProfile(document: SiteDocumentV2Input, profileId: string, options: { siteId: string; id?: string; handle?: string }): ProfileOperationResult {
+  const source = document.entities.profiles.find((profile) => profile.id === profileId && profile.siteId === options.siteId);
+  if (!source) return profileError(["entities", "profiles"], "Profile not found", "missing");
+  const handle = options.handle ?? `${source.handle ?? source.username}-copy`;
+  return createProfile(document, { ...structuredClone(source), id: undefined, handle, displayName: source.displayName ?? source.name, legacyUsernameLabel: undefined, legacyFollowersLabel: undefined, legacyFollowingLabel: undefined }, { siteId: options.siteId, id: options.id });
+}
+
+export function deleteOrRetargetProfile(document: SiteDocumentV2Input, profileId: string, options: { siteId: string; retargetProfileId?: string }): ProfileOperationResult {
+  const source = document.entities.profiles.find((profile) => profile.id === profileId && profile.siteId === options.siteId);
+  if (!source) return profileError(["entities", "profiles"], "Profile not found", "missing");
+  const report = inspectProfileReferences(document, profileId, options.siteId);
+  if (report.referrers.length && !options.retargetProfileId) return profileError(["entities", "profiles", profileId], "Profile is still referenced", "delete_blocked");
+  if (options.retargetProfileId) {
+    if (options.retargetProfileId === profileId || !document.entities.profiles.some((profile) => profile.id === options.retargetProfileId && profile.siteId === options.siteId)) return profileError(["retargetProfileId"], "Retarget profile not found", "missing");
+  }
+  const next = structuredClone(document);
+  if (options.retargetProfileId) {
+    next.windows = next.windows.map((window) => window.type === "instagram" && window.content.profileRef.id === profileId ? { ...window, content: { ...window.content, profileRef: { ...window.content.profileRef, id: options.retargetProfileId! } } } : window);
+    next.entities.posts = next.entities.posts.map((post) => post.authorProfileId === profileId ? { ...post, authorProfileId: options.retargetProfileId! } : post);
+  }
+  next.entities.profiles = next.entities.profiles.filter((profile) => profile.id !== profileId);
+  return { ok: true, document: next, profile: ProfileEntityV2Schema.parse(source) };
+}
+
+export const createProfileEntity = createProfile;
+export const updateProfileEntity = updateProfile;
+export const duplicateProfileEntity = duplicateProfile;
