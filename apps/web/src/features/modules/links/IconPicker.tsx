@@ -100,7 +100,7 @@ export function IconPicker({ siteId, value, onChange, upload, onDone, size = 24 
       <label className="icon-search"><span className="visually-hidden">搜尋 Windows 圖示</span><input className="w98-input" type="search" value={search} placeholder={`搜尋 ${WINDOWS_ICON_RECORDS.length.toLocaleString()} 個 Windows 圖示`} aria-label="搜尋 Windows 圖示" onChange={(event) => setSearch(event.target.value)} /></label>
       {windows.length ? <div className="icon-grid win98-icon-grid">{windows.map((record) => cell(record.key, record.path, `Windows 圖示 ${record.label}`))}</div> : <span className="w98-hint">找不到相符的 Windows 圖示。</span>}
       {search.trim() && windows.length === 100 ? <span className="w98-hint">顯示前 100 筆結果，請輸入更多關鍵字縮小範圍。</span> : null}
-      <span className="w98-hint">來源：<a href={WINDOWS_ICON_SOURCE}>{WINDOWS_ICON_SOURCE.replace("https://github.com/", "")}</a>；圖示依其上游專案授權提供。</span>
+      <span className="w98-hint">來源：<a href={WINDOWS_ICON_SOURCE}>{WINDOWS_ICON_SOURCE.replace("https://github.com/", "")}</a>；上游未宣告授權，圖示權利屬各原權利人，重新散布前請另行確認。</span>
       {siteId ? (
         <>
           <strong className="icon-picker-h">我的圖示</strong>
