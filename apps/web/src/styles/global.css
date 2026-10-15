@@ -54,3 +54,19 @@
 .visitor-task-buttons button{min-width:110px;max-width:180px;height:25px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;background:#c0c0c0;border:0;padding:3px 8px;box-shadow:inset -1px -1px #000,inset 1px 1px #fff}
 .visitor-task-buttons button.active{box-shadow:inset -1px -1px #fff,inset 1px 1px #000;background:#d0d0d0}
 .visitor-clock{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:3px 7px;box-shadow:inset 1px 1px #808080,inset -1px -1px #fff}
+
+
+/* Editing history + publish UX */
+.history-button{min-width:72px}
+.publish-pill{font-size:12px;padding:3px 7px;border:1px solid #808080;background:#e6e6e6}
+.publish-pill.changed{background:#fff3b0;border-color:#9b7d00}
+.publish-pill.synced{background:#dff4df;border-color:#3d7b3d}
+.editor-message{display:flex;align-items:center;gap:7px;max-width:min(720px,calc(100vw - 24px))}
+.editor-message>span{min-width:0}
+.editor-message button{border:0;background:#c0c0c0;padding:3px 7px;box-shadow:inset -1px -1px #000,inset 1px 1px #fff}
+.modal-backdrop{position:fixed;inset:0;z-index:500000;background:rgba(0,0,0,.36);display:grid;place-items:center;padding:20px}
+.editor-dialog{width:min(520px,100%);padding:3px}
+.dialog-body{padding:18px}
+.dialog-body h2{margin:0 0 10px;font-family:'DotGothic16';font-weight:400}
+.dialog-body p{line-height:1.6}
+.share-url{width:100%;min-height:36px;padding:7px 9px;margin:10px 0 16px;border:0;background:#fff;box-shadow:inset -1px -1px #fff,inset 1px 1px #808080,inset -2px -2px #dfdfdf,inset 2px 2px #0a0a0a}
