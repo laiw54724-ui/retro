@@ -34,3 +34,21 @@
 - staging canonical：https://retrodesk-staging.pages.dev；immutable deployment：https://4e1258f5.retrodesk-staging.pages.dev。
 - HTTP smoke：canonical／immutable 首頁皆 `200`；`/windows-icons/brown.ico` 皆 `200` 且 `content-type: image/vnd.microsoft.icon`。
 - GitHub Issue evidence：[#26 comment](https://github.com/laiw54724-ui/retro/issues/26#issuecomment-6200008656)、[#27 comment](https://github.com/laiw54724-ui/retro/issues/27#issuecomment-6200008335)；兩張 Issue 皆維持 OPEN。
+
+## #18A SiteDocument v2 contract foundation
+
+驗證日期：2026-10-16（Asia/Singapore）。本節記錄 #18A 第一個可獨立驗收里程碑；現行 editor、API 與已發布站點仍讀寫 v1，v2 先以 additive shared contract 提供後續 App registry、OC profile 與 post entity 實作，不做隱性資料回寫。
+
+- 實作計畫：`docs/superpowers/plans/2026-10-16-site-document-v2-contract.md`。
+- 實作 commits：`e66a9f6`、`db9c086`、`39794c7`、`7affed6`、`782efde`、`7f93936`、`a2b3a07`、`57a2b05`。
+- contract：新增嚴格的 version dispatch、v1 → v2 lossless migration、v2 structural／semantic validation、same-site entity resolver 與 referrer collection；未知未來 schema version 明確拒絕。
+- v2 entity model：site-level `profiles`／`posts`，Instagram window 僅保存 `skin` 與 `profileRef`；entity/window/profile/post IDs 有界且 migration 產生值可重現。
+- migration safety：不修改輸入、可重複執行、保留五種既有 window modules；window ID 映射會同步重寫 `LinkItem.windowId`，避免導覽 reference 失聯。
+- compatibility：既有 `SiteDocumentSchema`、`normalizeDocument`、editor/API persistence 與 public runtime 行為未切換，故本里程碑不會自動改寫既有使用者文件。
+- focused shared tests：24 passed（既有 v1 14 + v2 contract 10）。
+- full unit：34 passed（shared 24 + API 10）。
+- typecheck：pass（shared、api、web）。
+- full E2E：46 passed，包含 desktop/mobile responsive、Instagram scroll、Start menu/taskbar、window controls、media 與 accessibility flows。
+- build：pass（shared、API Wrangler dry-run、web Vite）；Wrangler 仍有既有 debug-log EPERM 訊息，但 dry-run 與 build 均成功完成。
+- `git diff --check`：pass。
+- review：獨立 spec review 與 quality review 均通過；window ID/reference remap 風險已由 `7f93936` 修正，v2 identity-preservation 風險已由 `a2b3a07` 修正，raw/canonical v2 型別契約再由 `57a2b05` 校正；相關行為皆有回歸測試或 typecheck 保護。
