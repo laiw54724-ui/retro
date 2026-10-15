@@ -6,6 +6,12 @@
     "dev": "pnpm --parallel --filter @retrodesk/web --filter @retrodesk/api dev",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
-    "lint": "pnpm -r lint"
+    "lint": "pnpm -r lint",
+    "test:unit": "pnpm -r --if-present test:unit",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@playwright/test": "^1.50.0"
   }
 }

@@ -17,9 +17,15 @@ export function authClient(env: Env, token: string) {
   });
 }
 
+export function extractBearerToken(header: string | null | undefined) {
+  if (!header) return "";
+  const trimmed = header.trim();
+  if (!/^bearer\s+/i.test(trimmed)) return "";
+  return trimmed.replace(/^bearer\s+/i, "").trim();
+}
+
 export async function requireUser(c: Context<{ Bindings: Env }>): Promise<AppUser | Response> {
-  const header = c.req.header("authorization") ?? "";
-  const token = header.toLowerCase().startsWith("bearer ") ? header.slice(7).trim() : "";
+  const token = extractBearerToken(c.req.header("authorization"));
   if (!token) return c.json({ error: { code: "unauthorized", message: "Missing bearer token" } }, 401);
 
   const client = authClient(c.env, token);

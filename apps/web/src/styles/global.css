@@ -125,3 +125,8 @@
   .modal-backdrop{padding:10px}
   .editor-dialog{max-height:calc(100dvh - 20px);overflow:auto}
 }
+
+
+/* Beta hardening: keyboard focus and reduced motion */
+:where(button,a,input,textarea,select):focus-visible{outline:3px solid #ffea00;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}

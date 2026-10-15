@@ -1,0 +1,27 @@
+name: E2E acceptance
+
+on:
+  workflow_dispatch:
+
+jobs:
+  public-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable pnpm
+        run: corepack enable && corepack prepare pnpm@10.18.2 --activate
+
+      - name: Install
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Public/mobile E2E
+        run: pnpm test:e2e
