@@ -350,6 +350,7 @@ describe("versioned site document contract", () => {
     // stale. The first stable window ID wins, so a later stale copy cannot
     // roll the shared profile back.
     instagram.content.profile.name = "Edited shared OC";
+    instagram.content.profile.username = "renamed-oc";
     const merged = mergeLegacyDocumentIntoV2(migrated.document, edited, { siteId: "site-a" });
     expect(merged.windows.map((window) => window.id)).toEqual(expect.arrayContaining(["doc-1", "doc-copy", "ig-1", "ig-copy"]));
     expect(merged.windows.some((window) => window.id === "gallery-1")).toBe(false);
@@ -358,11 +359,15 @@ describe("versioned site document contract", () => {
     expect(new Set(igRefs).size).toBe(1);
     expect(merged.entities.profiles.find((profile) => profile.id === igRefs[0])?.displayName).toBe("Edited shared OC");
     expect(merged.entities.profiles.find((profile) => profile.id === igRefs[0])?.name).toBe("Edited shared OC");
+    expect(merged.entities.profiles.find((profile) => profile.id === igRefs[0])?.handle).toBe("renamed-oc");
     expect(parseSiteDocument(merged)).toMatchObject({ ok: true, version: 2 });
     const rerendered = projectV2ToLegacyDocument(merged);
     expect(rerendered.ok).toBe(true);
     if (rerendered.ok) {
-      expect(rerendered.document.windows.filter((window) => window.type === "instagram").map((window) => window.content.profile.name)).toEqual(["Edited shared OC", "Edited shared OC"]);
+      expect(rerendered.document.windows.filter((window) => window.type === "instagram").map((window) => ({ username: window.content.profile.username, name: window.content.profile.name }))).toEqual([
+        { username: "renamed-oc", name: "Edited shared OC" },
+        { username: "renamed-oc", name: "Edited shared OC" },
+      ]);
     }
     const deletedCopy = mergeLegacyDocumentIntoV2(migrated.document, {
       ...edited,

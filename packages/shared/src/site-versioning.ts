@@ -209,7 +209,11 @@ export function mergeLegacyDocumentIntoV2(document: SiteDocumentV2Input, legacy:
     const legacyProfile = legacyWindow.content.profile;
     const profileChanged = !same(legacyProfile, legacyProfileOf(profile));
     if (profileChanged && !profileEdits.has(profile.id)) {
-      const patched = ProfileEntityV2Schema.safeParse({ ...profile, ...legacyProfile, handle: profile.handle ?? legacyProfile.username, displayName: String(legacyProfile.name ?? profile.displayName ?? profile.name) });
+      const reservedHandles = new Set(next.entities.profiles
+        .filter((candidate) => candidate.id !== profile.id)
+        .map((candidate) => profileHandleKey(candidate.handle ?? candidate.username)));
+      const handle = uniqueProfileHandle(legacyProfile.username, reservedHandles);
+      const patched = ProfileEntityV2Schema.safeParse({ ...profile, ...legacyProfile, handle, displayName: String(legacyProfile.name ?? profile.displayName ?? profile.name) });
       if (patched.success) {
         next.entities.profiles[profileIndex] = patched.data;
         profileEdits.add(profile.id);
