@@ -109,6 +109,7 @@ export type SiteDocumentV2 = z.infer<typeof SiteDocumentV2Schema>;
 /** Raw v2 shape accepted by Zod; defaulted fields may be omitted intentionally. */
 export type SiteDocumentV2Input = z.input<typeof SiteDocumentV2Schema>;
 export type VersionedSiteDocument = SiteDocument | SiteDocumentV2;
+export type VersionedSiteDocumentInput = SiteDocument | SiteDocumentV2Input;
 export const VersionedSiteDocumentSchema = z.union([SiteDocumentSchema, SiteDocumentV2Schema]);
 export type VersionedDocumentLoadResult =
   | { ok: true; version: 1; document: SiteDocument; migrated: false; diagnostics: [] }
@@ -160,6 +161,30 @@ export function projectV2ToLegacyDocument(document: SiteDocumentV2Input): { ok: 
   if (windows.some((window) => window === null)) return { ok: false, diagnostics: [{ path: ["windows"], message: "Instagram window references a missing profile", code: "missing_ref" }] };
   const parsed = SiteDocumentSchema.safeParse({ schemaVersion: 1, siteName: document.siteName, theme: document.theme, windows, mobileColumns: document.mobileColumns });
   return parsed.success ? { ok: true, document: parsed.data } : { ok: false, diagnostics: diagnosticsFrom(parsed.error) };
+}
+
+/** Applies legacy module edits back onto an existing v2 document without replacing entity IDs. */
+export function mergeLegacyDocumentIntoV2(document: SiteDocumentV2Input, legacy: SiteDocument): SiteDocumentV2Input {
+  const next = structuredClone(document);
+  for (const legacyWindow of legacy.windows) {
+    const versionedWindow = next.windows.find((window) => window.id === legacyWindow.id);
+    if (!versionedWindow) continue;
+    if (legacyWindow.type !== "instagram" || versionedWindow.type !== "instagram") {
+      const index = next.windows.findIndex((window) => window.id === legacyWindow.id);
+      if (index >= 0) next.windows[index] = legacyWindow as typeof next.windows[number];
+      continue;
+    }
+    const profileIndex = next.entities.profiles.findIndex((profile) => profile.id === versionedWindow.content.profileRef.id && profile.siteId === versionedWindow.content.profileRef.siteId);
+    if (profileIndex < 0) continue;
+    const profile = next.entities.profiles[profileIndex];
+    const legacyProfile = legacyWindow.content.profile;
+    next.entities.profiles[profileIndex] = { ...profile, ...legacyProfile, handle: profile.handle ?? legacyProfile.username, displayName: profile.displayName ?? legacyProfile.name };
+    const posts = legacyWindow.content.images;
+    const existingIds = new Set(next.entities.posts.filter((post) => post.authorProfileId === profile.id).map((post) => post.id));
+    next.entities.posts = next.entities.posts.filter((post) => post.authorProfileId !== profile.id);
+    next.entities.posts.push(...posts.map((post) => ({ kind: "post" as const, siteId: profile.siteId, visibility: "published" as const, authorProfileId: profile.id, ...post, id: existingIds.has(post.id) ? post.id : `post:${profile.id}:${post.id}` })));
+  }
+  return next;
 }
 
 export function normalizeProfileHandle(value: string): string {

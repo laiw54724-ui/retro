@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { buildPublishChecks, hasBlockingCheck, loadVersionedSiteDocument, normalizeDocument, projectV2ToLegacyDocument, SiteDocumentSchema, type DesktopWindow } from "@retrodesk/shared";
+import { buildPublishChecks, hasBlockingCheck, loadVersionedSiteDocument, mergeLegacyDocumentIntoV2, normalizeDocument, parseSiteDocument, projectV2ToLegacyDocument, type DesktopWindow, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { useEditorStore } from "../features/editor/store";
@@ -16,9 +16,9 @@ import { AssetSourceProvider } from "../lib/assetSource";
 
 
 function validationMessage(document: unknown) {
-  const parsed = SiteDocumentSchema.safeParse(document);
-  if (parsed.success) return null;
-  const first = parsed.error.issues[0];
+  const parsed = parseSiteDocument(document);
+  if (parsed.ok) return null;
+  const first = parsed.code === "invalid" ? parsed.diagnostics[0] : { path: ["schemaVersion"], message: `Unsupported document version: ${parsed.version}` };
   const path = first?.path.length ? first.path.join(" → ") + "：" : "";
   return "請先修正內容格式。" + (first ? " " + path + first.message : "");
 }
@@ -29,6 +29,14 @@ function editorDocument(raw: unknown, siteId: string) {
   const loaded = loadVersionedSiteDocument(raw, { siteId, migrateV1: true });
   if (!loaded.ok) throw new Error(loaded.diagnostics[0]?.message ?? "文件格式無效");
   const legacy = loaded.version === 1 ? { ok: true as const, document: normalizeDocument(loaded.document) } : projectV2ToLegacyDocument(loaded.document);
+  if (!legacy.ok) throw new Error(legacy.diagnostics[0]?.message ?? "角色引用無效");
+  return legacy.document;
+}
+
+function loadedLegacyDocument(loaded: ReturnType<typeof loadVersionedSiteDocument>) {
+  if (!loaded.ok) throw new Error(loaded.diagnostics[0]?.message ?? "文件格式無效");
+  if (loaded.version === 1) return normalizeDocument(loaded.document);
+  const legacy = projectV2ToLegacyDocument(loaded.document);
   if (!legacy.ok) throw new Error(legacy.diagnostics[0]?.message ?? "角色引用無效");
   return legacy.document;
 }
@@ -51,6 +59,7 @@ export function EditorPage() {
   const [legacyAssetCount, setLegacyAssetCount] = useState(0);
   const [pendingPublicCopyCount, setPendingPublicCopyCount] = useState(0);
   const [migratingAssets, setMigratingAssets] = useState(false);
+  const [versionedDraft, setVersionedDraft] = useState<SiteDocumentV2Input | null>(null);
   const publishChecks = useMemo(() => store.document ? buildPublishChecks(store.document) : [], [store.document]);
 
   useEffect(() => {
@@ -58,14 +67,20 @@ export function EditorPage() {
     api.getSite(siteId)
       .then(({ site }) => {
         if (!alive) return;
+        const loadedDraft = loadVersionedSiteDocument(site.draft_document, { siteId: site.id, migrateV1: true });
+        if (!loadedDraft.ok) throw new Error(loadedDraft.diagnostics[0]?.message ?? "草稿格式無效");
+        const loadedPublished = site.published_document ? loadVersionedSiteDocument(site.published_document, { siteId: site.id }) : null;
+        if (loadedPublished && !loadedPublished.ok) throw new Error(loadedPublished.diagnostics[0]?.message ?? "發布版本格式無效");
         store.setSite(
           site.id,
           site.username,
-          editorDocument(site.draft_document, site.id),
+          loadedLegacyDocument(loadedDraft),
           site.draft_version,
-          site.published_document ? editorDocument(site.published_document, site.id) : null,
+          loadedPublished ? loadedLegacyDocument(loadedPublished) : null,
           site.published_version ?? null
         );
+        setVersionedDraft(loadedDraft.version === 2 ? loadedDraft.document : null);
+        if (loadedDraft.migrated) store.setSaveStatus("dirty");
         setLoading(false);
       })
       .catch((error) => {
@@ -74,6 +89,13 @@ export function EditorPage() {
       });
     return () => { alive = false; };
   }, [siteId]);
+
+  // Keep the persisted v2 entity document in sync with the existing legacy-shaped
+  // module editor until the full v2 module UI cutover lands.
+  useEffect(() => {
+    if (!versionedDraft || !store.document) return;
+    setVersionedDraft((current) => current ? mergeLegacyDocumentIntoV2(current, store.document!) : current);
+  }, [store.document]);
 
   const refreshAssetInventory = () => api.listAssets(siteId).then(({ assets }) => {
     setLegacyAssetCount(assets.filter((asset) => asset.storageScope === "legacy_public").length);
@@ -85,7 +107,7 @@ export function EditorPage() {
     if (!store.document || store.saveStatus !== "dirty" || !store.siteId || saveInFlight.current || conflict) return;
 
     const timer = window.setTimeout(async () => {
-      const documentToSave = store.document!;
+      const documentToSave = versionedDraft ?? store.document!;
       const versionToSave = store.version;
       const invalid = validationMessage(documentToSave);
       if (invalid) {
@@ -98,7 +120,7 @@ export function EditorPage() {
       store.setSaveStatus("saving");
       try {
         const result = await api.saveDraft(store.siteId!, versionToSave, documentToSave);
-        store.markSaved(result.version, documentToSave);
+        store.markSaved(result.version, store.document!);
       } catch (error) {
         store.setSaveStatus("error");
         if (error instanceof ApiError && error.code === "version_conflict") {
@@ -113,7 +135,7 @@ export function EditorPage() {
     }, 650);
 
     return () => window.clearTimeout(timer);
-  }, [store.document, store.saveStatus, store.siteId, store.version, conflict]);
+  }, [store.document, versionedDraft, store.saveStatus, store.siteId, store.version, conflict]);
 
   useEffect(() => {
     function keydown(event: KeyboardEvent) {

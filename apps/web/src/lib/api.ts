@@ -1,4 +1,4 @@
-import type { SiteDocument, VersionedSiteDocument } from "@retrodesk/shared";
+import type { SiteDocument, VersionedSiteDocument, VersionedSiteDocumentInput } from "@retrodesk/shared";
 import { supabase } from "./supabase";
 
 const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8787").replace(/\/$/, "");
@@ -69,7 +69,7 @@ export const api = {
   getSite(siteId: string) {
     return request<{ site: SiteRecord }>("/api/sites/" + siteId);
   },
-  saveDraft(siteId: string, expectedVersion: number, document: VersionedSiteDocument) {
+  saveDraft(siteId: string, expectedVersion: number, document: VersionedSiteDocumentInput) {
     return request<{ version: number; updatedAt: string }>("/api/sites/" + siteId + "/draft", {
       method: "PUT",
       body: JSON.stringify({ expectedVersion, document })

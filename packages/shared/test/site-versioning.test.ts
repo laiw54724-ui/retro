@@ -7,6 +7,7 @@ import {
   duplicateProfile,
   inspectProfileReferences,
   loadVersionedSiteDocument,
+  mergeLegacyDocumentIntoV2,
   migrateSiteDocumentV2,
   parseSiteDocument,
   projectV2ToLegacyDocument,
@@ -320,5 +321,10 @@ describe("versioned site document contract", () => {
     }
     const publicLoad = loadVersionedSiteDocument(loaded.document);
     expect(publicLoad).toMatchObject({ ok: true, version: 2, migrated: false });
+    const legacyEdited = structuredClone(legacy.ok ? legacy.document : v1);
+    const instagram = legacyEdited.windows.find((window) => window.type === "instagram");
+    if (instagram?.type === "instagram") instagram.content.profile.name = "Edited together";
+    const merged = mergeLegacyDocumentIntoV2(loaded.document, legacyEdited);
+    expect(merged.entities.profiles.find((profile) => profile.id === "profile:ig-1")?.name).toBe("Edited together");
   });
 });
