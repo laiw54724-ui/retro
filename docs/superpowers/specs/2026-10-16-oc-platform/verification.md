@@ -98,3 +98,26 @@
 - staging Worker：先以 `wrangler deploy --env staging --dry-run --keep-vars` 驗證，再部署 version `bbed29ee-e71c-4d0c-95f6-14d79fdf4ba0`；使用 `--keep-vars` 保留 dashboard vars/secrets。
 - Cloudflare Pages staging deployment：`3f3b7854`（部署 source `8e2e4db`）。canonical：https://retrodesk-staging.pages.dev；immutable：https://3f3b7854.retrodesk-staging.pages.dev。
 - HTTP smoke：API health `200`、既有 published site DB read `200`、未登入 publish boundary `401`、Pages canonical／immutable `200`；canonical 已提供 bundle `index-CGG28UzR.js`。
+
+## #18B2 protected draft assets and legacy migration
+
+驗證日期：2026-10-16（Asia/Singapore）。本節完成 #18 的發佈／素材安全門檻：新草稿媒體預設為 owner-only，公開版本只引用發佈時產生的 immutable copy，既有公開素材則可在不破壞 live site 的前提下遷移。
+
+- 實作計畫：`docs/superpowers/plans/2026-10-16-protected-draft-assets.md`。
+- 實作 commits：`170f160`、`303cb82`、`a6f8983`、`27c106a`、`d97d97c`、`6655bbe`、`3d99093`、`d09c770`、`c76b7ad`、`0024620`；release-gate React 修正 `dd9829f`。
+- storage boundary：新 upload 只寫 `draft/users/<owner>/sites/<site>/<asset>.<ext>`，資料庫保存穩定 `retro-asset:<uuid>` reference；匿名 wildcard 在 R2 lookup 前拒絕 draft key，owner preview 逐一驗證 owner/site/key 並回傳 `private, no-store`。
+- publish boundary：發佈前驗證 reference、owner 與 exact draft object key，複製到 immutable `published/<username>/assets/<asset>.<ext>`，重寫 projection 後才進行原子 DB commit；任一缺漏／foreign reference／copy error 都不會推進 published version。
+- legacy migration：versioned owner-only RPC 只接受 exact UUID/key/ext 與完整 cardinality；先複製後換 reference。舊 public object 若仍被 authoritative live document 引用就保留並標示 pending，下一次確認不再使用後才清除，避免先刪後壞站。
+- editor resolver：authenticated Blob resolver 去重請求、重用 object URL 並在 dispose revoke；圖片、avatar、icon、inspector thumbnail 與 wallpaper 都走同一 boundary，切換 source 時不會把 `retro-asset:` scheme 或上一張圖片閃到 DOM。
+- registry/runtime regression：公開頁 loading state 與 theme hook 拆成穩定元件邊界；registry 改以 React element 掛載 View/InlineEditor，不再把含 hooks 的元件當一般函式呼叫，排版模式與公開頁空白回歸皆有單元／E2E 保護。
+- full unit：82 passed（shared 31 + API 40 + web 11）。
+- typecheck：pass（shared、api、web）。
+- full E2E：49 passed（單 worker 最終發布閘門 36.8s）；平行 run 曾因 Playwright trace 暫存檔競態誤報 4 項 teardown failure，功能斷言與 serial rerun皆通過。
+- build：pass（shared、API Wrangler dry-run、web Vite）；非阻斷警告為既有 Wrangler log-file sandbox 訊息與 web bundle size。
+- `git diff --check`：pass。
+- review：first-half/full spec、quality re-review 與 final holistic security review 均通過；review 發現的 resolver race、legacy cleanup truthfulness、published-reference preservation、exact-key validation 與 pending-delete invariant 均已修正並有回歸測試。
+- staging DB：dry-run 只列出 `0004_protected_draft_assets.sql`；正式 push 成功套用同一 migration。
+- staging Worker：version `c92bea5f-9eaa-4cd1-9a15-ccca3398af5b`，以 `--keep-vars` 保留 dashboard vars/secrets。
+- Cloudflare Pages staging deployment：`22002270`。canonical：https://retrodesk-staging.pages.dev；immutable：https://22002270.retrodesk-staging.pages.dev；canonical HTML 指向 bundle `index-cOeIdTF-.js`。
+- live smoke：API `/api/health` `200`、published site `beibei` `200`、Pages canonical／immutable `200`、synthetic draft key anonymous request `404`、既有 published wallpaper `200 image/jpeg` 且 `cache-control: public, max-age=31536000, immutable`。
+- live Chromium visual/DOM：title `bei — Retro Desktop`、`.visitor-page` 1、desktop visible、2 dialogs、taskbar clock present，背景使用 API published asset；1440×900 截圖確認 Win98 視窗、背景 cover、Start 與時鐘皆正常。沒有使用或建立 staging 測試帳密，因此 authenticated live upload/preview 由 API unit integration coverage 驗證，未宣稱人工帳號驗收。
