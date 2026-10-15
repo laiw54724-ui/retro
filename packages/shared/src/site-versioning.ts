@@ -166,6 +166,9 @@ export function projectV2ToLegacyDocument(document: SiteDocumentV2Input): { ok: 
 /** Applies legacy module edits back onto an existing v2 document without replacing entity IDs. */
 export function mergeLegacyDocumentIntoV2(document: SiteDocumentV2Input, legacy: SiteDocument, options: { siteId: string }): SiteDocumentV2Input {
   const next = structuredClone(document);
+  next.siteName = legacy.siteName;
+  next.theme = structuredClone(legacy.theme);
+  next.mobileColumns = legacy.mobileColumns;
   const siteId = options.siteId;
   const usedProfileIds = new Set(next.entities.profiles.map((profile) => profile.id));
   const profileEdits = new Set<string>();

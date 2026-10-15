@@ -336,6 +336,9 @@ describe("versioned site document contract", () => {
     expect(rendered.ok).toBe(true);
     if (!rendered.ok) return;
     const edited = structuredClone(rendered.document);
+    edited.siteName = "Updated desktop";
+    edited.mobileColumns = 3;
+    edited.theme = { ...edited.theme, wall: "#123456" };
     edited.windows = edited.windows.filter((window) => window.id !== "gallery-1");
     const documentWindow = edited.windows.find((window) => window.id === "doc-1");
     if (!documentWindow) throw new Error("fixture missing document window");
@@ -350,6 +353,7 @@ describe("versioned site document contract", () => {
     const merged = mergeLegacyDocumentIntoV2(migrated.document, edited, { siteId: "site-a" });
     expect(merged.windows.map((window) => window.id)).toEqual(expect.arrayContaining(["doc-1", "doc-copy", "ig-1", "ig-copy"]));
     expect(merged.windows.some((window) => window.id === "gallery-1")).toBe(false);
+    expect(merged).toMatchObject({ siteName: "Updated desktop", mobileColumns: 3, theme: { wall: "#123456" } });
     const igRefs = merged.windows.filter((window) => window.type === "instagram").map((window) => window.content.profileRef.id);
     expect(new Set(igRefs).size).toBe(1);
     expect(merged.entities.profiles.find((profile) => profile.id === igRefs[0])?.displayName).toBe("Edited shared OC");
