@@ -135,3 +135,4 @@
 .onboarding-body{grid-template-columns:190px minmax(0,1fr)}.onboarding-main{min-width:0}.auth-window input,.onboarding-window input,.right-panel input,.right-panel textarea{width:100%;min-width:0}.url-input input{width:auto}
 @media(max-width:640px){.onboarding-body{grid-template-columns:minmax(0,1fr);min-height:0}.onboarding-body aside{margin:12px 12px 0;padding:10px 12px}.onboarding-body ol{display:flex;gap:12px;flex-wrap:wrap;margin:0;padding-left:0;list-style-position:inside;line-height:1.6}.onboarding-main{padding:12px}.onboarding-main h2{font-size:21px}}
 .url-input{padding:2px;background:#fff}.url-input span{padding-right:2px}
+.auth-shell{transition:background .15s}.theme-grid{padding:4px}.theme-grid button{cursor:pointer}.theme-grid button.selected{outline:3px solid #000080;outline-offset:1px}.theme-grid button.selected span:before{content:"✓ "}.onboarding-main .button-row{margin-top:22px}
