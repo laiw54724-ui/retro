@@ -3,6 +3,7 @@ import { makeGalleryImage, makeIgPost, makeLink, normalizeImageUrl, type Desktop
 import { api } from "../../lib/api";
 import { RetroButton } from "../../components/RetroButton";
 import { CropEditor } from "./CropEditor";
+import { useAssetSource } from "../../lib/assetSource";
 
 type Props = {
   window: DesktopWindow;
@@ -13,6 +14,11 @@ type Props = {
 };
 
 const makeId = () => crypto.randomUUID();
+
+function InspectorImage({ src }: { src: string }) {
+  const resolved = useAssetSource(src);
+  return resolved ? <img className="inspector-thumb" referrerPolicy="no-referrer" src={resolved} alt="" /> : <div className="inspector-thumb placeholder">載入中…</div>;
+}
 
 function moveItem<T>(items: T[], index: number, direction: -1 | 1) {
   const nextIndex = index + direction;
@@ -189,7 +195,7 @@ export function InspectorContent({ window, allWindows, siteId, update, onMessage
 
               {block.kind === "image" ? (
                 <>
-                  {block.src ? <img className="inspector-thumb" referrerPolicy="no-referrer" src={block.src} alt="" /> : <div className="inspector-thumb placeholder">尚未上傳</div>}
+                  {block.src ? <InspectorImage src={block.src} /> : <div className="inspector-thumb placeholder">尚未上傳</div>}
                   <MediaUpload
                     siteId={siteId}
                     label={block.src ? "更換圖片" : "上傳圖片"}
@@ -245,7 +251,7 @@ export function InspectorContent({ window, allWindows, siteId, update, onMessage
         <div className="inspector-items">
           {images.map((image, index) => (
             <div className="inspector-item media-item" key={image.id}>
-              {image.src ? <img className="inspector-thumb" referrerPolicy="no-referrer" src={image.src} alt="" /> : null}
+              {image.src ? <InspectorImage src={image.src} /> : null}
               <div className="item-title">
                 <strong>圖片 {index + 1}</strong>
                 <ItemActions
@@ -371,7 +377,7 @@ export function InspectorContent({ window, allWindows, siteId, update, onMessage
       <MediaUpload siteId={siteId} label="+ 上傳貼文圖片" onMessage={onMessage} onUploaded={(url, file) => setContent({ ...content, images: [...images, makeIgPost({ src: url, title: fileTitle(file) })] })} />
       {images.map((image, index) => (
         <div className="inspector-item media-item" key={image.id}>
-          {image.src ? <img className="inspector-thumb" referrerPolicy="no-referrer" src={image.src} alt="" /> : null}
+          {image.src ? <InspectorImage src={image.src} /> : null}
           <div className="item-title"><strong>貼文 {index + 1}</strong><ItemActions index={index} length={images.length} onMove={(direction) => setContent({ ...content, images: moveItem(images, index, direction) })} onRemove={() => setContent({ ...content, images: images.filter((item) => item.id !== image.id) })} /></div>
           <input placeholder="圖片標題" value={image.title} onChange={(event) => setContent({ ...content, images: images.map((item) => item.id === image.id ? { ...item, title: event.target.value } : item) })} />
           <textarea rows={3} placeholder="貼文說明" value={image.caption} onChange={(event) => setContent({ ...content, images: images.map((item) => item.id === image.id ? { ...item, caption: event.target.value } : item) })} />

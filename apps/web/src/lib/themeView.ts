@@ -1,4 +1,4 @@
-import type { RetroTheme } from "@retrodesk/shared";
+import { isAssetReference, type RetroTheme } from "@retrodesk/shared";
 import { cssUrl } from "./icons";
 import { useMemo } from "react";
 import { useAssetSource } from "./assetSource";
@@ -82,10 +82,14 @@ export function themeView(t: RetroTheme): ThemeView {
 export function useThemeView(t: RetroTheme): ThemeView {
   const view = useMemo(() => themeView(t), [t]);
   const resolvedWallpaper = useAssetSource(t.wallImage);
-  return useMemo(() => {
-    if (t.pattern !== "image" || !resolvedWallpaper || resolvedWallpaper === t.wallImage) return view;
-    return { ...view, wallImageCss: cssUrl(resolvedWallpaper) };
-  }, [resolvedWallpaper, t.pattern, t.wallImage, view]);
+  return useMemo(() => resolvedThemeView(t, view, resolvedWallpaper), [resolvedWallpaper, t.pattern, t.wallImage, view]);
+}
+
+export function resolvedThemeView(t: RetroTheme, view: ThemeView, resolvedWallpaper: string | null): ThemeView {
+  if (t.pattern !== "image") return view;
+  if (!resolvedWallpaper && isAssetReference(t.wallImage)) return { ...view, wallImageCss: "none" };
+  if (!resolvedWallpaper || resolvedWallpaper === t.wallImage) return view;
+  return { ...view, wallImageCss: cssUrl(resolvedWallpaper) };
 }
 
 /** Linear blend of two #rrggbb colours (t = 0 → a, t = 1 → b). */

@@ -1,6 +1,8 @@
 alter table public.site_assets
   add column if not exists storage_scope text not null default 'legacy_public',
-  add column if not exists migration_status text not null default 'not_required';
+  add column if not exists migration_status text not null default 'not_required',
+  add column if not exists legacy_object_key text,
+  add column if not exists legacy_public_url text;
 
 update public.site_assets
 set migration_status = 'not_required'
@@ -50,11 +52,12 @@ begin
     v_seen := array_append(v_seen, v_id::text);
     v_ref := 'retro-asset:' || v_id::text;
     if v_update->>'oldObjectKey' is null or v_update->>'oldPublicUrl' is null or v_update->>'objectKey' is null or v_update->>'publicUrl' is null then raise exception 'invalid_asset_update'; end if;
-    if (v_update->>'oldObjectKey') !~ ('^' || v_old_prefix || v_id::text || E'\\.(jpg|png|webp|gif)$') then raise exception 'invalid_legacy_asset_key'; end if;
+    if (v_update->>'oldObjectKey') !~ ('^' || v_old_prefix || v_id::text || E'\\.(jpg|jpeg|png|webp|gif)$') then raise exception 'invalid_legacy_asset_key'; end if;
     if (v_update->>'objectKey') !~ ('^' || v_new_prefix || v_id::text || E'\\.(jpg|png|webp|gif)$') then raise exception 'invalid_draft_asset_key'; end if;
     if v_update->>'publicUrl' <> v_ref then raise exception 'invalid_asset_reference'; end if;
     update public.site_assets
-    set object_key = v_update->>'objectKey', public_url = v_update->>'publicUrl', storage_scope = 'draft_private', migration_status = 'migrated'
+    set legacy_object_key = object_key, legacy_public_url = public_url,
+      object_key = v_update->>'objectKey', public_url = v_update->>'publicUrl', storage_scope = 'draft_private', migration_status = 'pending'
     where id = (v_update->>'id')::uuid
       and site_id = p_site_id
       and owner_id = p_owner_id

@@ -31,5 +31,8 @@ describe("protected draft asset migration contract", () => {
     expect(migration).toContain("v_id::text || E'\\\\.(jpg|png|webp|gif)$'");
     expect(migration).toContain("invalid_asset_reference");
     expect(migration).toContain("if v_count <> v_expected");
+    expect(migration).toContain("legacy_object_key");
+    expect(migration).toContain("legacy_public_url");
+    expect(migration).toContain("jpg|jpeg|png|webp|gif");
   });
 });
