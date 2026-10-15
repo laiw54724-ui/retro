@@ -21,6 +21,7 @@ function arg(name) {
 }
 
 function fail(message) { console.error(`icons: ${message}`); process.exitCode = 1; }
+function codeUnitCompare(a, b) { return a < b ? -1 : a > b ? 1 : 0; }
 function sha256(buffer) { return createHash('sha256').update(buffer).digest('hex'); }
 function titleLabel(value) {
   return value.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
@@ -32,12 +33,12 @@ function json(value) { return JSON.stringify(value, null, 2) + '\n'; }
 async function walk(directory, base = directory) {
   const entries = await fs.readdir(directory, { withFileTypes: true });
   const result = [];
-  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+  for (const entry of entries.sort((a, b) => codeUnitCompare(a.name, b.name))) {
     const full = path.join(directory, entry.name);
     if (entry.isDirectory()) result.push(...await walk(full, base));
     else if (entry.isFile()) result.push(path.relative(base, full).split(path.sep).join('/'));
   }
-  return result.sort((a, b) => a.localeCompare(b));
+  return result.sort(codeUnitCompare);
 }
 async function hashFile(file) {
   const data = await fs.readFile(file);
@@ -123,6 +124,14 @@ async function run() {
     if (manifest !== built.manifest) throw new Error(`generated manifest differs: ${path.relative(ROOT, MANIFEST)}`);
     if (provenance !== built.provenance) throw new Error(`generated provenance differs: ${path.relative(ROOT, PROVENANCE)}`);
     const provenanceData = JSON.parse(provenance);
+    let outputEntries;
+    try { outputEntries = await fs.readdir(OUT_DIR, { withFileTypes: true }); }
+    catch { throw new Error(`missing output directory: ${path.relative(ROOT, OUT_DIR)}`); }
+    const expectedFiles = new Set(built.data.records.map((record) => path.basename(record.path)));
+    const actualFiles = new Set(outputEntries.filter((entry) => entry.isFile()).map((entry) => entry.name));
+    const extraFiles = outputEntries.filter((entry) => !entry.isFile() || !expectedFiles.has(entry.name)).map((entry) => entry.name).sort(codeUnitCompare);
+    const missingFiles = [...expectedFiles].filter((name) => !actualFiles.has(name)).sort(codeUnitCompare);
+    if (extraFiles.length || missingFiles.length) throw new Error(`output inventory mismatch: extra=[${extraFiles.join(', ')}] missing=[${missingFiles.join(', ')}]`);
     for (const record of built.data.records) {
       const actual = await hashFile(path.join(OUT_DIR, path.basename(record.path)));
       const expected = provenanceData.outputs.find((item) => item.path === path.relative(ROOT, path.join(OUT_DIR, path.basename(record.path))).split(path.sep).join('/'));

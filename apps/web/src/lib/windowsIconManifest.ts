@@ -15,6 +15,78 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "brown.ico"
   },
   {
+    "key": "icons-w2k-computer",
+    "label": "W2k Computer",
+    "path": "/windows-icons/icons-w2k-computer.ico",
+    "upstreamPath": "icons/w2k-computer.ico"
+  },
+  {
+    "key": "icons-w2k-control-panel",
+    "label": "W2k Control Panel",
+    "path": "/windows-icons/icons-w2k-control-panel.ico",
+    "upstreamPath": "icons/w2k-control_panel.ico"
+  },
+  {
+    "key": "icons-w2k-default-document",
+    "label": "W2k Default Document",
+    "path": "/windows-icons/icons-w2k-default-document.ico",
+    "upstreamPath": "icons/w2k-default_document.ico"
+  },
+  {
+    "key": "icons-w2k-desktop",
+    "label": "W2k Desktop",
+    "path": "/windows-icons/icons-w2k-desktop.ico",
+    "upstreamPath": "icons/w2k-desktop.ico"
+  },
+  {
+    "key": "icons-w2k-documents",
+    "label": "W2k Documents",
+    "path": "/windows-icons/icons-w2k-documents.ico",
+    "upstreamPath": "icons/w2k-documents.ico"
+  },
+  {
+    "key": "icons-w2k-fonts",
+    "label": "W2k Fonts",
+    "path": "/windows-icons/icons-w2k-fonts.ico",
+    "upstreamPath": "icons/w2k-fonts.ico"
+  },
+  {
+    "key": "icons-w2k-help",
+    "label": "W2k Help",
+    "path": "/windows-icons/icons-w2k-help.ico",
+    "upstreamPath": "icons/w2k-help.ico"
+  },
+  {
+    "key": "icons-w2k-my-computer",
+    "label": "W2k My Computer",
+    "path": "/windows-icons/icons-w2k-my-computer.ico",
+    "upstreamPath": "icons/w2k-my_computer.ico"
+  },
+  {
+    "key": "icons-w2k-network-drive-connected",
+    "label": "W2k Network Drive Connected",
+    "path": "/windows-icons/icons-w2k-network-drive-connected.ico",
+    "upstreamPath": "icons/w2k-network_drive_connected.ico"
+  },
+  {
+    "key": "icons-w2k-printers",
+    "label": "W2k Printers",
+    "path": "/windows-icons/icons-w2k-printers.ico",
+    "upstreamPath": "icons/w2k-printers.ico"
+  },
+  {
+    "key": "icons-w2k-programs",
+    "label": "W2k Programs",
+    "path": "/windows-icons/icons-w2k-programs.ico",
+    "upstreamPath": "icons/w2k-programs.ico"
+  },
+  {
+    "key": "icons-w2k-settings",
+    "label": "W2k Settings",
+    "path": "/windows-icons/icons-w2k-settings.ico",
+    "upstreamPath": "icons/w2k-settings.ico"
+  },
+  {
     "key": "icons-w2k-1",
     "label": "W2k 1",
     "path": "/windows-icons/icons-w2k-1.ico",
@@ -75,6 +147,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_bitmap_image.ico"
   },
   {
+    "key": "icons-w2k-cd-rom-drive",
+    "label": "W2k Cd Rom Drive",
+    "path": "/windows-icons/icons-w2k-cd-rom-drive.ico",
+    "upstreamPath": "icons/w2k_cd-rom_drive.ico"
+  },
+  {
     "key": "icons-w2k-cd-audio",
     "label": "W2k Cd Audio",
     "path": "/windows-icons/icons-w2k-cd-audio.ico",
@@ -87,21 +165,15 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_cd_player.ico"
   },
   {
-    "key": "icons-w2k-cd-rom-drive",
-    "label": "W2k Cd Rom Drive",
-    "path": "/windows-icons/icons-w2k-cd-rom-drive.ico",
-    "upstreamPath": "icons/w2k_cd-rom_drive.ico"
-  },
-  {
     "key": "icons-w2k-closed-folder",
     "label": "W2k Closed Folder",
     "path": "/windows-icons/icons-w2k-closed-folder.ico",
     "upstreamPath": "icons/w2k_closed_folder.ico"
   },
   {
-    "key": "icons-w2k-computer",
+    "key": "icons-w2k-computer-2",
     "label": "W2k Computer",
-    "path": "/windows-icons/icons-w2k-computer.ico",
+    "path": "/windows-icons/icons-w2k-computer-2.ico",
     "upstreamPath": "icons/w2k_computer.ico"
   },
   {
@@ -117,9 +189,9 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_configuration_settings.ico"
   },
   {
-    "key": "icons-w2k-control-panel",
+    "key": "icons-w2k-control-panel-2",
     "label": "W2k Control Panel",
-    "path": "/windows-icons/icons-w2k-control-panel.ico",
+    "path": "/windows-icons/icons-w2k-control-panel-2.ico",
     "upstreamPath": "icons/w2k_control_panel.ico"
   },
   {
@@ -129,9 +201,9 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_default_application.ico"
   },
   {
-    "key": "icons-w2k-default-document",
+    "key": "icons-w2k-default-document-2",
     "label": "W2k Default Document",
-    "path": "/windows-icons/icons-w2k-default-document.ico",
+    "path": "/windows-icons/icons-w2k-default-document-2.ico",
     "upstreamPath": "icons/w2k_default_document.ico"
   },
   {
@@ -139,6 +211,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W2k Default Icon",
     "path": "/windows-icons/icons-w2k-default-icon.ico",
     "upstreamPath": "icons/w2k_default_icon.ico"
+  },
+  {
+    "key": "icons-w2k-default-printer",
+    "label": "W2k Default Printer",
+    "path": "/windows-icons/icons-w2k-default-printer.ico",
+    "upstreamPath": "icons/w2k_default_printer.ico"
   },
   {
     "key": "icons-w2k-default-printer-floppy",
@@ -153,21 +231,15 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_default_printer_network.ico"
   },
   {
-    "key": "icons-w2k-default-printer",
-    "label": "W2k Default Printer",
-    "path": "/windows-icons/icons-w2k-default-printer.ico",
-    "upstreamPath": "icons/w2k_default_printer.ico"
-  },
-  {
     "key": "icons-w2k-defragment",
     "label": "W2k Defragment",
     "path": "/windows-icons/icons-w2k-defragment.ico",
     "upstreamPath": "icons/w2k_defragment.ico"
   },
   {
-    "key": "icons-w2k-desktop",
+    "key": "icons-w2k-desktop-2",
     "label": "W2k Desktop",
-    "path": "/windows-icons/icons-w2k-desktop.ico",
+    "path": "/windows-icons/icons-w2k-desktop-2.ico",
     "upstreamPath": "icons/w2k_desktop.ico"
   },
   {
@@ -177,28 +249,22 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_desktop2.ico"
   },
   {
-    "key": "icons-w2k-dial-up",
-    "label": "W2k Dial Up",
-    "path": "/windows-icons/icons-w2k-dial-up.ico",
-    "upstreamPath": "icons/w2k_dial_up.ico"
-  },
-  {
     "key": "icons-w2k-dial-up-networking",
     "label": "W2k Dial Up Networking",
     "path": "/windows-icons/icons-w2k-dial-up-networking.ico",
     "upstreamPath": "icons/w2k_dial-up_networking.ico"
   },
   {
-    "key": "icons-w2k-documents",
-    "label": "W2k Documents",
-    "path": "/windows-icons/icons-w2k-documents.ico",
-    "upstreamPath": "icons/w2k_documents.ico"
+    "key": "icons-w2k-dial-up",
+    "label": "W2k Dial Up",
+    "path": "/windows-icons/icons-w2k-dial-up.ico",
+    "upstreamPath": "icons/w2k_dial_up.ico"
   },
   {
-    "key": "icons-w2k-dustbin-full",
-    "label": "W2k Dustbin Full",
-    "path": "/windows-icons/icons-w2k-dustbin-full.ico",
-    "upstreamPath": "icons/w2k_dustbin_full.ico"
+    "key": "icons-w2k-documents-2",
+    "label": "W2k Documents",
+    "path": "/windows-icons/icons-w2k-documents-2.ico",
+    "upstreamPath": "icons/w2k_documents.ico"
   },
   {
     "key": "icons-w2k-dustbin",
@@ -213,6 +279,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_dustbin2.ico"
   },
   {
+    "key": "icons-w2k-dustbin-full",
+    "label": "W2k Dustbin Full",
+    "path": "/windows-icons/icons-w2k-dustbin-full.ico",
+    "upstreamPath": "icons/w2k_dustbin_full.ico"
+  },
+  {
     "key": "icons-w2k-eject",
     "label": "W2k Eject",
     "path": "/windows-icons/icons-w2k-eject.ico",
@@ -225,22 +297,28 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_entire_network.ico"
   },
   {
-    "key": "icons-w2k-favorites-folder",
-    "label": "W2k Favorites Folder",
-    "path": "/windows-icons/icons-w2k-favorites-folder.ico",
-    "upstreamPath": "icons/w2k_favorites_folder.ico"
-  },
-  {
     "key": "icons-w2k-favorites",
     "label": "W2k Favorites",
     "path": "/windows-icons/icons-w2k-favorites.ico",
     "upstreamPath": "icons/w2k_favorites.ico"
   },
   {
+    "key": "icons-w2k-favorites-folder",
+    "label": "W2k Favorites Folder",
+    "path": "/windows-icons/icons-w2k-favorites-folder.ico",
+    "upstreamPath": "icons/w2k_favorites_folder.ico"
+  },
+  {
     "key": "icons-w2k-find",
     "label": "W2k Find",
     "path": "/windows-icons/icons-w2k-find.ico",
     "upstreamPath": "icons/w2k_find.ico"
+  },
+  {
+    "key": "icons-w2k-floppy",
+    "label": "W2k Floppy",
+    "path": "/windows-icons/icons-w2k-floppy.ico",
+    "upstreamPath": "icons/w2k_floppy.ico"
   },
   {
     "key": "icons-w2k-floppy-2",
@@ -261,12 +339,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_floppy_drive_5.ico"
   },
   {
-    "key": "icons-w2k-floppy",
-    "label": "W2k Floppy",
-    "path": "/windows-icons/icons-w2k-floppy.ico",
-    "upstreamPath": "icons/w2k_floppy.ico"
-  },
-  {
     "key": "icons-w2k-folder-closed",
     "label": "W2k Folder Closed",
     "path": "/windows-icons/icons-w2k-folder-closed.ico",
@@ -277,6 +349,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W2k Folder Open",
     "path": "/windows-icons/icons-w2k-folder-open.ico",
     "upstreamPath": "icons/w2k_folder_open.ico"
+  },
+  {
+    "key": "icons-w2k-font",
+    "label": "W2k Font",
+    "path": "/windows-icons/icons-w2k-font.ico",
+    "upstreamPath": "icons/w2k_font.ico"
   },
   {
     "key": "icons-w2k-font-2",
@@ -291,15 +369,9 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_font_3.ico"
   },
   {
-    "key": "icons-w2k-font",
-    "label": "W2k Font",
-    "path": "/windows-icons/icons-w2k-font.ico",
-    "upstreamPath": "icons/w2k_font.ico"
-  },
-  {
-    "key": "icons-w2k-fonts",
+    "key": "icons-w2k-fonts-2",
     "label": "W2k Fonts",
-    "path": "/windows-icons/icons-w2k-fonts.ico",
+    "path": "/windows-icons/icons-w2k-fonts-2.ico",
     "upstreamPath": "icons/w2k_fonts.ico"
   },
   {
@@ -333,9 +405,9 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_harddrive.ico"
   },
   {
-    "key": "icons-w2k-help",
+    "key": "icons-w2k-help-2",
     "label": "W2k Help",
-    "path": "/windows-icons/icons-w2k-help.ico",
+    "path": "/windows-icons/icons-w2k-help-2.ico",
     "upstreamPath": "icons/w2k_help.ico"
   },
   {
@@ -345,16 +417,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_hibernate.ico"
   },
   {
-    "key": "icons-w2k-hourglass-2",
-    "label": "W2k Hourglass 2",
-    "path": "/windows-icons/icons-w2k-hourglass-2.ico",
-    "upstreamPath": "icons/w2k_hourglass_2.ico"
-  },
-  {
     "key": "icons-w2k-hourglass",
     "label": "W2k Hourglass",
     "path": "/windows-icons/icons-w2k-hourglass.ico",
     "upstreamPath": "icons/w2k_hourglass.ico"
+  },
+  {
+    "key": "icons-w2k-hourglass-2",
+    "label": "W2k Hourglass 2",
+    "path": "/windows-icons/icons-w2k-hourglass-2.ico",
+    "upstreamPath": "icons/w2k_hourglass_2.ico"
   },
   {
     "key": "icons-w2k-info",
@@ -387,16 +459,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_jpeg_image.ico"
   },
   {
-    "key": "icons-w2k-key-2",
-    "label": "W2k Key 2",
-    "path": "/windows-icons/icons-w2k-key-2.ico",
-    "upstreamPath": "icons/w2k_key_2.ico"
-  },
-  {
     "key": "icons-w2k-key",
     "label": "W2k Key",
     "path": "/windows-icons/icons-w2k-key.ico",
     "upstreamPath": "icons/w2k_key.ico"
+  },
+  {
+    "key": "icons-w2k-key-2",
+    "label": "W2k Key 2",
+    "path": "/windows-icons/icons-w2k-key-2.ico",
+    "upstreamPath": "icons/w2k_key_2.ico"
   },
   {
     "key": "icons-w2k-lock",
@@ -501,9 +573,9 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_multiple_files.ico"
   },
   {
-    "key": "icons-w2k-my-computer",
+    "key": "icons-w2k-my-computer-2",
     "label": "W2k My Computer",
-    "path": "/windows-icons/icons-w2k-my-computer.ico",
+    "path": "/windows-icons/icons-w2k-my-computer-2.ico",
     "upstreamPath": "icons/w2k_my_computer.ico"
   },
   {
@@ -511,6 +583,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W2k My Documents",
     "path": "/windows-icons/icons-w2k-my-documents.ico",
     "upstreamPath": "icons/w2k_my_documents.ico"
+  },
+  {
+    "key": "icons-w2k-network",
+    "label": "W2k Network",
+    "path": "/windows-icons/icons-w2k-network.ico",
+    "upstreamPath": "icons/w2k_network.ico"
   },
   {
     "key": "icons-w2k-network-2",
@@ -531,9 +609,9 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_network_computer.ico"
   },
   {
-    "key": "icons-w2k-network-drive-connected",
+    "key": "icons-w2k-network-drive-connected-2",
     "label": "W2k Network Drive Connected",
-    "path": "/windows-icons/icons-w2k-network-drive-connected.ico",
+    "path": "/windows-icons/icons-w2k-network-drive-connected-2.ico",
     "upstreamPath": "icons/w2k_network_drive_connected.ico"
   },
   {
@@ -573,12 +651,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_network_printer.ico"
   },
   {
-    "key": "icons-w2k-network",
-    "label": "W2k Network",
-    "path": "/windows-icons/icons-w2k-network.ico",
-    "upstreamPath": "icons/w2k_network.ico"
-  },
-  {
     "key": "icons-w2k-new-printer",
     "label": "W2k New Printer",
     "path": "/windows-icons/icons-w2k-new-printer.ico",
@@ -597,22 +669,28 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_notepad_2.ico"
   },
   {
-    "key": "icons-w2k-old-dustbin-2",
-    "label": "W2k Old Dustbin 2",
-    "path": "/windows-icons/icons-w2k-old-dustbin-2.ico",
-    "upstreamPath": "icons/w2k_old_dustbin_2.ico"
-  },
-  {
     "key": "icons-w2k-old-dustbin",
     "label": "W2k Old Dustbin",
     "path": "/windows-icons/icons-w2k-old-dustbin.ico",
     "upstreamPath": "icons/w2k_old_dustbin.ico"
   },
   {
+    "key": "icons-w2k-old-dustbin-2",
+    "label": "W2k Old Dustbin 2",
+    "path": "/windows-icons/icons-w2k-old-dustbin-2.ico",
+    "upstreamPath": "icons/w2k_old_dustbin_2.ico"
+  },
+  {
     "key": "icons-w2k-open-folder",
     "label": "W2k Open Folder",
     "path": "/windows-icons/icons-w2k-open-folder.ico",
     "upstreamPath": "icons/w2k_open_folder.ico"
+  },
+  {
+    "key": "icons-w2k-paint",
+    "label": "W2k Paint",
+    "path": "/windows-icons/icons-w2k-paint.ico",
+    "upstreamPath": "icons/w2k_paint.ico"
   },
   {
     "key": "icons-w2k-paint-2",
@@ -645,16 +723,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_paint_6.ico"
   },
   {
-    "key": "icons-w2k-paint",
-    "label": "W2k Paint",
-    "path": "/windows-icons/icons-w2k-paint.ico",
-    "upstreamPath": "icons/w2k_paint.ico"
-  },
-  {
     "key": "icons-w2k-portable-drive",
     "label": "W2k Portable Drive",
     "path": "/windows-icons/icons-w2k-portable-drive.ico",
     "upstreamPath": "icons/w2k_portable_drive.ico"
+  },
+  {
+    "key": "icons-w2k-printer",
+    "label": "W2k Printer",
+    "path": "/windows-icons/icons-w2k-printer.ico",
+    "upstreamPath": "icons/w2k_printer.ico"
   },
   {
     "key": "icons-w2k-printer-floppy",
@@ -669,22 +747,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_printer_unknown.ico"
   },
   {
-    "key": "icons-w2k-printer",
-    "label": "W2k Printer",
-    "path": "/windows-icons/icons-w2k-printer.ico",
-    "upstreamPath": "icons/w2k_printer.ico"
-  },
-  {
     "key": "icons-w2k-printers-2",
-    "label": "W2k Printers 2",
+    "label": "W2k Printers",
     "path": "/windows-icons/icons-w2k-printers-2.ico",
-    "upstreamPath": "icons/w2k_printers_2.ico"
+    "upstreamPath": "icons/w2k_printers.ico"
   },
   {
-    "key": "icons-w2k-printers",
-    "label": "W2k Printers",
-    "path": "/windows-icons/icons-w2k-printers.ico",
-    "upstreamPath": "icons/w2k_printers.ico"
+    "key": "icons-w2k-printers-2-2",
+    "label": "W2k Printers 2",
+    "path": "/windows-icons/icons-w2k-printers-2-2.ico",
+    "upstreamPath": "icons/w2k_printers_2.ico"
   },
   {
     "key": "icons-w2k-program-group",
@@ -694,15 +766,15 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
   },
   {
     "key": "icons-w2k-programs-2",
-    "label": "W2k Programs 2",
+    "label": "W2k Programs",
     "path": "/windows-icons/icons-w2k-programs-2.ico",
-    "upstreamPath": "icons/w2k_programs_2.ico"
+    "upstreamPath": "icons/w2k_programs.ico"
   },
   {
-    "key": "icons-w2k-programs",
-    "label": "W2k Programs",
-    "path": "/windows-icons/icons-w2k-programs.ico",
-    "upstreamPath": "icons/w2k_programs.ico"
+    "key": "icons-w2k-programs-2-2",
+    "label": "W2k Programs 2",
+    "path": "/windows-icons/icons-w2k-programs-2-2.ico",
+    "upstreamPath": "icons/w2k_programs_2.ico"
   },
   {
     "key": "icons-w2k-ram-drive",
@@ -753,6 +825,18 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_scheduled_tasks.ico"
   },
   {
+    "key": "icons-w2k-search",
+    "label": "W2k Search",
+    "path": "/windows-icons/icons-w2k-search.ico",
+    "upstreamPath": "icons/w2k_search.ico"
+  },
+  {
+    "key": "icons-w2k-search2",
+    "label": "W2k Search2",
+    "path": "/windows-icons/icons-w2k-search2.ico",
+    "upstreamPath": "icons/w2k_search2.ico"
+  },
+  {
     "key": "icons-w2k-search-2",
     "label": "W2k Search 2",
     "path": "/windows-icons/icons-w2k-search-2.ico",
@@ -795,18 +879,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_search_8.ico"
   },
   {
-    "key": "icons-w2k-search",
-    "label": "W2k Search",
-    "path": "/windows-icons/icons-w2k-search.ico",
-    "upstreamPath": "icons/w2k_search.ico"
-  },
-  {
-    "key": "icons-w2k-search2",
-    "label": "W2k Search2",
-    "path": "/windows-icons/icons-w2k-search2.ico",
-    "upstreamPath": "icons/w2k_search2.ico"
-  },
-  {
     "key": "icons-w2k-server",
     "label": "W2k Server",
     "path": "/windows-icons/icons-w2k-server.ico",
@@ -817,6 +889,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W2k Setting Printers",
     "path": "/windows-icons/icons-w2k-setting-printers.ico",
     "upstreamPath": "icons/w2k_setting_printers.ico"
+  },
+  {
+    "key": "icons-w2k-settings-2",
+    "label": "W2k Settings",
+    "path": "/windows-icons/icons-w2k-settings-2.ico",
+    "upstreamPath": "icons/w2k_settings.ico"
   },
   {
     "key": "icons-w2k-settings-control-panel",
@@ -831,10 +909,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_settings_-_printers.ico"
   },
   {
-    "key": "icons-w2k-settings",
-    "label": "W2k Settings",
-    "path": "/windows-icons/icons-w2k-settings.ico",
-    "upstreamPath": "icons/w2k_settings.ico"
+    "key": "icons-w2k-sharing",
+    "label": "W2k Sharing",
+    "path": "/windows-icons/icons-w2k-sharing.ico",
+    "upstreamPath": "icons/w2k_sharing.ico"
   },
   {
     "key": "icons-w2k-sharing-overlay",
@@ -843,10 +921,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_sharing_overlay.ico"
   },
   {
-    "key": "icons-w2k-sharing",
-    "label": "W2k Sharing",
-    "path": "/windows-icons/icons-w2k-sharing.ico",
-    "upstreamPath": "icons/w2k_sharing.ico"
+    "key": "icons-w2k-shortcut",
+    "label": "W2k Shortcut",
+    "path": "/windows-icons/icons-w2k-shortcut.ico",
+    "upstreamPath": "icons/w2k_shortcut.ico"
   },
   {
     "key": "icons-w2k-shortcut-overlay",
@@ -855,28 +933,22 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_shortcut_overlay.ico"
   },
   {
-    "key": "icons-w2k-shortcut",
-    "label": "W2k Shortcut",
-    "path": "/windows-icons/icons-w2k-shortcut.ico",
-    "upstreamPath": "icons/w2k_shortcut.ico"
-  },
-  {
     "key": "icons-w2k-shut-down",
     "label": "W2k Shut Down",
     "path": "/windows-icons/icons-w2k-shut-down.ico",
     "upstreamPath": "icons/w2k_shut_down.ico"
   },
   {
-    "key": "icons-w2k-shutdown-2",
-    "label": "W2k Shutdown 2",
-    "path": "/windows-icons/icons-w2k-shutdown-2.ico",
-    "upstreamPath": "icons/w2k_shutdown_2.ico"
-  },
-  {
     "key": "icons-w2k-shutdown",
     "label": "W2k Shutdown",
     "path": "/windows-icons/icons-w2k-shutdown.ico",
     "upstreamPath": "icons/w2k_shutdown.ico"
+  },
+  {
+    "key": "icons-w2k-shutdown-2",
+    "label": "W2k Shutdown 2",
+    "path": "/windows-icons/icons-w2k-shutdown-2.ico",
+    "upstreamPath": "icons/w2k_shutdown_2.ico"
   },
   {
     "key": "icons-w2k-sndrec-1",
@@ -945,6 +1017,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_suspend.ico"
   },
   {
+    "key": "icons-w2k-system",
+    "label": "W2k System",
+    "path": "/windows-icons/icons-w2k-system.ico",
+    "upstreamPath": "icons/w2k_system.ico"
+  },
+  {
     "key": "icons-w2k-system-2",
     "label": "W2k System 2",
     "path": "/windows-icons/icons-w2k-system-2.ico",
@@ -955,12 +1033,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W2k System File",
     "path": "/windows-icons/icons-w2k-system-file.ico",
     "upstreamPath": "icons/w2k_system_file.ico"
-  },
-  {
-    "key": "icons-w2k-system",
-    "label": "W2k System",
-    "path": "/windows-icons/icons-w2k-system.ico",
-    "upstreamPath": "icons/w2k_system.ico"
   },
   {
     "key": "icons-w2k-taskbar",
@@ -999,6 +1071,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_tree.ico"
   },
   {
+    "key": "icons-w2k-uninstall",
+    "label": "W2k Uninstall",
+    "path": "/windows-icons/icons-w2k-uninstall.ico",
+    "upstreamPath": "icons/w2k_uninstall.ico"
+  },
+  {
     "key": "icons-w2k-uninstall-2",
     "label": "W2k Uninstall 2",
     "path": "/windows-icons/icons-w2k-uninstall-2.ico",
@@ -1011,10 +1089,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_uninstall_3.ico"
   },
   {
-    "key": "icons-w2k-uninstall",
-    "label": "W2k Uninstall",
-    "path": "/windows-icons/icons-w2k-uninstall.ico",
-    "upstreamPath": "icons/w2k_uninstall.ico"
+    "key": "icons-w2k-unknown",
+    "label": "W2k Unknown",
+    "path": "/windows-icons/icons-w2k-unknown.ico",
+    "upstreamPath": "icons/w2k_unknown.ico"
   },
   {
     "key": "icons-w2k-unknown-10",
@@ -1165,12 +1243,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W2k Unknown Filetype",
     "path": "/windows-icons/icons-w2k-unknown-filetype.ico",
     "upstreamPath": "icons/w2k_unknown_filetype.ico"
-  },
-  {
-    "key": "icons-w2k-unknown",
-    "label": "W2k Unknown",
-    "path": "/windows-icons/icons-w2k-unknown.ico",
-    "upstreamPath": "icons/w2k_unknown.ico"
   },
   {
     "key": "icons-w2k-video-clip",
@@ -1563,16 +1635,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w2k_workgroup.ico"
   },
   {
-    "key": "icons-w2k-write-document",
-    "label": "W2k Write Document",
-    "path": "/windows-icons/icons-w2k-write-document.ico",
-    "upstreamPath": "icons/w2k_write_document.ico"
-  },
-  {
     "key": "icons-w2k-write",
     "label": "W2k Write",
     "path": "/windows-icons/icons-w2k-write.ico",
     "upstreamPath": "icons/w2k_write.ico"
+  },
+  {
+    "key": "icons-w2k-write-document",
+    "label": "W2k Write Document",
+    "path": "/windows-icons/icons-w2k-write-document.ico",
+    "upstreamPath": "icons/w2k_write_document.ico"
   },
   {
     "key": "icons-w2k-wupdate-1",
@@ -1591,78 +1663,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W2k Zip File",
     "path": "/windows-icons/icons-w2k-zip-file.ico",
     "upstreamPath": "icons/w2k_zip_file.ico"
-  },
-  {
-    "key": "icons-w2k-computer-2",
-    "label": "W2k Computer",
-    "path": "/windows-icons/icons-w2k-computer-2.ico",
-    "upstreamPath": "icons/w2k-computer.ico"
-  },
-  {
-    "key": "icons-w2k-control-panel-2",
-    "label": "W2k Control Panel",
-    "path": "/windows-icons/icons-w2k-control-panel-2.ico",
-    "upstreamPath": "icons/w2k-control_panel.ico"
-  },
-  {
-    "key": "icons-w2k-default-document-2",
-    "label": "W2k Default Document",
-    "path": "/windows-icons/icons-w2k-default-document-2.ico",
-    "upstreamPath": "icons/w2k-default_document.ico"
-  },
-  {
-    "key": "icons-w2k-desktop-2",
-    "label": "W2k Desktop",
-    "path": "/windows-icons/icons-w2k-desktop-2.ico",
-    "upstreamPath": "icons/w2k-desktop.ico"
-  },
-  {
-    "key": "icons-w2k-documents-2",
-    "label": "W2k Documents",
-    "path": "/windows-icons/icons-w2k-documents-2.ico",
-    "upstreamPath": "icons/w2k-documents.ico"
-  },
-  {
-    "key": "icons-w2k-fonts-2",
-    "label": "W2k Fonts",
-    "path": "/windows-icons/icons-w2k-fonts-2.ico",
-    "upstreamPath": "icons/w2k-fonts.ico"
-  },
-  {
-    "key": "icons-w2k-help-2",
-    "label": "W2k Help",
-    "path": "/windows-icons/icons-w2k-help-2.ico",
-    "upstreamPath": "icons/w2k-help.ico"
-  },
-  {
-    "key": "icons-w2k-my-computer-2",
-    "label": "W2k My Computer",
-    "path": "/windows-icons/icons-w2k-my-computer-2.ico",
-    "upstreamPath": "icons/w2k-my_computer.ico"
-  },
-  {
-    "key": "icons-w2k-network-drive-connected-2",
-    "label": "W2k Network Drive Connected",
-    "path": "/windows-icons/icons-w2k-network-drive-connected-2.ico",
-    "upstreamPath": "icons/w2k-network_drive_connected.ico"
-  },
-  {
-    "key": "icons-w2k-printers-3",
-    "label": "W2k Printers",
-    "path": "/windows-icons/icons-w2k-printers-3.ico",
-    "upstreamPath": "icons/w2k-printers.ico"
-  },
-  {
-    "key": "icons-w2k-programs-3",
-    "label": "W2k Programs",
-    "path": "/windows-icons/icons-w2k-programs-3.ico",
-    "upstreamPath": "icons/w2k-programs.ico"
-  },
-  {
-    "key": "icons-w2k-settings-2",
-    "label": "W2k Settings",
-    "path": "/windows-icons/icons-w2k-settings-2.ico",
-    "upstreamPath": "icons/w2k-settings.ico"
   },
   {
     "key": "icons-w95-1",
@@ -2097,6 +2097,54 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w95_9.ico"
   },
   {
+    "key": "icons-w98-roland-gs",
+    "label": "W98 Roland GS",
+    "path": "/windows-icons/icons-w98-roland-gs.ico",
+    "upstreamPath": "icons/w98_Roland_GS.ico"
+  },
+  {
+    "key": "icons-w98-soundgrn",
+    "label": "W98 SoundGrn",
+    "path": "/windows-icons/icons-w98-soundgrn.ico",
+    "upstreamPath": "icons/w98_SoundGrn.ico"
+  },
+  {
+    "key": "icons-w98-soundpu2",
+    "label": "W98 SoundPu2",
+    "path": "/windows-icons/icons-w98-soundpu2.ico",
+    "upstreamPath": "icons/w98_SoundPu2.ico"
+  },
+  {
+    "key": "icons-w98-soundpur",
+    "label": "W98 SoundPur",
+    "path": "/windows-icons/icons-w98-soundpur.ico",
+    "upstreamPath": "icons/w98_SoundPur.ico"
+  },
+  {
+    "key": "icons-w98-soundtel",
+    "label": "W98 SoundTel",
+    "path": "/windows-icons/icons-w98-soundtel.ico",
+    "upstreamPath": "icons/w98_SoundTel.ico"
+  },
+  {
+    "key": "icons-w98-soundvor",
+    "label": "W98 SoundVor",
+    "path": "/windows-icons/icons-w98-soundvor.ico",
+    "upstreamPath": "icons/w98_SoundVor.ico"
+  },
+  {
+    "key": "icons-w98-soundyel",
+    "label": "W98 SoundYel",
+    "path": "/windows-icons/icons-w98-soundyel.ico",
+    "upstreamPath": "icons/w98_SoundYel.ico"
+  },
+  {
+    "key": "icons-w98-winrep",
+    "label": "W98 WinRep",
+    "path": "/windows-icons/icons-w98-winrep.ico",
+    "upstreamPath": "icons/w98_WinRep.ico"
+  },
+  {
     "key": "icons-w98-ac-plug",
     "label": "W98 Ac Plug",
     "path": "/windows-icons/icons-w98-ac-plug.ico",
@@ -2113,6 +2161,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Access Wheelchair Big",
     "path": "/windows-icons/icons-w98-access-wheelchair-big.ico",
     "upstreamPath": "icons/w98_access_wheelchair_big.ico"
+  },
+  {
+    "key": "icons-w98-accessibility",
+    "label": "W98 Accessibility",
+    "path": "/windows-icons/icons-w98-accessibility.ico",
+    "upstreamPath": "icons/w98_accessibility.ico"
   },
   {
     "key": "icons-w98-accessibility-big-keys",
@@ -2187,16 +2241,22 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_accessibility_window_speak.ico"
   },
   {
-    "key": "icons-w98-accessibility",
-    "label": "W98 Accessibility",
-    "path": "/windows-icons/icons-w98-accessibility.ico",
-    "upstreamPath": "icons/w98_accessibility.ico"
-  },
-  {
     "key": "icons-w98-active-movie",
     "label": "W98 Active Movie",
     "path": "/windows-icons/icons-w98-active-movie.ico",
     "upstreamPath": "icons/w98_active_movie.ico"
+  },
+  {
+    "key": "icons-w98-address-book",
+    "label": "W98 Address Book",
+    "path": "/windows-icons/icons-w98-address-book.ico",
+    "upstreamPath": "icons/w98_address_book.ico"
+  },
+  {
+    "key": "icons-w98-address-book-card",
+    "label": "W98 Address Book Card",
+    "path": "/windows-icons/icons-w98-address-book-card.ico",
+    "upstreamPath": "icons/w98_address_book_card.ico"
   },
   {
     "key": "icons-w98-address-book-card-copy",
@@ -2209,12 +2269,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Address Book Card Users",
     "path": "/windows-icons/icons-w98-address-book-card-users.ico",
     "upstreamPath": "icons/w98_address_book_card_users.ico"
-  },
-  {
-    "key": "icons-w98-address-book-card",
-    "label": "W98 Address Book Card",
-    "path": "/windows-icons/icons-w98-address-book-card.ico",
-    "upstreamPath": "icons/w98_address_book_card.ico"
   },
   {
     "key": "icons-w98-address-book-cards",
@@ -2235,16 +2289,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_address_book_home.ico"
   },
   {
-    "key": "icons-w98-address-book-pad-users",
-    "label": "W98 Address Book Pad Users",
-    "path": "/windows-icons/icons-w98-address-book-pad-users.ico",
-    "upstreamPath": "icons/w98_address_book_pad_users.ico"
-  },
-  {
     "key": "icons-w98-address-book-pad",
     "label": "W98 Address Book Pad",
     "path": "/windows-icons/icons-w98-address-book-pad.ico",
     "upstreamPath": "icons/w98_address_book_pad.ico"
+  },
+  {
+    "key": "icons-w98-address-book-pad-users",
+    "label": "W98 Address Book Pad Users",
+    "path": "/windows-icons/icons-w98-address-book-pad-users.ico",
+    "upstreamPath": "icons/w98_address_book_pad_users.ico"
   },
   {
     "key": "icons-w98-address-book-user",
@@ -2259,12 +2313,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_address_book_users.ico"
   },
   {
-    "key": "icons-w98-address-book",
-    "label": "W98 Address Book",
-    "path": "/windows-icons/icons-w98-address-book.ico",
-    "upstreamPath": "icons/w98_address_book.ico"
-  },
-  {
     "key": "icons-w98-amplify",
     "label": "W98 Amplify",
     "path": "/windows-icons/icons-w98-amplify.ico",
@@ -2277,10 +2325,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_application_hammer_grouppol.ico"
   },
   {
-    "key": "icons-w98-application-hourglass-small-cool",
-    "label": "W98 Application Hourglass Small Cool",
-    "path": "/windows-icons/icons-w98-application-hourglass-small-cool.ico",
-    "upstreamPath": "icons/w98_application_hourglass_small_cool.ico"
+    "key": "icons-w98-application-hourglass",
+    "label": "W98 Application Hourglass",
+    "path": "/windows-icons/icons-w98-application-hourglass.ico",
+    "upstreamPath": "icons/w98_application_hourglass.ico"
   },
   {
     "key": "icons-w98-application-hourglass-small",
@@ -2289,10 +2337,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_application_hourglass_small.ico"
   },
   {
-    "key": "icons-w98-application-hourglass",
-    "label": "W98 Application Hourglass",
-    "path": "/windows-icons/icons-w98-application-hourglass.ico",
-    "upstreamPath": "icons/w98_application_hourglass.ico"
+    "key": "icons-w98-application-hourglass-small-cool",
+    "label": "W98 Application Hourglass Small Cool",
+    "path": "/windows-icons/icons-w98-application-hourglass-small-cool.ico",
+    "upstreamPath": "icons/w98_application_hourglass_small_cool.ico"
   },
   {
     "key": "icons-w98-appwiz-file",
@@ -2301,16 +2349,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_appwiz_file.ico"
   },
   {
-    "key": "icons-w98-appwizard-list",
-    "label": "W98 Appwizard List",
-    "path": "/windows-icons/icons-w98-appwizard-list.ico",
-    "upstreamPath": "icons/w98_appwizard_list.ico"
-  },
-  {
     "key": "icons-w98-appwizard",
     "label": "W98 Appwizard",
     "path": "/windows-icons/icons-w98-appwizard.ico",
     "upstreamPath": "icons/w98_appwizard.ico"
+  },
+  {
+    "key": "icons-w98-appwizard-list",
+    "label": "W98 Appwizard List",
+    "path": "/windows-icons/icons-w98-appwizard-list.ico",
+    "upstreamPath": "icons/w98_appwizard_list.ico"
   },
   {
     "key": "icons-w98-audio-compression",
@@ -2319,22 +2367,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_audio_compression.ico"
   },
   {
-    "key": "icons-w98-backup-devices-2",
-    "label": "W98 Backup Devices 2",
-    "path": "/windows-icons/icons-w98-backup-devices-2.ico",
-    "upstreamPath": "icons/w98_backup_devices_2.ico"
-  },
-  {
     "key": "icons-w98-backup-devices",
     "label": "W98 Backup Devices",
     "path": "/windows-icons/icons-w98-backup-devices.ico",
     "upstreamPath": "icons/w98_backup_devices.ico"
   },
   {
-    "key": "icons-w98-bar-graph-default",
-    "label": "W98 Bar Graph Default",
-    "path": "/windows-icons/icons-w98-bar-graph-default.ico",
-    "upstreamPath": "icons/w98_bar_graph_default.ico"
+    "key": "icons-w98-backup-devices-2",
+    "label": "W98 Backup Devices 2",
+    "path": "/windows-icons/icons-w98-backup-devices-2.ico",
+    "upstreamPath": "icons/w98_backup_devices_2.ico"
   },
   {
     "key": "icons-w98-bar-graph",
@@ -2343,16 +2385,22 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_bar_graph.ico"
   },
   {
-    "key": "icons-w98-battery-alt",
-    "label": "W98 Battery Alt",
-    "path": "/windows-icons/icons-w98-battery-alt.ico",
-    "upstreamPath": "icons/w98_battery_alt.ico"
+    "key": "icons-w98-bar-graph-default",
+    "label": "W98 Bar Graph Default",
+    "path": "/windows-icons/icons-w98-bar-graph-default.ico",
+    "upstreamPath": "icons/w98_bar_graph_default.ico"
   },
   {
     "key": "icons-w98-battery",
     "label": "W98 Battery",
     "path": "/windows-icons/icons-w98-battery.ico",
     "upstreamPath": "icons/w98_battery.ico"
+  },
+  {
+    "key": "icons-w98-battery-alt",
+    "label": "W98 Battery Alt",
+    "path": "/windows-icons/icons-w98-battery-alt.ico",
+    "upstreamPath": "icons/w98_battery_alt.ico"
   },
   {
     "key": "icons-w98-briefcase",
@@ -2367,6 +2415,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_c-clamp.ico"
   },
   {
+    "key": "icons-w98-cable",
+    "label": "W98 Cable",
+    "path": "/windows-icons/icons-w98-cable.ico",
+    "upstreamPath": "icons/w98_cable.ico"
+  },
+  {
     "key": "icons-w98-cable-2",
     "label": "W98 Cable 2",
     "path": "/windows-icons/icons-w98-cable-2.ico",
@@ -2377,12 +2431,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Cable 3",
     "path": "/windows-icons/icons-w98-cable-3.ico",
     "upstreamPath": "icons/w98_cable_3.ico"
-  },
-  {
-    "key": "icons-w98-cable",
-    "label": "W98 Cable",
-    "path": "/windows-icons/icons-w98-cable.ico",
-    "upstreamPath": "icons/w98_cable.ico"
   },
   {
     "key": "icons-w98-calculator",
@@ -2403,28 +2451,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_calendar2.ico"
   },
   {
-    "key": "icons-w98-camera-2",
-    "label": "W98 Camera 2",
-    "path": "/windows-icons/icons-w98-camera-2.ico",
-    "upstreamPath": "icons/w98_camera_2.ico"
-  },
-  {
-    "key": "icons-w98-camera-vid-ms",
-    "label": "W98 Camera Vid Ms",
-    "path": "/windows-icons/icons-w98-camera-vid-ms.ico",
-    "upstreamPath": "icons/w98_camera_vid_ms.ico"
-  },
-  {
-    "key": "icons-w98-camera-vid",
-    "label": "W98 Camera Vid",
-    "path": "/windows-icons/icons-w98-camera-vid.ico",
-    "upstreamPath": "icons/w98_camera_vid.ico"
-  },
-  {
     "key": "icons-w98-camera",
     "label": "W98 Camera",
     "path": "/windows-icons/icons-w98-camera.ico",
     "upstreamPath": "icons/w98_camera.ico"
+  },
+  {
+    "key": "icons-w98-camera3",
+    "label": "W98 Camera3",
+    "path": "/windows-icons/icons-w98-camera3.ico",
+    "upstreamPath": "icons/w98_camera3.ico"
   },
   {
     "key": "icons-w98-camera3-network",
@@ -2445,10 +2481,28 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_camera3_vid.ico"
   },
   {
-    "key": "icons-w98-camera3",
-    "label": "W98 Camera3",
-    "path": "/windows-icons/icons-w98-camera3.ico",
-    "upstreamPath": "icons/w98_camera3.ico"
+    "key": "icons-w98-camera-2",
+    "label": "W98 Camera 2",
+    "path": "/windows-icons/icons-w98-camera-2.ico",
+    "upstreamPath": "icons/w98_camera_2.ico"
+  },
+  {
+    "key": "icons-w98-camera-vid",
+    "label": "W98 Camera Vid",
+    "path": "/windows-icons/icons-w98-camera-vid.ico",
+    "upstreamPath": "icons/w98_camera_vid.ico"
+  },
+  {
+    "key": "icons-w98-camera-vid-ms",
+    "label": "W98 Camera Vid Ms",
+    "path": "/windows-icons/icons-w98-camera-vid-ms.ico",
+    "upstreamPath": "icons/w98_camera_vid_ms.ico"
+  },
+  {
+    "key": "icons-w98-card-reader",
+    "label": "W98 Card Reader",
+    "path": "/windows-icons/icons-w98-card-reader.ico",
+    "upstreamPath": "icons/w98_card_reader.ico"
   },
   {
     "key": "icons-w98-card-reader-empty",
@@ -2475,12 +2529,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_card_reader_restr.ico"
   },
   {
-    "key": "icons-w98-card-reader",
-    "label": "W98 Card Reader",
-    "path": "/windows-icons/icons-w98-card-reader.ico",
-    "upstreamPath": "icons/w98_card_reader.ico"
-  },
-  {
     "key": "icons-w98-cardfile",
     "label": "W98 Cardfile",
     "path": "/windows-icons/icons-w98-cardfile.ico",
@@ -2491,6 +2539,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Cassette Tape",
     "path": "/windows-icons/icons-w98-cassette-tape.ico",
     "upstreamPath": "icons/w98_cassette_tape.ico"
+  },
+  {
+    "key": "icons-w98-catalog",
+    "label": "W98 Catalog",
+    "path": "/windows-icons/icons-w98-catalog.ico",
+    "upstreamPath": "icons/w98_catalog.ico"
   },
   {
     "key": "icons-w98-catalog-excl",
@@ -2505,10 +2559,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_catalog_no.ico"
   },
   {
-    "key": "icons-w98-catalog",
-    "label": "W98 Catalog",
-    "path": "/windows-icons/icons-w98-catalog.ico",
-    "upstreamPath": "icons/w98_catalog.ico"
+    "key": "icons-w98-cd-audio-cd",
+    "label": "W98 Cd Audio Cd",
+    "path": "/windows-icons/icons-w98-cd-audio-cd.ico",
+    "upstreamPath": "icons/w98_cd_audio_cd.ico"
   },
   {
     "key": "icons-w98-cd-audio-cd-a",
@@ -2517,10 +2571,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_cd_audio_cd_a.ico"
   },
   {
-    "key": "icons-w98-cd-audio-cd",
-    "label": "W98 Cd Audio Cd",
-    "path": "/windows-icons/icons-w98-cd-audio-cd.ico",
-    "upstreamPath": "icons/w98_cd_audio_cd.ico"
+    "key": "icons-w98-cd-drive",
+    "label": "W98 Cd Drive",
+    "path": "/windows-icons/icons-w98-cd-drive.ico",
+    "upstreamPath": "icons/w98_cd_drive.ico"
   },
   {
     "key": "icons-w98-cd-drive-purple",
@@ -2529,10 +2583,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_cd_drive_purple.ico"
   },
   {
-    "key": "icons-w98-cd-drive",
-    "label": "W98 Cd Drive",
-    "path": "/windows-icons/icons-w98-cd-drive.ico",
-    "upstreamPath": "icons/w98_cd_drive.ico"
+    "key": "icons-w98-certificate",
+    "label": "W98 Certificate",
+    "path": "/windows-icons/icons-w98-certificate.ico",
+    "upstreamPath": "icons/w98_certificate.ico"
+  },
+  {
+    "key": "icons-w98-certificate-2",
+    "label": "W98 Certificate 2",
+    "path": "/windows-icons/icons-w98-certificate-2.ico",
+    "upstreamPath": "icons/w98_certificate_2.ico"
   },
   {
     "key": "icons-w98-certificate-2-excl",
@@ -2545,12 +2605,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Certificate 2 No",
     "path": "/windows-icons/icons-w98-certificate-2-no.ico",
     "upstreamPath": "icons/w98_certificate_2_no.ico"
-  },
-  {
-    "key": "icons-w98-certificate-2",
-    "label": "W98 Certificate 2",
-    "path": "/windows-icons/icons-w98-certificate-2.ico",
-    "upstreamPath": "icons/w98_certificate_2.ico"
   },
   {
     "key": "icons-w98-certificate-3",
@@ -2607,16 +2661,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_certificate_red_line.ico"
   },
   {
-    "key": "icons-w98-certificate-seal-lock",
-    "label": "W98 Certificate Seal Lock",
-    "path": "/windows-icons/icons-w98-certificate-seal-lock.ico",
-    "upstreamPath": "icons/w98_certificate_seal_lock.ico"
-  },
-  {
     "key": "icons-w98-certificate-seal",
     "label": "W98 Certificate Seal",
     "path": "/windows-icons/icons-w98-certificate-seal.ico",
     "upstreamPath": "icons/w98_certificate_seal.ico"
+  },
+  {
+    "key": "icons-w98-certificate-seal-lock",
+    "label": "W98 Certificate Seal Lock",
+    "path": "/windows-icons/icons-w98-certificate-seal-lock.ico",
+    "upstreamPath": "icons/w98_certificate_seal_lock.ico"
   },
   {
     "key": "icons-w98-certificate-server",
@@ -2625,10 +2679,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_certificate_server.ico"
   },
   {
-    "key": "icons-w98-certificate",
-    "label": "W98 Certificate",
-    "path": "/windows-icons/icons-w98-certificate.ico",
-    "upstreamPath": "icons/w98_certificate.ico"
+    "key": "icons-w98-channels",
+    "label": "W98 Channels",
+    "path": "/windows-icons/icons-w98-channels.ico",
+    "upstreamPath": "icons/w98_channels.ico"
   },
   {
     "key": "icons-w98-channels-file",
@@ -2637,22 +2691,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_channels_file.ico"
   },
   {
-    "key": "icons-w98-channels",
-    "label": "W98 Channels",
-    "path": "/windows-icons/icons-w98-channels.ico",
-    "upstreamPath": "icons/w98_channels.ico"
+    "key": "icons-w98-charmap",
+    "label": "W98 Charmap",
+    "path": "/windows-icons/icons-w98-charmap.ico",
+    "upstreamPath": "icons/w98_charmap.ico"
   },
   {
     "key": "icons-w98-charmap-w2k",
     "label": "W98 Charmap W2k",
     "path": "/windows-icons/icons-w98-charmap-w2k.ico",
     "upstreamPath": "icons/w98_charmap_w2k.ico"
-  },
-  {
-    "key": "icons-w98-charmap",
-    "label": "W98 Charmap",
-    "path": "/windows-icons/icons-w98-charmap.ico",
-    "upstreamPath": "icons/w98_charmap.ico"
   },
   {
     "key": "icons-w98-chart1",
@@ -2697,16 +2745,28 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_clock.ico"
   },
   {
+    "key": "icons-w98-color-profile",
+    "label": "W98 Color Profile",
+    "path": "/windows-icons/icons-w98-color-profile.ico",
+    "upstreamPath": "icons/w98_color_profile.ico"
+  },
+  {
     "key": "icons-w98-color-profile-gray",
     "label": "W98 Color Profile Gray",
     "path": "/windows-icons/icons-w98-color-profile-gray.ico",
     "upstreamPath": "icons/w98_color_profile_gray.ico"
   },
   {
-    "key": "icons-w98-color-profile",
-    "label": "W98 Color Profile",
-    "path": "/windows-icons/icons-w98-color-profile.ico",
-    "upstreamPath": "icons/w98_color_profile.ico"
+    "key": "icons-w98-computer",
+    "label": "W98 Computer",
+    "path": "/windows-icons/icons-w98-computer.ico",
+    "upstreamPath": "icons/w98_computer.ico"
+  },
+  {
+    "key": "icons-w98-computer-2",
+    "label": "W98 Computer 2",
+    "path": "/windows-icons/icons-w98-computer-2.ico",
+    "upstreamPath": "icons/w98_computer_2.ico"
   },
   {
     "key": "icons-w98-computer-2-cool",
@@ -2715,10 +2775,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_computer_2_cool.ico"
   },
   {
-    "key": "icons-w98-computer-2",
-    "label": "W98 Computer 2",
-    "path": "/windows-icons/icons-w98-computer-2.ico",
-    "upstreamPath": "icons/w98_computer_2.ico"
+    "key": "icons-w98-computer-explorer",
+    "label": "W98 Computer Explorer",
+    "path": "/windows-icons/icons-w98-computer-explorer.ico",
+    "upstreamPath": "icons/w98_computer_explorer.ico"
   },
   {
     "key": "icons-w98-computer-explorer-2k",
@@ -2731,12 +2791,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Computer Explorer Cool",
     "path": "/windows-icons/icons-w98-computer-explorer-cool.ico",
     "upstreamPath": "icons/w98_computer_explorer_cool.ico"
-  },
-  {
-    "key": "icons-w98-computer-explorer",
-    "label": "W98 Computer Explorer",
-    "path": "/windows-icons/icons-w98-computer-explorer.ico",
-    "upstreamPath": "icons/w98_computer_explorer.ico"
   },
   {
     "key": "icons-w98-computer-gear",
@@ -2781,22 +2835,22 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_computer_user_pencil.ico"
   },
   {
-    "key": "icons-w98-computer-win-lock",
-    "label": "W98 Computer Win Lock",
-    "path": "/windows-icons/icons-w98-computer-win-lock.ico",
-    "upstreamPath": "icons/w98_computer_win_lock.ico"
-  },
-  {
     "key": "icons-w98-computer-win",
     "label": "W98 Computer Win",
     "path": "/windows-icons/icons-w98-computer-win.ico",
     "upstreamPath": "icons/w98_computer_win.ico"
   },
   {
-    "key": "icons-w98-computer",
-    "label": "W98 Computer",
-    "path": "/windows-icons/icons-w98-computer.ico",
-    "upstreamPath": "icons/w98_computer.ico"
+    "key": "icons-w98-computer-win-lock",
+    "label": "W98 Computer Win Lock",
+    "path": "/windows-icons/icons-w98-computer-win-lock.ico",
+    "upstreamPath": "icons/w98_computer_win_lock.ico"
+  },
+  {
+    "key": "icons-w98-conn-cloud",
+    "label": "W98 Conn Cloud",
+    "path": "/windows-icons/icons-w98-conn-cloud.ico",
+    "upstreamPath": "icons/w98_conn_cloud.ico"
   },
   {
     "key": "icons-w98-conn-cloud-ok",
@@ -2805,10 +2859,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_conn_cloud_ok.ico"
   },
   {
-    "key": "icons-w98-conn-cloud",
-    "label": "W98 Conn Cloud",
-    "path": "/windows-icons/icons-w98-conn-cloud.ico",
-    "upstreamPath": "icons/w98_conn_cloud.ico"
+    "key": "icons-w98-conn-dialup",
+    "label": "W98 Conn Dialup",
+    "path": "/windows-icons/icons-w98-conn-dialup.ico",
+    "upstreamPath": "icons/w98_conn_dialup.ico"
   },
   {
     "key": "icons-w98-conn-dialup-alt",
@@ -2833,12 +2887,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Conn Dialup Recbin Phones",
     "path": "/windows-icons/icons-w98-conn-dialup-recbin-phones.ico",
     "upstreamPath": "icons/w98_conn_dialup_recbin_phones.ico"
-  },
-  {
-    "key": "icons-w98-conn-dialup",
-    "label": "W98 Conn Dialup",
-    "path": "/windows-icons/icons-w98-conn-dialup.ico",
-    "upstreamPath": "icons/w98_conn_dialup.ico"
   },
   {
     "key": "icons-w98-conn-network-no-phone",
@@ -2901,6 +2949,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_defragment.ico"
   },
   {
+    "key": "icons-w98-desktop",
+    "label": "W98 Desktop",
+    "path": "/windows-icons/icons-w98-desktop.ico",
+    "upstreamPath": "icons/w98_desktop.ico"
+  },
+  {
     "key": "icons-w98-desktop-old",
     "label": "W98 Desktop Old",
     "path": "/windows-icons/icons-w98-desktop-old.ico",
@@ -2911,12 +2965,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Desktop W95",
     "path": "/windows-icons/icons-w98-desktop-w95.ico",
     "upstreamPath": "icons/w98_desktop_w95.ico"
-  },
-  {
-    "key": "icons-w98-desktop",
-    "label": "W98 Desktop",
-    "path": "/windows-icons/icons-w98-desktop.ico",
-    "upstreamPath": "icons/w98_desktop.ico"
   },
   {
     "key": "icons-w98-device-rhombic-chip",
@@ -2955,6 +3003,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_directory_check.ico"
   },
   {
+    "key": "icons-w98-directory-closed",
+    "label": "W98 Directory Closed",
+    "path": "/windows-icons/icons-w98-directory-closed.ico",
+    "upstreamPath": "icons/w98_directory_closed.ico"
+  },
+  {
     "key": "icons-w98-directory-closed-cool",
     "label": "W98 Directory Closed Cool",
     "path": "/windows-icons/icons-w98-directory-closed-cool.ico",
@@ -2967,22 +3021,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_directory_closed_history.ico"
   },
   {
-    "key": "icons-w98-directory-closed",
-    "label": "W98 Directory Closed",
-    "path": "/windows-icons/icons-w98-directory-closed.ico",
-    "upstreamPath": "icons/w98_directory_closed.ico"
-  },
-  {
     "key": "icons-w98-directory-computer",
     "label": "W98 Directory Computer",
     "path": "/windows-icons/icons-w98-directory-computer.ico",
     "upstreamPath": "icons/w98_directory_computer.ico"
-  },
-  {
-    "key": "icons-w98-directory-control-panel-cool",
-    "label": "W98 Directory Control Panel Cool",
-    "path": "/windows-icons/icons-w98-directory-control-panel-cool.ico",
-    "upstreamPath": "icons/w98_directory_control_panel_cool.ico"
   },
   {
     "key": "icons-w98-directory-control-panel",
@@ -2991,10 +3033,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_directory_control_panel.ico"
   },
   {
-    "key": "icons-w98-directory-dial-up-networking-cool",
-    "label": "W98 Directory Dial Up Networking Cool",
-    "path": "/windows-icons/icons-w98-directory-dial-up-networking-cool.ico",
-    "upstreamPath": "icons/w98_directory_dial-up_networking_cool.ico"
+    "key": "icons-w98-directory-control-panel-cool",
+    "label": "W98 Directory Control Panel Cool",
+    "path": "/windows-icons/icons-w98-directory-control-panel-cool.ico",
+    "upstreamPath": "icons/w98_directory_control_panel_cool.ico"
   },
   {
     "key": "icons-w98-directory-dial-up-networking",
@@ -3003,10 +3045,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_directory_dial-up_networking.ico"
   },
   {
-    "key": "icons-w98-directory-e-open",
-    "label": "W98 Directory E Open",
-    "path": "/windows-icons/icons-w98-directory-e-open.ico",
-    "upstreamPath": "icons/w98_directory_e_open.ico"
+    "key": "icons-w98-directory-dial-up-networking-cool",
+    "label": "W98 Directory Dial Up Networking Cool",
+    "path": "/windows-icons/icons-w98-directory-dial-up-networking-cool.ico",
+    "upstreamPath": "icons/w98_directory_dial-up_networking_cool.ico"
   },
   {
     "key": "icons-w98-directory-e",
@@ -3015,16 +3057,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_directory_e.ico"
   },
   {
+    "key": "icons-w98-directory-e-open",
+    "label": "W98 Directory E Open",
+    "path": "/windows-icons/icons-w98-directory-e-open.ico",
+    "upstreamPath": "icons/w98_directory_e_open.ico"
+  },
+  {
     "key": "icons-w98-directory-explorer",
     "label": "W98 Directory Explorer",
     "path": "/windows-icons/icons-w98-directory-explorer.ico",
     "upstreamPath": "icons/w98_directory_explorer.ico"
-  },
-  {
-    "key": "icons-w98-directory-favorites-small",
-    "label": "W98 Directory Favorites Small",
-    "path": "/windows-icons/icons-w98-directory-favorites-small.ico",
-    "upstreamPath": "icons/w98_directory_favorites_small.ico"
   },
   {
     "key": "icons-w98-directory-favorites",
@@ -3033,10 +3075,22 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_directory_favorites.ico"
   },
   {
+    "key": "icons-w98-directory-favorites-small",
+    "label": "W98 Directory Favorites Small",
+    "path": "/windows-icons/icons-w98-directory-favorites-small.ico",
+    "upstreamPath": "icons/w98_directory_favorites_small.ico"
+  },
+  {
     "key": "icons-w98-directory-folder-options",
     "label": "W98 Directory Folder Options",
     "path": "/windows-icons/icons-w98-directory-folder-options.ico",
     "upstreamPath": "icons/w98_directory_folder_options.ico"
+  },
+  {
+    "key": "icons-w98-directory-fonts",
+    "label": "W98 Directory Fonts",
+    "path": "/windows-icons/icons-w98-directory-fonts.ico",
+    "upstreamPath": "icons/w98_directory_fonts.ico"
   },
   {
     "key": "icons-w98-directory-fonts-cool",
@@ -3051,12 +3105,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_directory_fonts_shortcut.ico"
   },
   {
-    "key": "icons-w98-directory-fonts",
-    "label": "W98 Directory Fonts",
-    "path": "/windows-icons/icons-w98-directory-fonts.ico",
-    "upstreamPath": "icons/w98_directory_fonts.ico"
-  },
-  {
     "key": "icons-w98-directory-movie",
     "label": "W98 Directory Movie",
     "path": "/windows-icons/icons-w98-directory-movie.ico",
@@ -3069,22 +3117,22 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_directory_net_web.ico"
   },
   {
-    "key": "icons-w98-directory-network-conn-shortcut",
-    "label": "W98 Directory Network Conn Shortcut",
-    "path": "/windows-icons/icons-w98-directory-network-conn-shortcut.ico",
-    "upstreamPath": "icons/w98_directory_network_conn_shortcut.ico"
-  },
-  {
     "key": "icons-w98-directory-network-conn",
     "label": "W98 Directory Network Conn",
     "path": "/windows-icons/icons-w98-directory-network-conn.ico",
     "upstreamPath": "icons/w98_directory_network_conn.ico"
   },
   {
-    "key": "icons-w98-directory-open-cabinet-fc",
-    "label": "W98 Directory Open Cabinet Fc",
-    "path": "/windows-icons/icons-w98-directory-open-cabinet-fc.ico",
-    "upstreamPath": "icons/w98_directory_open_cabinet_fc.ico"
+    "key": "icons-w98-directory-network-conn-shortcut",
+    "label": "W98 Directory Network Conn Shortcut",
+    "path": "/windows-icons/icons-w98-directory-network-conn-shortcut.ico",
+    "upstreamPath": "icons/w98_directory_network_conn_shortcut.ico"
+  },
+  {
+    "key": "icons-w98-directory-open",
+    "label": "W98 Directory Open",
+    "path": "/windows-icons/icons-w98-directory-open.ico",
+    "upstreamPath": "icons/w98_directory_open.ico"
   },
   {
     "key": "icons-w98-directory-open-cabinet",
@@ -3093,10 +3141,22 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_directory_open_cabinet.ico"
   },
   {
+    "key": "icons-w98-directory-open-cabinet-fc",
+    "label": "W98 Directory Open Cabinet Fc",
+    "path": "/windows-icons/icons-w98-directory-open-cabinet-fc.ico",
+    "upstreamPath": "icons/w98_directory_open_cabinet_fc.ico"
+  },
+  {
     "key": "icons-w98-directory-open-cool",
     "label": "W98 Directory Open Cool",
     "path": "/windows-icons/icons-w98-directory-open-cool.ico",
     "upstreamPath": "icons/w98_directory_open_cool.ico"
+  },
+  {
+    "key": "icons-w98-directory-open-file-mydocs",
+    "label": "W98 Directory Open File Mydocs",
+    "path": "/windows-icons/icons-w98-directory-open-file-mydocs.ico",
+    "upstreamPath": "icons/w98_directory_open_file_mydocs.ico"
   },
   {
     "key": "icons-w98-directory-open-file-mydocs-2k",
@@ -3115,12 +3175,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Directory Open File Mydocs Small",
     "path": "/windows-icons/icons-w98-directory-open-file-mydocs-small.ico",
     "upstreamPath": "icons/w98_directory_open_file_mydocs_small.ico"
-  },
-  {
-    "key": "icons-w98-directory-open-file-mydocs",
-    "label": "W98 Directory Open File Mydocs",
-    "path": "/windows-icons/icons-w98-directory-open-file-mydocs.ico",
-    "upstreamPath": "icons/w98_directory_open_file_mydocs.ico"
   },
   {
     "key": "icons-w98-directory-open-history",
@@ -3147,16 +3201,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_directory_open_refresh.ico"
   },
   {
-    "key": "icons-w98-directory-open",
-    "label": "W98 Directory Open",
-    "path": "/windows-icons/icons-w98-directory-open.ico",
-    "upstreamPath": "icons/w98_directory_open.ico"
-  },
-  {
     "key": "icons-w98-directory-pictures",
     "label": "W98 Directory Pictures",
     "path": "/windows-icons/icons-w98-directory-pictures.ico",
     "upstreamPath": "icons/w98_directory_pictures.ico"
+  },
+  {
+    "key": "icons-w98-directory-printer",
+    "label": "W98 Directory Printer",
+    "path": "/windows-icons/icons-w98-directory-printer.ico",
+    "upstreamPath": "icons/w98_directory_printer.ico"
   },
   {
     "key": "icons-w98-directory-printer-cool",
@@ -3171,10 +3225,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_directory_printer_shortcut.ico"
   },
   {
-    "key": "icons-w98-directory-printer",
-    "label": "W98 Directory Printer",
-    "path": "/windows-icons/icons-w98-directory-printer.ico",
-    "upstreamPath": "icons/w98_directory_printer.ico"
+    "key": "icons-w98-directory-program-group",
+    "label": "W98 Directory Program Group",
+    "path": "/windows-icons/icons-w98-directory-program-group.ico",
+    "upstreamPath": "icons/w98_directory_program_group.ico"
   },
   {
     "key": "icons-w98-directory-program-group-cool",
@@ -3183,22 +3237,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_directory_program_group_cool.ico"
   },
   {
-    "key": "icons-w98-directory-program-group-small-c",
-    "label": "W98 Directory Program Group Small C",
-    "path": "/windows-icons/icons-w98-directory-program-group-small-c.ico",
-    "upstreamPath": "icons/w98_directory_program_group_small_c.ico"
-  },
-  {
     "key": "icons-w98-directory-program-group-small",
     "label": "W98 Directory Program Group Small",
     "path": "/windows-icons/icons-w98-directory-program-group-small.ico",
     "upstreamPath": "icons/w98_directory_program_group_small.ico"
   },
   {
-    "key": "icons-w98-directory-program-group",
-    "label": "W98 Directory Program Group",
-    "path": "/windows-icons/icons-w98-directory-program-group.ico",
-    "upstreamPath": "icons/w98_directory_program_group.ico"
+    "key": "icons-w98-directory-program-group-small-c",
+    "label": "W98 Directory Program Group Small C",
+    "path": "/windows-icons/icons-w98-directory-program-group-small-c.ico",
+    "upstreamPath": "icons/w98_directory_program_group_small_c.ico"
   },
   {
     "key": "icons-w98-directory-scanner-camera",
@@ -3231,28 +3279,28 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_directory_web.ico"
   },
   {
-    "key": "icons-w98-directory-zipper-alt",
-    "label": "W98 Directory Zipper Alt",
-    "path": "/windows-icons/icons-w98-directory-zipper-alt.ico",
-    "upstreamPath": "icons/w98_directory_zipper_alt.ico"
-  },
-  {
     "key": "icons-w98-directory-zipper",
     "label": "W98 Directory Zipper",
     "path": "/windows-icons/icons-w98-directory-zipper.ico",
     "upstreamPath": "icons/w98_directory_zipper.ico"
   },
   {
-    "key": "icons-w98-directx-alt",
-    "label": "W98 Directx Alt",
-    "path": "/windows-icons/icons-w98-directx-alt.ico",
-    "upstreamPath": "icons/w98_directx_alt.ico"
+    "key": "icons-w98-directory-zipper-alt",
+    "label": "W98 Directory Zipper Alt",
+    "path": "/windows-icons/icons-w98-directory-zipper-alt.ico",
+    "upstreamPath": "icons/w98_directory_zipper_alt.ico"
   },
   {
     "key": "icons-w98-directx",
     "label": "W98 Directx",
     "path": "/windows-icons/icons-w98-directx.ico",
     "upstreamPath": "icons/w98_directx.ico"
+  },
+  {
+    "key": "icons-w98-directx-alt",
+    "label": "W98 Directx Alt",
+    "path": "/windows-icons/icons-w98-directx-alt.ico",
+    "upstreamPath": "icons/w98_directx_alt.ico"
   },
   {
     "key": "icons-w98-diskettes-copy",
@@ -3291,6 +3339,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_drum_onestick.ico"
   },
   {
+    "key": "icons-w98-eject-pc",
+    "label": "W98 Eject Pc",
+    "path": "/windows-icons/icons-w98-eject-pc.ico",
+    "upstreamPath": "icons/w98_eject_pc.ico"
+  },
+  {
     "key": "icons-w98-eject-pc-2",
     "label": "W98 Eject Pc 2",
     "path": "/windows-icons/icons-w98-eject-pc-2.ico",
@@ -3307,12 +3361,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Eject Pc Shell32",
     "path": "/windows-icons/icons-w98-eject-pc-shell32.ico",
     "upstreamPath": "icons/w98_eject_pc_shell32.ico"
-  },
-  {
-    "key": "icons-w98-eject-pc",
-    "label": "W98 Eject Pc",
-    "path": "/windows-icons/icons-w98-eject-pc.ico",
-    "upstreamPath": "icons/w98_eject_pc.ico"
   },
   {
     "key": "icons-w98-entire-network-globe",
@@ -3345,6 +3393,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_event_log.ico"
   },
   {
+    "key": "icons-w98-executable",
+    "label": "W98 Executable",
+    "path": "/windows-icons/icons-w98-executable.ico",
+    "upstreamPath": "icons/w98_executable.ico"
+  },
+  {
     "key": "icons-w98-executable-gear",
     "label": "W98 Executable Gear",
     "path": "/windows-icons/icons-w98-executable-gear.ico",
@@ -3363,16 +3417,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_executable_sound.ico"
   },
   {
-    "key": "icons-w98-executable",
-    "label": "W98 Executable",
-    "path": "/windows-icons/icons-w98-executable.ico",
-    "upstreamPath": "icons/w98_executable.ico"
-  },
-  {
     "key": "icons-w98-expand-hierarchial-array",
     "label": "W98 Expand Hierarchial Array",
     "path": "/windows-icons/icons-w98-expand-hierarchial-array.ico",
     "upstreamPath": "icons/w98_expand_hierarchial_array.ico"
+  },
+  {
+    "key": "icons-w98-expansion-board",
+    "label": "W98 Expansion Board",
+    "path": "/windows-icons/icons-w98-expansion-board.ico",
+    "upstreamPath": "icons/w98_expansion_board.ico"
   },
   {
     "key": "icons-w98-expansion-board-modem",
@@ -3381,10 +3435,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_expansion_board_modem.ico"
   },
   {
-    "key": "icons-w98-expansion-board",
-    "label": "W98 Expansion Board",
-    "path": "/windows-icons/icons-w98-expansion-board.ico",
-    "upstreamPath": "icons/w98_expansion_board.ico"
+    "key": "icons-w98-fax-machine",
+    "label": "W98 Fax Machine",
+    "path": "/windows-icons/icons-w98-fax-machine.ico",
+    "upstreamPath": "icons/w98_fax_machine.ico"
   },
   {
     "key": "icons-w98-fax-machine-exclam",
@@ -3397,12 +3451,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Fax Machine Paperstack",
     "path": "/windows-icons/icons-w98-fax-machine-paperstack.ico",
     "upstreamPath": "icons/w98_fax_machine_paperstack.ico"
-  },
-  {
-    "key": "icons-w98-fax-machine",
-    "label": "W98 Fax Machine",
-    "path": "/windows-icons/icons-w98-fax-machine.ico",
-    "upstreamPath": "icons/w98_fax_machine.ico"
   },
   {
     "key": "icons-w98-file-blue-grad-paint",
@@ -3483,28 +3531,28 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_filepack.ico"
   },
   {
-    "key": "icons-w98-floppy-drive-3-5-cool",
-    "label": "W98 Floppy Drive 3 5 Cool",
-    "path": "/windows-icons/icons-w98-floppy-drive-3-5-cool.ico",
-    "upstreamPath": "icons/w98_floppy_drive_3-5_cool.ico"
-  },
-  {
     "key": "icons-w98-floppy-drive-3-5",
     "label": "W98 Floppy Drive 3 5",
     "path": "/windows-icons/icons-w98-floppy-drive-3-5.ico",
     "upstreamPath": "icons/w98_floppy_drive_3-5.ico"
   },
   {
-    "key": "icons-w98-floppy-drive-5-25-cool",
-    "label": "W98 Floppy Drive 5 25 Cool",
-    "path": "/windows-icons/icons-w98-floppy-drive-5-25-cool.ico",
-    "upstreamPath": "icons/w98_floppy_drive_5-25_cool.ico"
+    "key": "icons-w98-floppy-drive-3-5-cool",
+    "label": "W98 Floppy Drive 3 5 Cool",
+    "path": "/windows-icons/icons-w98-floppy-drive-3-5-cool.ico",
+    "upstreamPath": "icons/w98_floppy_drive_3-5_cool.ico"
   },
   {
     "key": "icons-w98-floppy-drive-5-25",
     "label": "W98 Floppy Drive 5 25",
     "path": "/windows-icons/icons-w98-floppy-drive-5-25.ico",
     "upstreamPath": "icons/w98_floppy_drive_5-25.ico"
+  },
+  {
+    "key": "icons-w98-floppy-drive-5-25-cool",
+    "label": "W98 Floppy Drive 5 25 Cool",
+    "path": "/windows-icons/icons-w98-floppy-drive-5-25-cool.ico",
+    "upstreamPath": "icons/w98_floppy_drive_5-25_cool.ico"
   },
   {
     "key": "icons-w98-font-adobe",
@@ -3525,16 +3573,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_font_opentype.ico"
   },
   {
-    "key": "icons-w98-font-tt-green",
-    "label": "W98 Font Tt Green",
-    "path": "/windows-icons/icons-w98-font-tt-green.ico",
-    "upstreamPath": "icons/w98_font_tt_green.ico"
-  },
-  {
     "key": "icons-w98-font-tt",
     "label": "W98 Font Tt",
     "path": "/windows-icons/icons-w98-font-tt.ico",
     "upstreamPath": "icons/w98_font_tt.ico"
+  },
+  {
+    "key": "icons-w98-font-tt-green",
+    "label": "W98 Font Tt Green",
+    "path": "/windows-icons/icons-w98-font-tt-green.ico",
+    "upstreamPath": "icons/w98_font_tt_green.ico"
   },
   {
     "key": "icons-w98-frame-web",
@@ -3579,6 +3627,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_game_spider.ico"
   },
   {
+    "key": "icons-w98-gears",
+    "label": "W98 Gears",
+    "path": "/windows-icons/icons-w98-gears.ico",
+    "upstreamPath": "icons/w98_gears.ico"
+  },
+  {
     "key": "icons-w98-gears-3",
     "label": "W98 Gears 3",
     "path": "/windows-icons/icons-w98-gears-3.ico",
@@ -3597,12 +3651,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_gears_tweakui_b.ico"
   },
   {
-    "key": "icons-w98-gears",
-    "label": "W98 Gears",
-    "path": "/windows-icons/icons-w98-gears.ico",
-    "upstreamPath": "icons/w98_gears.ico"
-  },
-  {
     "key": "icons-w98-globe-map",
     "label": "W98 Globe Map",
     "path": "/windows-icons/icons-w98-globe-map.ico",
@@ -3615,10 +3663,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_gps.ico"
   },
   {
-    "key": "icons-w98-graphedit-file-2",
-    "label": "W98 Graphedit File 2",
-    "path": "/windows-icons/icons-w98-graphedit-file-2.ico",
-    "upstreamPath": "icons/w98_graphedit_file_2.ico"
+    "key": "icons-w98-graphedit",
+    "label": "W98 Graphedit",
+    "path": "/windows-icons/icons-w98-graphedit.ico",
+    "upstreamPath": "icons/w98_graphedit.ico"
   },
   {
     "key": "icons-w98-graphedit-file",
@@ -3627,10 +3675,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_graphedit_file.ico"
   },
   {
-    "key": "icons-w98-graphedit",
-    "label": "W98 Graphedit",
-    "path": "/windows-icons/icons-w98-graphedit.ico",
-    "upstreamPath": "icons/w98_graphedit.ico"
+    "key": "icons-w98-graphedit-file-2",
+    "label": "W98 Graphedit File 2",
+    "path": "/windows-icons/icons-w98-graphedit-file-2.ico",
+    "upstreamPath": "icons/w98_graphedit_file_2.ico"
+  },
+  {
+    "key": "icons-w98-hard-disk-drive",
+    "label": "W98 Hard Disk Drive",
+    "path": "/windows-icons/icons-w98-hard-disk-drive.ico",
+    "upstreamPath": "icons/w98_hard_disk_drive.ico"
   },
   {
     "key": "icons-w98-hard-disk-drive-cool",
@@ -3649,12 +3703,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Hard Disk Drive Tools",
     "path": "/windows-icons/icons-w98-hard-disk-drive-tools.ico",
     "upstreamPath": "icons/w98_hard_disk_drive_tools.ico"
-  },
-  {
-    "key": "icons-w98-hard-disk-drive",
-    "label": "W98 Hard Disk Drive",
-    "path": "/windows-icons/icons-w98-hard-disk-drive.ico",
-    "upstreamPath": "icons/w98_hard_disk_drive.ico"
   },
   {
     "key": "icons-w98-hard-disk-drives",
@@ -3681,16 +3729,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_help_book_computer.ico"
   },
   {
-    "key": "icons-w98-help-book-cool-small",
-    "label": "W98 Help Book Cool Small",
-    "path": "/windows-icons/icons-w98-help-book-cool-small.ico",
-    "upstreamPath": "icons/w98_help_book_cool_small.ico"
-  },
-  {
     "key": "icons-w98-help-book-cool",
     "label": "W98 Help Book Cool",
     "path": "/windows-icons/icons-w98-help-book-cool.ico",
     "upstreamPath": "icons/w98_help_book_cool.ico"
+  },
+  {
+    "key": "icons-w98-help-book-cool-small",
+    "label": "W98 Help Book Cool Small",
+    "path": "/windows-icons/icons-w98-help-book-cool-small.ico",
+    "upstreamPath": "icons/w98_help_book_cool_small.ico"
   },
   {
     "key": "icons-w98-help-book-small",
@@ -3717,16 +3765,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_history.ico"
   },
   {
-    "key": "icons-w98-homepage-alt",
-    "label": "W98 Homepage Alt",
-    "path": "/windows-icons/icons-w98-homepage-alt.ico",
-    "upstreamPath": "icons/w98_homepage_alt.ico"
-  },
-  {
     "key": "icons-w98-homepage",
     "label": "W98 Homepage",
     "path": "/windows-icons/icons-w98-homepage.ico",
     "upstreamPath": "icons/w98_homepage.ico"
+  },
+  {
+    "key": "icons-w98-homepage-alt",
+    "label": "W98 Homepage Alt",
+    "path": "/windows-icons/icons-w98-homepage-alt.ico",
+    "upstreamPath": "icons/w98_homepage_alt.ico"
   },
   {
     "key": "icons-w98-html",
@@ -3735,28 +3783,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_html.ico"
   },
   {
-    "key": "icons-w98-html2-new",
-    "label": "W98 Html2 New",
-    "path": "/windows-icons/icons-w98-html2-new.ico",
-    "upstreamPath": "icons/w98_html2_new.ico"
-  },
-  {
     "key": "icons-w98-html2",
     "label": "W98 Html2",
     "path": "/windows-icons/icons-w98-html2.ico",
     "upstreamPath": "icons/w98_html2.ico"
   },
   {
-    "key": "icons-w98-image-old-gif",
-    "label": "W98 Image Old Gif",
-    "path": "/windows-icons/icons-w98-image-old-gif.ico",
-    "upstreamPath": "icons/w98_image_old_gif.ico"
-  },
-  {
-    "key": "icons-w98-image-old-jpeg",
-    "label": "W98 Image Old Jpeg",
-    "path": "/windows-icons/icons-w98-image-old-jpeg.ico",
-    "upstreamPath": "icons/w98_image_old_jpeg.ico"
+    "key": "icons-w98-html2-new",
+    "label": "W98 Html2 New",
+    "path": "/windows-icons/icons-w98-html2-new.ico",
+    "upstreamPath": "icons/w98_html2_new.ico"
   },
   {
     "key": "icons-w98-imaggif",
@@ -3795,6 +3831,18 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_imagWMF.ico"
   },
   {
+    "key": "icons-w98-image-old-gif",
+    "label": "W98 Image Old Gif",
+    "path": "/windows-icons/icons-w98-image-old-gif.ico",
+    "upstreamPath": "icons/w98_image_old_gif.ico"
+  },
+  {
+    "key": "icons-w98-image-old-jpeg",
+    "label": "W98 Image Old Jpeg",
+    "path": "/windows-icons/icons-w98-image-old-jpeg.ico",
+    "upstreamPath": "icons/w98_image_old_jpeg.ico"
+  },
+  {
     "key": "icons-w98-infrared",
     "label": "W98 Infrared",
     "path": "/windows-icons/icons-w98-infrared.ico",
@@ -3805,6 +3853,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Input Devices",
     "path": "/windows-icons/icons-w98-input-devices.ico",
     "upstreamPath": "icons/w98_input_devices.ico"
+  },
+  {
+    "key": "icons-w98-installer",
+    "label": "W98 Installer",
+    "path": "/windows-icons/icons-w98-installer.ico",
+    "upstreamPath": "icons/w98_installer.ico"
   },
   {
     "key": "icons-w98-installer-file-gear",
@@ -3819,22 +3873,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_installer_generic_old.ico"
   },
   {
-    "key": "icons-w98-installer",
-    "label": "W98 Installer",
-    "path": "/windows-icons/icons-w98-installer.ico",
-    "upstreamPath": "icons/w98_installer.ico"
-  },
-  {
     "key": "icons-w98-internet-connection-wiz",
     "label": "W98 Internet Connection Wiz",
     "path": "/windows-icons/icons-w98-internet-connection-wiz.ico",
     "upstreamPath": "icons/w98_internet_connection_wiz.ico"
-  },
-  {
-    "key": "icons-w98-internet-options-old-e",
-    "label": "W98 Internet Options Old E",
-    "path": "/windows-icons/icons-w98-internet-options-old-e.ico",
-    "upstreamPath": "icons/w98_internet_options_old_e.ico"
   },
   {
     "key": "icons-w98-internet-options",
@@ -3843,10 +3885,22 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_internet_options.ico"
   },
   {
+    "key": "icons-w98-internet-options-old-e",
+    "label": "W98 Internet Options Old E",
+    "path": "/windows-icons/icons-w98-internet-options-old-e.ico",
+    "upstreamPath": "icons/w98_internet_options_old_e.ico"
+  },
+  {
     "key": "icons-w98-ipconfig",
     "label": "W98 Ipconfig",
     "path": "/windows-icons/icons-w98-ipconfig.ico",
     "upstreamPath": "icons/w98_ipconfig.ico"
+  },
+  {
+    "key": "icons-w98-java",
+    "label": "W98 Java",
+    "path": "/windows-icons/icons-w98-java.ico",
+    "upstreamPath": "icons/w98_java.ico"
   },
   {
     "key": "icons-w98-java-dpf",
@@ -3861,10 +3915,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_java_ocx.ico"
   },
   {
-    "key": "icons-w98-java",
-    "label": "W98 Java",
-    "path": "/windows-icons/icons-w98-java.ico",
-    "upstreamPath": "icons/w98_java.ico"
+    "key": "icons-w98-joystick",
+    "label": "W98 Joystick",
+    "path": "/windows-icons/icons-w98-joystick.ico",
+    "upstreamPath": "icons/w98_joystick.ico"
   },
   {
     "key": "icons-w98-joystick-alt",
@@ -3879,22 +3933,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_joystick_button.ico"
   },
   {
-    "key": "icons-w98-joystick",
-    "label": "W98 Joystick",
-    "path": "/windows-icons/icons-w98-joystick.ico",
-    "upstreamPath": "icons/w98_joystick.ico"
-  },
-  {
     "key": "icons-w98-key-gray",
     "label": "W98 Key Gray",
     "path": "/windows-icons/icons-w98-key-gray.ico",
     "upstreamPath": "icons/w98_key_gray.ico"
-  },
-  {
-    "key": "icons-w98-key-padlock-help",
-    "label": "W98 Key Padlock Help",
-    "path": "/windows-icons/icons-w98-key-padlock-help.ico",
-    "upstreamPath": "icons/w98_key_padlock_help.ico"
   },
   {
     "key": "icons-w98-key-padlock",
@@ -3903,16 +3945,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_key_padlock.ico"
   },
   {
+    "key": "icons-w98-key-padlock-help",
+    "label": "W98 Key Padlock Help",
+    "path": "/windows-icons/icons-w98-key-padlock-help.ico",
+    "upstreamPath": "icons/w98_key_padlock_help.ico"
+  },
+  {
     "key": "icons-w98-key-webfile",
     "label": "W98 Key Webfile",
     "path": "/windows-icons/icons-w98-key-webfile.ico",
     "upstreamPath": "icons/w98_key_webfile.ico"
-  },
-  {
-    "key": "icons-w98-key-win-alt",
-    "label": "W98 Key Win Alt",
-    "path": "/windows-icons/icons-w98-key-win-alt.ico",
-    "upstreamPath": "icons/w98_key_win_alt.ico"
   },
   {
     "key": "icons-w98-key-win",
@@ -3921,34 +3963,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_key_win.ico"
   },
   {
+    "key": "icons-w98-key-win-alt",
+    "label": "W98 Key Win Alt",
+    "path": "/windows-icons/icons-w98-key-win-alt.ico",
+    "upstreamPath": "icons/w98_key_win_alt.ico"
+  },
+  {
     "key": "icons-w98-key-world",
     "label": "W98 Key World",
     "path": "/windows-icons/icons-w98-key-world.ico",
     "upstreamPath": "icons/w98_key_world.ico"
-  },
-  {
-    "key": "icons-w98-keyboard-delay",
-    "label": "W98 Keyboard Delay",
-    "path": "/windows-icons/icons-w98-keyboard-delay.ico",
-    "upstreamPath": "icons/w98_keyboard_delay.ico"
-  },
-  {
-    "key": "icons-w98-keyboard-musical-midi",
-    "label": "W98 Keyboard Musical Midi",
-    "path": "/windows-icons/icons-w98-keyboard-musical-midi.ico",
-    "upstreamPath": "icons/w98_keyboard_musical_midi.ico"
-  },
-  {
-    "key": "icons-w98-keyboard-musical",
-    "label": "W98 Keyboard Musical",
-    "path": "/windows-icons/icons-w98-keyboard-musical.ico",
-    "upstreamPath": "icons/w98_keyboard_musical.ico"
-  },
-  {
-    "key": "icons-w98-keyboard-repeat-rate",
-    "label": "W98 Keyboard Repeat Rate",
-    "path": "/windows-icons/icons-w98-keyboard-repeat-rate.ico",
-    "upstreamPath": "icons/w98_keyboard_repeat_rate.ico"
   },
   {
     "key": "icons-w98-keyboard",
@@ -3957,16 +3981,34 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_keyboard.ico"
   },
   {
+    "key": "icons-w98-keyboard-delay",
+    "label": "W98 Keyboard Delay",
+    "path": "/windows-icons/icons-w98-keyboard-delay.ico",
+    "upstreamPath": "icons/w98_keyboard_delay.ico"
+  },
+  {
+    "key": "icons-w98-keyboard-musical",
+    "label": "W98 Keyboard Musical",
+    "path": "/windows-icons/icons-w98-keyboard-musical.ico",
+    "upstreamPath": "icons/w98_keyboard_musical.ico"
+  },
+  {
+    "key": "icons-w98-keyboard-musical-midi",
+    "label": "W98 Keyboard Musical Midi",
+    "path": "/windows-icons/icons-w98-keyboard-musical-midi.ico",
+    "upstreamPath": "icons/w98_keyboard_musical_midi.ico"
+  },
+  {
+    "key": "icons-w98-keyboard-repeat-rate",
+    "label": "W98 Keyboard Repeat Rate",
+    "path": "/windows-icons/icons-w98-keyboard-repeat-rate.ico",
+    "upstreamPath": "icons/w98_keyboard_repeat_rate.ico"
+  },
+  {
     "key": "icons-w98-keys",
     "label": "W98 Keys",
     "path": "/windows-icons/icons-w98-keys.ico",
     "upstreamPath": "icons/w98_keys.ico"
-  },
-  {
-    "key": "icons-w98-kodak-imaging-file",
-    "label": "W98 Kodak Imaging File",
-    "path": "/windows-icons/icons-w98-kodak-imaging-file.ico",
-    "upstreamPath": "icons/w98_kodak_imaging_file.ico"
   },
   {
     "key": "icons-w98-kodak-imaging",
@@ -3975,22 +4017,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_kodak_imaging.ico"
   },
   {
-    "key": "icons-w98-laptop-infrared-2",
-    "label": "W98 Laptop Infrared 2",
-    "path": "/windows-icons/icons-w98-laptop-infrared-2.ico",
-    "upstreamPath": "icons/w98_laptop_infrared_2.ico"
-  },
-  {
-    "key": "icons-w98-laptop-infrared",
-    "label": "W98 Laptop Infrared",
-    "path": "/windows-icons/icons-w98-laptop-infrared.ico",
-    "upstreamPath": "icons/w98_laptop_infrared.ico"
-  },
-  {
-    "key": "icons-w98-laptop-small",
-    "label": "W98 Laptop Small",
-    "path": "/windows-icons/icons-w98-laptop-small.ico",
-    "upstreamPath": "icons/w98_laptop_small.ico"
+    "key": "icons-w98-kodak-imaging-file",
+    "label": "W98 Kodak Imaging File",
+    "path": "/windows-icons/icons-w98-kodak-imaging-file.ico",
+    "upstreamPath": "icons/w98_kodak_imaging_file.ico"
   },
   {
     "key": "icons-w98-laptop",
@@ -3999,16 +4029,28 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_laptop.ico"
   },
   {
+    "key": "icons-w98-laptop-infrared",
+    "label": "W98 Laptop Infrared",
+    "path": "/windows-icons/icons-w98-laptop-infrared.ico",
+    "upstreamPath": "icons/w98_laptop_infrared.ico"
+  },
+  {
+    "key": "icons-w98-laptop-infrared-2",
+    "label": "W98 Laptop Infrared 2",
+    "path": "/windows-icons/icons-w98-laptop-infrared-2.ico",
+    "upstreamPath": "icons/w98_laptop_infrared_2.ico"
+  },
+  {
+    "key": "icons-w98-laptop-small",
+    "label": "W98 Laptop Small",
+    "path": "/windows-icons/icons-w98-laptop-small.ico",
+    "upstreamPath": "icons/w98_laptop_small.ico"
+  },
+  {
     "key": "icons-w98-loudspeaker-muted",
     "label": "W98 Loudspeaker Muted",
     "path": "/windows-icons/icons-w98-loudspeaker-muted.ico",
     "upstreamPath": "icons/w98_loudspeaker_muted.ico"
-  },
-  {
-    "key": "icons-w98-loudspeaker-rays-green",
-    "label": "W98 Loudspeaker Rays Green",
-    "path": "/windows-icons/icons-w98-loudspeaker-rays-green.ico",
-    "upstreamPath": "icons/w98_loudspeaker_rays_green.ico"
   },
   {
     "key": "icons-w98-loudspeaker-rays",
@@ -4017,10 +4059,22 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_loudspeaker_rays.ico"
   },
   {
+    "key": "icons-w98-loudspeaker-rays-green",
+    "label": "W98 Loudspeaker Rays Green",
+    "path": "/windows-icons/icons-w98-loudspeaker-rays-green.ico",
+    "upstreamPath": "icons/w98_loudspeaker_rays_green.ico"
+  },
+  {
     "key": "icons-w98-loudspeaker-wave",
     "label": "W98 Loudspeaker Wave",
     "path": "/windows-icons/icons-w98-loudspeaker-wave.ico",
     "upstreamPath": "icons/w98_loudspeaker_wave.ico"
+  },
+  {
+    "key": "icons-w98-magnifying-glass",
+    "label": "W98 Magnifying Glass",
+    "path": "/windows-icons/icons-w98-magnifying-glass.ico",
+    "upstreamPath": "icons/w98_magnifying_glass.ico"
   },
   {
     "key": "icons-w98-magnifying-glass-3",
@@ -4035,12 +4089,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_magnifying_glass_4.ico"
   },
   {
-    "key": "icons-w98-magnifying-glass",
-    "label": "W98 Magnifying Glass",
-    "path": "/windows-icons/icons-w98-magnifying-glass.ico",
-    "upstreamPath": "icons/w98_magnifying_glass.ico"
-  },
-  {
     "key": "icons-w98-mailbox-world",
     "label": "W98 Mailbox World",
     "path": "/windows-icons/icons-w98-mailbox-world.ico",
@@ -4051,6 +4099,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Mci Devices",
     "path": "/windows-icons/icons-w98-mci-devices.ico",
     "upstreamPath": "icons/w98_mci_devices.ico"
+  },
+  {
+    "key": "icons-w98-media-player",
+    "label": "W98 Media Player",
+    "path": "/windows-icons/icons-w98-media-player.ico",
+    "upstreamPath": "icons/w98_media_player.ico"
   },
   {
     "key": "icons-w98-media-player-file",
@@ -4125,12 +4179,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_media_player_stream_sun4.ico"
   },
   {
-    "key": "icons-w98-media-player",
-    "label": "W98 Media Player",
-    "path": "/windows-icons/icons-w98-media-player.ico",
-    "upstreamPath": "icons/w98_media_player.ico"
-  },
-  {
     "key": "icons-w98-memory",
     "label": "W98 Memory",
     "path": "/windows-icons/icons-w98-memory.ico",
@@ -4161,16 +4209,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_message_tack.ico"
   },
   {
-    "key": "icons-w98-microphone-2",
-    "label": "W98 Microphone 2",
-    "path": "/windows-icons/icons-w98-microphone-2.ico",
-    "upstreamPath": "icons/w98_microphone_2.ico"
-  },
-  {
     "key": "icons-w98-microphone",
     "label": "W98 Microphone",
     "path": "/windows-icons/icons-w98-microphone.ico",
     "upstreamPath": "icons/w98_microphone.ico"
+  },
+  {
+    "key": "icons-w98-microphone-2",
+    "label": "W98 Microphone 2",
+    "path": "/windows-icons/icons-w98-microphone-2.ico",
+    "upstreamPath": "icons/w98_microphone_2.ico"
   },
   {
     "key": "icons-w98-midi-bl",
@@ -4269,6 +4317,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_monitor_windows.ico"
   },
   {
+    "key": "icons-w98-mouse",
+    "label": "W98 Mouse",
+    "path": "/windows-icons/icons-w98-mouse.ico",
+    "upstreamPath": "icons/w98_mouse.ico"
+  },
+  {
     "key": "icons-w98-mouse-hide",
     "label": "W98 Mouse Hide",
     "path": "/windows-icons/icons-w98-mouse-hide.ico",
@@ -4317,12 +4371,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_mouse_wireless.ico"
   },
   {
-    "key": "icons-w98-mouse",
-    "label": "W98 Mouse",
-    "path": "/windows-icons/icons-w98-mouse.ico",
-    "upstreamPath": "icons/w98_mouse.ico"
-  },
-  {
     "key": "icons-w98-move-system-file",
     "label": "W98 Move System File",
     "path": "/windows-icons/icons-w98-move-system-file.ico",
@@ -4335,28 +4383,28 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_movie_maker.ico"
   },
   {
-    "key": "icons-w98-ms-dos-2",
-    "label": "W98 Ms Dos 2",
-    "path": "/windows-icons/icons-w98-ms-dos-2.ico",
-    "upstreamPath": "icons/w98_ms-dos_2.ico"
-  },
-  {
     "key": "icons-w98-ms-dos",
     "label": "W98 Ms Dos",
     "path": "/windows-icons/icons-w98-ms-dos.ico",
     "upstreamPath": "icons/w98_ms-dos.ico"
   },
   {
-    "key": "icons-w98-msagent-file",
-    "label": "W98 Msagent File",
-    "path": "/windows-icons/icons-w98-msagent-file.ico",
-    "upstreamPath": "icons/w98_msagent_file.ico"
+    "key": "icons-w98-ms-dos-2",
+    "label": "W98 Ms Dos 2",
+    "path": "/windows-icons/icons-w98-ms-dos-2.ico",
+    "upstreamPath": "icons/w98_ms-dos_2.ico"
   },
   {
     "key": "icons-w98-msagent",
     "label": "W98 Msagent",
     "path": "/windows-icons/icons-w98-msagent.ico",
     "upstreamPath": "icons/w98_msagent.ico"
+  },
+  {
+    "key": "icons-w98-msagent-file",
+    "label": "W98 Msagent File",
+    "path": "/windows-icons/icons-w98-msagent-file.ico",
+    "upstreamPath": "icons/w98_msagent_file.ico"
   },
   {
     "key": "icons-w98-msconfig",
@@ -4383,28 +4431,22 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_msg_question.ico"
   },
   {
-    "key": "icons-w98-msg-warning-inv",
-    "label": "W98 Msg Warning Inv",
-    "path": "/windows-icons/icons-w98-msg-warning-inv.ico",
-    "upstreamPath": "icons/w98_msg_warning_inv.ico"
-  },
-  {
     "key": "icons-w98-msg-warning",
     "label": "W98 Msg Warning",
     "path": "/windows-icons/icons-w98-msg-warning.ico",
     "upstreamPath": "icons/w98_msg_warning.ico"
   },
   {
+    "key": "icons-w98-msg-warning-inv",
+    "label": "W98 Msg Warning Inv",
+    "path": "/windows-icons/icons-w98-msg-warning-inv.ico",
+    "upstreamPath": "icons/w98_msg_warning_inv.ico"
+  },
+  {
     "key": "icons-w98-mshearts",
     "label": "W98 Mshearts",
     "path": "/windows-icons/icons-w98-mshearts.ico",
     "upstreamPath": "icons/w98_mshearts.ico"
-  },
-  {
-    "key": "icons-w98-msie-box",
-    "label": "W98 Msie Box",
-    "path": "/windows-icons/icons-w98-msie-box.ico",
-    "upstreamPath": "icons/w98_msie_box.ico"
   },
   {
     "key": "icons-w98-msie1",
@@ -4419,16 +4461,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_msie2.ico"
   },
   {
+    "key": "icons-w98-msie-box",
+    "label": "W98 Msie Box",
+    "path": "/windows-icons/icons-w98-msie-box.ico",
+    "upstreamPath": "icons/w98_msie_box.ico"
+  },
+  {
     "key": "icons-w98-msinfo32",
     "label": "W98 Msinfo32",
     "path": "/windows-icons/icons-w98-msinfo32.ico",
     "upstreamPath": "icons/w98_msinfo32.ico"
-  },
-  {
-    "key": "icons-w98-msn-cool",
-    "label": "W98 Msn Cool",
-    "path": "/windows-icons/icons-w98-msn-cool.ico",
-    "upstreamPath": "icons/w98_msn_cool.ico"
   },
   {
     "key": "icons-w98-msn",
@@ -4449,6 +4491,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_msn3.ico"
   },
   {
+    "key": "icons-w98-msn-cool",
+    "label": "W98 Msn Cool",
+    "path": "/windows-icons/icons-w98-msn-cool.ico",
+    "upstreamPath": "icons/w98_msn_cool.ico"
+  },
+  {
     "key": "icons-w98-multimedia",
     "label": "W98 Multimedia",
     "path": "/windows-icons/icons-w98-multimedia.ico",
@@ -4461,16 +4509,22 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_nail.ico"
   },
   {
+    "key": "icons-w98-netmeeting",
+    "label": "W98 Netmeeting",
+    "path": "/windows-icons/icons-w98-netmeeting.ico",
+    "upstreamPath": "icons/w98_netmeeting.ico"
+  },
+  {
     "key": "icons-w98-netmeeting-share",
     "label": "W98 Netmeeting Share",
     "path": "/windows-icons/icons-w98-netmeeting-share.ico",
     "upstreamPath": "icons/w98_netmeeting_share.ico"
   },
   {
-    "key": "icons-w98-netmeeting",
-    "label": "W98 Netmeeting",
-    "path": "/windows-icons/icons-w98-netmeeting.ico",
-    "upstreamPath": "icons/w98_netmeeting.ico"
+    "key": "icons-w98-netshow",
+    "label": "W98 Netshow",
+    "path": "/windows-icons/icons-w98-netshow.ico",
+    "upstreamPath": "icons/w98_netshow.ico"
   },
   {
     "key": "icons-w98-netshow-arrow",
@@ -4485,10 +4539,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_netshow_notransm.ico"
   },
   {
-    "key": "icons-w98-netshow",
-    "label": "W98 Netshow",
-    "path": "/windows-icons/icons-w98-netshow.ico",
-    "upstreamPath": "icons/w98_netshow.ico"
+    "key": "icons-w98-network",
+    "label": "W98 Network",
+    "path": "/windows-icons/icons-w98-network.ico",
+    "upstreamPath": "icons/w98_network.ico"
   },
   {
     "key": "icons-w98-network-cool-two-pcs",
@@ -4497,16 +4551,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_network_cool_two_pcs.ico"
   },
   {
+    "key": "icons-w98-network-drive",
+    "label": "W98 Network Drive",
+    "path": "/windows-icons/icons-w98-network-drive.ico",
+    "upstreamPath": "icons/w98_network_drive.ico"
+  },
+  {
     "key": "icons-w98-network-drive-cool",
     "label": "W98 Network Drive Cool",
     "path": "/windows-icons/icons-w98-network-drive-cool.ico",
     "upstreamPath": "icons/w98_network_drive_cool.ico"
-  },
-  {
-    "key": "icons-w98-network-drive-unavailable-cool",
-    "label": "W98 Network Drive Unavailable Cool",
-    "path": "/windows-icons/icons-w98-network-drive-unavailable-cool.ico",
-    "upstreamPath": "icons/w98_network_drive_unavailable_cool.ico"
   },
   {
     "key": "icons-w98-network-drive-unavailable",
@@ -4515,16 +4569,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_network_drive_unavailable.ico"
   },
   {
+    "key": "icons-w98-network-drive-unavailable-cool",
+    "label": "W98 Network Drive Unavailable Cool",
+    "path": "/windows-icons/icons-w98-network-drive-unavailable-cool.ico",
+    "upstreamPath": "icons/w98_network_drive_unavailable_cool.ico"
+  },
+  {
     "key": "icons-w98-network-drive-world",
     "label": "W98 Network Drive World",
     "path": "/windows-icons/icons-w98-network-drive-world.ico",
     "upstreamPath": "icons/w98_network_drive_world.ico"
-  },
-  {
-    "key": "icons-w98-network-drive",
-    "label": "W98 Network Drive",
-    "path": "/windows-icons/icons-w98-network-drive.ico",
-    "upstreamPath": "icons/w98_network_drive.ico"
   },
   {
     "key": "icons-w98-network-internet-pcs-installer",
@@ -4557,22 +4611,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_network_three_pcs.ico"
   },
   {
-    "key": "icons-w98-network",
-    "label": "W98 Network",
-    "path": "/windows-icons/icons-w98-network.ico",
-    "upstreamPath": "icons/w98_network.ico"
+    "key": "icons-w98-newspaper",
+    "label": "W98 Newspaper",
+    "path": "/windows-icons/icons-w98-newspaper.ico",
+    "upstreamPath": "icons/w98_newspaper.ico"
   },
   {
     "key": "icons-w98-newspaper-mail",
     "label": "W98 Newspaper Mail",
     "path": "/windows-icons/icons-w98-newspaper-mail.ico",
     "upstreamPath": "icons/w98_newspaper_mail.ico"
-  },
-  {
-    "key": "icons-w98-newspaper",
-    "label": "W98 Newspaper",
-    "path": "/windows-icons/icons-w98-newspaper.ico",
-    "upstreamPath": "icons/w98_newspaper.ico"
   },
   {
     "key": "icons-w98-no",
@@ -4593,10 +4641,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_note.ico"
   },
   {
-    "key": "icons-w98-notepad-file-gear",
-    "label": "W98 Notepad File Gear",
-    "path": "/windows-icons/icons-w98-notepad-file-gear.ico",
-    "upstreamPath": "icons/w98_notepad_file_gear.ico"
+    "key": "icons-w98-notepad",
+    "label": "W98 Notepad",
+    "path": "/windows-icons/icons-w98-notepad.ico",
+    "upstreamPath": "icons/w98_notepad.ico"
   },
   {
     "key": "icons-w98-notepad-file",
@@ -4605,10 +4653,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_notepad_file.ico"
   },
   {
-    "key": "icons-w98-notepad",
-    "label": "W98 Notepad",
-    "path": "/windows-icons/icons-w98-notepad.ico",
-    "upstreamPath": "icons/w98_notepad.ico"
+    "key": "icons-w98-notepad-file-gear",
+    "label": "W98 Notepad File Gear",
+    "path": "/windows-icons/icons-w98-notepad-file-gear.ico",
+    "upstreamPath": "icons/w98_notepad_file_gear.ico"
   },
   {
     "key": "icons-w98-odbc",
@@ -4629,6 +4677,18 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_ole2.ico"
   },
   {
+    "key": "icons-w98-outlook-express",
+    "label": "W98 Outlook Express",
+    "path": "/windows-icons/icons-w98-outlook-express.ico",
+    "upstreamPath": "icons/w98_outlook_express.ico"
+  },
+  {
+    "key": "icons-w98-outlook-express-tack",
+    "label": "W98 Outlook Express Tack",
+    "path": "/windows-icons/icons-w98-outlook-express-tack.ico",
+    "upstreamPath": "icons/w98_outlook_express_tack.ico"
+  },
+  {
     "key": "icons-w98-outlook-express-tack-drive",
     "label": "W98 Outlook Express Tack Drive",
     "path": "/windows-icons/icons-w98-outlook-express-tack-drive.ico",
@@ -4639,18 +4699,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Outlook Express Tack Folder",
     "path": "/windows-icons/icons-w98-outlook-express-tack-folder.ico",
     "upstreamPath": "icons/w98_outlook_express_tack_folder.ico"
-  },
-  {
-    "key": "icons-w98-outlook-express-tack",
-    "label": "W98 Outlook Express Tack",
-    "path": "/windows-icons/icons-w98-outlook-express-tack.ico",
-    "upstreamPath": "icons/w98_outlook_express_tack.ico"
-  },
-  {
-    "key": "icons-w98-outlook-express",
-    "label": "W98 Outlook Express",
-    "path": "/windows-icons/icons-w98-outlook-express.ico",
-    "upstreamPath": "icons/w98_outlook_express.ico"
   },
   {
     "key": "icons-w98-overlay-black",
@@ -4665,16 +4713,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_overlay_refresh.ico"
   },
   {
-    "key": "icons-w98-overlay-share-cool",
-    "label": "W98 Overlay Share Cool",
-    "path": "/windows-icons/icons-w98-overlay-share-cool.ico",
-    "upstreamPath": "icons/w98_overlay_share_cool.ico"
-  },
-  {
     "key": "icons-w98-overlay-share",
     "label": "W98 Overlay Share",
     "path": "/windows-icons/icons-w98-overlay-share.ico",
     "upstreamPath": "icons/w98_overlay_share.ico"
+  },
+  {
+    "key": "icons-w98-overlay-share-cool",
+    "label": "W98 Overlay Share Cool",
+    "path": "/windows-icons/icons-w98-overlay-share-cool.ico",
+    "upstreamPath": "icons/w98_overlay_share_cool.ico"
   },
   {
     "key": "icons-w98-overlay-shortcut",
@@ -4687,6 +4735,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Package",
     "path": "/windows-icons/icons-w98-package.ico",
     "upstreamPath": "icons/w98_package.ico"
+  },
+  {
+    "key": "icons-w98-paint",
+    "label": "W98 Paint",
+    "path": "/windows-icons/icons-w98-paint.ico",
+    "upstreamPath": "icons/w98_paint.ico"
   },
   {
     "key": "icons-w98-paint-file",
@@ -4707,12 +4761,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_paint_window.ico"
   },
   {
-    "key": "icons-w98-paint",
-    "label": "W98 Paint",
-    "path": "/windows-icons/icons-w98-paint.ico",
-    "upstreamPath": "icons/w98_paint.ico"
-  },
-  {
     "key": "icons-w98-paintbrush",
     "label": "W98 Paintbrush",
     "path": "/windows-icons/icons-w98-paintbrush.ico",
@@ -4731,28 +4779,28 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_paper_roll.ico"
   },
   {
-    "key": "icons-w98-pci-card-alt",
-    "label": "W98 Pci Card Alt",
-    "path": "/windows-icons/icons-w98-pci-card-alt.ico",
-    "upstreamPath": "icons/w98_pci_card_alt.ico"
-  },
-  {
     "key": "icons-w98-pci-card",
     "label": "W98 Pci Card",
     "path": "/windows-icons/icons-w98-pci-card.ico",
     "upstreamPath": "icons/w98_pci_card.ico"
   },
   {
-    "key": "icons-w98-pcx-alt",
-    "label": "W98 Pcx Alt",
-    "path": "/windows-icons/icons-w98-pcx-alt.ico",
-    "upstreamPath": "icons/w98_pcx_alt.ico"
+    "key": "icons-w98-pci-card-alt",
+    "label": "W98 Pci Card Alt",
+    "path": "/windows-icons/icons-w98-pci-card-alt.ico",
+    "upstreamPath": "icons/w98_pci_card_alt.ico"
   },
   {
     "key": "icons-w98-pcx",
     "label": "W98 Pcx",
     "path": "/windows-icons/icons-w98-pcx.ico",
     "upstreamPath": "icons/w98_pcx.ico"
+  },
+  {
+    "key": "icons-w98-pcx-alt",
+    "label": "W98 Pcx Alt",
+    "path": "/windows-icons/icons-w98-pcx-alt.ico",
+    "upstreamPath": "icons/w98_pcx_alt.ico"
   },
   {
     "key": "icons-w98-phone-desk",
@@ -4791,6 +4839,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_print_server.ico"
   },
   {
+    "key": "icons-w98-printer",
+    "label": "W98 Printer",
+    "path": "/windows-icons/icons-w98-printer.ico",
+    "upstreamPath": "icons/w98_printer.ico"
+  },
+  {
     "key": "icons-w98-printer-big",
     "label": "W98 Printer Big",
     "path": "/windows-icons/icons-w98-printer-big.ico",
@@ -4803,6 +4857,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_printer_cool.ico"
   },
   {
+    "key": "icons-w98-printer-def",
+    "label": "W98 Printer Def",
+    "path": "/windows-icons/icons-w98-printer-def.ico",
+    "upstreamPath": "icons/w98_printer_def.ico"
+  },
+  {
     "key": "icons-w98-printer-def-diskette",
     "label": "W98 Printer Def Diskette",
     "path": "/windows-icons/icons-w98-printer-def-diskette.ico",
@@ -4813,12 +4873,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Printer Def Network",
     "path": "/windows-icons/icons-w98-printer-def-network.ico",
     "upstreamPath": "icons/w98_printer_def_network.ico"
-  },
-  {
-    "key": "icons-w98-printer-def",
-    "label": "W98 Printer Def",
-    "path": "/windows-icons/icons-w98-printer-def.ico",
-    "upstreamPath": "icons/w98_printer_def.ico"
   },
   {
     "key": "icons-w98-printer-desk",
@@ -4887,12 +4941,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_printer_slot_filled.ico"
   },
   {
-    "key": "icons-w98-printer",
-    "label": "W98 Printer",
-    "path": "/windows-icons/icons-w98-printer.ico",
-    "upstreamPath": "icons/w98_printer.ico"
-  },
-  {
     "key": "icons-w98-processor",
     "label": "W98 Processor",
     "path": "/windows-icons/icons-w98-processor.ico",
@@ -4917,6 +4965,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_recycle_bin_directory.ico"
   },
   {
+    "key": "icons-w98-recycle-bin-empty",
+    "label": "W98 Recycle Bin Empty",
+    "path": "/windows-icons/icons-w98-recycle-bin-empty.ico",
+    "upstreamPath": "icons/w98_recycle_bin_empty.ico"
+  },
+  {
     "key": "icons-w98-recycle-bin-empty-2k",
     "label": "W98 Recycle Bin Empty 2k",
     "path": "/windows-icons/icons-w98-recycle-bin-empty-2k.ico",
@@ -4929,10 +4983,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_recycle_bin_empty_cool.ico"
   },
   {
-    "key": "icons-w98-recycle-bin-empty",
-    "label": "W98 Recycle Bin Empty",
-    "path": "/windows-icons/icons-w98-recycle-bin-empty.ico",
-    "upstreamPath": "icons/w98_recycle_bin_empty.ico"
+    "key": "icons-w98-recycle-bin-file",
+    "label": "W98 Recycle Bin File",
+    "path": "/windows-icons/icons-w98-recycle-bin-file.ico",
+    "upstreamPath": "icons/w98_recycle_bin_file.ico"
   },
   {
     "key": "icons-w98-recycle-bin-file-directory",
@@ -4941,10 +4995,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_recycle_bin_file_directory.ico"
   },
   {
-    "key": "icons-w98-recycle-bin-file",
-    "label": "W98 Recycle Bin File",
-    "path": "/windows-icons/icons-w98-recycle-bin-file.ico",
-    "upstreamPath": "icons/w98_recycle_bin_file.ico"
+    "key": "icons-w98-recycle-bin-full",
+    "label": "W98 Recycle Bin Full",
+    "path": "/windows-icons/icons-w98-recycle-bin-full.ico",
+    "upstreamPath": "icons/w98_recycle_bin_full.ico"
   },
   {
     "key": "icons-w98-recycle-bin-full-2k",
@@ -4959,22 +5013,22 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_recycle_bin_full_cool.ico"
   },
   {
-    "key": "icons-w98-recycle-bin-full",
-    "label": "W98 Recycle Bin Full",
-    "path": "/windows-icons/icons-w98-recycle-bin-full.ico",
-    "upstreamPath": "icons/w98_recycle_bin_full.ico"
-  },
-  {
-    "key": "icons-w98-regedit-binary-lock",
-    "label": "W98 Regedit Binary Lock",
-    "path": "/windows-icons/icons-w98-regedit-binary-lock.ico",
-    "upstreamPath": "icons/w98_regedit_binary_lock.ico"
+    "key": "icons-w98-regedit",
+    "label": "W98 Regedit",
+    "path": "/windows-icons/icons-w98-regedit.ico",
+    "upstreamPath": "icons/w98_regedit.ico"
   },
   {
     "key": "icons-w98-regedit-binary",
     "label": "W98 Regedit Binary",
     "path": "/windows-icons/icons-w98-regedit-binary.ico",
     "upstreamPath": "icons/w98_regedit_binary.ico"
+  },
+  {
+    "key": "icons-w98-regedit-binary-lock",
+    "label": "W98 Regedit Binary Lock",
+    "path": "/windows-icons/icons-w98-regedit-binary-lock.ico",
+    "upstreamPath": "icons/w98_regedit_binary_lock.ico"
   },
   {
     "key": "icons-w98-regedit-file",
@@ -4989,10 +5043,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_regedit_string.ico"
   },
   {
-    "key": "icons-w98-regedit",
-    "label": "W98 Regedit",
-    "path": "/windows-icons/icons-w98-regedit.ico",
-    "upstreamPath": "icons/w98_regedit.ico"
+    "key": "icons-w98-registration",
+    "label": "W98 Registration",
+    "path": "/windows-icons/icons-w98-registration.ico",
+    "upstreamPath": "icons/w98_registration.ico"
   },
   {
     "key": "icons-w98-registration-no",
@@ -5001,22 +5055,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_registration_no.ico"
   },
   {
-    "key": "icons-w98-registration",
-    "label": "W98 Registration",
-    "path": "/windows-icons/icons-w98-registration.ico",
-    "upstreamPath": "icons/w98_registration.ico"
+    "key": "icons-w98-removable-disk-drive",
+    "label": "W98 Removable Disk Drive",
+    "path": "/windows-icons/icons-w98-removable-disk-drive.ico",
+    "upstreamPath": "icons/w98_removable_disk_drive.ico"
   },
   {
     "key": "icons-w98-removable-disk-drive-alt",
     "label": "W98 Removable Disk Drive Alt",
     "path": "/windows-icons/icons-w98-removable-disk-drive-alt.ico",
     "upstreamPath": "icons/w98_removable_disk_drive_alt.ico"
-  },
-  {
-    "key": "icons-w98-removable-disk-drive",
-    "label": "W98 Removable Disk Drive",
-    "path": "/windows-icons/icons-w98-removable-disk-drive.ico",
-    "upstreamPath": "icons/w98_removable_disk_drive.ico"
   },
   {
     "key": "icons-w98-rename",
@@ -5049,28 +5097,28 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_rj_jack.ico"
   },
   {
-    "key": "icons-w98-roland-gs",
-    "label": "W98 Roland GS",
-    "path": "/windows-icons/icons-w98-roland-gs.ico",
-    "upstreamPath": "icons/w98_Roland_GS.ico"
-  },
-  {
     "key": "icons-w98-scandisk",
     "label": "W98 Scandisk",
     "path": "/windows-icons/icons-w98-scandisk.ico",
     "upstreamPath": "icons/w98_scandisk.ico"
   },
   {
-    "key": "icons-w98-scanner-alt-network",
-    "label": "W98 Scanner Alt Network",
-    "path": "/windows-icons/icons-w98-scanner-alt-network.ico",
-    "upstreamPath": "icons/w98_scanner_alt_network.ico"
+    "key": "icons-w98-scanner",
+    "label": "W98 Scanner",
+    "path": "/windows-icons/icons-w98-scanner.ico",
+    "upstreamPath": "icons/w98_scanner.ico"
   },
   {
     "key": "icons-w98-scanner-alt",
     "label": "W98 Scanner Alt",
     "path": "/windows-icons/icons-w98-scanner-alt.ico",
     "upstreamPath": "icons/w98_scanner_alt.ico"
+  },
+  {
+    "key": "icons-w98-scanner-alt-network",
+    "label": "W98 Scanner Alt Network",
+    "path": "/windows-icons/icons-w98-scanner-alt-network.ico",
+    "upstreamPath": "icons/w98_scanner_alt_network.ico"
   },
   {
     "key": "icons-w98-scanner-camera",
@@ -5083,12 +5131,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Scanner Video Cam",
     "path": "/windows-icons/icons-w98-scanner-video-cam.ico",
     "upstreamPath": "icons/w98_scanner_video_cam.ico"
-  },
-  {
-    "key": "icons-w98-scanner",
-    "label": "W98 Scanner",
-    "path": "/windows-icons/icons-w98-scanner.ico",
-    "upstreamPath": "icons/w98_scanner.ico"
   },
   {
     "key": "icons-w98-scanregw",
@@ -5145,10 +5187,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_search_directory.ico"
   },
   {
-    "key": "icons-w98-search-file-2-cool",
-    "label": "W98 Search File 2 Cool",
-    "path": "/windows-icons/icons-w98-search-file-2-cool.ico",
-    "upstreamPath": "icons/w98_search_file_2_cool.ico"
+    "key": "icons-w98-search-file",
+    "label": "W98 Search File",
+    "path": "/windows-icons/icons-w98-search-file.ico",
+    "upstreamPath": "icons/w98_search_file.ico"
   },
   {
     "key": "icons-w98-search-file-2",
@@ -5157,16 +5199,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_search_file_2.ico"
   },
   {
+    "key": "icons-w98-search-file-2-cool",
+    "label": "W98 Search File 2 Cool",
+    "path": "/windows-icons/icons-w98-search-file-2-cool.ico",
+    "upstreamPath": "icons/w98_search_file_2_cool.ico"
+  },
+  {
     "key": "icons-w98-search-file-3",
     "label": "W98 Search File 3",
     "path": "/windows-icons/icons-w98-search-file-3.ico",
     "upstreamPath": "icons/w98_search_file_3.ico"
-  },
-  {
-    "key": "icons-w98-search-file",
-    "label": "W98 Search File",
-    "path": "/windows-icons/icons-w98-search-file.ico",
-    "upstreamPath": "icons/w98_search_file.ico"
   },
   {
     "key": "icons-w98-search-laptop-1",
@@ -5223,16 +5265,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_server_window.ico"
   },
   {
-    "key": "icons-w98-settings-gear-cool",
-    "label": "W98 Settings Gear Cool",
-    "path": "/windows-icons/icons-w98-settings-gear-cool.ico",
-    "upstreamPath": "icons/w98_settings_gear_cool.ico"
-  },
-  {
     "key": "icons-w98-settings-gear",
     "label": "W98 Settings Gear",
     "path": "/windows-icons/icons-w98-settings-gear.ico",
     "upstreamPath": "icons/w98_settings_gear.ico"
+  },
+  {
+    "key": "icons-w98-settings-gear-cool",
+    "label": "W98 Settings Gear Cool",
+    "path": "/windows-icons/icons-w98-settings-gear-cool.ico",
+    "upstreamPath": "icons/w98_settings_gear_cool.ico"
   },
   {
     "key": "icons-w98-shell-window1",
@@ -5289,6 +5331,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_shut_down_with_computer.ico"
   },
   {
+    "key": "icons-w98-signature",
+    "label": "W98 Signature",
+    "path": "/windows-icons/icons-w98-signature.ico",
+    "upstreamPath": "icons/w98_signature.ico"
+  },
+  {
     "key": "icons-w98-signature-excl",
     "label": "W98 Signature Excl",
     "path": "/windows-icons/icons-w98-signature-excl.ico",
@@ -5299,12 +5347,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Signature No",
     "path": "/windows-icons/icons-w98-signature-no.ico",
     "upstreamPath": "icons/w98_signature_no.ico"
-  },
-  {
-    "key": "icons-w98-signature",
-    "label": "W98 Signature",
-    "path": "/windows-icons/icons-w98-signature.ico",
-    "upstreamPath": "icons/w98_signature.ico"
   },
   {
     "key": "icons-w98-sndvol32-input",
@@ -5325,58 +5367,22 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_sndvol32_output.ico"
   },
   {
-    "key": "icons-w98-soundgrn",
-    "label": "W98 SoundGrn",
-    "path": "/windows-icons/icons-w98-soundgrn.ico",
-    "upstreamPath": "icons/w98_SoundGrn.ico"
-  },
-  {
-    "key": "icons-w98-soundpu2",
-    "label": "W98 SoundPu2",
-    "path": "/windows-icons/icons-w98-soundpu2.ico",
-    "upstreamPath": "icons/w98_SoundPu2.ico"
-  },
-  {
-    "key": "icons-w98-soundpur",
-    "label": "W98 SoundPur",
-    "path": "/windows-icons/icons-w98-soundpur.ico",
-    "upstreamPath": "icons/w98_SoundPur.ico"
-  },
-  {
-    "key": "icons-w98-soundtel",
-    "label": "W98 SoundTel",
-    "path": "/windows-icons/icons-w98-soundtel.ico",
-    "upstreamPath": "icons/w98_SoundTel.ico"
-  },
-  {
-    "key": "icons-w98-soundvor",
-    "label": "W98 SoundVor",
-    "path": "/windows-icons/icons-w98-soundvor.ico",
-    "upstreamPath": "icons/w98_SoundVor.ico"
-  },
-  {
-    "key": "icons-w98-soundyel",
-    "label": "W98 SoundYel",
-    "path": "/windows-icons/icons-w98-soundyel.ico",
-    "upstreamPath": "icons/w98_SoundYel.ico"
-  },
-  {
     "key": "icons-w98-spider",
     "label": "W98 Spider",
     "path": "/windows-icons/icons-w98-spider.ico",
     "upstreamPath": "icons/w98_spider.ico"
   },
   {
-    "key": "icons-w98-standby-monitor-moon-cool",
-    "label": "W98 Standby Monitor Moon Cool",
-    "path": "/windows-icons/icons-w98-standby-monitor-moon-cool.ico",
-    "upstreamPath": "icons/w98_standby_monitor_moon_cool.ico"
-  },
-  {
     "key": "icons-w98-standby-monitor-moon",
     "label": "W98 Standby Monitor Moon",
     "path": "/windows-icons/icons-w98-standby-monitor-moon.ico",
     "upstreamPath": "icons/w98_standby_monitor_moon.ico"
+  },
+  {
+    "key": "icons-w98-standby-monitor-moon-cool",
+    "label": "W98 Standby Monitor Moon Cool",
+    "path": "/windows-icons/icons-w98-standby-monitor-moon-cool.ico",
+    "upstreamPath": "icons/w98_standby_monitor_moon_cool.ico"
   },
   {
     "key": "icons-w98-start-menu-shortcuts",
@@ -5541,16 +5547,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_url2.ico"
   },
   {
-    "key": "icons-w98-usb-port",
-    "label": "W98 Usb Port",
-    "path": "/windows-icons/icons-w98-usb-port.ico",
-    "upstreamPath": "icons/w98_usb_port.ico"
-  },
-  {
     "key": "icons-w98-usb",
     "label": "W98 Usb",
     "path": "/windows-icons/icons-w98-usb.ico",
     "upstreamPath": "icons/w98_usb.ico"
+  },
+  {
+    "key": "icons-w98-usb-port",
+    "label": "W98 Usb Port",
+    "path": "/windows-icons/icons-w98-usb-port.ico",
+    "upstreamPath": "icons/w98_usb_port.ico"
   },
   {
     "key": "icons-w98-user-calendar",
@@ -5559,28 +5565,28 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_user_calendar.ico"
   },
   {
-    "key": "icons-w98-user-card-view",
-    "label": "W98 User Card View",
-    "path": "/windows-icons/icons-w98-user-card-view.ico",
-    "upstreamPath": "icons/w98_user_card_view.ico"
-  },
-  {
     "key": "icons-w98-user-card",
     "label": "W98 User Card",
     "path": "/windows-icons/icons-w98-user-card.ico",
     "upstreamPath": "icons/w98_user_card.ico"
   },
   {
-    "key": "icons-w98-user-computer-pair",
-    "label": "W98 User Computer Pair",
-    "path": "/windows-icons/icons-w98-user-computer-pair.ico",
-    "upstreamPath": "icons/w98_user_computer_pair.ico"
+    "key": "icons-w98-user-card-view",
+    "label": "W98 User Card View",
+    "path": "/windows-icons/icons-w98-user-card-view.ico",
+    "upstreamPath": "icons/w98_user_card_view.ico"
   },
   {
     "key": "icons-w98-user-computer",
     "label": "W98 User Computer",
     "path": "/windows-icons/icons-w98-user-computer.ico",
     "upstreamPath": "icons/w98_user_computer.ico"
+  },
+  {
+    "key": "icons-w98-user-computer-pair",
+    "label": "W98 User Computer Pair",
+    "path": "/windows-icons/icons-w98-user-computer-pair.ico",
+    "upstreamPath": "icons/w98_user_computer_pair.ico"
   },
   {
     "key": "icons-w98-user-network",
@@ -5595,6 +5601,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_user_world.ico"
   },
   {
+    "key": "icons-w98-users",
+    "label": "W98 Users",
+    "path": "/windows-icons/icons-w98-users.ico",
+    "upstreamPath": "icons/w98_users.ico"
+  },
+  {
     "key": "icons-w98-users-green",
     "label": "W98 Users Green",
     "path": "/windows-icons/icons-w98-users-green.ico",
@@ -5605,12 +5617,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Users Key",
     "path": "/windows-icons/icons-w98-users-key.ico",
     "upstreamPath": "icons/w98_users_key.ico"
-  },
-  {
-    "key": "icons-w98-users",
-    "label": "W98 Users",
-    "path": "/windows-icons/icons-w98-users.ico",
-    "upstreamPath": "icons/w98_users.ico"
   },
   {
     "key": "icons-w98-utopia-smiley",
@@ -5655,16 +5661,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_video_tl.ico"
   },
   {
-    "key": "icons-w98-web-file-set",
-    "label": "W98 Web File Set",
-    "path": "/windows-icons/icons-w98-web-file-set.ico",
-    "upstreamPath": "icons/w98_web_file_set.ico"
-  },
-  {
     "key": "icons-w98-web-file",
     "label": "W98 Web File",
     "path": "/windows-icons/icons-w98-web-file.ico",
     "upstreamPath": "icons/w98_web_file.ico"
+  },
+  {
+    "key": "icons-w98-web-file-set",
+    "label": "W98 Web File Set",
+    "path": "/windows-icons/icons-w98-web-file-set.ico",
+    "upstreamPath": "icons/w98_web_file_set.ico"
   },
   {
     "key": "icons-w98-wia-img-a",
@@ -5679,16 +5685,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_wia_img_check.ico"
   },
   {
-    "key": "icons-w98-wia-img-color-sound",
-    "label": "W98 Wia Img Color Sound",
-    "path": "/windows-icons/icons-w98-wia-img-color-sound.ico",
-    "upstreamPath": "icons/w98_wia_img_color_sound.ico"
-  },
-  {
     "key": "icons-w98-wia-img-color",
     "label": "W98 Wia Img Color",
     "path": "/windows-icons/icons-w98-wia-img-color.ico",
     "upstreamPath": "icons/w98_wia_img_color.ico"
+  },
+  {
+    "key": "icons-w98-wia-img-color-sound",
+    "label": "W98 Wia Img Color Sound",
+    "path": "/windows-icons/icons-w98-wia-img-color-sound.ico",
+    "upstreamPath": "icons/w98_wia_img_color_sound.ico"
   },
   {
     "key": "icons-w98-wia-img-gray",
@@ -5701,6 +5707,12 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "label": "W98 Window Red Hilights",
     "path": "/windows-icons/icons-w98-window-red-hilights.ico",
     "upstreamPath": "icons/w98_window_red_hilights.ico"
+  },
+  {
+    "key": "icons-w98-windows",
+    "label": "W98 Windows",
+    "path": "/windows-icons/icons-w98-windows.ico",
+    "upstreamPath": "icons/w98_windows.ico"
   },
   {
     "key": "icons-w98-windows-button",
@@ -5751,12 +5763,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_windows_update_small.ico"
   },
   {
-    "key": "icons-w98-windows",
-    "label": "W98 Windows",
-    "path": "/windows-icons/icons-w98-windows.ico",
-    "upstreamPath": "icons/w98_windows.ico"
-  },
-  {
     "key": "icons-w98-winhelp-small-icons",
     "label": "W98 Winhelp Small Icons",
     "path": "/windows-icons/icons-w98-winhelp-small-icons.png",
@@ -5769,10 +5775,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_winrep_mag_glass.ico"
   },
   {
-    "key": "icons-w98-winrep",
-    "label": "W98 WinRep",
-    "path": "/windows-icons/icons-w98-winrep.ico",
-    "upstreamPath": "icons/w98_WinRep.ico"
+    "key": "icons-w98-wm",
+    "label": "W98 Wm",
+    "path": "/windows-icons/icons-w98-wm.ico",
+    "upstreamPath": "icons/w98_wm.ico"
   },
   {
     "key": "icons-w98-wm-file",
@@ -5781,10 +5787,10 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_wm_file.ico"
   },
   {
-    "key": "icons-w98-wm",
-    "label": "W98 Wm",
-    "path": "/windows-icons/icons-w98-wm.ico",
-    "upstreamPath": "icons/w98_wm.ico"
+    "key": "icons-w98-world",
+    "label": "W98 World",
+    "path": "/windows-icons/icons-w98-world.ico",
+    "upstreamPath": "icons/w98_world.ico"
   },
   {
     "key": "icons-w98-world-address-book",
@@ -5817,12 +5823,6 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_world_star.ico"
   },
   {
-    "key": "icons-w98-world",
-    "label": "W98 World",
-    "path": "/windows-icons/icons-w98-world.ico",
-    "upstreamPath": "icons/w98_world.ico"
-  },
-  {
     "key": "icons-w98-write-card-phone",
     "label": "W98 Write Card Phone",
     "path": "/windows-icons/icons-w98-write-card-phone.ico",
@@ -5853,16 +5853,16 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
     "upstreamPath": "icons/w98_write_yellow.ico"
   },
   {
-    "key": "icons-w98-xml-gear",
-    "label": "W98 Xml Gear",
-    "path": "/windows-icons/icons-w98-xml-gear.ico",
-    "upstreamPath": "icons/w98_xml_gear.ico"
-  },
-  {
     "key": "icons-w98-xml",
     "label": "W98 Xml",
     "path": "/windows-icons/icons-w98-xml.ico",
     "upstreamPath": "icons/w98_xml.ico"
+  },
+  {
+    "key": "icons-w98-xml-gear",
+    "label": "W98 Xml Gear",
+    "path": "/windows-icons/icons-w98-xml-gear.ico",
+    "upstreamPath": "icons/w98_xml_gear.ico"
   },
   {
     "key": "icons-wxp-1",
@@ -7168,16 +7168,22 @@ export const WINDOWS_ICON_RECORDS: readonly WindowsIconRecord[] = [
   }
 ];
 export const CURATED_WINDOWS_ICON_KEYS: readonly string[] = [
+  "icons-w2k-computer",
+  "icons-w2k-default-document",
+  "icons-w2k-desktop",
+  "icons-w2k-documents",
+  "icons-w2k-my-computer",
+  "icons-w2k-network-drive-connected",
   "icons-w2k-bitmap-image",
   "icons-w2k-closed-folder",
-  "icons-w2k-computer",
+  "icons-w2k-computer-2",
   "icons-w2k-computers",
-  "icons-w2k-default-document",
+  "icons-w2k-default-document-2",
   "icons-w2k-default-printer-network",
-  "icons-w2k-desktop",
+  "icons-w2k-desktop-2",
   "icons-w2k-desktop2",
   "icons-w2k-dial-up-networking",
-  "icons-w2k-documents",
+  "icons-w2k-documents-2",
   "icons-w2k-entire-network",
   "icons-w2k-favorites-folder",
   "icons-w2k-folder-closed",
@@ -7185,35 +7191,29 @@ export const CURATED_WINDOWS_ICON_KEYS: readonly string[] = [
   "icons-w2k-gif-image",
   "icons-w2k-internet-document",
   "icons-w2k-jpeg-image",
-  "icons-w2k-my-computer",
+  "icons-w2k-my-computer-2",
   "icons-w2k-my-documents",
+  "icons-w2k-network",
   "icons-w2k-network-2",
   "icons-w2k-network-3",
   "icons-w2k-network-computer",
-  "icons-w2k-network-drive-connected",
+  "icons-w2k-network-drive-connected-2",
   "icons-w2k-network-drive-disconnected",
   "icons-w2k-network-drive-offline",
   "icons-w2k-network-folder",
   "icons-w2k-network-folders",
   "icons-w2k-network-neighborhood",
   "icons-w2k-network-printer",
-  "icons-w2k-network",
   "icons-w2k-open-folder",
   "icons-w2k-text-document",
   "icons-w2k-write-document",
-  "icons-w2k-computer-2",
-  "icons-w2k-default-document-2",
-  "icons-w2k-desktop-2",
-  "icons-w2k-documents-2",
-  "icons-w2k-my-computer-2",
-  "icons-w2k-network-drive-connected-2",
   "icons-w98-address-book-card-users",
   "icons-w98-address-book-pad-users",
   "icons-w98-address-book-user",
   "icons-w98-address-book-users",
-  "icons-w98-camera-2",
-  "icons-w98-camera-vid-ms",
-  "icons-w98-camera-vid",
   "icons-w98-camera",
-  "icons-w98-camera3-network"
+  "icons-w98-camera3",
+  "icons-w98-camera3-network",
+  "icons-w98-camera3-plus",
+  "icons-w98-camera3-vid"
 ];
