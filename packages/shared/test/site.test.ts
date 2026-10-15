@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { normalizeImageUrl } from "../src/image-url";
-import { createStarterDocument, SiteDocumentSchema, UsernameSchema } from "../src/site";
+import { createStarterDocument, SiteDocumentSchema, THEME_PRESETS, UsernameSchema } from "../src/site";
 
 describe("site schema security boundaries", () => {
   it("rejects script URLs in user-created links", () => {
@@ -61,5 +61,41 @@ describe("normalizeImageUrl", () => {
     for (const bad of ["http://example.com/a.png", "javascript:alert(1)", "data:image/png;base64,AAAA", "ftp://x/y.png", "not a url", ""]) {
       expect(normalizeImageUrl(bad).ok).toBe(false);
     }
+  });
+});
+
+import { normalizeDocument } from "../src/site";
+
+describe("v2 schema extensions", () => {
+  it("fills defaults for documents saved before v2", () => {
+    const doc = createStarterDocument("Old", "classic98", "instagram");
+    const ig = doc.windows.find((w) => w.type === "instagram")!;
+    if (ig.type !== "instagram") throw new Error("missing ig");
+    const legacy = JSON.parse(JSON.stringify(doc));
+    const profile = legacy.windows.find((w: { type: string }) => w.type === "instagram").content.profile;
+    for (const key of ["avatarUrl", "linkLabel", "linkUrl", "dmUrl", "verified", "showCounts", "showHighlights", "showFollowedBy", "showLikes", "allowLikes", "allowComments", "highlights"]) delete profile[key];
+    const normalized = normalizeDocument(legacy);
+    const out = normalized.windows.find((w) => w.type === "instagram");
+    if (!out || out.type !== "instagram") throw new Error("missing ig");
+    expect(out.content.profile).toMatchObject({ allowLikes: true, allowComments: true, showCounts: true, verified: false, dmUrl: "", highlights: [] });
+  });
+
+  it("rejects more than 9 carousel images and unsafe dmUrl", () => {
+    const doc = createStarterDocument("T", "classic98", "instagram");
+    const ig = doc.windows.find((w) => w.type === "instagram");
+    if (!ig || ig.type !== "instagram") throw new Error("missing ig");
+    const post = { id: "p", src: null, title: "", caption: "", srcUrl: "", href: "", location: "", date: "", likes: 0, comments: [], extra: Array.from({ length: 10 }, (_, i) => ({ id: "e" + i, src: null, srcUrl: "" })) };
+    ig.content.images = [post];
+    expect(SiteDocumentSchema.safeParse(doc).success).toBe(false);
+    ig.content.images = [];
+    ig.content.profile.dmUrl = "javascript:alert(1)";
+    expect(SiteDocumentSchema.safeParse(doc).success).toBe(false);
+  });
+
+  it("offers the v2 theme presets and starter templates", () => {
+    for (const id of ["classic98", "indigo", "whiteweb", "pink98", "lavender", "mint", "midnight"]) expect(THEME_PRESETS[id]).toBeDefined();
+    expect(createStarterDocument("x", "indigo", "blank").windows).toHaveLength(0);
+    expect(SiteDocumentSchema.safeParse(createStarterDocument("x", "midnight", "portfolio")).success).toBe(true);
+    expect(SiteDocumentSchema.safeParse(createStarterDocument("x", "whiteweb", "oc")).success).toBe(true);
   });
 });

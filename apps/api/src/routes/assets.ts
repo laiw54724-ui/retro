@@ -5,6 +5,7 @@ import { requireUser, serviceClient } from "../lib/supabase";
 import { imageBytesMatchMime } from "../lib/upload";
 
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+const ASSET_KINDS = new Set(["image", "icon"]);
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 export const assets = new Hono<{ Bindings: Env }>();
@@ -20,6 +21,9 @@ assets.post("/sites/:siteId/assets", async (c) => {
 
   const body = await c.req.parseBody();
   const file = body.file;
+  const kind = typeof body.kind === "string" && body.kind ? body.kind : "image";
+  if (!ASSET_KINDS.has(kind)) return jsonError(c, 400, "invalid_kind", "kind must be 'image' or 'icon'");
+  const name = (typeof body.name === "string" ? body.name : file instanceof File ? file.name.replace(/\.[^.]+$/, "") : "").trim().slice(0, 120);
   if (!(file instanceof File)) return jsonError(c, 400, "missing_file", "Upload one image as field 'file'");
   if (!ALLOWED_TYPES.has(file.type)) return jsonError(c, 415, "unsupported_media", "Only JPEG, PNG, WebP and GIF are allowed");
   if (file.size > MAX_UPLOAD_BYTES) return jsonError(c, 413, "file_too_large", "Image must be 8 MB or smaller");
@@ -39,8 +43,54 @@ assets.post("/sites/:siteId/assets", async (c) => {
 
   const base = c.env.PUBLIC_ASSET_BASE_URL.replace(/\/$/, "");
   const url = `${base}/${key}`;
-  await supabase.from("site_assets").insert({ id: assetId, site_id: siteId, owner_id: user.id, object_key: key, mime_type: file.type, size_bytes: file.size, public_url: url });
-  return c.json({ asset: { id: assetId, url, mimeType: file.type, size: file.size } }, 201);
+  await supabase.from("site_assets").insert({ id: assetId, site_id: siteId, owner_id: user.id, object_key: key, mime_type: file.type, size_bytes: file.size, public_url: url, kind, name });
+  return c.json({ asset: { id: assetId, url, mimeType: file.type, size: file.size, kind, name } }, 201);
+});
+
+assets.get("/sites/:siteId/assets", async (c) => {
+  const user = await requireUser(c);
+  if (user instanceof Response) return user;
+  const siteId = c.req.param("siteId");
+  const kind = c.req.query("kind");
+  if (kind !== undefined && !ASSET_KINDS.has(kind)) return jsonError(c, 400, "invalid_kind", "kind must be 'image' or 'icon'");
+
+  const supabase = serviceClient(c.env);
+  let query = supabase
+    .from("site_assets")
+    .select("id,public_url,mime_type,size_bytes,kind,name,created_at")
+    .eq("site_id", siteId)
+    .eq("owner_id", user.id);
+  if (kind) query = query.eq("kind", kind);
+  const { data, error } = await query.order("created_at", { ascending: false }).limit(200);
+  if (error) return jsonError(c, 500, "db_error", "Could not list assets");
+  return c.json({
+    assets: (data ?? []).map((row) => ({ id: row.id, url: row.public_url, mimeType: row.mime_type, size: row.size_bytes, kind: row.kind, name: row.name, createdAt: row.created_at }))
+  });
+});
+
+assets.delete("/sites/:siteId/assets/:assetId", async (c) => {
+  const user = await requireUser(c);
+  if (user instanceof Response) return user;
+  const siteId = c.req.param("siteId");
+  const assetId = c.req.param("assetId");
+
+  const supabase = serviceClient(c.env);
+  const { data: asset, error } = await supabase
+    .from("site_assets")
+    .select("id,object_key")
+    .eq("id", assetId)
+    .eq("site_id", siteId)
+    .eq("owner_id", user.id)
+    .maybeSingle();
+  if (error) return jsonError(c, 500, "db_error", "Could not load asset");
+  if (!asset) return jsonError(c, 404, "not_found", "Asset not found");
+  // Defense in depth: never delete outside this user's own prefix.
+  if (!asset.object_key.startsWith(`users/${user.id}/sites/${siteId}/`)) return jsonError(c, 404, "not_found", "Asset not found");
+
+  await c.env.ASSETS.delete(asset.object_key);
+  const { error: deleteError } = await supabase.from("site_assets").delete().eq("id", assetId).eq("owner_id", user.id);
+  if (deleteError) return jsonError(c, 500, "db_error", "Could not delete asset");
+  return c.body(null, 204);
 });
 
 assets.get("/assets/*", async (c) => {

@@ -1,5 +1,5 @@
 import { useId, useState, type ChangeEvent } from "react";
-import { normalizeImageUrl, type DesktopWindow, type DocumentBlock } from "@retrodesk/shared";
+import { makeGalleryImage, makeIgPost, makeLink, normalizeImageUrl, type DesktopWindow, type DocumentBlock } from "@retrodesk/shared";
 import { api } from "../../lib/api";
 import { RetroButton } from "../../components/RetroButton";
 import { CropEditor } from "./CropEditor";
@@ -37,9 +37,9 @@ function newBlock(kind: DocumentBlock["kind"]): DocumentBlock {
     case "heading":
       return { id, kind, text: "新標題" };
     case "text":
-      return { id, kind, text: "輸入文字…", align: "left" };
+      return { id, kind, text: "輸入文字…", align: "left", bold: false, italic: false };
     case "image":
-      return { id, kind, src: null, alt: "" };
+      return { id, kind, src: null, srcUrl: "", alt: "" };
     case "button":
       return { id, kind, text: "按鈕", url: "https://" };
     case "link":
@@ -240,7 +240,7 @@ export function InspectorContent({ window, allWindows, siteId, update, onMessage
           siteId={siteId}
           label="+ 上傳圖片"
           onMessage={onMessage}
-          onUploaded={(url, file) => updateImages([...images, { id: makeId(), src: url, title: fileTitle(file), caption: "" }])}
+          onUploaded={(url, file) => updateImages([...images, makeGalleryImage({ src: url, title: fileTitle(file) })])}
         />
         <div className="inspector-items">
           {images.map((image, index) => (
@@ -274,7 +274,7 @@ export function InspectorContent({ window, allWindows, siteId, update, onMessage
     return (
       <section className="inspector-section">
         <div className="section-heading"><strong>連結</strong><span>{links.length} 個</span></div>
-        <RetroButton onClick={() => updateLinks([...links, { id: makeId(), label: "新連結", icon: "link", color: "#000080", target: "url", url: "https://", windowId: "" }])}>+ 新增連結</RetroButton>
+        <RetroButton onClick={() => updateLinks([...links, makeLink({ url: "https://" })])}>+ 新增連結</RetroButton>
         <div className="inspector-items">
           {links.map((link, index) => (
             <div className="inspector-item" key={link.id}>
@@ -368,7 +368,7 @@ export function InspectorContent({ window, allWindows, siteId, update, onMessage
       <label>Followed by<input value={profile.followedBy} onChange={(event) => setContent({ ...content, profile: { ...profile, followedBy: event.target.value } })} /></label>
 
       <div className="section-heading compact"><strong>貼文</strong><span>{images.length} 張</span></div>
-      <MediaUpload siteId={siteId} label="+ 上傳貼文圖片" onMessage={onMessage} onUploaded={(url, file) => setContent({ ...content, images: [...images, { id: makeId(), src: url, title: fileTitle(file), caption: "" }] })} />
+      <MediaUpload siteId={siteId} label="+ 上傳貼文圖片" onMessage={onMessage} onUploaded={(url, file) => setContent({ ...content, images: [...images, makeIgPost({ src: url, title: fileTitle(file) })] })} />
       {images.map((image, index) => (
         <div className="inspector-item media-item" key={image.id}>
           {image.src ? <img className="inspector-thumb" referrerPolicy="no-referrer" src={image.src} alt="" /> : null}

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { SiteDocumentSchema, THEME_PRESETS, type DesktopWindow } from "@retrodesk/shared";
+import { normalizeDocument, SiteDocumentSchema, THEME_PRESETS, type DesktopWindow } from "@retrodesk/shared";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { useEditorStore } from "../features/editor/store";
@@ -50,7 +50,7 @@ export function EditorPage() {
         store.setSite(
           site.id,
           site.username,
-          site.draft_document,
+          normalizeDocument(site.draft_document),
           site.draft_version,
           site.published_document ?? null,
           site.published_version ?? null
@@ -183,7 +183,7 @@ export function EditorPage() {
       store.setSite(
         site.id,
         site.username,
-        site.draft_document,
+        normalizeDocument(site.draft_document),
         site.draft_version,
         site.published_document ?? null,
         site.published_version ?? null

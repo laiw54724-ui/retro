@@ -15,6 +15,9 @@ export type SiteRecord = {
   updated_at: string;
 };
 
+export type AssetKind = "image" | "icon";
+export type AssetRecord = { id: string; url: string; mimeType: string; size: number; kind: AssetKind; name: string; createdAt: string };
+
 export class ApiError extends Error {
   status: number;
   code: string;
@@ -84,9 +87,17 @@ export const api = {
       false
     );
   },
-  async uploadAsset(siteId: string, file: File) {
+  async uploadAsset(siteId: string, file: File, options: { kind?: AssetKind; name?: string } = {}) {
     const form = new FormData();
     form.set("file", file);
-    return request<{ asset: { id: string; url: string; mimeType: string; size: number } }>("/api/sites/" + siteId + "/assets", { method: "POST", body: form });
+    if (options.kind) form.set("kind", options.kind);
+    if (options.name) form.set("name", options.name);
+    return request<{ asset: { id: string; url: string; mimeType: string; size: number; kind: AssetKind; name: string } }>("/api/sites/" + siteId + "/assets", { method: "POST", body: form });
+  },
+  listAssets(siteId: string, kind?: AssetKind) {
+    return request<{ assets: AssetRecord[] }>("/api/sites/" + siteId + "/assets" + (kind ? "?kind=" + kind : ""));
+  },
+  deleteAsset(siteId: string, assetId: string) {
+    return request<void>("/api/sites/" + siteId + "/assets/" + assetId, { method: "DELETE" });
   }
 };
