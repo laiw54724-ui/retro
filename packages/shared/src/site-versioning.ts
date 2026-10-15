@@ -73,7 +73,7 @@ const NonInstagramWindowV2Schema = z.discriminatedUnion("type", [
   BaseV2Window.extend({ type: z.literal("gallery"), content: z.object({ columns: z.number().int().min(1).max(5), images: z.array(StrictGalleryImageSchema).max(200) }).strict() }),
   BaseV2Window.extend({ type: z.literal("links"), content: z.object({ links: z.array(StrictLinkItemSchema).max(100) }).strict() }),
   BaseV2Window.extend({ type: z.literal("about"), content: z.object({
-    avatar: z.union([z.string().max(2048).refine((value) => { try { return ["http:", "https:"].includes(new URL(value).protocol); } catch { return false; } }), z.null()]), avatarCrop: StrictImageCropSchema.optional(), nickname: z.string().max(160), bio: z.string().max(5000),
+    avatar: ImageUrlSchema.nullable(), avatarCrop: StrictImageCropSchema.optional(), nickname: z.string().max(160), bio: z.string().max(5000),
     banner: z.string().max(500).default(""), quote: z.string().max(500).default(""), detailsTitle: z.string().max(100).default("File Details"),
     avatarUrl: z.string().max(2048).default(""), fields: z.array(StrictAboutFieldSchema).max(50), socials: z.array(StrictSocialLinkSchema).max(50)
   }).strict() })

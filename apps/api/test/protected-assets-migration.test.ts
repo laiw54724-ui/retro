@@ -20,4 +20,15 @@ describe("protected draft asset migration contract", () => {
     expect(migration).toContain("revoke all on function");
     expect(migration).toContain("to service_role");
   });
+
+  it("validates exact update identity, namespaces, references, and cardinality", () => {
+    expect(migration).toContain("invalid_asset_update");
+    expect(migration).toContain("duplicate_asset_update");
+    expect(migration).toContain("oldObjectKey");
+    expect(migration).toContain("oldPublicUrl");
+    expect(migration).toContain("v_old_prefix");
+    expect(migration).toContain("v_new_prefix");
+    expect(migration).toContain("invalid_asset_reference");
+    expect(migration).toContain("if v_count <> v_expected");
+  });
 });
