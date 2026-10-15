@@ -102,7 +102,7 @@ export const DocumentBlockSchema = z.discriminatedUnion("kind", [
   BaseBlockSchema.extend({ kind: z.literal("divider") })
 ]);
 
-const GalleryImageSchema = z.object({
+export const GalleryImageSchema = z.object({
   id: z.string().min(1),
   src: ImageUrlSchema.nullable(),
   title: z.string().max(200),
@@ -111,7 +111,7 @@ const GalleryImageSchema = z.object({
   href: SafeUrlSchema.default("")
 });
 
-const LinkItemSchema = z.object({
+export const LinkItemSchema = z.object({
   id: z.string().min(1),
   label: z.string().min(1).max(200),
   icon: z.string().max(120).default("link"),
@@ -122,21 +122,21 @@ const LinkItemSchema = z.object({
   iconUrl: z.string().max(2048).default("")
 });
 
-const AboutFieldSchema = z.object({ id: z.string().min(1), key: z.string().max(100), value: z.string().max(500) });
-const SocialLinkSchema = z.object({ id: z.string().min(1), label: z.string().max(100), url: SafeUrlSchema });
+export const AboutFieldSchema = z.object({ id: z.string().min(1), key: z.string().max(100), value: z.string().max(500) });
+export const SocialLinkSchema = z.object({ id: z.string().min(1), label: z.string().max(100), url: SafeUrlSchema });
 
-const IgCommentSchema = z.object({ id: z.string().min(1), user: z.string().max(64), text: z.string().max(1000) });
-const IgExtraImageSchema = z.object({ id: z.string().min(1), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default("") });
-const IgPostSchema = GalleryImageSchema.extend({
+export const IgCommentSchema = z.object({ id: z.string().min(1), user: z.string().max(64), text: z.string().max(1000) });
+export const IgExtraImageSchema = z.object({ id: z.string().min(1), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default("") });
+export const IgPostSchema = GalleryImageSchema.extend({
   location: z.string().max(120).default(""),
   date: z.string().max(40).default(""),
   likes: z.number().int().min(0).max(1e9).default(0),
   comments: z.array(IgCommentSchema).max(200).default([]),
   extra: z.array(IgExtraImageSchema).max(9).default([])
 });
-const IgHighlightSchema = z.object({ id: z.string().min(1), title: z.string().max(40), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default("") });
+export const IgHighlightSchema = z.object({ id: z.string().min(1), title: z.string().max(40), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default("") });
 
-const InstagramProfileSchema = z.object({
+export const InstagramProfileSchema = z.object({
   username: z.string().max(64),
   avatar: ImageUrlSchema.nullable(),
   avatarCrop: ImageCropSchema.optional(),
@@ -166,7 +166,7 @@ export const WindowAppearanceSchema = z.object({
   titleGradient: z.boolean().default(true)
 });
 
-const BaseWindowSchema = z.object({
+export const BaseWindowSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1).max(160),
   icon: z.string().min(1).max(500),
