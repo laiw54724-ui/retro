@@ -32,7 +32,7 @@ export function FilePick({ children, onFiles, multiple, className = "mini-btn wi
 export function SafeImg({ src, alt, className, style, compact }: { src: string; alt: string; className?: string; style?: React.CSSProperties; compact?: boolean }) {
   const [failed, setFailed] = useState(false);
   const resolved = useAssetSource(src);
-  useEffect(() => setFailed(false), [src]);
+  useEffect(() => setFailed(false), [src, resolved]);
   if (failed) return <div className={"img-fail" + (compact ? " compact" : "")} role="alert">{compact ? "無法載入" : IMAGE_FAIL_TEXT}</div>;
   if (!resolved) return <span className={className} style={style} aria-label={alt} />;
   return <img src={resolved} alt={alt} className={className} style={style} referrerPolicy="no-referrer" loading="lazy" decoding="async" onError={() => setFailed(true)} />;

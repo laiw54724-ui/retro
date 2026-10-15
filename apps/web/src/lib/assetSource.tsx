@@ -6,6 +6,10 @@ const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8787").replac
 type AsyncResolver = (source: string) => Promise<string | null>;
 const AssetSourceContext = createContext<AsyncResolver | null>(null);
 
+export function initialAssetSourceValue(source: string | null | undefined): string | null {
+  return source && parseAssetReference(source) ? null : source ?? null;
+}
+
 export function createAssetResolver(input: { fetchBlob: (id: string) => Promise<Blob | null>; createUrl?: (blob: Blob) => string; revokeUrl?: (url: string) => void }) {
   const cache = new Map<string, string>();
   const pending = new Map<string, Promise<string | null>>();
@@ -47,13 +51,25 @@ export function AssetSourceProvider({ siteId, children }: { siteId: string; chil
 
 export function useAssetSource(source: string | null | undefined): string | null {
   const resolve = useContext(AssetSourceContext);
-  const [value, setValue] = useState<string | null>(() => source ?? null);
+  const [state, setState] = useState<{ source: string | null | undefined; value: string | null }>(() => ({
+    source,
+    // Protected references must never be exposed as an image URL while they
+    // are being exchanged for a short-lived blob URL.
+    value: initialAssetSourceValue(source),
+  }));
+  const isProtectedReference = !!source && !!parseAssetReference(source);
   useEffect(() => {
     let active = true;
-    if (!source || !parseAssetReference(source) || !resolve) { setValue(source ?? null); return () => { active = false; }; }
-    setValue(null);
-    resolve(source).then((next) => { if (active) setValue(next); });
+    if (!source || !isProtectedReference) {
+      setState({ source, value: source ?? null });
+      return () => { active = false; };
+    }
+    setState({ source, value: null });
+    if (!resolve) return () => { active = false; };
+    resolve(source).then((next) => { if (active) setState({ source, value: next }); });
     return () => { active = false; };
-  }, [resolve, source]);
-  return value;
+  }, [isProtectedReference, resolve, source]);
+  // Effects run after paint. Derive a reset value for a changed source so a
+  // previous URL (or failure state) cannot flash while the new reference loads.
+  return state.source === source ? state.value : (isProtectedReference ? null : source ?? null);
 }

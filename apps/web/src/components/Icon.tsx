@@ -7,7 +7,7 @@ export function Icon({ name, size = 32, style, className }: { name?: string | nu
   const [failed, setFailed] = useState(false);
   const image = !!name && isImageIcon(name);
   const resolved = useAssetSource(image ? name : null);
-  useEffect(() => setFailed(false), [name]);
+  useEffect(() => setFailed(false), [name, resolved]);
   return (
     <span
       aria-hidden="true"
