@@ -13,5 +13,10 @@ test("Google sign-in button starts the Supabase OAuth redirect", async ({ page }
 
   const url = new URL(authorizeUrl);
   expect(url.searchParams.get("provider")).toBe("google");
-  expect(url.searchParams.get("redirect_to")).toBe("http://127.0.0.1:5173/onboarding");
+  expect(url.searchParams.get("redirect_to")).toBe("http://127.0.0.1:5173/auth");
+});
+
+test("OAuth errors returned to /auth are shown to the user", async ({ page }) => {
+  await page.goto("/auth?error=server_error&error_description=Unable+to+exchange+external+code");
+  await expect(page.getByText("登入失敗：Unable to exchange external code")).toBeVisible();
 });
