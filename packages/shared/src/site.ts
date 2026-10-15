@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { AssetReferenceSchema } from "./asset-reference";
 
 export const usernamePattern = /^[a-z0-9](?:[a-z0-9-]{1,18}[a-z0-9])?$/;
 export const reservedUsernames = new Set([
@@ -31,7 +32,7 @@ export const ThemeSchema = z.object({
   wall: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   pattern: z.enum(["none", "dots", "checker", "stars", "image"]),
   patternColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
-  wallImage: z.string().url().nullable().optional(),
+  wallImage: z.union([z.string().url(), AssetReferenceSchema]).nullable().optional(),
   face: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   light: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   shadow: z.string().regex(/^#[0-9a-fA-F]{6}$/),
@@ -75,13 +76,13 @@ export const SafeUrlSchema = z.string().max(2048).refine((value) => {
   }
 }, "Unsupported URL protocol");
 
-export const ImageUrlSchema = z.string().max(2048).refine((value) => {
+export const ImageUrlSchema = z.union([z.string().max(2048).refine((value) => {
   try {
     return ["http:", "https:"].includes(new URL(value).protocol);
   } catch {
     return false;
   }
-}, "Unsupported image URL");
+}, "Unsupported image URL"), AssetReferenceSchema]);
 
 export const ImageCropSchema = z.object({
   x: z.number().min(0).max(100),

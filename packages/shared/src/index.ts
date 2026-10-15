@@ -4,3 +4,4 @@ export * from "./publish-checks";
 export * from "./public-projection";
 export * from "./demo";
 export * from "./site-versioning";
+export * from "./asset-reference";

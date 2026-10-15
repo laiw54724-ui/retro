@@ -3,6 +3,7 @@ import type { Env } from "../env";
 import { jsonError } from "../lib/http";
 import { requireUser, serviceClient } from "../lib/supabase";
 import { imageBytesMatchMime } from "../lib/upload";
+import { createAssetReference } from "@retrodesk/shared";
 
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
 const ASSET_KINDS = new Set(["image", "icon"]);
@@ -35,16 +36,19 @@ assets.post("/sites/:siteId/assets", async (c) => {
 
   const extension = file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1];
   const assetId = crypto.randomUUID();
-  const key = `users/${user.id}/sites/${siteId}/${assetId}.${extension}`;
+  const key = `draft/users/${user.id}/sites/${siteId}/${assetId}.${extension}`;
   await c.env.ASSETS.put(key, bytes, {
-    httpMetadata: { contentType: file.type, cacheControl: "public, max-age=31536000, immutable" },
+    httpMetadata: { contentType: file.type, cacheControl: "private, no-store" },
     customMetadata: { ownerId: user.id, siteId }
   });
 
-  const base = c.env.PUBLIC_ASSET_BASE_URL.replace(/\/$/, "");
-  const url = `${base}/${key}`;
-  await supabase.from("site_assets").insert({ id: assetId, site_id: siteId, owner_id: user.id, object_key: key, mime_type: file.type, size_bytes: file.size, public_url: url, kind, name });
-  return c.json({ asset: { id: assetId, url, mimeType: file.type, size: file.size, kind, name } }, 201);
+  const reference = createAssetReference(assetId);
+  const { error: insertError } = await supabase.from("site_assets").insert({ id: assetId, site_id: siteId, owner_id: user.id, object_key: key, mime_type: file.type, size_bytes: file.size, public_url: reference, storage_scope: "draft_private", migration_status: "not_required", kind, name });
+  if (insertError) {
+    await c.env.ASSETS.delete(key);
+    return jsonError(c, 500, "db_error", "Could not save asset");
+  }
+  return c.json({ asset: { id: assetId, url: reference, mimeType: file.type, size: file.size, kind, name } }, 201);
 });
 
 assets.get("/sites/:siteId/assets", async (c) => {
@@ -57,15 +61,37 @@ assets.get("/sites/:siteId/assets", async (c) => {
   const supabase = serviceClient(c.env);
   let query = supabase
     .from("site_assets")
-    .select("id,public_url,mime_type,size_bytes,kind,name,created_at")
+    .select("id,public_url,mime_type,size_bytes,kind,name,created_at,storage_scope,migration_status")
     .eq("site_id", siteId)
     .eq("owner_id", user.id);
   if (kind) query = query.eq("kind", kind);
   const { data, error } = await query.order("created_at", { ascending: false }).limit(200);
   if (error) return jsonError(c, 500, "db_error", "Could not list assets");
   return c.json({
-    assets: (data ?? []).map((row) => ({ id: row.id, url: row.public_url, mimeType: row.mime_type, size: row.size_bytes, kind: row.kind, name: row.name, createdAt: row.created_at }))
+    assets: (data ?? []).map((row) => ({ id: row.id, url: row.public_url, mimeType: row.mime_type, size: row.size_bytes, kind: row.kind, name: row.name, createdAt: row.created_at, storageScope: row.storage_scope, migrationStatus: row.migration_status, migrationRequired: row.storage_scope === "legacy_public" }))
   });
+});
+
+assets.get("/sites/:siteId/assets/:assetId/content", async (c) => {
+  const user = await requireUser(c);
+  if (user instanceof Response) return user;
+  const siteId = c.req.param("siteId");
+  const assetId = c.req.param("assetId");
+  const supabase = serviceClient(c.env);
+  const { data: asset, error } = await supabase.from("site_assets").select("id,object_key,storage_scope").eq("id", assetId).eq("site_id", siteId).eq("owner_id", user.id).maybeSingle();
+  if (error) return jsonError(c, 500, "db_error", "Could not load asset");
+  if (!asset) return jsonError(c, 404, "not_found", "Asset not found");
+  const privatePrefix = `draft/users/${user.id}/sites/${siteId}/`;
+  const legacyPrefix = `users/${user.id}/sites/${siteId}/`;
+  const allowed = asset.storage_scope === "draft_private" ? asset.object_key.startsWith(privatePrefix) : asset.object_key.startsWith(legacyPrefix);
+  if (!allowed) return jsonError(c, 404, "not_found", "Asset not found");
+  const object = await c.env.ASSETS.get(asset.object_key);
+  if (!object) return c.notFound();
+  const headers = new Headers();
+  object.writeHttpMetadata(headers);
+  headers.set("Cache-Control", "private, no-store");
+  headers.set("etag", object.httpEtag);
+  return new Response(object.body, { headers });
 });
 
 assets.delete("/sites/:siteId/assets/:assetId", async (c) => {
@@ -85,7 +111,7 @@ assets.delete("/sites/:siteId/assets/:assetId", async (c) => {
   if (error) return jsonError(c, 500, "db_error", "Could not load asset");
   if (!asset) return jsonError(c, 404, "not_found", "Asset not found");
   // Defense in depth: never delete outside this user's own prefix.
-  if (!asset.object_key.startsWith(`users/${user.id}/sites/${siteId}/`)) return jsonError(c, 404, "not_found", "Asset not found");
+  if (!asset.object_key.startsWith(`draft/users/${user.id}/sites/${siteId}/`) && !asset.object_key.startsWith(`users/${user.id}/sites/${siteId}/`)) return jsonError(c, 404, "not_found", "Asset not found");
 
   await c.env.ASSETS.delete(asset.object_key);
   const { error: deleteError } = await supabase.from("site_assets").delete().eq("id", assetId).eq("owner_id", user.id);
@@ -95,6 +121,7 @@ assets.delete("/sites/:siteId/assets/:assetId", async (c) => {
 
 assets.get("/assets/*", async (c) => {
   const key = c.req.path.replace(/^\/api\/assets\//, "");
+  if (!key.startsWith("published/") && !key.startsWith("users/")) return c.notFound();
   const object = await c.env.ASSETS.get(key);
   if (!object) return c.notFound();
   const headers = new Headers();

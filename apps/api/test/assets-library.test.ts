@@ -59,4 +59,13 @@ describe("icon library endpoints", () => {
     expect(response.status).toBe(404);
     expect(deletedKeys).toEqual([]);
   });
+
+  it("rejects anonymous draft and unknown namespaces before touching R2", async () => {
+    const get = vi.fn();
+    const draft = await assets.request("/assets/draft/users/user-a/sites/site-a/asset-1.png", {}, { ASSETS: { get } } as never);
+    const unknown = await assets.request("/assets/private/users/user-a/sites/site-a/asset-1.png", {}, { ASSETS: { get } } as never);
+    expect(draft.status).toBe(404);
+    expect(unknown.status).toBe(404);
+    expect(get).not.toHaveBeenCalled();
+  });
 });
