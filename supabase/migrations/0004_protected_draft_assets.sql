@@ -50,8 +50,8 @@ begin
     v_seen := array_append(v_seen, v_id::text);
     v_ref := 'retro-asset:' || v_id::text;
     if v_update->>'oldObjectKey' is null or v_update->>'oldPublicUrl' is null or v_update->>'objectKey' is null or v_update->>'publicUrl' is null then raise exception 'invalid_asset_update'; end if;
-    if left(v_update->>'oldObjectKey', length(v_old_prefix)) <> v_old_prefix then raise exception 'invalid_legacy_asset_key'; end if;
-    if left(v_update->>'objectKey', length(v_new_prefix)) <> v_new_prefix then raise exception 'invalid_draft_asset_key'; end if;
+    if (v_update->>'oldObjectKey') !~ ('^' || v_old_prefix || v_id::text || E'\\.(jpg|png|webp|gif)$') then raise exception 'invalid_legacy_asset_key'; end if;
+    if (v_update->>'objectKey') !~ ('^' || v_new_prefix || v_id::text || E'\\.(jpg|png|webp|gif)$') then raise exception 'invalid_draft_asset_key'; end if;
     if v_update->>'publicUrl' <> v_ref then raise exception 'invalid_asset_reference'; end if;
     update public.site_assets
     set object_key = v_update->>'objectKey', public_url = v_update->>'publicUrl', storage_scope = 'draft_private', migration_status = 'migrated'

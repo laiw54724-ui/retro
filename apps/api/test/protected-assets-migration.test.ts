@@ -28,6 +28,7 @@ describe("protected draft asset migration contract", () => {
     expect(migration).toContain("oldPublicUrl");
     expect(migration).toContain("v_old_prefix");
     expect(migration).toContain("v_new_prefix");
+    expect(migration).toContain("v_id::text || E'\\\\.(jpg|png|webp|gif)$'");
     expect(migration).toContain("invalid_asset_reference");
     expect(migration).toContain("if v_count <> v_expected");
   });
