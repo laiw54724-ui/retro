@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { DesktopWindow, SiteDocument } from "@retrodesk/shared";
-import { makeWindow } from "@retrodesk/shared";
+import { createWindow } from "../modules/registry";
 
 export type SaveStatus = "idle" | "dirty" | "saving" | "saved" | "error";
 
@@ -209,7 +209,7 @@ export const useEditorStore = create<EditorState>((set) => ({
     : {}),
   addWindow: (type) => set((state) => {
     if (!state.document) return {};
-    const window = makeWindow(type, state.document.windows.length);
+    const window = createWindow(type, state.document.windows.length);
     return withHistory(
       state,
       { ...state.document, windows: [...state.document.windows, window] },

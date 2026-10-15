@@ -2,7 +2,7 @@ import { useState } from "react";
 import { THEME_PRESETS, type DesktopWindow, type RetroTheme, type SiteDocument } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { isDark, mixHex, themeView } from "../../lib/themeView";
-import { COMING_SOON, WINDOW_TYPES, registry } from "../modules/registry";
+import { COMING_SOON, moduleDefinitions, registry } from "../modules/registry";
 import { FilePick } from "../modules/ui";
 
 type Tab = "add" | "layers" | "theme";
@@ -49,10 +49,10 @@ function AddTab({ onAdd }: { onAdd: Props["onAdd"] }) {
     <>
       <strong>新增視窗</strong>
       <span className="w98-hint">點一下就會加到桌面上，並自動建立桌面圖示。</span>
-      {WINDOW_TYPES.map((type) => (
-        <button key={type} type="button" className="w98-btn add-card" onClick={() => onAdd(type)}>
-          <Icon name={registry[type].icon} size={32} />
-          <span className="add-card-text"><strong>{registry[type].label}</strong><span>{registry[type].description}</span></span>
+      {moduleDefinitions.map((module) => (
+        <button key={module.type} type="button" className="w98-btn add-card" onClick={() => onAdd(module.type)}>
+          <Icon name={module.icon} size={32} />
+          <span className="add-card-text"><strong>{module.label}</strong><span>{module.description}</span></span>
         </button>
       ))}
       <div className="w98-sep" />

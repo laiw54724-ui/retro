@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import type { DesktopWindow, RetroTheme } from "@retrodesk/shared";
+import type { DesktopWindow, EntityRef, RetroTheme } from "@retrodesk/shared";
 import type { ThemeView } from "../../lib/themeView";
 
 export type LinkAction = { target: "url" | "window"; url?: string; windowId?: string; label?: string };
@@ -15,6 +15,8 @@ export type ModuleCtx = {
   onLink: (action: LinkAction) => void;
   /** Editor only. Resolves to the stored image URL, or null after showing an error. */
   upload?: (file: File, kind?: "image" | "icon") => Promise<string | null>;
+  /** Optional boundary for resolving future site-level entities. v1 callers omit it. */
+  resolveEntity?: (ref: EntityRef) => unknown | null;
 };
 
 export type WindowOf<T extends DesktopWindow["type"]> = Extract<DesktopWindow, { type: T }>;
@@ -26,10 +28,34 @@ export type ModuleProps<T extends DesktopWindow["type"]> = {
   update: (recipe: (window: WindowOf<T>) => WindowOf<T>, historyKey?: string) => void;
 };
 
+export type ModuleCapabilities = {
+  /** The module exposes an inline editor in the authoring UI. */
+  editor: boolean;
+  /** The module can render in the visitor site. */
+  visitor: boolean;
+  /** The module has a mobile presentation. */
+  mobile: boolean;
+  /** The module can open links through the shared LinkAction boundary. */
+  links: boolean;
+  /** The module can use the scoped image/icon upload boundary. */
+  uploads: boolean;
+};
+
+export type MobilePresentation = {
+  mode: "window";
+  /** Mobile add surfaces use the same icon grid for every registered module. */
+  icon: string;
+};
+
 export type WindowModule<T extends DesktopWindow["type"]> = {
+  type: T;
+  schemaVersion: number;
   label: string;
   description: string;
   icon: string;
+  capabilities: ModuleCapabilities;
+  mobile: MobilePresentation;
+  create: (index?: number) => WindowOf<T>;
   View: (props: ModuleProps<T>) => ReactElement;
   InlineEditor: (props: ModuleProps<T>) => ReactElement;
 };

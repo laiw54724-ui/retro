@@ -1,7 +1,6 @@
-import type { ComponentType } from "react";
 import type { DesktopWindow, RetroTheme } from "@retrodesk/shared";
 import { themeView } from "../../lib/themeView";
-import { registry } from "../modules/registry";
+import { renderModule } from "../modules/registry";
 import type { LinkAction, ModuleCtx } from "../modules/types";
 
 type Props = {
@@ -40,13 +39,11 @@ export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, m
     windows: (allWindows ?? []).map((candidate) => ({ id: candidate.id, title: candidate.title })),
     onLink, upload
   };
-  const update = (recipe: (current: never) => never, key?: string) => onUpdate?.(win.id, recipe as never, key);
+  const update = (recipe: (current: DesktopWindow) => DesktopWindow, key?: string) => onUpdate?.(win.id, recipe, key);
 
-  const module = registry[win.type] as unknown as { View: ComponentType<Record<string, unknown>>; InlineEditor: ComponentType<Record<string, unknown>> };
-  const Component = ctx.editing ? module.InlineEditor : module.View;
   return (
     <div className={`module-host module-${win.type}`} style={{ fontFamily: tv.fontFamily, color: tv.text, background: win.type === "about" || win.type === "instagram" ? tv.face : "#fff" }}>
-      <Component window={win} ctx={ctx} update={update} />
+      {renderModule({ window: win, ctx, editing: ctx.editing, update })}
     </div>
   );
 }

@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b --pretty false",
     "lint": "tsc -b --pretty false",
+    "test:unit": "vitest run",
     "deploy:staging": "wrangler pages deploy dist --project-name=retrodesk-staging --branch=main",
     "deploy:production": "wrangler pages deploy dist --project-name=retrodesk --branch=main"
   },
@@ -24,6 +25,7 @@
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.0.4",
     "typescript": "^5.9.0",
+    "vitest": "^3.2.4",
     "vite": "^7.1.9",
     "wrangler": "^4.45.0"
   }

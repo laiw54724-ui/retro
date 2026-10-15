@@ -3,7 +3,7 @@ import { THEME_PRESETS, type DesktopWindow, type SiteDocument } from "@retrodesk
 import { Icon } from "../../components/Icon";
 import { IconPicker } from "../modules/links/IconPicker";
 import { themeView } from "../../lib/themeView";
-import { registry, WINDOW_TYPES } from "../modules/registry";
+import { moduleDefinitions } from "../modules/registry";
 import { useEditorStore } from "../editor/store";
 import { WindowRenderer } from "./WindowRenderer";
 
@@ -110,10 +110,10 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
           <div role="dialog" aria-label={{ add: "新增視窗", edit: "編輯視窗", theme: "主題" }[sheet]} className="m-sheet w98-window">
             <div className="m-sheet-title"><strong>{{ add: "新增視窗", edit: "編輯視窗", theme: "主題" }[sheet]}</strong><button type="button" className="m-btn sq" aria-label="關閉" onClick={() => setSheet(null)}>×</button></div>
             <div className="m-sheet-body">
-              {sheet === "add" ? WINDOW_TYPES.map((type) => (
-                <button key={type} type="button" className="w98-btn m-add" onClick={() => { store.addWindow(type); setSheet(null); }}>
-                  <Icon name={registry[type].icon} size={32} />
-                  <span className="add-card-text"><strong>{registry[type].label}</strong><span>{registry[type].description}</span></span>
+              {sheet === "add" ? moduleDefinitions.map((module) => (
+                <button key={module.type} type="button" className="w98-btn m-add" onClick={() => { store.addWindow(module.type); setSheet(null); }}>
+                  <Icon name={module.icon} size={32} />
+                  <span className="add-card-text"><strong>{module.label}</strong><span>{module.description}</span></span>
                 </button>
               )) : null}
               {sheet === "theme" ? (
