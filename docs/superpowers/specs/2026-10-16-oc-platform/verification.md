@@ -20,12 +20,12 @@
 驗證日期：2026-10-16（Asia/Singapore）。本節記錄 P0 實作與本輪可重現的本地驗證證據；未部署、未 push，且保留既有未追蹤使用者檔案。
 
 - Windows icon source checkout：`/private/tmp/retro-win95-winxp-icons`，HEAD `728a866ad59a54fd4082dbe000e1e62e50bd90e9`（upstream full commit）。
-- 實作 commits：Task1 `c0673bf`、`974e77e`、`06c280d`、`a5391d5`、`fa2bb84`；Task2 `5fffbd7`；Task3 `31780ce`、`df54db2`；Task4 `c15448a`。
+- 實作 commits：Task1 `c0673bf`、`974e77e`、`06c280d`、`a5391d5`、`fa2bb84`；Task2 `5fffbd7`；Task3 `31780ce`、`df54db2`；Task4 `c15448a`；回歸斷言修正 `fc0c71a`。
 - `pnpm icons:audit -- --source=/private/tmp/retro-win95-winxp-icons`：pass；`Imported 1193`，`unsupported 7`。
 - legacy/new path：pass。E2E 的 sourced Windows icons desktop/mobile 與 legacy PNG preservation case passed；audit 亦驗證新匯入 manifest。
 - typecheck：pass（shared、api、web 均完成）。
 - unit：pass，6 test files、24 tests（shared 1 file/14 tests；api 5 files/10 tests）。
 - build：pass（shared、api dry-run、web Vite build 均完成；Wrangler 僅輸出既有 log-file EPERM 訊息後仍完成 dry-run，web bundle 成功產出）。
-- full E2E：46 tests 中 45 passed、1 failed。responsive 與 scroll 已包含在 full E2E；responsive viewport cases、Instagram wheel/keyboard scrolling、Win98 OC circular media cases 均 passed。唯一失敗為 `tests/e2e/editor-layout.spec.ts:107`，測試期待 `Win98 精選`，但目前 `IconPicker.tsx` 渲染 `Windows 精選`（搜尋欄及結果 aria-label 同樣使用 Windows 文案），因此不是環境問題，不能以 skip 掩蓋。
-- round regression：typecheck、unit、build、icon audit pass；因上述 1 個真實 E2E 文案 mismatch，完整 regression 尚未 pass，狀態為 BLOCKED，需修正測試與實作文案契約後重跑 full E2E。
+- full E2E：46 tests、46 passed（17.4s）。responsive 與 scroll 已包含在 full E2E；responsive viewport cases、Instagram wheel/keyboard scrolling、Win98 OC circular media cases，以及 Windows icon picker case 均 passed。
+- round regression：typecheck、unit、full E2E、build、icon audit 均 pass；P0 Windows icon and Win98 OC visual implementation regression 完成。
 - `git diff --check`：pass；verification 文件占位掃描無匹配。
