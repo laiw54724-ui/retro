@@ -55,3 +55,21 @@
 - Cloudflare Pages staging deployment：`66ee9c16`（部署 source `81fae02`；本段只有 shared contract 與文件變更，API runtime 未改動）。
 - staging canonical：https://retrodesk-staging.pages.dev；immutable deployment：https://66ee9c16.retrodesk-staging.pages.dev。
 - HTTP smoke：canonical／immutable 首頁皆 `200`；immutable `/windows-icons/brown.ico` 為 `200` 且 `content-type: image/vnd.microsoft.icon`；canonical 已提供本次 bundle `index-ad9TLqki.js`。
+
+## #18A typed App registry and dispatch
+
+驗證日期：2026-10-16（Asia/Singapore）。本節記錄 #18A 第二個可獨立驗收里程碑；仍維持 v1 persistence/runtime，不在本段啟用 v2 寫入。
+
+- 實作計畫：`docs/superpowers/plans/2026-10-16-app-registry-contract.md`。
+- 實作 commits：`d741a7e`、`21c988d`。
+- registry contract：五個既有 app 統一宣告 stable type、schema version、default factory、capabilities、mobile presentation、View 與 InlineEditor。
+- single source：desktop 與兩個 mobile add surfaces 均由同一 registry insertion order/metadata 產生；editor store 也只經 registry factory 建立視窗。
+- renderer：View／InlineEditor dispatch 集中於 registry helper；`WindowRenderer` 不再以 unknown component cast 選擇 renderer。
+- future entity boundary：`ModuleCtx.resolveEntity` 僅建立可選 typed boundary；v1 caller 不傳入，不改變現有 runtime。
+- web focused unit：4 passed；驗證五個 module、metadata、factory defaults 與 missing registration failure。
+- full unit：38 passed（shared 24 + API 10 + web 4）。
+- typecheck：pass（shared、api、web）。
+- full E2E：47 passed；新增 desktop/mobile add-surface registry parity 與 mobile add-window flow，既有 46 項流程全數維持通過。
+- build：pass（shared、API Wrangler dry-run、web Vite）；僅有既有 Wrangler debug-log EPERM 訊息與 bundle-size warning。
+- `git diff --check`：pass。
+- review：獨立 spec review 與 quality review 均通過；spec review 所抓到的 mobile metadata 未消費、重複 module list 與缺少 E2E 均由 `21c988d` 修正。
