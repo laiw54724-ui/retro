@@ -66,7 +66,7 @@ export function EditorPage() {
     if (!store.document || store.saveStatus !== "dirty" || !store.siteId || saveInFlight.current || conflict) return;
 
     const timer = window.setTimeout(async () => {
-      const documentToSave = store.document;
+      const documentToSave = store.document!;
       const versionToSave = store.version;
       const invalid = validationMessage(documentToSave);
       if (invalid) {
