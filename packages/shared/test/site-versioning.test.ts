@@ -107,6 +107,14 @@ describe("versioned site document contract", () => {
       expect(parsed).toMatchObject({ ok: false, code: "invalid" });
       if (!parsed.ok && parsed.code === "invalid") expect(parsed.diagnostics.some((d) => path.every((part) => d.path.map(String).includes(part)))).toBe(true);
     }
+    const tooLong = "x".repeat(161);
+    const nestedIds = [
+      { value: { ...migrated.document, windows: migrated.document.windows.map((w) => w.type === "document" ? { ...w, content: { blocks: [{ id: tooLong, kind: "heading", text: "x" }] } } : w) }, path: "blocks" },
+      { value: { ...migrated.document, windows: migrated.document.windows.map((w) => w.type === "gallery" ? { ...w, content: { ...w.content, images: [{ ...w.content.images[0], id: tooLong }] } } : w) }, path: "images" },
+      { value: { ...migrated.document, windows: migrated.document.windows.map((w) => w.type === "links" ? { ...w, content: { ...w.content, links: [{ ...w.content.links[0], id: tooLong }] } } : w) }, path: "links" },
+      { value: { ...migrated.document, windows: migrated.document.windows.map((w) => w.type === "about" ? { ...w, content: { ...w.content, fields: [{ ...w.content.fields[0], id: tooLong }] } } : w) }, path: "fields" },
+    ];
+    for (const item of nestedIds) expect(parseSiteDocument(item.value)).toMatchObject({ ok: false, code: "invalid" });
     expect(parseSiteDocument({ ...migrated.document, windows: [...migrated.document.windows, migrated.document.windows[0]] })).toMatchObject({ ok: false, code: "invalid" });
     expect(parseSiteDocument({ ...migrated.document, entities: { ...migrated.document.entities, posts: [{ ...migrated.document.entities.posts[0], authorProfileId: "missing" }] } })).toMatchObject({ ok: false, code: "invalid" });
   });
@@ -140,5 +148,20 @@ describe("versioned site document contract", () => {
     const reversed = parseSiteDocument({ ...migrated.document, entities: { profiles: migrated.document.entities.profiles.map((p) => ({ ...p, siteId: "other" })), posts: migrated.document.entities.posts }, windows: migrated.document.windows.map((w) => w.type === "instagram" ? { ...w, content: { ...w.content, profileRef: { ...w.content.profileRef, siteId: "site-a" } } } : w) });
     expect(reversed).toMatchObject({ ok: false });
     if (!reversed.ok && reversed.code === "invalid") expect(reversed.diagnostics[0]).toMatchObject({ code: "cross_site", path: ["entities"] });
+  });
+
+  it("bounds generated IDs for very long legacy window/post IDs deterministically", () => {
+    const input = fixture();
+    const longWindowId = "window-" + "w".repeat(500);
+    const longPostId = "post-" + "p".repeat(500);
+    input.windows = input.windows.map((window) => window.id === "ig-1" && window.type === "instagram" ? { ...window, id: longWindowId, content: { ...window.content, images: [{ ...window.content.images[0], id: longPostId }] } } : window);
+    const first = migrateSiteDocumentV2(input, { siteId: "site-a" });
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    expect(first.document.windows.every((window) => window.id.length <= 160)).toBe(true);
+    expect(first.document.entities.profiles.every((entity) => entity.id.length <= 160)).toBe(true);
+    expect(first.document.entities.posts.every((entity) => entity.id.length <= 160)).toBe(true);
+    expect(parseSiteDocument(first.document)).toMatchObject({ ok: true, version: 2 });
+    expect(migrateSiteDocumentV2(input, { siteId: "site-a" })).toEqual(first);
   });
 });

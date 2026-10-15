@@ -64,7 +64,7 @@ export const WindowLayoutSchema = z.object({
   mobile: MobileLayoutSchema
 });
 
-const SafeUrlSchema = z.string().max(2048).refine((value) => {
+export const SafeUrlSchema = z.string().max(2048).refine((value) => {
   // A bare scheme is what the editor pre-fills; treat it as "not filled in yet" (rendered as an inert link).
   if (value === "" || value === "https://" || value === "http://") return true;
   try {
