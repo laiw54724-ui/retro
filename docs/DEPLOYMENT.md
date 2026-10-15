@@ -94,6 +94,7 @@ For each environment, configure these **variables**:
 | `API_URL` | `https://api-staging.example.com` |
 | `ASSET_BASE_URL` | `https://api-staging.example.com/api/assets` |
 | `SUPABASE_URL` | `https://project.supabase.co` |
+| `DEPLOY_ENABLED` | `true` only after the environment is fully provisioned |
 
 And these **secrets**:
 
@@ -109,7 +110,7 @@ For the `production` GitHub Environment, enable required reviewers if available.
 
 ## 6. Deploy staging
 
-Merging changes to `main` that affect app/package/deployment files triggers `Deploy staging`.
+Merging changes to `main` that affect app/package/deployment files triggers `Deploy staging` only when the staging GitHub Environment variable `DEPLOY_ENABLED=true`. Before provisioning is complete, the workflow is safely skipped. It can also be run manually.
 
 It:
 
