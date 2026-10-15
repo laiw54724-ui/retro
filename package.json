@@ -1,0 +1,11 @@
+{
+  "name": "retrodesk",
+  "private": true,
+  "packageManager": "pnpm@10.18.2",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @retrodesk/web --filter @retrodesk/api dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint"
+  }
+}

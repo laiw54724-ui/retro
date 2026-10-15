@@ -1,0 +1,12 @@
+name = "retrodesk-api"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+
+[vars]
+ALLOWED_ORIGINS = "http://localhost:5173"
+PUBLIC_ASSET_BASE_URL = "http://localhost:8787/api/assets"
+
+[[r2_buckets]]
+binding = "ASSETS"
+bucket_name = "retrodesk-assets"
+preview_bucket_name = "retrodesk-assets-dev"
