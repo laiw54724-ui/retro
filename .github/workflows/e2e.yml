@@ -18,7 +18,7 @@ jobs:
         run: corepack enable && corepack prepare pnpm@10.18.2 --activate
 
       - name: Install
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium

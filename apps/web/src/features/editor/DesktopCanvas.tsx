@@ -1,237 +1,303 @@
-import { useRef, useState, type PointerEvent } from "react";
-import type { DesktopWindow, SiteDocument } from "@retrodesk/shared";
+import { useEffect, useRef, useState, type PointerEvent } from "react";
+import type { DesktopWindow } from "@retrodesk/shared";
+import { Icon } from "../../components/Icon";
 import { RetroWindow } from "../../components/RetroWindow";
+import { themeView } from "../../lib/themeView";
 import { WindowRenderer } from "../site/WindowRenderer";
+import { useEditorStore } from "./store";
+
+const TASKBAR_H = 36;
+const GRID = 8;
+const KEEP_VISIBLE = 80;
 
 type Gesture =
-  | { kind: "move"; id: string; startX: number; startY: number; x: number; y: number; w: number; h: number }
-  | { kind: "resize"; id: string; startX: number; startY: number; x: number; y: number; w: number; h: number }
-  | { kind: "icon"; id: string; startX: number; startY: number; x: number; y: number };
+  | { kind: "move" | "resize"; id: string; startX: number; startY: number; x: number; y: number; w: number; h: number }
+  | { kind: "icon"; id: string; startX: number; startY: number; x: number; y: number; moved: boolean };
+
+function setGeo(el: HTMLElement, text: string) {
+  const label = el.querySelector(".geo-text");
+  if (label) label.textContent = text;
+}
 
 type Props = {
-  document: SiteDocument;
-  selectedId: string | null;
-  onSelect: (id: string | null) => void;
-  onFocus: (id: string) => void;
-  onMove: (id: string, x: number, y: number) => void;
-  onResize: (id: string, w: number, h: number) => void;
-  onIconMove: (id: string, x: number, y: number) => void;
+  siteId?: string;
+  upload?: (file: File, kind?: "image" | "icon") => Promise<string | null>;
 };
 
-export function DesktopCanvas({ document, selectedId, onSelect, onFocus, onMove, onResize, onIconMove }: Props) {
+export function DesktopCanvas({ siteId, upload }: Props) {
+  const document = useEditorStore((s) => s.document)!;
+  const selectedId = useEditorStore((s) => s.selectedId);
+  const view = useEditorStore((s) => s.viewState);
+  const layoutMode = useEditorStore((s) => s.layoutMode);
+  const snap = useEditorStore((s) => s.snap);
+  const store = useEditorStore.getState;
+  const [startOpen, setStartOpen] = useState(false);
   const drag = useRef<Gesture | null>(null);
-  // View-only state: never written to the document or saved.
-  const [view, setView] = useState<Record<string, "min" | "closed" | "max">>({});
-  const setViewState = (id: string, next: "min" | "closed" | "max" | null) =>
-    setView((current) => {
-      const copy = { ...current };
-      if (next) copy[id] = next; else delete copy[id];
-      return copy;
-    });
+  const suppressClick = useRef(false);
   const canvasRef = useRef<HTMLDivElement | null>(null);
+  const tv = themeView(document.theme);
+  const snapping = layoutMode && snap;
 
-  function canvasBounds() {
+  const round = (value: number) => (snapping ? Math.round(value / GRID) * GRID : Math.round(value));
+  const clamp = (value: number, min: number, max: number) => Math.min(Math.max(min, value), Math.max(min, max));
+
+  function bounds() {
     const canvas = canvasRef.current;
-    return {
-      width: canvas?.clientWidth ?? 1200,
-      height: Math.max(200, (canvas?.clientHeight ?? 800) - 36)
-    };
+    return { width: canvas?.clientWidth ?? 1200, height: Math.max(200, (canvas?.clientHeight ?? 800) - TASKBAR_H) };
   }
 
-  function windowPointerDown(event: PointerEvent<HTMLDivElement>, window: DesktopWindow) {
+  const clampWindowPos = (x: number, y: number, w: number) => {
+    const b = bounds();
+    return { x: round(clamp(x, KEEP_VISIBLE - w, b.width - KEEP_VISIBLE)), y: round(clamp(y, 0, b.height - 32)) };
+  };
+  const clampIconPos = (x: number, y: number) => {
+    const b = bounds();
+    return { x: round(clamp(x, 0, b.width - 84)), y: round(clamp(y, 0, b.height - 92)) };
+  };
+
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        if (store().layoutMode) store().setLayoutMode(false);
+        setStartOpen(false);
+      }
+    }
+    globalThis.addEventListener("keydown", onKey);
+    return () => globalThis.removeEventListener("keydown", onKey);
+  }, [store]);
+
+  // ----- window gestures -----
+  function windowPointerDown(event: PointerEvent<HTMLDivElement>, win: DesktopWindow) {
     const target = event.target as HTMLElement;
     if (target.closest(".titlebar-controls")) return;
-
-    if (view[window.id] === "max") { onFocus(window.id); return; }
-    const layout = window.layout.desktop;
-    if (target.closest(".window-resize-handle")) {
-      drag.current = {
-        kind: "resize",
-        id: window.id,
-        startX: event.clientX,
-        startY: event.clientY,
-        x: layout.x,
-        y: layout.y,
-        w: layout.w,
-        h: layout.h
-      };
-    } else if (target.closest(".retro-titlebar")) {
-      drag.current = {
-        kind: "move",
-        id: window.id,
-        startX: event.clientX,
-        startY: event.clientY,
-        x: layout.x,
-        y: layout.y,
-        w: layout.w,
-        h: layout.h
-      };
-    } else {
-      return;
-    }
-
-    onFocus(window.id);
+    store().focusWindow(win.id);
+    if (view[win.id] === "max") return;
+    const layout = win.layout.desktop;
+    const onGrip = !!target.closest(".window-resize-handle");
+    const onTitle = !!target.closest(".retro-titlebar");
+    if (!(onGrip || onTitle || layoutMode)) return;
+    drag.current = { kind: onGrip ? "resize" : "move", id: win.id, startX: event.clientX, startY: event.clientY, x: layout.x, y: layout.y, w: layout.w, h: layout.h };
     event.currentTarget.setPointerCapture(event.pointerId);
     event.preventDefault();
   }
 
   function windowPointerMove(event: PointerEvent<HTMLDivElement>) {
-    const gesture = drag.current;
-    if (!gesture || gesture.kind === "icon") return;
-    const bounds = canvasBounds();
-    const dx = event.clientX - gesture.startX;
-    const dy = event.clientY - gesture.startY;
-
-    if (gesture.kind === "move") {
-      const x = Math.min(Math.max(0, gesture.x + dx), Math.max(0, bounds.width - gesture.w));
-      const y = Math.min(Math.max(0, gesture.y + dy), Math.max(0, bounds.height - 32));
-      event.currentTarget.style.transform = `translate(${x}px, ${y}px)`;
-      return;
+    const g = drag.current;
+    if (!g || g.kind === "icon") return;
+    const dx = event.clientX - g.startX;
+    const dy = event.clientY - g.startY;
+    const el = event.currentTarget;
+    if (g.kind === "move") {
+      const pos = clampWindowPos(g.x + dx, g.y + dy, g.w);
+      el.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+      setGeo(el, `${pos.x}, ${pos.y} · ${g.w}×${g.h}`);
+    } else {
+      const b = bounds();
+      const w = round(clamp(g.w + dx, 220, Math.min(1400, b.width - g.x)));
+      const h = round(clamp(g.h + dy, 140, Math.min(1200, b.height - g.y)));
+      el.style.width = w + "px";
+      el.style.height = h + "px";
+      setGeo(el, `${g.x}, ${g.y} · ${w}×${h}`);
     }
-
-    const w = Math.min(Math.max(220, gesture.w + dx), Math.max(220, bounds.width - gesture.x));
-    const h = Math.min(Math.max(140, gesture.h + dy), Math.max(140, bounds.height - gesture.y));
-    event.currentTarget.style.width = w + "px";
-    event.currentTarget.style.height = h + "px";
   }
 
   function windowPointerUp(event: PointerEvent<HTMLDivElement>) {
-    const gesture = drag.current;
-    if (!gesture || gesture.kind === "icon") return;
-    const bounds = canvasBounds();
-    const dx = event.clientX - gesture.startX;
-    const dy = event.clientY - gesture.startY;
-
-    if (gesture.kind === "move") {
-      const x = Math.round(Math.min(Math.max(0, gesture.x + dx), Math.max(0, bounds.width - gesture.w)));
-      const y = Math.round(Math.min(Math.max(0, gesture.y + dy), Math.max(0, bounds.height - 32)));
-      onMove(gesture.id, x, y);
+    const g = drag.current;
+    if (!g || g.kind === "icon") return;
+    drag.current = null;
+    const dx = event.clientX - g.startX;
+    const dy = event.clientY - g.startY;
+    if (g.kind === "move") {
+      const pos = clampWindowPos(g.x + dx, g.y + dy, g.w);
+      if (pos.x !== g.x || pos.y !== g.y) store().updateWindow(g.id, (w) => ({ ...w, layout: { ...w.layout, desktop: { ...w.layout.desktop, ...pos } } }));
     } else {
-      const w = Math.round(Math.min(Math.max(220, gesture.w + dx), Math.max(220, bounds.width - gesture.x)));
-      const h = Math.round(Math.min(Math.max(140, gesture.h + dy), Math.max(140, bounds.height - gesture.y)));
-      onResize(gesture.id, w, h);
+      const b = bounds();
+      const w = round(clamp(g.w + dx, 220, Math.min(1400, b.width - g.x)));
+      const h = round(clamp(g.h + dy, 140, Math.min(1200, b.height - g.y)));
+      if (w !== g.w || h !== g.h) store().updateWindow(g.id, (win) => ({ ...win, layout: { ...win.layout, desktop: { ...win.layout.desktop, w, h } } }));
     }
-
-    drag.current = null;
   }
 
-  function iconPointerDown(event: PointerEvent<HTMLButtonElement>, window: DesktopWindow, index: number) {
-    const layout = window.layout.desktop;
-    drag.current = {
-      kind: "icon",
-      id: window.id,
-      startX: event.clientX,
-      startY: event.clientY,
-      x: layout.iconX ?? 16 + Math.floor(index / 7) * 88,
-      y: layout.iconY ?? 18 + (index % 7) * 78
-    };
-    onFocus(window.id);
+  // ----- icon gestures (moves > 3px count as a drag, otherwise it is a click) -----
+  function iconPointerDown(event: PointerEvent<HTMLButtonElement>, win: DesktopWindow) {
+    const layout = win.layout.desktop;
+    drag.current = { kind: "icon", id: win.id, startX: event.clientX, startY: event.clientY, x: layout.iconX, y: layout.iconY, moved: false };
+    suppressClick.current = false;
     event.currentTarget.setPointerCapture(event.pointerId);
-    event.stopPropagation();
   }
-
   function iconPointerMove(event: PointerEvent<HTMLButtonElement>) {
-    const gesture = drag.current;
-    if (!gesture || gesture.kind !== "icon") return;
-    const bounds = canvasBounds();
-    const x = Math.min(Math.max(0, gesture.x + event.clientX - gesture.startX), Math.max(0, bounds.width - 82));
-    const y = Math.min(Math.max(0, gesture.y + event.clientY - gesture.startY), Math.max(0, bounds.height - 70));
-    event.currentTarget.style.left = x + "px";
-    event.currentTarget.style.top = y + "px";
+    const g = drag.current;
+    if (!g || g.kind !== "icon") return;
+    const dx = event.clientX - g.startX;
+    const dy = event.clientY - g.startY;
+    if (!g.moved && Math.hypot(dx, dy) <= 3) return;
+    g.moved = true;
+    const pos = clampIconPos(g.x + dx, g.y + dy);
+    event.currentTarget.style.left = pos.x + "px";
+    event.currentTarget.style.top = pos.y + "px";
   }
-
   function iconPointerUp(event: PointerEvent<HTMLButtonElement>) {
-    const gesture = drag.current;
-    if (!gesture || gesture.kind !== "icon") return;
-    const bounds = canvasBounds();
-    const x = Math.round(Math.min(Math.max(0, gesture.x + event.clientX - gesture.startX), Math.max(0, bounds.width - 82)));
-    const y = Math.round(Math.min(Math.max(0, gesture.y + event.clientY - gesture.startY), Math.max(0, bounds.height - 70)));
-    onIconMove(gesture.id, x, y);
+    const g = drag.current;
+    if (!g || g.kind !== "icon") return;
     drag.current = null;
-    event.stopPropagation();
+    if (!g.moved) return;
+    suppressClick.current = true;
+    const pos = clampIconPos(g.x + event.clientX - g.startX, g.y + event.clientY - g.startY);
+    store().moveIcon(g.id, pos.x, pos.y);
+  }
+  function openWindow(id: string) {
+    store().setViewState(id, null);
+    store().focusWindow(id);
+  }
+  function iconClick(id: string) {
+    if (suppressClick.current) { suppressClick.current = false; return; }
+    openWindow(id);
   }
 
-  const theme = document.theme;
-  const pattern = theme.pattern === "dots"
-    ? `radial-gradient(${theme.patternColor} 1.5px, transparent 1.7px)`
-    : theme.pattern === "checker"
-      ? `conic-gradient(${theme.patternColor} 25%, transparent 0 50%, ${theme.patternColor} 0 75%, transparent 0)`
-      : "none";
+  function toggleTask(win: DesktopWindow) {
+    const state = view[win.id];
+    if (state === "min") openWindow(win.id);
+    else if (selectedId === win.id) store().setViewState(win.id, "min");
+    else store().focusWindow(win.id);
+  }
+
+  const rows = () => Math.max(1, Math.floor((bounds().height - 20) / 94));
+  const topZ = Math.max(0, ...document.windows.map((w) => w.layout.desktop.z));
+  const selected = document.windows.find((w) => w.id === selectedId);
+  const clockText = new Date().toTimeString().slice(0, 5);
 
   return (
     <div
       ref={canvasRef}
-      className="desktop-canvas"
-      onPointerDown={(event) => { if (event.target === event.currentTarget) onSelect(null); }}
-      style={{
-        backgroundColor: theme.wall,
-        backgroundImage: theme.wallImage ? `url(${theme.wallImage})` : pattern,
-        backgroundSize: theme.wallImage ? "cover" : theme.pattern === "checker" ? "28px 28px" : "16px 16px"
-      }}
+      className={"desktop-canvas" + (layoutMode ? " layout" : "")}
+      onPointerDown={(event) => { if ((event.target as HTMLElement).dataset.bg) { store().select(null); setStartOpen(false); } }}
+      style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: "center", fontFamily: tv.fontFamily, color: tv.text }}
     >
-      {document.windows.map((window, index) => {
-        const layout = window.layout.desktop;
-        const iconX = layout.iconX ?? 16 + Math.floor(index / 7) * 88;
-        const iconY = layout.iconY ?? 18 + (index % 7) * 78;
-        return (
-          <button
-            key={"icon-" + window.id}
-            type="button"
-            className={"editor-desktop-icon " + (selectedId === window.id ? "selected" : "")}
-            style={{ left: iconX, top: iconY }}
-            onClick={() => { setViewState(window.id, null); onFocus(window.id); }}
-            onPointerDown={(event) => iconPointerDown(event, window, index)}
-            onPointerMove={iconPointerMove}
-            onPointerUp={iconPointerUp}
-          >
-            <span className="file-icon" />
-            <small>{window.title}</small>
-          </button>
-        );
-      })}
+      {layoutMode && snap ? <div aria-hidden="true" className="grid-overlay" /> : null}
 
-      {document.windows.map((window) => {
-        const layout = window.layout.desktop;
-        const state = view[window.id];
+      <div data-bg="1" className="icon-layer">
+        {document.windows.map((win, index) => {
+          const layout = win.layout.desktop;
+          const isSel = selectedId === win.id;
+          return (
+            <button
+              key={"icon-" + win.id}
+              type="button"
+              className="deskicon"
+              aria-label={`開啟 ${win.title}`}
+              style={{ left: layout.iconX, top: layout.iconY, zIndex: isSel ? 2 : 1, outline: isSel ? `1px dotted ${tv.text}` : "none", cursor: layoutMode ? "grab" : "pointer" }}
+              onClick={() => iconClick(win.id)}
+              onPointerDown={(event) => iconPointerDown(event, win)}
+              onPointerMove={iconPointerMove}
+              onPointerUp={iconPointerUp}
+              onPointerCancel={() => { drag.current = null; }}
+              data-index={index}
+            >
+              <span className="deskicon-tile" style={{ background: tv.tileBg, boxShadow: tv.tileShadow }}><Icon name={win.icon} size={32} /></span>
+              <span className="deskicon-label" style={{ background: tv.labelBg, color: tv.labelColor, border: tv.labelBorder, borderRadius: tv.labelRadius, textShadow: tv.labelShadow }}>{win.title}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {document.windows.length === 0 ? (
+        <div className="empty-desktop w98-window" role="status">
+          <div className="w98-titlebar" style={{ height: 26 }}>開始吧！</div>
+          <div className="empty-body">
+            <Icon name="folder" size={48} />
+            <strong>你的桌面還空空的</strong>
+            <span>新增第一個視窗，放上自我介紹、作品或連結。從左側面板點「新增」。</span>
+          </div>
+        </div>
+      ) : null}
+
+      {document.windows.map((win) => {
+        const layout = win.layout.desktop;
+        const state = view[win.id];
         if (state === "min" || state === "closed") return null;
         const maximized = state === "max";
+        const isSel = selectedId === win.id;
         return (
           <div
-            key={window.id}
-            className={`canvas-window ${selectedId === window.id ? "selected" : ""}`}
+            key={win.id}
+            className={`canvas-window ${isSel ? "selected" : ""}`}
             style={maximized
-              ? { width: "calc(100% - 8px)", height: "calc(100% - 44px)", transform: "translate(4px, 4px)", zIndex: layout.z }
+              ? { width: "calc(100% - 8px)", height: `calc(100% - ${TASKBAR_H + 8}px)`, transform: "translate(4px, 4px)", zIndex: layout.z }
               : { width: layout.w, height: layout.h, transform: `translate(${layout.x}px, ${layout.y}px)`, zIndex: layout.z }}
-            onClick={() => onFocus(window.id)}
-            onPointerDown={(event) => windowPointerDown(event, window)}
+            onPointerDown={(event) => windowPointerDown(event, win)}
             onPointerMove={windowPointerMove}
             onPointerUp={windowPointerUp}
             onPointerCancel={() => { drag.current = null; }}
           >
             <RetroWindow
-              title={window.title}
-              theme={theme}
-              active={selectedId === window.id}
+              title={win.title}
+              icon={win.icon}
+              theme={document.theme}
+              active={isSel || layout.z === topZ}
               interactiveControls
               maximized={maximized}
-              onMinimize={() => setViewState(window.id, "min")}
-              onMaximize={() => setViewState(window.id, maximized ? null : "max")}
-              onClose={() => setViewState(window.id, "closed")}
+              onMinimize={() => store().setViewState(win.id, "min")}
+              onMaximize={() => store().setViewState(win.id, maximized ? null : "max")}
+              onClose={() => store().setViewState(win.id, "closed")}
+              titleBarProps={{ onDoubleClick: () => store().setViewState(win.id, maximized ? null : "max"), style: { cursor: layoutMode ? "move" : "default", touchAction: "none" } }}
               style={{ height: "100%" }}
+              bodyStyle={{ padding: 0 }}
             >
-              <WindowRenderer window={window} theme={theme} />
+              <WindowRenderer window={win} theme={document.theme} editing={!layoutMode} allWindows={document.windows} siteId={siteId} upload={upload} onUpdate={store().updateWindow} />
             </RetroWindow>
-            {!maximized ? <span className="window-resize-handle" aria-hidden="true" /> : null}
+            {layoutMode ? <div className="layout-veil"><span className="geo-text">{layout.x}, {layout.y} · {layout.w}×{layout.h}</span></div> : null}
+            {!maximized ? <span className="window-resize-handle" aria-label="調整大小" /> : null}
           </div>
         );
       })}
 
-      <div className="taskbar" style={{ background: theme.taskbar }}>
-        <button type="button">開始</button>
-        <span>{document.siteName}</span>
-        {document.windows.filter((window) => view[window.id] === "min").map((window) => (
-          <button key={window.id} type="button" onClick={() => { setViewState(window.id, null); onFocus(window.id); }}>{window.title}</button>
-        ))}
+      {selected && !layoutMode && !view[selected.id] ? (
+        <div className="sel-tag" style={{ left: selected.layout.desktop.x, top: Math.max(0, selected.layout.desktop.y - 22), zIndex: 99990 }}>已選取 · 拖曳標題列移動、右下角縮放</div>
+      ) : null}
+
+      {layoutMode ? (
+        <div className="layout-toolbar w98-window" role="toolbar" aria-label="排版模式">
+          <strong>▦ 排版模式</strong>
+          <span>拖曳視窗或桌面圖示 · 右下角縮放</span>
+          <button type="button" className="w98-btn small" onClick={() => store().autoArrangeIcons(rows())}>圖示自動排列</button>
+          <button type="button" className={"w98-btn small" + (snap ? " on" : "")} aria-pressed={snap} onClick={() => store().toggleSnap()}>對齊格線 {GRID}px：{snap ? "開" : "關"}</button>
+          <button type="button" className="w98-btn small primary" onClick={() => store().setLayoutMode(false)}>完成</button>
+        </div>
+      ) : (
+        <div className="edit-tag" aria-hidden="true">編輯模式 · 直接點視窗內容編輯</div>
+      )}
+
+      {startOpen ? (
+        <div className="start-menu" style={{ background: tv.face, boxShadow: tv.bevel }}>
+          <div className="start-brand" style={{ background: tv.titleBgV }}>{document.siteName}</div>
+          <div className="start-items">
+            {document.windows.map((win) => (
+              <button key={win.id} type="button" className="start-item" style={{ color: tv.text }} onClick={() => { openWindow(win.id); setStartOpen(false); }}>
+                <Icon name={win.icon} size={22} /><span>{win.title}</span>
+              </button>
+            ))}
+            <div className="w98-sep" />
+            <small className="start-credit">Made with Retro Desktop</small>
+          </div>
+        </div>
+      ) : null}
+
+      <div className="taskbar2" style={{ background: tv.taskbar, boxShadow: `inset 0 1px ${tv.light}, inset 0 2px #ffffff` }}>
+        <button type="button" className="start-btn" style={{ background: tv.face, color: tv.text, boxShadow: startOpen ? tv.pressed : tv.bevel }} aria-expanded={startOpen} onClick={() => setStartOpen(!startOpen)}>
+          <Icon name="computer" size={18} />開始
+        </button>
+        <span className="tb-sep" style={{ borderLeft: `1px solid ${tv.shadow}` }} />
+        <div className="task-items">
+          {document.windows.filter((w) => view[w.id] !== "closed").map((win) => {
+            const active = selectedId === win.id && view[win.id] !== "min";
+            return (
+              <button key={win.id} type="button" className="task-item" style={{ background: active ? tv.light : tv.face, color: tv.text, fontWeight: active ? 700 : 400, boxShadow: active ? tv.pressed : tv.bevel }} onClick={() => toggleTask(win)}>
+                <Icon name={win.icon} size={16} /><span>{win.title}</span>
+              </button>
+            );
+          })}
+        </div>
+        <span className="clock" style={{ color: tv.taskbarText, boxShadow: `inset -1px -1px #ffffff, inset 1px 1px ${tv.shadow}` }}>{clockText}</span>
       </div>
     </div>
   );

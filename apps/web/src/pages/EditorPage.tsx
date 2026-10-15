@@ -1,21 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { SiteDocumentSchema, THEME_PRESETS, type DesktopWindow } from "@retrodesk/shared";
+import { buildPublishChecks, hasBlockingCheck, normalizeDocument, SiteDocumentSchema, type DesktopWindow } from "@retrodesk/shared";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { useEditorStore } from "../features/editor/store";
 import { DesktopCanvas } from "../features/editor/DesktopCanvas";
-import { MobileEditor } from "../features/editor/MobileEditor";
-import { InspectorContent } from "../features/editor/InspectorContent";
+import { MobileScreen } from "../features/site/MobileScreen";
+import { LeftPanel } from "../features/editor/LeftPanel";
+import { RightPanel } from "../features/editor/RightPanel";
+import { VisitorPreview } from "../features/editor/VisitorPreview";
+import { Icon } from "../components/Icon";
 import { RetroButton } from "../components/RetroButton";
 import { useAuth } from "../app/AuthProvider";
 
-const moduleTypes: Array<{ type: DesktopWindow["type"]; label: string; desc: string }> = [
-  { type: "document", label: "文件視窗", desc: "標題、段落、圖片、按鈕、清單" },
-  { type: "gallery", label: "相簿視窗", desc: "多張圖片網格" },
-  { type: "links", label: "連結視窗", desc: "社群與外部連結" },
-  { type: "about", label: "名片／關於我", desc: "頭像、簡介與欄位" },
-  { type: "instagram", label: "復古 IG", desc: "個人頁與貼文格狀" }
-];
+
 
 function validationMessage(document: unknown) {
   const parsed = SiteDocumentSchema.safeParse(document);
@@ -39,8 +36,10 @@ export function EditorPage() {
   // Transient invalid drafts (e.g. a field cleared mid-edit) pause autosave quietly instead of raising a popup.
   const [draftIssue, setDraftIssue] = useState<string | null>(null);
   const [publishPrompt, setPublishPrompt] = useState(false);
+  const [preview, setPreview] = useState(false);
   const [publishSuccess, setPublishSuccess] = useState<{ version: number; url: string } | null>(null);
   const [publishing, setPublishing] = useState(false);
+  const publishChecks = useMemo(() => store.document ? buildPublishChecks(store.document) : [], [store.document]);
 
   useEffect(() => {
     let alive = true;
@@ -50,7 +49,7 @@ export function EditorPage() {
         store.setSite(
           site.id,
           site.username,
-          site.draft_document,
+          normalizeDocument(site.draft_document),
           site.draft_version,
           site.published_document ?? null,
           site.published_version ?? null
@@ -140,6 +139,29 @@ export function EditorPage() {
 
   if (loading || !store.document) return <div className="boot-screen">Loading desktop...</div>;
 
+  async function uploadImage(file: File, kind: "image" | "icon" = "image"): Promise<string | null> {
+    if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
+      setMessage("無法上傳：請選擇 JPG、PNG、GIF 或 WebP。");
+      return null;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setMessage("檔案太大：單張 8 MB 以內。");
+      return null;
+    }
+    try {
+      const { asset } = await api.uploadAsset(siteId, file, { kind, name: file.name.replace(/\.[^.]+$/, "") });
+      return asset.url;
+    } catch (error) {
+      const code = error instanceof ApiError ? error.code : "";
+      setMessage(code === "unsupported_media" || code === "invalid_image_bytes"
+        ? "無法上傳：請選擇 JPG、PNG、GIF 或 WebP。"
+        : code === "file_too_large"
+          ? "檔案太大：單張 8 MB 以內。"
+          : "上傳失敗，請再試一次。");
+      return null;
+    }
+  }
+
   function requestPublish() {
     const invalid = validationMessage(store.document);
     if (invalid) {
@@ -183,7 +205,7 @@ export function EditorPage() {
       store.setSite(
         site.id,
         site.username,
-        site.draft_document,
+        normalizeDocument(site.draft_document),
         site.draft_version,
         site.published_document ?? null,
         site.published_version ?? null
@@ -216,8 +238,8 @@ export function EditorPage() {
     }
   }
 
-  function updateSelected(recipe: (window: DesktopWindow) => DesktopWindow) {
-    if (selected) store.updateWindow(selected.id, recipe);
+  function updateSelected(recipe: (window: DesktopWindow) => DesktopWindow, historyKey?: string) {
+    if (selected) store.updateWindow(selected.id, recipe, historyKey);
   }
 
   const publishState = !store.publishedDocument
@@ -225,131 +247,102 @@ export function EditorPage() {
     : hasUnpublishedChanges
       ? "有未發布變更"
       : "已同步發布";
+  const badge = !store.publishedDocument
+    ? { text: "尚未發布", bg: "#ffffe1", color: "#7a5b00" }
+    : hasUnpublishedChanges
+      ? { text: "草稿有未發布的變更", bg: "#fff0e0", color: "#b35c00" }
+      : { text: `已發布 v${store.publishedVersion ?? ""}`, bg: "#e6f4ee", color: "#1f7a5c" };
+  const saveText = draftIssue && store.saveStatus === "dirty"
+    ? "有欄位未完成，暫不儲存"
+    : store.saveStatus === "saving" ? "儲存中…"
+      : store.saveStatus === "dirty" ? "尚未儲存"
+        : store.saveStatus === "error" ? "儲存失敗"
+          : "已儲存";
+
+  const layoutMode = store.layoutMode && store.device === "desktop";
 
   return (
     <main className="editor-app">
       <header className="editor-topbar">
-        <Link to="/" className="brand">Retro Desktop</Link>
-        <span className="site-url">retrodesk.me/{store.username}</span>
-        <RetroButton className="history-button" disabled={store.past.length === 0} onClick={store.undo}>↶ 復原</RetroButton>
-        <RetroButton className="history-button" disabled={store.future.length === 0} onClick={store.redo}>↷ 重做</RetroButton>
-        <span className={"save-pill " + store.saveStatus} title={draftIssue ?? undefined}>
-          {draftIssue && store.saveStatus === "dirty" ? "有欄位未完成，暫不儲存" : store.saveStatus === "saving" ? "儲存中" : store.saveStatus === "dirty" ? "尚未儲存" : store.saveStatus === "error" ? "儲存需處理" : "已儲存"}
-        </span>
-        <span className={"publish-pill " + (hasUnpublishedChanges ? "changed" : "synced")}>{publishState}</span>
-        <div className="top-spacer" />
-        <div className="device-toggle">
-          <button className={store.device === "desktop" ? "active" : ""} onClick={() => store.setDevice("desktop")}>桌面版</button>
-          <button className={store.device === "mobile" ? "active" : ""} onClick={() => store.setDevice("mobile")}>手機版</button>
+        <Link to="/" className="brand" title="回到首頁"><Icon name="computer" size={22} />Retro Desktop</Link>
+        <span className="w98-vsep" />
+        <div className="topbar-meta">
+          <span className="site-url">retrodesk.me/{store.username}</span>
+          <span className="status-badge" title={badge.text} style={{ background: badge.bg, color: badge.color, borderColor: badge.color }}>{badge.text}</span>
         </div>
-        <a className="retro-link" href={"/@" + store.username} target="_blank" rel="noreferrer">開啟已發布網站</a>
-        <RetroButton
-          className="primary"
-          onClick={requestPublish}
-          disabled={publishing || (!!store.publishedDocument && !hasUnpublishedChanges)}
-        >
-          發布
+        <span className="w98-vsep" />
+        <RetroButton disabled={store.past.length === 0} onClick={store.undo} aria-label="復原" title="復原 (Ctrl+Z)">↶ 復原</RetroButton>
+        <RetroButton disabled={store.future.length === 0} onClick={store.redo} aria-label="重做" title="重做 (Ctrl+Shift+Z)">↷ 重做</RetroButton>
+        <span className={"save-text " + store.saveStatus} title={draftIssue ?? undefined} role="status">{saveText}</span>
+        <div className="top-spacer" />
+        <div role="group" aria-label="裝置" className="device-toggle">
+          <button type="button" aria-pressed={store.device === "desktop"} className={"w98-btn" + (store.device === "desktop" ? " on" : "")} onClick={() => store.setDevice("desktop")}>桌面版</button>
+          <button type="button" aria-pressed={store.device === "mobile"} className={"w98-btn" + (store.device === "mobile" ? " on" : "")} onClick={() => { store.setLayoutMode(false); store.setDevice("mobile"); }}>手機版</button>
+        </div>
+        <RetroButton onClick={() => setPreview(true)}>▶ 訪客預覽</RetroButton>
+        {store.publishedDocument ? <a className="w98-btn" href={"/@" + store.username} target="_blank" rel="noreferrer">開啟已發布網站</a> : null}
+        <RetroButton className="primary" onClick={requestPublish} disabled={publishing || (!!store.publishedDocument && !hasUnpublishedChanges)}>
+          {store.publishedDocument ? "重新發布" : "發布"}
         </RetroButton>
         <RetroButton onClick={async () => { await signOut(); navigate("/"); }}>登出</RetroButton>
       </header>
 
       {message ? (
-        <div className="editor-message">
+        <div className="editor-message" role="alert">
           <span>{message}</span>
           {store.saveStatus === "error" && !conflict ? <button onClick={store.retrySave}>重試儲存</button> : null}
           <button aria-label="關閉通知" onClick={() => setMessage("")}>×</button>
         </div>
       ) : null}
 
-      <div className="editor-grid">
-        <aside className="left-panel retro-panel">
-          <div className="panel-tabs"><b>新增</b><span>視窗</span><span>主題</span></div>
-          <p className="panel-help">點一下加到桌面上。</p>
-          {moduleTypes.map((item) => (
-            <button className="module-card" key={item.type} onClick={() => store.addWindow(item.type)}>
-              <span className="module-icon" />
-              <span><strong>{item.label}</strong><small>{item.desc}</small></span>
-            </button>
-          ))}
-          <hr />
-          <strong>主題</strong>
-          <div className="theme-list">
-            {Object.values(THEME_PRESETS).map((theme) => (
-              <button key={theme.id} onClick={() => store.setTheme(theme)} className={store.document?.theme.id === theme.id ? "selected" : ""}>
-                <i style={{ background: theme.wall }} />
-                <span>{theme.name}</span>
-              </button>
-            ))}
-          </div>
-        </aside>
+      <div className="editor-grid2">
+        {!layoutMode ? (
+          <LeftPanel
+            document={store.document}
+            selectedId={store.selectedId}
+            view={store.viewState}
+            onAdd={store.addWindow}
+            onSelect={(id) => { store.setViewState(id, null); store.focusWindow(id); }}
+            onToggleVisible={(id) => store.setViewState(id, store.viewState[id] ? null : "closed")}
+            onMoveLayer={store.moveLayer}
+            onTheme={store.setTheme}
+            upload={uploadImage}
+          />
+        ) : null}
 
-        <section className="editor-stage">
+        <section className="editor-stage2">
           {store.device === "desktop" ? (
-            <DesktopCanvas
-              document={store.document}
-              selectedId={store.selectedId}
-              onSelect={store.select}
-              onFocus={store.focusWindow}
-              onMove={(id, x, y) => store.updateWindow(id, (window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, x, y } } }))}
-              onResize={(id, w, h) => store.updateWindow(id, (window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, w, h } } }))}
-              onIconMove={(id, iconX, iconY) => store.updateWindow(id, (window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, iconX, iconY } } }))}
-            />
+            <DesktopCanvas siteId={siteId} upload={uploadImage} />
           ) : (
-            <MobileEditor
-              document={store.document}
-              siteId={siteId}
-              selectedId={store.selectedId}
-              onSelect={store.select}
-              onAdd={store.addWindow}
-              onUpdate={store.updateWindow}
-              onDelete={store.deleteWindow}
-              onTheme={store.setTheme}
-              onReorder={store.reorderMobile}
-              onColumns={store.setMobileColumns}
-              onMessage={setMessage}
-            />
+            <MobileScreen document={store.document} mode="editor" framed siteId={siteId} upload={uploadImage} onPreview={() => setPreview(true)} />
           )}
         </section>
 
-        <aside className="right-panel retro-panel">
-          {selected ? (
-            <>
-              <div className="inspector-title"><span className="module-icon" /><strong>{selected.title}</strong></div>
-              <label>視窗標題<input value={selected.title} onChange={(event) => updateSelected((window) => ({ ...window, title: event.target.value }))} /></label>
-              <label>桌面圖示<input value={selected.icon} onChange={(event) => updateSelected((window) => ({ ...window, icon: event.target.value }))} /></label>
-              <label className="check-row"><input type="checkbox" checked={selected.defaultOpen} onChange={(event) => updateSelected((window) => ({ ...window, defaultOpen: event.target.checked }))} />訪客打開網站時預設開啟</label>
-              <div className="geometry-grid">
-                <label>X<input type="number" value={selected.layout.desktop.x} onChange={(event) => updateSelected((window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, x: Number(event.target.value) } } }))} /></label>
-                <label>Y<input type="number" value={selected.layout.desktop.y} onChange={(event) => updateSelected((window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, y: Number(event.target.value) } } }))} /></label>
-                <label>寬<input min={220} max={1400} type="number" value={selected.layout.desktop.w} onChange={(event) => updateSelected((window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, w: Number(event.target.value) } } }))} /></label>
-                <label>高<input min={140} max={1200} type="number" value={selected.layout.desktop.h} onChange={(event) => updateSelected((window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, h: Number(event.target.value) } } }))} /></label>
-              </div>
-              <InspectorContent
-                window={selected}
-                allWindows={store.document.windows}
-                siteId={siteId}
-                update={updateSelected}
-                onMessage={setMessage}
-              />
-              <RetroButton className="danger" onClick={() => store.deleteWindow(selected.id)}>刪除視窗</RetroButton>
-            </>
-          ) : (
-            <div className="empty-inspector">
-              <span className="module-icon" />
-              <strong>尚未選取視窗</strong>
-              <p>點畫布上的視窗來選取。</p>
-              <label>桌面名稱<input value={store.document.siteName} onChange={(event) => store.setSiteName(event.target.value)} /></label>
-            </div>
-          )}
-        </aside>
+        {!layoutMode && store.device === "desktop" ? (
+          <RightPanel
+            document={store.document}
+            selected={selected}
+            siteId={siteId}
+            upload={uploadImage}
+            onUpdate={updateSelected}
+            onDelete={() => selected && store.deleteWindow(selected.id)}
+            onDuplicate={() => selected && store.duplicateWindow(selected.id)}
+            onBringToFront={() => selected && store.bringToFront(selected.id)}
+            onEnterLayout={() => store.setLayoutMode(true)}
+            onSiteName={store.setSiteName}
+            onColumns={store.setMobileColumns}
+          />
+        ) : null}
       </div>
 
-      <footer className="editor-status">
-        <span>編輯模式</span>
+      <footer className="editor-status2">
+        <span>{layoutMode ? "排版模式" : "編輯模式"}</span>
         <span>{selected ? "已選取：" + selected.title : "未選取"}</span>
         <span className="top-spacer" />
-        {store.document.windows.length} 個視窗 · {publishState}
+        <span>{store.document.windows.length} 個視窗 · {badge.text}</span>
       </footer>
+
+      {preview ? <VisitorPreview document={store.document} username={store.username} published={!!store.publishedDocument && !hasUnpublishedChanges} onClose={() => setPreview(false)} /> : null}
 
       {conflict ? (
         <div className="modal-backdrop" role="presentation">
@@ -372,12 +365,16 @@ export function EditorPage() {
           <section className="retro-panel editor-dialog" role="dialog" aria-modal="true" aria-labelledby="publish-title">
             <header className="landing-titlebar" id="publish-title">發布 Retro Desktop</header>
             <div className="dialog-body">
-              <h2>要把目前草稿發布給訪客嗎？</h2>
+              <h2>發布前檢查</h2>
               <p>公開網址：<strong>retrodesk.me/{store.username}</strong></p>
-              <p>發布只會更新公開版本，你仍然可以繼續編輯下一版草稿。</p>
+              <ul className="publish-checks" aria-label="發布前檢查結果">
+                {publishChecks.map((check, index) => <li key={index} className={check.level}><span aria-hidden="true">{check.level === "ok" ? "✓" : check.level === "warn" ? "!" : "×"}</span>{check.text}</li>)}
+              </ul>
+              <p>{hasBlockingCheck(publishChecks) ? "請先修正紅色項目，再重新發布。" : "黃色項目是建議，不會阻擋發布。發布後仍可繼續編輯下一版草稿。"}</p>
+              {publishing ? <div className="publish-progress" role="progressbar" aria-label="發布中"><i /></div> : null}
               <div className="button-row end">
                 <RetroButton disabled={publishing} onClick={() => setPublishPrompt(false)}>取消</RetroButton>
-                <RetroButton className="primary" disabled={publishing} onClick={confirmPublish}>{publishing ? "發布中…" : "確認發布"}</RetroButton>
+                <RetroButton className="primary" disabled={publishing || hasBlockingCheck(publishChecks)} onClick={confirmPublish}>{publishing ? "發布中…" : "確認發布"}</RetroButton>
               </div>
             </div>
           </section>

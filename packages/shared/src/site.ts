@@ -65,7 +65,8 @@ export const WindowLayoutSchema = z.object({
 });
 
 const SafeUrlSchema = z.string().max(2048).refine((value) => {
-  if (value === "") return true;
+  // A bare scheme is what the editor pre-fills; treat it as "not filled in yet" (rendered as an inert link).
+  if (value === "" || value === "https://" || value === "http://") return true;
   try {
     const url = new URL(value);
     return ["http:", "https:", "mailto:"].includes(url.protocol);
@@ -93,8 +94,8 @@ const BaseBlockSchema = z.object({ id: z.string().min(1) });
 
 export const DocumentBlockSchema = z.discriminatedUnion("kind", [
   BaseBlockSchema.extend({ kind: z.literal("heading"), text: z.string().max(500) }),
-  BaseBlockSchema.extend({ kind: z.literal("text"), text: z.string().max(10_000), align: z.enum(["left", "center", "right"]).default("left") }),
-  BaseBlockSchema.extend({ kind: z.literal("image"), src: ImageUrlSchema.nullable(), alt: z.string().max(300).default("") }),
+  BaseBlockSchema.extend({ kind: z.literal("text"), text: z.string().max(10_000), align: z.enum(["left", "center", "right"]).default("left"), bold: z.boolean().default(false), italic: z.boolean().default(false) }),
+  BaseBlockSchema.extend({ kind: z.literal("image"), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default(""), alt: z.string().max(300).default("") }),
   BaseBlockSchema.extend({ kind: z.literal("button"), text: z.string().max(200), url: SafeUrlSchema }),
   BaseBlockSchema.extend({ kind: z.literal("link"), text: z.string().max(500), url: SafeUrlSchema }),
   BaseBlockSchema.extend({ kind: z.literal("list"), text: z.string().max(10_000) }),
@@ -105,7 +106,9 @@ const GalleryImageSchema = z.object({
   id: z.string().min(1),
   src: ImageUrlSchema.nullable(),
   title: z.string().max(200),
-  caption: z.string().max(1000)
+  caption: z.string().max(1000),
+  srcUrl: z.string().max(2048).default(""),
+  href: SafeUrlSchema.default("")
 });
 
 const LinkItemSchema = z.object({
@@ -115,11 +118,23 @@ const LinkItemSchema = z.object({
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   target: z.enum(["url", "window"]),
   url: SafeUrlSchema,
-  windowId: z.string().max(120).default("")
+  windowId: z.string().max(120).default(""),
+  iconUrl: z.string().max(2048).default("")
 });
 
 const AboutFieldSchema = z.object({ id: z.string().min(1), key: z.string().max(100), value: z.string().max(500) });
 const SocialLinkSchema = z.object({ id: z.string().min(1), label: z.string().max(100), url: SafeUrlSchema });
+
+const IgCommentSchema = z.object({ id: z.string().min(1), user: z.string().max(64), text: z.string().max(1000) });
+const IgExtraImageSchema = z.object({ id: z.string().min(1), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default("") });
+const IgPostSchema = GalleryImageSchema.extend({
+  location: z.string().max(120).default(""),
+  date: z.string().max(40).default(""),
+  likes: z.number().int().min(0).max(1e9).default(0),
+  comments: z.array(IgCommentSchema).max(200).default([]),
+  extra: z.array(IgExtraImageSchema).max(9).default([])
+});
+const IgHighlightSchema = z.object({ id: z.string().min(1), title: z.string().max(40), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default("") });
 
 const InstagramProfileSchema = z.object({
   username: z.string().max(64),
@@ -130,7 +145,19 @@ const InstagramProfileSchema = z.object({
   bio: z.string().max(2000),
   followers: z.string().max(32),
   following: z.string().max(32),
-  followedBy: z.string().max(300)
+  followedBy: z.string().max(300),
+  avatarUrl: z.string().max(2048).default(""),
+  linkLabel: z.string().max(120).default(""),
+  linkUrl: SafeUrlSchema.default(""),
+  dmUrl: SafeUrlSchema.default(""),
+  verified: z.boolean().default(false),
+  showCounts: z.boolean().default(true),
+  showHighlights: z.boolean().default(true),
+  showFollowedBy: z.boolean().default(true),
+  showLikes: z.boolean().default(true),
+  allowLikes: z.boolean().default(true),
+  allowComments: z.boolean().default(true),
+  highlights: z.array(IgHighlightSchema).max(20).default([])
 });
 
 const BaseWindowSchema = z.object({
@@ -163,13 +190,15 @@ export const DesktopWindowSchema = z.discriminatedUnion("type", [
       bio: z.string().max(5000),
       banner: z.string().max(500).default(""),
       quote: z.string().max(500).default(""),
+      detailsTitle: z.string().max(100).default("File Details"),
+      avatarUrl: z.string().max(2048).default(""),
       fields: z.array(AboutFieldSchema).max(50),
       socials: z.array(SocialLinkSchema).max(50)
     })
   }),
   BaseWindowSchema.extend({
     type: z.literal("instagram"),
-    content: z.object({ profile: InstagramProfileSchema, images: z.array(GalleryImageSchema).max(60) })
+    content: z.object({ profile: InstagramProfileSchema, images: z.array(IgPostSchema).max(60) })
   })
 ]);
 
@@ -187,6 +216,9 @@ export type SiteDocument = z.infer<typeof SiteDocumentSchema>;
 export type DocumentBlock = z.infer<typeof DocumentBlockSchema>;
 
 export const THEME_PRESETS: Record<string, RetroTheme> = {
+  indigo: { id: "indigo", name: "靛藍名片", wall: "#008080", pattern: "none", patternColor: "#0a8f8f", face: "#c8c8c8", light: "#e6e6e6", shadow: "#858585", dark: "#0a0a0a", text: "#111111", titleFrom: "#2e1a7a", titleTo: "#2e1a7a", taskbar: "#c8c8c8", accent: "#5b3fd0", font: "noto", iconStyle: "classic" },
+  whiteweb: { id: "whiteweb", name: "白色網路", wall: "#ffffff", pattern: "none", patternColor: "#eeeeee", face: "#c0c0c0", light: "#dfdfdf", shadow: "#808080", dark: "#0a0a0a", text: "#111111", titleFrom: "#0a0a6b", titleTo: "#0a0a6b", taskbar: "#c0c0c0", accent: "#0a0a6b", font: "dot", iconStyle: "classic" },
+  midnight: { id: "midnight", name: "午夜星空", wall: "#1d1a3a", pattern: "stars", patternColor: "#4a4590", face: "#d8d4ea", light: "#eceaf5", shadow: "#8a84ad", dark: "#120f26", text: "#14112a", titleFrom: "#2a2470", titleTo: "#e05a9b", taskbar: "#d8d4ea", accent: "#c2185b", font: "dot", iconStyle: "classic" },
   classic98: {
     id: "classic98",
     name: "經典 98",
@@ -289,17 +321,17 @@ export function makeWindow(type: DesktopWindow["type"], index = 0): DesktopWindo
     case "links":
       return {
         id: id(), type, title: "連結", icon: "link", layout: { ...layout, desktop: { ...layout.desktop, w: 300, h: 300 } }, defaultOpen: true,
-        content: { links: [{ id: id(), label: "Instagram", icon: "heart", color: "#000080", target: "url", url: "https://instagram.com/", windowId: "" }] }
+        content: { links: [{ id: id(), label: "Instagram", icon: "heart", color: "#000080", target: "url", url: "https://instagram.com/", windowId: "", iconUrl: "" }] }
       };
     case "about":
       return {
         id: id(), type, title: "關於我", icon: "user", layout: { ...layout, desktop: { ...layout.desktop, w: 340, h: 400 } }, defaultOpen: true,
-        content: { avatar: null, nickname: "你的名字", bio: "寫一點關於你的介紹。", banner: "", quote: "", fields: [], socials: [] }
+        content: { avatar: null, nickname: "你的名字", bio: "寫一點關於你的介紹。", banner: "", quote: "", detailsTitle: "File Details", avatarUrl: "", fields: [], socials: [] }
       };
     case "instagram":
       return {
         id: id(), type, title: "Instagram.exe", icon: "camera", layout: { ...layout, desktop: { ...layout.desktop, w: 420, h: 560 } }, defaultOpen: true,
-        content: { profile: { username: "retro", avatar: null, name: "Retro User", alt: "", bio: "", followers: "0", following: "0", followedBy: "" }, images: [] }
+        content: { profile: { username: "retro", avatar: null, name: "Retro User", alt: "", bio: "", followers: "0", following: "0", followedBy: "", avatarUrl: "", linkLabel: "", linkUrl: "", dmUrl: "", verified: false, showCounts: true, showHighlights: true, showFollowedBy: true, showLikes: true, allowLikes: true, allowComments: true, highlights: [] }, images: [] }
       };
     default:
       return {
@@ -307,7 +339,7 @@ export function makeWindow(type: DesktopWindow["type"], index = 0): DesktopWindo
         content: {
           blocks: [
             { id: id(), kind: "heading", text: "哈囉，歡迎光臨！" },
-            { id: id(), kind: "text", text: "這是一個文件視窗。", align: "left" },
+            { id: id(), kind: "text", text: "這是一個文件視窗。", align: "left", bold: false, italic: false },
             { id: id(), kind: "button", text: "打聲招呼", url: "mailto:hello@example.com" }
           ]
         }
@@ -315,13 +347,76 @@ export function makeWindow(type: DesktopWindow["type"], index = 0): DesktopWindo
   }
 }
 
-export function createStarterDocument(siteName: string, themeId = "classic98"): SiteDocument {
+export type StarterTemplate = "blank" | "card" | "oc" | "portfolio" | "instagram";
+
+const TEMPLATE_WINDOWS: Record<StarterTemplate, DesktopWindow["type"][]> = {
+  blank: [],
+  card: ["about", "links"],
+  oc: ["about", "gallery", "document"],
+  portfolio: ["about", "gallery", "links"],
+  instagram: ["instagram", "links"]
+};
+
+export function createStarterDocument(siteName: string, themeId = "classic98", template: StarterTemplate = "card"): SiteDocument {
   const theme = THEME_PRESETS[themeId] ?? THEME_PRESETS.classic98;
   return {
     schemaVersion: 1,
     siteName,
     theme,
-    windows: [makeWindow("about", 0), makeWindow("links", 1)],
+    windows: TEMPLATE_WINDOWS[template].map((type, index) => makeWindow(type, index)),
     mobileColumns: 4
   };
+}
+
+/**
+ * Parses a stored document, applying defaults for fields added after it was saved.
+ * Falls back to the raw value if it no longer validates, so the editor can still show and repair it.
+ */
+export function normalizeDocument(raw: unknown): SiteDocument {
+  const parsed = SiteDocumentSchema.safeParse(raw);
+  return parsed.success ? parsed.data : (raw as SiteDocument);
+}
+
+// ---- Factories: build new content items with every default filled in ----
+const newId = () => (globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2) + Date.now().toString(36));
+
+export type DocumentBlockKind = DocumentBlock["kind"];
+
+export function makeBlock(kind: DocumentBlockKind): DocumentBlock {
+  const id = newId();
+  switch (kind) {
+    case "heading": return { id, kind, text: "標題" };
+    case "text": return { id, kind, text: "", align: "left", bold: false, italic: false };
+    case "image": return { id, kind, src: null, srcUrl: "", alt: "" };
+    case "button": return { id, kind, text: "按鈕", url: "" };
+    case "link": return { id, kind, text: "連結文字", url: "" };
+    case "list": return { id, kind, text: "項目一\n項目二" };
+    case "divider": return { id, kind };
+  }
+}
+
+export type GalleryImage = Extract<DesktopWindow, { type: "gallery" }>["content"]["images"][number];
+export type LinkItem = Extract<DesktopWindow, { type: "links" }>["content"]["links"][number];
+export type IgPost = Extract<DesktopWindow, { type: "instagram" }>["content"]["images"][number];
+export type IgComment = IgPost["comments"][number];
+export type IgHighlight = Extract<DesktopWindow, { type: "instagram" }>["content"]["profile"]["highlights"][number];
+
+export function makeGalleryImage(init: Partial<GalleryImage> = {}): GalleryImage {
+  return { id: newId(), src: null, title: "", caption: "", srcUrl: "", href: "", ...init };
+}
+
+export function makeLink(init: Partial<LinkItem> = {}): LinkItem {
+  return { id: newId(), label: "新連結", icon: "link", color: "#000080", target: "url", url: "", windowId: "", iconUrl: "", ...init };
+}
+
+export function makeIgPost(init: Partial<IgPost> = {}): IgPost {
+  return { ...makeGalleryImage(), location: "", date: "", likes: 0, comments: [], extra: [], ...init };
+}
+
+export function makeIgHighlight(init: Partial<IgHighlight> = {}): IgHighlight {
+  return { id: newId(), title: "精選", src: null, srcUrl: "", ...init };
+}
+
+export function makeIgComment(user: string, text: string): IgComment {
+  return { id: newId(), user, text };
 }

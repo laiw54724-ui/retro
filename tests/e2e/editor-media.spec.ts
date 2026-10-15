@@ -26,32 +26,34 @@ test("clearing a field pauses autosave quietly without an error popup", async ({
   await page.getByLabel("視窗標題").fill("");
   await page.waitForTimeout(1200);
   await expect(page.locator(".editor-message")).toHaveCount(0);
-  await expect(page.locator(".save-pill")).toContainText("有欄位未完成");
+  await expect(page.locator(".save-text")).toContainText("有欄位未完成");
   expect(saves).toHaveLength(0);
 
   await page.getByLabel("視窗標題").fill("About.exe");
   await expect.poll(() => saves.length).toBeGreaterThan(0);
 });
 
-test("pasting a Google Drive link previews it and the avatar can be repositioned", async ({ page }) => {
+test("pasting a Google Drive link previews it and the avatar can be repositioned inline", async ({ page }) => {
   await openEditor(page);
-  await page.getByRole("button", { name: /貼上圖片連結/ }).click();
-  await page.getByPlaceholder("貼上圖片或 Google 雲端連結").fill(`https://drive.google.com/file/d/${DRIVE_ID}/view?usp=sharing`);
-  await page.getByRole("button", { name: "使用連結" }).click();
+  const about = page.getByRole("dialog", { name: "About.exe" });
+  const field = about.getByLabel("頭像網址");
+  await field.fill(`https://drive.google.com/file/d/${DRIVE_ID}/view?usp=sharing`);
+  await field.press("Enter");
 
-  const avatar = page.getByRole("dialog", { name: "About.exe" }).locator(".avatar img");
+  const avatar = about.locator(".about-avatar img");
   await expect(avatar).toHaveAttribute("src", `https://drive.google.com/thumbnail?id=${DRIVE_ID}&sz=w2000`);
 
-  await page.locator(".crop-zoom input").fill("2");
-  await expect(avatar).toHaveCSS("transform", /matrix\(2, 0, 0, 2/);
+  await about.getByRole("button", { name: "調整位置" }).click();
+  await about.locator(".crop-zoom input").fill("2");
+  await expect(about.locator(".about-avatar img")).toHaveCSS("transform", /matrix\(2, 0, 0, 2/);
 });
 
-test("rejects non-https and folder links", async ({ page }) => {
+test("rejects non-https avatar links with a visible reason", async ({ page }) => {
   await openEditor(page);
-  await page.getByRole("button", { name: /貼上圖片連結/ }).click();
-  const input = page.getByPlaceholder("貼上圖片或 Google 雲端連結");
-  await input.fill("javascript:alert(1)");
-  await page.getByRole("button", { name: "使用連結" }).click();
-  await expect(page.locator(".editor-message")).toContainText("https");
-  await expect(page.getByRole("dialog", { name: "About.exe" }).locator(".avatar img")).toHaveCount(0);
+  const about = page.getByRole("dialog", { name: "About.exe" });
+  const field = about.getByLabel("頭像網址");
+  await field.fill("javascript:alert(1)");
+  await field.press("Enter");
+  await expect(about.getByRole("alert")).toContainText("https");
+  await expect(about.locator(".about-avatar img")).toHaveCount(0);
 });

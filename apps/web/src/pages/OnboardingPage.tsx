@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createStarterDocument, THEME_PRESETS, UsernameSchema } from "@retrodesk/shared";
+import { createTemplateDocument, THEME_PRESETS, UsernameSchema, type StarterTemplate } from "@retrodesk/shared";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { RetroButton } from "../components/RetroButton";
@@ -10,6 +10,7 @@ export function OnboardingPage() {
   const [username, setUsername] = useState("");
   const [siteName, setSiteName] = useState("我的小桌面");
   const [themeId, setThemeId] = useState("classic98");
+  const [template, setTemplate] = useState<StarterTemplate | "ig">("card");
   const [available, setAvailable] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
   const validUsername = useMemo(() => UsernameSchema.safeParse(username), [username]);
@@ -31,7 +32,7 @@ export function OnboardingPage() {
     if (!validUsername.success || available === false) return;
     setBusy(true);
     try {
-      const document = createStarterDocument(siteName, themeId);
+      const document = createTemplateDocument(siteName, themeId, template);
       const { site } = await api.createSite({ username: validUsername.data, siteName, document });
       navigate("/editor/" + site.id);
     } finally {
@@ -96,8 +97,21 @@ export function OnboardingPage() {
 
             {step === 3 ? (
               <>
-                <h2>先用一組好改的起始內容</h2>
-                <p>第一版會先建立「關於我」和「連結」兩個視窗。進入編輯器後可以新增文件、相簿、復古 IG，或全部刪掉重新開始。</p>
+                <h2>選一個起始模板</h2>
+                <p>模板只建立起始視窗，進入編輯器後都可以自由新增、刪除或修改。</p>
+                <div className="template-grid">
+                  {([
+                    ["blank", "空白", "從一張乾淨桌面開始"],
+                    ["card", "電子名片", "關於我 + 社群連結"],
+                    ["oc", "OC 展示頁", "角色檔案 + 相簿 + 世界觀"],
+                    ["portfolio", "作品集", "自介 + 作品 + 聯絡方式"],
+                    ["ig", "復古 IG", "互動個人頁 + 連結"]
+                  ] as const).map(([id, name, description]) => (
+                    <button type="button" key={id} className={template === id ? "selected" : ""} aria-pressed={template === id} onClick={() => setTemplate(id)}>
+                      <strong>{name}</strong><span>{description}</span>
+                    </button>
+                  ))}
+                </div>
                 <div className="starter-summary">
                   <strong>{siteName}</strong>
                   <span>/@{username}</span>

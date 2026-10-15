@@ -1,42 +1,52 @@
+import type { ComponentType } from "react";
 import type { DesktopWindow, RetroTheme } from "@retrodesk/shared";
-import { AvatarImage } from "../../components/AvatarImage";
+import { themeView } from "../../lib/themeView";
+import { registry } from "../modules/registry";
+import type { LinkAction, ModuleCtx } from "../modules/types";
 
-function safeHref(url: string) {
-  if (!url) return "#";
+type Props = {
+  window: DesktopWindow;
+  theme: RetroTheme;
+  /** Visitor/preview: open another window by id. */
+  onOpenWindow?: (id: string) => void;
+  allWindows?: DesktopWindow[];
+  mobile?: boolean;
+  /** Editor-only: render inline editors and persist edits. */
+  editing?: boolean;
+  siteId?: string;
+  upload?: ModuleCtx["upload"];
+  onUpdate?: (id: string, recipe: (window: DesktopWindow) => DesktopWindow, historyKey?: string) => void;
+};
+
+function openExternal(url: string) {
   try {
     const parsed = new URL(url);
-    return ["http:", "https:", "mailto:"].includes(parsed.protocol) ? url : "#";
+    if (parsed.protocol === "mailto:") window.location.href = url;
+    else if (parsed.protocol === "https:" || parsed.protocol === "http:") window.open(url, "_blank", "noopener,noreferrer");
   } catch {
-    return "#";
+    // ignore malformed links
   }
 }
 
-export function WindowRenderer({ window, theme, onOpenWindow }: { window: DesktopWindow; theme: RetroTheme; onOpenWindow?: (id: string) => void }) {
-  if (window.type === "document") {
-    return <div className="document-content">{window.content.blocks.map((block) => {
-      if (block.kind === "heading") return <h2 key={block.id}>{block.text}</h2>;
-      if (block.kind === "text") return <p key={block.id} style={{ textAlign: block.align }}>{block.text}</p>;
-      if (block.kind === "divider") return <hr key={block.id} />;
-      if (block.kind === "list") return <ul key={block.id}>{block.text.split("\n").filter(Boolean).map((item, index) => <li key={block.id + "-" + index}>{item}</li>)}</ul>;
-      if (block.kind === "image") return block.src ? <img key={block.id} className="content-image" src={block.src} alt={block.alt} referrerPolicy="no-referrer" loading="lazy" decoding="async" /> : <div key={block.id} className="image-placeholder">圖片</div>;
-      if (block.kind === "button") return <a key={block.id} className="content-button" href={safeHref(block.url)} target={block.url.startsWith("http") ? "_blank" : undefined} rel="noreferrer">{block.text}</a>;
-      return <a key={block.id} href={safeHref(block.url)} target={block.url.startsWith("http") ? "_blank" : undefined} rel="noreferrer">{block.text}</a>;
-    })}</div>;
-  }
+export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, mobile = false, editing = false, siteId, upload, onUpdate }: Props) {
+  const tv = themeView(theme);
+  const onLink = (action: LinkAction) => {
+    if (editing) return; // links are inert while editing
+    if (action.target === "window") { if (action.windowId) onOpenWindow?.(action.windowId); return; }
+    if (action.url) openExternal(action.url);
+  };
+  const ctx: ModuleCtx = {
+    theme, tv, editing: editing && !!onUpdate, mobile, siteId,
+    windows: (allWindows ?? []).map((candidate) => ({ id: candidate.id, title: candidate.title })),
+    onLink, upload
+  };
+  const update = (recipe: (current: never) => never, key?: string) => onUpdate?.(win.id, recipe as never, key);
 
-  if (window.type === "gallery") {
-    return <div className="gallery-grid" style={{ gridTemplateColumns: `repeat(${window.content.columns}, minmax(0, 1fr))` }}>{window.content.images.length ? window.content.images.map((image) => <figure key={image.id}><div className="gallery-image">{image.src ? <img src={image.src} alt={image.title} referrerPolicy="no-referrer" loading="lazy" decoding="async" /> : <span>PHOTO</span>}</div><figcaption>{image.title}</figcaption></figure>) : <div className="empty-module">還沒有圖片</div>}</div>;
-  }
-
-  if (window.type === "links") {
-    return <div className="links-list">{window.content.links.map((link) => link.target === "window" ? <button key={link.id} type="button" onClick={() => onOpenWindow?.(link.windowId)}>{link.label}</button> : <a key={link.id} href={safeHref(link.url)} target={link.url.startsWith("http") ? "_blank" : undefined} rel="noreferrer" style={{ borderLeftColor: link.color }}>{link.label}</a>)}</div>;
-  }
-
-  if (window.type === "instagram") {
-    const profile = window.content.profile;
-    return <div className="ig-profile"><div className="ig-head"><div className="avatar">{profile.avatar ? <AvatarImage src={profile.avatar} crop={profile.avatarCrop} /> : null}</div><div><strong>{profile.username}</strong><div className="ig-counts"><span>{window.content.images.length} posts</span><span>{profile.followers} followers</span><span>{profile.following} following</span></div></div></div><p>{profile.name} {profile.alt}</p><p className="preline">{profile.bio}</p><div className="ig-grid">{window.content.images.map((image) => <div key={image.id}>{image.src ? <img src={image.src} alt={image.title} referrerPolicy="no-referrer" loading="lazy" decoding="async" /> : null}</div>)}</div></div>;
-  }
-
-  const content = window.content;
-  return <div className="about-card"><div className="avatar large">{content.avatar ? <AvatarImage src={content.avatar} crop={content.avatarCrop} /> : null}</div><h2>{content.nickname}</h2>{content.banner ? <strong className="about-banner">{content.banner}</strong> : null}<p className="preline">{content.bio}</p>{content.quote ? <blockquote>{content.quote}</blockquote> : null}<dl>{content.fields.map((field) => <div key={field.id}><dt>{field.key}</dt><dd>{field.value}</dd></div>)}</dl><div className="socials">{content.socials.map((social) => <a key={social.id} href={safeHref(social.url)} target="_blank" rel="noreferrer">{social.label}</a>)}</div></div>;
+  const module = registry[win.type] as unknown as { View: ComponentType<Record<string, unknown>>; InlineEditor: ComponentType<Record<string, unknown>> };
+  const Component = ctx.editing ? module.InlineEditor : module.View;
+  return (
+    <div className="module-host" style={{ fontFamily: tv.fontFamily, color: tv.text, background: win.type === "about" || win.type === "instagram" ? tv.face : "#fff" }}>
+      <Component window={win} ctx={ctx} update={update} />
+    </div>
+  );
 }
