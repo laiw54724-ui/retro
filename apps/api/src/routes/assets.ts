@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { Env } from "../env";
 import { jsonError } from "../lib/http";
 import { requireUser, serviceClient } from "../lib/supabase";
+import { imageBytesMatchMime } from "../lib/upload";
 
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
@@ -23,10 +24,15 @@ assets.post("/sites/:siteId/assets", async (c) => {
   if (!ALLOWED_TYPES.has(file.type)) return jsonError(c, 415, "unsupported_media", "Only JPEG, PNG, WebP and GIF are allowed");
   if (file.size > MAX_UPLOAD_BYTES) return jsonError(c, 413, "file_too_large", "Image must be 8 MB or smaller");
 
+  const bytes = await file.arrayBuffer();
+  if (!imageBytesMatchMime(new Uint8Array(bytes), file.type)) {
+    return jsonError(c, 415, "invalid_image_bytes", "File contents do not match the declared image type");
+  }
+
   const extension = file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1];
   const assetId = crypto.randomUUID();
   const key = `users/${user.id}/sites/${siteId}/${assetId}.${extension}`;
-  await c.env.ASSETS.put(key, file.stream(), {
+  await c.env.ASSETS.put(key, bytes, {
     httpMetadata: { contentType: file.type, cacheControl: "public, max-age=31536000, immutable" },
     customMetadata: { ownerId: user.id, siteId }
   });
