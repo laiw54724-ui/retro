@@ -16,6 +16,7 @@ type EditorState = {
   setVersion: (version: number) => void;
   setSaveStatus: (status: SaveStatus) => void;
   select: (id: string | null) => void;
+  focusWindow: (id: string) => void;
   setDevice: (device: "desktop" | "mobile") => void;
   setSiteName: (name: string) => void;
   setTheme: (theme: SiteDocument["theme"]) => void;
@@ -44,6 +45,45 @@ export const useEditorStore = create<EditorState>((set) => ({
   setVersion: (version) => set({ version }),
   setSaveStatus: (saveStatus) => set({ saveStatus }),
   select: (selectedId) => set({ selectedId }),
+  focusWindow: (id) => set((state) => {
+    if (!state.document) return { selectedId: id };
+    const windows = state.document.windows;
+    const target = windows.find((window) => window.id === id);
+    if (!target) return { selectedId: id };
+
+    const maxZ = Math.max(0, ...windows.map((window) => window.layout.desktop.z));
+    if (target.layout.desktop.z === maxZ) return { selectedId: id };
+
+    if (maxZ < 9999) {
+      return {
+        selectedId: id,
+        document: {
+          ...state.document,
+          windows: windows.map((window) => window.id === id
+            ? { ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, z: maxZ + 1 } } }
+            : window)
+        },
+        saveStatus: "dirty"
+      };
+    }
+
+    const ordered = [...windows].sort((a, b) => a.layout.desktop.z - b.layout.desktop.z);
+    const normalized = ordered.map((window, index) => ({
+      ...window,
+      layout: { ...window.layout, desktop: { ...window.layout.desktop, z: index + 1 } }
+    }));
+    const nextMax = normalized.length;
+    return {
+      selectedId: id,
+      document: {
+        ...state.document,
+        windows: normalized.map((window) => window.id === id
+          ? { ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, z: nextMax + 1 } } }
+          : window)
+      },
+      saveStatus: "dirty"
+    };
+  }),
   setDevice: (device) => set({ device }),
   setSiteName: (siteName) => set((state) => state.document ? {
     document: { ...state.document, siteName },
