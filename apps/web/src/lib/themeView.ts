@@ -81,3 +81,10 @@ export function themeView(t: RetroTheme): ThemeView {
     tileShadow: tile ? bevel : "none"
   };
 }
+
+/** Linear blend of two #rrggbb colours (t = 0 → a, t = 1 → b). */
+export function mixHex(a: string, b: string, t: number): string {
+  const parse = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const [pa, pb] = [parse(a), parse(b)];
+  return "#" + pa.map((v, i) => Math.round(v + (pb[i] - v) * t).toString(16).padStart(2, "0")).join("");
+}

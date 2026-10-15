@@ -18,7 +18,7 @@ test("editor window controls minimize, close, maximize and restore without chang
 
   await dialog.getByRole("button", { name: "最小化" }).click();
   await expect(dialog).toBeHidden();
-  await page.locator(".taskbar").getByRole("button", { name: "About.exe" }).click();
+  await page.locator(".taskbar2").getByRole("button", { name: "About.exe" }).click();
   await expect(dialog).toBeVisible();
 
   await dialog.getByRole("button", { name: "最大化" }).click();
@@ -27,7 +27,7 @@ test("editor window controls minimize, close, maximize and restore without chang
 
   await dialog.getByRole("button", { name: "關閉" }).click();
   await expect(dialog).toBeHidden();
-  await page.locator(".editor-desktop-icon").filter({ hasText: "About.exe" }).click();
+  await page.locator(".deskicon").filter({ hasText: "About.exe" }).click();
   await expect(dialog).toBeVisible();
 
   await page.waitForTimeout(1500);

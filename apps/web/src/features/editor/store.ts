@@ -45,6 +45,9 @@ type EditorState = {
   duplicateWindow: (id: string) => void;
   bringToFront: (id: string) => void;
   moveLayer: (id: string, direction: -1 | 1) => void;
+  /** View-only window state in the editor canvas (never saved). */
+  viewState: Record<string, "min" | "closed" | "max">;
+  setViewState: (id: string, state: "min" | "closed" | "max" | null) => void;
   layoutMode: boolean;
   snap: boolean;
   setLayoutMode: (on: boolean) => void;
@@ -100,7 +103,8 @@ export const useEditorStore = create<EditorState>((set) => ({
     selectedId: document.windows[0]?.id ?? null,
     saveStatus: "saved",
     past: [],
-    future: []
+    future: [],
+    viewState: {}
   }),
   setSaveStatus: (saveStatus) => set({ saveStatus }),
   markSaved: (version, savedDocument) => set((state) => ({
@@ -260,6 +264,12 @@ export const useEditorStore = create<EditorState>((set) => ({
       windows: state.document.windows.map((window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, z: zById.get(window.id) ?? window.layout.desktop.z } } }))
     };
     return withHistory(state, document);
+  }),
+  viewState: {},
+  setViewState: (id, next) => set((state) => {
+    const viewState = { ...state.viewState };
+    if (next) viewState[id] = next; else delete viewState[id];
+    return { viewState };
   }),
   layoutMode: false,
   snap: true,

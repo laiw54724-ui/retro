@@ -26,7 +26,7 @@ test("clearing a field pauses autosave quietly without an error popup", async ({
   await page.getByLabel("視窗標題").fill("");
   await page.waitForTimeout(1200);
   await expect(page.locator(".editor-message")).toHaveCount(0);
-  await expect(page.locator(".save-pill")).toContainText("有欄位未完成");
+  await expect(page.locator(".save-text")).toContainText("有欄位未完成");
   expect(saves).toHaveLength(0);
 
   await page.getByLabel("視窗標題").fill("About.exe");
