@@ -3,15 +3,20 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import process from 'node:process';
 
-const ROOT = path.resolve(new URL('..', import.meta.url).pathname);
+const ROOT = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const EXPECTED_COMMIT = '728a866ad59a54fd4082dbe000e1e62e50bd90e9';
 const PRIMARY_URL = 'https://github.com/trapd00r/win95-winxp_icons';
 const SECONDARY_URL = 'https://winclassic.github.io/resources';
 const OUT_DIR = path.join(ROOT, 'apps/web/public/windows-icons');
 const MANIFEST = path.join(ROOT, 'apps/web/src/lib/windowsIconManifest.ts');
 const PROVENANCE = path.join(ROOT, 'docs/assets/windows-icons.provenance.json');
+const STAGING_DIR = `${OUT_DIR}.__staging__`;
+const BACKUP_DIR = `${OUT_DIR}.__backup__`;
+const MANIFEST_TEMP = `${MANIFEST}.__tmp__`;
+const PROVENANCE_TEMP = `${PROVENANCE}.__tmp__`;
 const SUPPORTED = new Set(['.ico', '.png']);
 const UNSUPPORTED = new Set(['.ani', '.icl']);
 
@@ -27,7 +32,8 @@ function titleLabel(value) {
   return value.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 function relSlug(relativePath) {
-  return relativePath.toLowerCase().replace(/\\/g, '/').replace(/\.[^.]+$/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const slug = relativePath.toLowerCase().replace(/\\/g, '/').replace(/\.[^.]+$/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return slug || `icon-${sha256(Buffer.from(relativePath)).slice(0, 12)}`;
 }
 function json(value) { return JSON.stringify(value, null, 2) + '\n'; }
 async function walk(directory, base = directory) {
@@ -103,6 +109,7 @@ async function build(source) {
   }
   const provenance = {
     schemaVersion: 1,
+    generator: { path: 'scripts/import-windows-icons.mjs', version: '1.0.0' },
     source: { url: PRIMARY_URL, commit: data.commit, license: 'NOASSERTION' },
     secondaryReference: SECONDARY_URL,
     rights: 'Imported from the pinned upstream repository for local product use; upstream license is not asserted here. Review upstream terms before redistribution.',
@@ -116,7 +123,7 @@ async function build(source) {
 async function run() {
   const source = arg('source');
   const check = process.argv.includes('--check');
-  if (!source || !path.isAbsolute(source)) throw new Error('--source must be an absolute path');
+  if (!source || !path.isAbsolute(source)) throw new Error('--source must be an absolute path; run `pnpm icons:audit -- --source=/absolute/path/to/win95-winxp_icons`');
   const built = await build(path.resolve(source));
   if (built.data.supported.length !== 1193 || built.data.unsupported.length !== 7) throw new Error(`unexpected inventory: ${built.data.supported.length} supported, ${built.data.unsupported.length} unsupported`);
   if (check) {
@@ -140,13 +147,43 @@ async function run() {
     console.log(`icons: audit ok (${built.data.records.length} imported, ${built.data.unsupported.length} unsupported)`);
     return;
   }
-  await fs.rm(OUT_DIR, { recursive: true, force: true });
-  await fs.mkdir(OUT_DIR, { recursive: true });
-  for (const record of built.data.records) await fs.copyFile(path.join(source, record.upstreamPath), path.join(OUT_DIR, path.basename(record.path)));
+  await fs.rm(STAGING_DIR, { recursive: true, force: true });
+  await fs.rm(BACKUP_DIR, { recursive: true, force: true });
+  await fs.mkdir(STAGING_DIR, { recursive: true });
+  try {
+    for (const record of built.data.records) await fs.copyFile(path.join(source, record.upstreamPath), path.join(STAGING_DIR, path.basename(record.path)));
+    for (const record of built.data.records) {
+      const staged = await hashFile(path.join(STAGING_DIR, path.basename(record.path)));
+      const input = await hashFile(path.join(source, record.upstreamPath));
+      if (staged.sha256 !== input.sha256 || staged.bytes !== input.bytes) throw new Error(`staging hash mismatch: ${record.path}`);
+    }
+    let hadOriginal = true;
+    try { await fs.access(OUT_DIR); } catch { hadOriginal = false; }
+    if (hadOriginal) await fs.rename(OUT_DIR, BACKUP_DIR);
+    try {
+      await fs.rename(STAGING_DIR, OUT_DIR);
+    } catch (error) {
+      if (hadOriginal) await fs.rename(BACKUP_DIR, OUT_DIR);
+      throw error;
+    }
+    if (hadOriginal) await fs.rm(BACKUP_DIR, { recursive: true, force: true });
+  } catch (error) {
+    await fs.rm(STAGING_DIR, { recursive: true, force: true });
+    throw error;
+  }
   await fs.mkdir(path.dirname(MANIFEST), { recursive: true });
   await fs.mkdir(path.dirname(PROVENANCE), { recursive: true });
-  await fs.writeFile(MANIFEST, built.manifest);
-  await fs.writeFile(PROVENANCE, built.provenance);
+  await fs.rm(MANIFEST_TEMP, { force: true });
+  await fs.rm(PROVENANCE_TEMP, { force: true });
+  try {
+    await fs.writeFile(MANIFEST_TEMP, built.manifest);
+    await fs.writeFile(PROVENANCE_TEMP, built.provenance);
+    await fs.rename(MANIFEST_TEMP, MANIFEST);
+    await fs.rename(PROVENANCE_TEMP, PROVENANCE);
+  } finally {
+    await fs.rm(MANIFEST_TEMP, { force: true });
+    await fs.rm(PROVENANCE_TEMP, { force: true });
+  }
   console.log(`icons: imported ${built.data.records.length}; unsupported ${built.data.unsupported.length}`);
 }
 run().catch((error) => fail(error.message));

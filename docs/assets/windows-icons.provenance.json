@@ -1,5 +1,9 @@
 {
   "schemaVersion": 1,
+  "generator": {
+    "path": "scripts/import-windows-icons.mjs",
+    "version": "1.0.0"
+  },
   "source": {
     "url": "https://github.com/trapd00r/win95-winxp_icons",
     "commit": "728a866ad59a54fd4082dbe000e1e62e50bd90e9",
