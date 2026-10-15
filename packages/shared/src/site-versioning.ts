@@ -280,8 +280,20 @@ function profileError(path: (string | number)[], message: string, code: string):
 }
 
 function validDocument(document: SiteDocumentV2Input): ProfileDiagnostic[] {
-  const parsed = SiteDocumentV2Schema.safeParse(document);
-  return parsed.success ? [] : diagnosticsFrom(parsed.error);
+  const parsed = parseSiteDocument(document);
+  if (parsed.ok && parsed.version === 2) return [];
+  if (parsed.ok) return [{ path: ["schemaVersion"], message: "Profile operations require a v2 document", code: "unsupported_version" }];
+  return parsed.code === "invalid" ? parsed.diagnostics : [{ path: ["schemaVersion"], message: `Unsupported document version: ${parsed.version}`, code: "unsupported_version" }];
+}
+
+function validatedOutput(document: SiteDocumentV2Input): ProfileDiagnostic[] {
+  return validDocument(document);
+}
+
+function documentSiteScope(document: SiteDocumentV2Input): Set<string> {
+  const sites = new Set<string>([...document.entities.profiles, ...document.entities.posts].map((entity) => entity.siteId));
+  for (const window of document.windows) if (window.type === "instagram") sites.add(window.content.profileRef.siteId);
+  return sites;
 }
 
 function profileInput(input: Record<string, unknown>, siteId: string, id: string, visibility: Visibility = "draft"): ProfileEntityV2 | ProfileDiagnostic[] {
@@ -319,6 +331,8 @@ export function inspectProfileReferences(document: SiteDocumentV2Input, profileI
 export function createProfile(document: SiteDocumentV2Input, input: Record<string, unknown>, options: { siteId: string; id?: string } ): ProfileOperationResult {
   const diagnostics = validDocument(document);
   if (diagnostics.length) return { ok: false, code: "invalid", diagnostics };
+  const scope = documentSiteScope(document);
+  if (scope.size > 0 && !scope.has(options.siteId)) return profileError(["siteId"], "Profile site does not match document scope", "cross_site");
   const id = options.id ?? `profile:${crypto.randomUUID()}`;
   if (document.entities.profiles.some((profile) => profile.id === id)) return profileError(["entities", "profiles"], "Profile id already exists", "duplicate_id");
   const handleDiagnostics = profileHandleDiagnostics(document, input.handle);
@@ -327,6 +341,8 @@ export function createProfile(document: SiteDocumentV2Input, input: Record<strin
   if (Array.isArray(profile)) return { ok: false, code: "invalid", diagnostics: profile };
   const next = structuredClone(document);
   next.entities.profiles = [...next.entities.profiles, profile];
+  const outputDiagnostics = validatedOutput(next);
+  if (outputDiagnostics.length) return { ok: false, code: "invalid", diagnostics: outputDiagnostics };
   return { ok: true, document: next, profile };
 }
 
@@ -341,6 +357,8 @@ export function updateProfile(document: SiteDocumentV2Input, profileId: string, 
   const parsed = ProfileEntityV2Schema.safeParse(candidate);
   if (!parsed.success) return { ok: false, code: "invalid", diagnostics: diagnosticsFrom(parsed.error) };
   const next = structuredClone(document); next.entities.profiles[index] = parsed.data;
+  const outputDiagnostics = validatedOutput(next);
+  if (outputDiagnostics.length) return { ok: false, code: "invalid", diagnostics: outputDiagnostics };
   return { ok: true, document: next, profile: parsed.data };
 }
 
@@ -352,6 +370,8 @@ export function duplicateProfile(document: SiteDocumentV2Input, profileId: strin
 }
 
 export function deleteOrRetargetProfile(document: SiteDocumentV2Input, profileId: string, options: { siteId: string; retargetProfileId?: string }): ProfileOperationResult {
+  const diagnostics = validDocument(document);
+  if (diagnostics.length) return { ok: false, code: "invalid", diagnostics };
   const source = document.entities.profiles.find((profile) => profile.id === profileId && profile.siteId === options.siteId);
   if (!source) return profileError(["entities", "profiles"], "Profile not found", "missing");
   const report = inspectProfileReferences(document, profileId, options.siteId);
@@ -365,6 +385,8 @@ export function deleteOrRetargetProfile(document: SiteDocumentV2Input, profileId
     next.entities.posts = next.entities.posts.map((post) => post.authorProfileId === profileId ? { ...post, authorProfileId: options.retargetProfileId! } : post);
   }
   next.entities.profiles = next.entities.profiles.filter((profile) => profile.id !== profileId);
+  const outputDiagnostics = validatedOutput(next);
+  if (outputDiagnostics.length) return { ok: false, code: "invalid", diagnostics: outputDiagnostics };
   return { ok: true, document: next, profile: ProfileEntityV2Schema.parse(source) };
 }
 

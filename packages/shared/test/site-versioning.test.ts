@@ -252,4 +252,25 @@ describe("versioned site document contract", () => {
     }
     expect(migrated.document).toEqual(original);
   });
+
+  it("enforces site scope, handle uniqueness, and relation-free duplication", () => {
+    const migrated = migrateSiteDocumentV2(fixture(), { siteId: "site-a" });
+    expect(migrated.ok).toBe(true);
+    if (!migrated.ok) return;
+    const source = migrated.document.entities.profiles[0];
+    const crossSite = createProfile(migrated.document, { handle: "other-site", displayName: "Other", name: "Other", avatar: null }, { siteId: "site-b", id: "profile:other" });
+    expect(crossSite).toMatchObject({ ok: false, diagnostics: [{ code: "cross_site" }] });
+    const seeded = createProfile(migrated.document, { handle: "another", displayName: "Another", name: "Another", avatar: null }, { siteId: "site-a", id: "profile:another" });
+    expect(seeded.ok).toBe(true);
+    if (!seeded.ok) return;
+    const duplicateUpdate = updateProfile(seeded.document, "profile:another", { handle: source.handle!.toUpperCase() }, { siteId: "site-a" });
+    expect(duplicateUpdate).toMatchObject({ ok: false, diagnostics: [{ code: "duplicate_handle" }] });
+    const copied = duplicateProfile(migrated.document, source.id, { siteId: "site-a", id: "profile:copy", handle: "alice-copy" });
+    expect(copied.ok).toBe(true);
+    if (!copied.ok) return;
+    expect(inspectProfileReferences(copied.document, "profile:copy", "site-a")).toMatchObject({ windowIds: [], postIds: [] });
+    const unreferenced = deleteOrRetargetProfile(copied.document, "profile:copy", { siteId: "site-a" });
+    expect(unreferenced.ok).toBe(true);
+    if (unreferenced.ok) expect(parseSiteDocument(unreferenced.document)).toMatchObject({ ok: true, version: 2 });
+  });
 });
