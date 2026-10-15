@@ -1,4 +1,4 @@
-import type { ReactElement } from "react";
+import { createElement, type ReactElement } from "react";
 import { makeWindow, type DesktopWindow } from "@retrodesk/shared";
 import type { ModuleCtx, ModuleProps, WindowModule, WindowOf } from "./types";
 import { DocumentInlineEditor, DocumentView } from "./document";
@@ -52,23 +52,23 @@ export function renderModule({ window, ctx, editing, update }: RenderModuleOptio
   switch (window.type) {
     case "document": {
       const props: ModuleProps<"document"> = { window, ctx, update: (recipe, key) => update((current) => recipe(current as WindowOf<"document">), key) };
-      return editing ? registry.document.InlineEditor(props) : registry.document.View(props);
+      return createElement(editing ? registry.document.InlineEditor : registry.document.View, props);
     }
     case "gallery": {
       const props: ModuleProps<"gallery"> = { window, ctx, update: (recipe, key) => update((current) => recipe(current as WindowOf<"gallery">), key) };
-      return editing ? registry.gallery.InlineEditor(props) : registry.gallery.View(props);
+      return createElement(editing ? registry.gallery.InlineEditor : registry.gallery.View, props);
     }
     case "links": {
       const props: ModuleProps<"links"> = { window, ctx, update: (recipe, key) => update((current) => recipe(current as WindowOf<"links">), key) };
-      return editing ? registry.links.InlineEditor(props) : registry.links.View(props);
+      return createElement(editing ? registry.links.InlineEditor : registry.links.View, props);
     }
     case "about": {
       const props: ModuleProps<"about"> = { window, ctx, update: (recipe, key) => update((current) => recipe(current as WindowOf<"about">), key) };
-      return editing ? registry.about.InlineEditor(props) : registry.about.View(props);
+      return createElement(editing ? registry.about.InlineEditor : registry.about.View, props);
     }
     case "instagram": {
       const props: ModuleProps<"instagram"> = { window, ctx, update: (recipe, key) => update((current) => recipe(current as WindowOf<"instagram">), key) };
-      return editing ? registry.instagram.InlineEditor(props) : registry.instagram.View(props);
+      return createElement(editing ? registry.instagram.InlineEditor : registry.instagram.View, props);
     }
   }
 }

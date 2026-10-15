@@ -26,6 +26,10 @@ export function PublicSitePage() {
   if (error) return <main className="not-found"><div><h1>找不到這個桌面</h1><p>{error}</p></div></main>;
   if (!document) return <div className="boot-screen">Loading desktop...</div>;
 
+  return <PublishedDesktop document={document} />;
+}
+
+function PublishedDesktop({ document }: { document: SiteDocument }) {
   const theme = document.theme;
   const tv = useThemeView(theme);
   const imageWallpaper = theme.pattern === "image" && !!theme.wallImage;

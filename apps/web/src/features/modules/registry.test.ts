@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { createWindow, getModule, moduleDefinitions, registry, WINDOW_TYPES } from "./registry";
+import { THEME_PRESETS } from "@retrodesk/shared";
+import { themeView } from "../../lib/themeView";
+import { createWindow, getModule, moduleDefinitions, registry, renderModule, WINDOW_TYPES } from "./registry";
 
 describe("module registry contract", () => {
   it("keeps one stable ordered definition for all five v1 modules", () => {
@@ -33,5 +35,18 @@ describe("module registry contract", () => {
 
   it("rejects missing registrations instead of returning an undefined renderer", () => {
     expect(() => getModule("missing" as never)).toThrow("Unregistered window type: missing");
+  });
+
+  it("mounts registered views as React components instead of invoking hook-bearing components", () => {
+    const window = createWindow("about", 0);
+    const theme = THEME_PRESETS.classic98;
+    const base = {
+      window,
+      ctx: { theme, tv: themeView(theme), editing: false, mobile: false, windows: [], onLink: () => undefined },
+      update: () => undefined
+    };
+
+    expect(renderModule({ ...base, editing: false }).type).toBe(registry.about.View);
+    expect(renderModule({ ...base, editing: true }).type).toBe(registry.about.InlineEditor);
   });
 });
