@@ -76,3 +76,21 @@
 - Cloudflare Pages staging deployment：`7c33f804`（部署 source `2056a9e`；第一次 upload 連線失敗，原產物安全重試後成功）。
 - staging canonical：https://retrodesk-staging.pages.dev；immutable deployment：https://7c33f804.retrodesk-staging.pages.dev。
 - HTTP smoke：canonical／immutable 首頁皆 `200`；immutable Windows icon asset 為 `200` 且 MIME 正確；canonical 已提供本次 bundle `index-B1MFNzd-.js`。
+
+## #18B1 public projection and atomic publish
+
+驗證日期：2026-10-16（Asia/Singapore）。本節記錄 server-owned public projection、Postgres atomic publish 與 versioned R2 artifact 狀態／重試里程碑。
+
+- 實作計畫：`docs/superpowers/plans/2026-10-16-publish-projection-atomicity.md`。
+- 實作 commits：`1cc167c`、`cb14292`、`07b463a`、`c89c4bc`、`f5fc227`。
+- public projection：v1 維持相容；v2 僅保留 published profiles/posts 與引用閉包，移除 private Instagram windows、無公開 author 的 posts 與指向被移除 window 的 links；projection 為 pure/non-mutating 且會再次 structural/semantic validate。
+- atomic DB contract：migration `0003_atomic_publish.sql` 以 owner-scoped row lock 同時比對 draft/published expected versions，在同一 transaction 寫入 immutable `site_versions`、推進 published pointer 並設 artifact pending，避免同草稿併發發布重複產生版本。
+- R2 contract：只寫 versioned immutable key，所有 correctness-critical promises 均 await；DB public API 保持 authoritative 且不讀 R2 alias。
+- partial failure：R2 或 status update 失敗都回報 failed + retryable；owner-only retry 重寫同版本 key，不建立新 publication。零列 status update 被視為 stale race，不誤報 synced。
+- editor UX：DB commit 後公開連結可用；artifact 失敗顯示清楚警告與「重試同步」，成功則顯示已同步。
+- full unit：54 passed（shared 27 + API 23 + web 4）。
+- typecheck：pass（shared、api、web）。
+- full E2E：49 passed；包含 failed→retry 與 synced publish UX，既有 47 項流程全數維持通過。
+- build：pass（shared、API Wrangler dry-run、web Vite）；僅有既有 Wrangler debug-log EPERM 訊息與 bundle-size warning。
+- `git diff --check`：pass。
+- review：獨立 spec 與 quality review 通過；補齊 concurrency、projection/RPC、retry/public-source/success UX tests，並修正 quality review 發現的 zero-row stale status 誤報風險。
