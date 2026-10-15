@@ -5,6 +5,7 @@ import { App } from "./app/App";
 import { AuthProvider } from "./app/AuthProvider";
 import "./styles/global.css";
 import "./styles/w98.css";
+import "./styles/ig.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
