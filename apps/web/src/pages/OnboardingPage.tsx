@@ -40,7 +40,7 @@ export function OnboardingPage() {
   }
 
   return (
-    <main className="auth-shell">
+    <main className="auth-shell" style={step > 1 ? { background: THEME_PRESETS[themeId].wall } : undefined}>
       <section className="retro-panel onboarding-window">
         <header className="landing-titlebar">設定精靈 — 步驟 {step} / 3</header>
         <div className="onboarding-body">
@@ -83,7 +83,7 @@ export function OnboardingPage() {
                 <h2>選一個初始主題</h2>
                 <div className="theme-grid">
                   {Object.values(THEME_PRESETS).map((theme) => (
-                    <button key={theme.id} className={themeId === theme.id ? "selected" : ""} onClick={() => setThemeId(theme.id)}>
+                    <button type="button" key={theme.id} aria-pressed={themeId === theme.id} className={themeId === theme.id ? "selected" : ""} onClick={() => setThemeId(theme.id)}>
                       <div className="theme-preview" style={{ background: theme.wall }}>
                         <i style={{ background: theme.face }}><b style={{ background: `linear-gradient(90deg,${theme.titleFrom},${theme.titleTo})` }} /></i>
                       </div>

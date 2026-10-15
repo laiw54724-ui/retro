@@ -1,4 +1,4 @@
-import { useRef, type PointerEvent } from "react";
+import { useRef, useState, type PointerEvent } from "react";
 import type { DesktopWindow, SiteDocument } from "@retrodesk/shared";
 import { RetroWindow } from "../../components/RetroWindow";
 import { WindowRenderer } from "../site/WindowRenderer";
@@ -20,6 +20,14 @@ type Props = {
 
 export function DesktopCanvas({ document, selectedId, onSelect, onFocus, onMove, onResize, onIconMove }: Props) {
   const drag = useRef<Gesture | null>(null);
+  // View-only state: never written to the document or saved.
+  const [view, setView] = useState<Record<string, "min" | "closed" | "max">>({});
+  const setViewState = (id: string, next: "min" | "closed" | "max" | null) =>
+    setView((current) => {
+      const copy = { ...current };
+      if (next) copy[id] = next; else delete copy[id];
+      return copy;
+    });
   const canvasRef = useRef<HTMLDivElement | null>(null);
 
   function canvasBounds() {
@@ -34,6 +42,7 @@ export function DesktopCanvas({ document, selectedId, onSelect, onFocus, onMove,
     const target = event.target as HTMLElement;
     if (target.closest(".titlebar-controls")) return;
 
+    if (view[window.id] === "max") { onFocus(window.id); return; }
     const layout = window.layout.desktop;
     if (target.closest(".window-resize-handle")) {
       drag.current = {
@@ -170,7 +179,7 @@ export function DesktopCanvas({ document, selectedId, onSelect, onFocus, onMove,
             type="button"
             className={"editor-desktop-icon " + (selectedId === window.id ? "selected" : "")}
             style={{ left: iconX, top: iconY }}
-            onClick={() => onFocus(window.id)}
+            onClick={() => { setViewState(window.id, null); onFocus(window.id); }}
             onPointerDown={(event) => iconPointerDown(event, window, index)}
             onPointerMove={iconPointerMove}
             onPointerUp={iconPointerUp}
@@ -183,21 +192,36 @@ export function DesktopCanvas({ document, selectedId, onSelect, onFocus, onMove,
 
       {document.windows.map((window) => {
         const layout = window.layout.desktop;
+        const state = view[window.id];
+        if (state === "min" || state === "closed") return null;
+        const maximized = state === "max";
         return (
           <div
             key={window.id}
             className={`canvas-window ${selectedId === window.id ? "selected" : ""}`}
-            style={{ width: layout.w, height: layout.h, transform: `translate(${layout.x}px, ${layout.y}px)`, zIndex: layout.z }}
+            style={maximized
+              ? { width: "calc(100% - 8px)", height: "calc(100% - 44px)", transform: "translate(4px, 4px)", zIndex: layout.z }
+              : { width: layout.w, height: layout.h, transform: `translate(${layout.x}px, ${layout.y}px)`, zIndex: layout.z }}
             onClick={() => onFocus(window.id)}
             onPointerDown={(event) => windowPointerDown(event, window)}
             onPointerMove={windowPointerMove}
             onPointerUp={windowPointerUp}
             onPointerCancel={() => { drag.current = null; }}
           >
-            <RetroWindow title={window.title} theme={theme} active={selectedId === window.id} style={{ height: "100%" }}>
+            <RetroWindow
+              title={window.title}
+              theme={theme}
+              active={selectedId === window.id}
+              interactiveControls
+              maximized={maximized}
+              onMinimize={() => setViewState(window.id, "min")}
+              onMaximize={() => setViewState(window.id, maximized ? null : "max")}
+              onClose={() => setViewState(window.id, "closed")}
+              style={{ height: "100%" }}
+            >
               <WindowRenderer window={window} theme={theme} />
             </RetroWindow>
-            <span className="window-resize-handle" aria-hidden="true" />
+            {!maximized ? <span className="window-resize-handle" aria-hidden="true" /> : null}
           </div>
         );
       })}
@@ -205,6 +229,9 @@ export function DesktopCanvas({ document, selectedId, onSelect, onFocus, onMove,
       <div className="taskbar" style={{ background: theme.taskbar }}>
         <button type="button">開始</button>
         <span>{document.siteName}</span>
+        {document.windows.filter((window) => view[window.id] === "min").map((window) => (
+          <button key={window.id} type="button" onClick={() => { setViewState(window.id, null); onFocus(window.id); }}>{window.title}</button>
+        ))}
       </div>
     </div>
   );

@@ -1,18 +1,21 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../app/AuthProvider";
 import { RetroButton } from "../components/RetroButton";
 
 export function LandingPage() {
+  const { user } = useAuth();
   return (
     <main className="landing-shell">
       <section className="landing-window retro-panel">
         <header className="landing-titlebar">歡迎使用 Retro Desktop.exe</header>
+        {user ? <p className="info-box">已登入：{user.email}</p> : null}
         <div className="landing-hero">
           <div className="landing-copy">
             <span className="eyebrow">NO-CODE PERSONAL DESKTOP</span>
             <h1>把你的小宇宙，<br />裝進一台復古電腦。</h1>
             <p>拖拉視窗、放上圖片和連結，幾分鐘就能做出電子名片、OC 展示頁或作品集。不用寫程式，手機也能好好瀏覽。</p>
             <div className="button-row">
-              <Link className="retro-link primary" to="/auth">開始建立我的桌面 →</Link>
+              <Link className="retro-link primary" to="/auth">{user ? "進入我的桌面 →" : "開始建立我的桌面 →"}</Link>
               <a className="retro-link" href="#examples">看看範例</a>
             </div>
           </div>

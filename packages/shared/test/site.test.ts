@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { normalizeImageUrl } from "../src/image-url";
 import { createStarterDocument, SiteDocumentSchema, UsernameSchema } from "../src/site";
 
 describe("site schema security boundaries", () => {
@@ -31,5 +32,34 @@ describe("site schema security boundaries", () => {
     expect(document.windows[0].layout.desktop.iconX).toBeTypeOf("number");
     expect(document.windows[0].layout.desktop.iconY).toBeTypeOf("number");
     expect(document.windows[0].layout.mobile.order).toBe(0);
+  });
+});
+
+
+describe("normalizeImageUrl", () => {
+  const id = "1AbCdEfGhIjKlMnOpQrStUvWxYz012345";
+  const thumb = `https://drive.google.com/thumbnail?id=${id}&sz=w2000`;
+
+  it("converts Google Drive share links", () => {
+    for (const link of [
+      `https://drive.google.com/file/d/${id}/view?usp=sharing`,
+      `https://drive.google.com/open?id=${id}`,
+      `https://drive.google.com/uc?export=view&id=${id}`,
+      `https://drive.google.com/thumbnail?id=${id}`
+    ]) {
+      expect(normalizeImageUrl(link)).toEqual({ ok: true, url: thumb, source: "google-drive" });
+    }
+  });
+
+  it("rejects Drive folders and unrecognised Drive links", () => {
+    expect(normalizeImageUrl("https://drive.google.com/drive/folders/" + id).ok).toBe(false);
+    expect(normalizeImageUrl("https://drive.google.com/").ok).toBe(false);
+  });
+
+  it("accepts plain https images and rejects unsafe schemes", () => {
+    expect(normalizeImageUrl("https://example.com/a.png")).toMatchObject({ ok: true, source: "direct" });
+    for (const bad of ["http://example.com/a.png", "javascript:alert(1)", "data:image/png;base64,AAAA", "ftp://x/y.png", "not a url", ""]) {
+      expect(normalizeImageUrl(bad).ok).toBe(false);
+    }
   });
 });
