@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { projectPublicSiteDocument, UsernameSchema } from "@retrodesk/shared";
+import { projectPublicSiteDocument, UsernameSchema, validateSiteDocumentScope } from "@retrodesk/shared";
 import type { Env } from "../env";
 import { jsonError } from "../lib/http";
 import { requireUser, serviceClient } from "../lib/supabase";
@@ -112,6 +112,8 @@ sites.put("/sites/:siteId/draft", async (c) => {
     .maybeSingle();
   if (readError) return jsonError(c, 500, "db_error", "Could not load draft");
   if (!current) return jsonError(c, 404, "not_found", "Site not found");
+  const scopeDiagnostics = validateSiteDocumentScope(payload.data.document, current.id);
+  if (scopeDiagnostics.length) return jsonError(c, 400, "invalid_draft", "Draft document does not belong to this site", { fieldErrors: scopeDiagnostics });
   if (current.draft_version !== payload.data.expectedVersion) {
     return jsonError(c, 409, "version_conflict", "This draft changed somewhere else", { currentVersion: current.draft_version });
   }

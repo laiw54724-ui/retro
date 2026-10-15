@@ -1,4 +1,4 @@
-import { SiteDocumentSchema, UsernameSchema, VersionedSiteDocumentSchema, parseSiteDocument } from "@retrodesk/shared";
+import { SiteDocumentSchema, UsernameSchema, VersionedSiteDocumentSchema, parseSiteDocument, validateSiteDocumentScope } from "@retrodesk/shared";
 import { z } from "zod";
 
 export const CreateSiteSchema = z.object({
@@ -19,6 +19,8 @@ export const SaveDraftSchema = z.object({
     ctx.addIssue({ code: "custom", path: ["document", "schemaVersion"], message: `Unsupported document version: ${parsed.version}` });
   }
 });
+
+export { validateSiteDocumentScope };
 
 export const PublishSchema = z.object({
   expectedVersion: z.number().int().min(0)

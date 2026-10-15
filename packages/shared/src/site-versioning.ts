@@ -199,6 +199,15 @@ export function parseSiteDocument(raw: unknown): ParseSiteDocumentResult {
   return semantic.length ? invalid(raw, semantic) : { ok: true, version: 2, document: parsed.data };
 }
 
+/** Validates that a document's entity/reference scope belongs to the requested site. */
+export function validateSiteDocumentScope(raw: unknown, siteId: string): Diagnostic[] {
+  const parsed = parseSiteDocument(raw);
+  if (!parsed.ok) return parsed.code === "invalid" ? parsed.diagnostics : [{ path: ["schemaVersion"], message: `Unsupported document version: ${parsed.version}`, code: "unsupported_version" }];
+  if (parsed.version === 1) return [];
+  const scope = documentSiteScope(parsed.document);
+  return [...scope].filter((value) => value !== siteId).map((value) => ({ path: ["entities"], message: `Document scope ${value} does not match site ${siteId}`, code: "cross_site" }));
+}
+
 function stableHash(value: string): string {
   let hash = 0x811c9dc5;
   for (let i = 0; i < value.length; i += 1) { hash ^= value.charCodeAt(i); hash = Math.imul(hash, 0x01000193); }

@@ -36,4 +36,14 @@ describe("draft route semantic validation", () => {
     expect(body.error.code).toBe("invalid_draft");
     expect(body.error.details).toBeDefined();
   });
+
+  it("rejects a self-consistent site-b document submitted to site-a", async () => {
+    const migrated = migrateSiteDocumentV2(createStarterDocument("Other", "classic98", "instagram"), { siteId: "site-b" });
+    if (!migrated.ok || migrated.version !== 2) throw new Error("fixture migration failed");
+    const response = await sites.request("/sites/site-a/draft", { method: "PUT", body: JSON.stringify({ expectedVersion: 1, document: migrated.document }) }, {} as never);
+    expect(response.status).toBe(400);
+    const body = await response.json() as any;
+    expect(body.error).toMatchObject({ code: "invalid_draft", message: expect.stringContaining("does not belong") });
+    expect(body.error.details.fieldErrors).toEqual(expect.arrayContaining([expect.objectContaining({ code: "cross_site" })]));
+  });
 });
