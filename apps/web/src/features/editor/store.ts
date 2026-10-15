@@ -2,19 +2,35 @@ import { create } from "zustand";
 import type { DesktopWindow, SiteDocument } from "@retrodesk/shared";
 import { makeWindow } from "@retrodesk/shared";
 
-type SaveStatus = "idle" | "dirty" | "saving" | "saved" | "error";
+export type SaveStatus = "idle" | "dirty" | "saving" | "saved" | "error";
 
 type EditorState = {
   siteId: string | null;
   username: string;
   document: SiteDocument | null;
+  lastSavedDocument: SiteDocument | null;
+  publishedDocument: SiteDocument | null;
+  publishedVersion: number | null;
   version: number;
   selectedId: string | null;
   device: "desktop" | "mobile";
   saveStatus: SaveStatus;
-  setSite: (siteId: string, username: string, document: SiteDocument, version: number) => void;
-  setVersion: (version: number) => void;
+  past: SiteDocument[];
+  future: SiteDocument[];
+  setSite: (
+    siteId: string,
+    username: string,
+    document: SiteDocument,
+    version: number,
+    publishedDocument: SiteDocument | null,
+    publishedVersion: number | null
+  ) => void;
   setSaveStatus: (status: SaveStatus) => void;
+  markSaved: (version: number, savedDocument: SiteDocument) => void;
+  retrySave: () => void;
+  markPublished: (publishedVersion: number) => void;
+  undo: () => void;
+  redo: () => void;
   select: (id: string | null) => void;
   focusWindow: (id: string) => void;
   setDevice: (device: "desktop" | "mobile") => void;
@@ -25,25 +41,86 @@ type EditorState = {
   deleteWindow: (id: string) => void;
 };
 
+const sameDocument = (a: SiteDocument | null, b: SiteDocument | null) => JSON.stringify(a) === JSON.stringify(b);
+
+function withHistory(state: EditorState, document: SiteDocument, extra: Partial<EditorState> = {}) {
+  if (!state.document || sameDocument(state.document, document)) return extra;
+  return {
+    ...extra,
+    document,
+    past: [...state.past, state.document].slice(-50),
+    future: [],
+    saveStatus: "dirty" as SaveStatus
+  };
+}
+
 export const useEditorStore = create<EditorState>((set) => ({
   siteId: null,
   username: "",
   document: null,
+  lastSavedDocument: null,
+  publishedDocument: null,
+  publishedVersion: null,
   version: 0,
   selectedId: null,
   device: "desktop",
   saveStatus: "idle",
+  past: [],
+  future: [],
 
-  setSite: (siteId, username, document, version) => set({
+  setSite: (siteId, username, document, version, publishedDocument, publishedVersion) => set({
     siteId,
     username,
     document,
+    lastSavedDocument: document,
+    publishedDocument,
+    publishedVersion,
     version,
     selectedId: document.windows[0]?.id ?? null,
-    saveStatus: "saved"
+    saveStatus: "saved",
+    past: [],
+    future: []
   }),
-  setVersion: (version) => set({ version }),
   setSaveStatus: (saveStatus) => set({ saveStatus }),
+  markSaved: (version, savedDocument) => set((state) => ({
+    version,
+    lastSavedDocument: savedDocument,
+    saveStatus: sameDocument(state.document, savedDocument) ? "saved" : "dirty"
+  })),
+  retrySave: () => set((state) => state.document ? { saveStatus: "dirty" } : {}),
+  markPublished: (publishedVersion) => set((state) => ({
+    publishedVersion,
+    publishedDocument: state.document,
+  })),
+  undo: () => set((state) => {
+    if (!state.document || state.past.length === 0) return {};
+    const previous = state.past[state.past.length - 1];
+    const future = [state.document, ...state.future].slice(0, 50);
+    const selectedId = previous.windows.some((window) => window.id === state.selectedId)
+      ? state.selectedId
+      : previous.windows[0]?.id ?? null;
+    return {
+      document: previous,
+      past: state.past.slice(0, -1),
+      future,
+      selectedId,
+      saveStatus: "dirty"
+    };
+  }),
+  redo: () => set((state) => {
+    if (!state.document || state.future.length === 0) return {};
+    const next = state.future[0];
+    const selectedId = next.windows.some((window) => window.id === state.selectedId)
+      ? state.selectedId
+      : next.windows[0]?.id ?? null;
+    return {
+      document: next,
+      past: [...state.past, state.document].slice(-50),
+      future: state.future.slice(1),
+      selectedId,
+      saveStatus: "dirty"
+    };
+  }),
   select: (selectedId) => set({ selectedId }),
   focusWindow: (id) => set((state) => {
     if (!state.document) return { selectedId: id };
@@ -55,16 +132,13 @@ export const useEditorStore = create<EditorState>((set) => ({
     if (target.layout.desktop.z === maxZ) return { selectedId: id };
 
     if (maxZ < 9999) {
-      return {
-        selectedId: id,
-        document: {
-          ...state.document,
-          windows: windows.map((window) => window.id === id
-            ? { ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, z: maxZ + 1 } } }
-            : window)
-        },
-        saveStatus: "dirty"
+      const document = {
+        ...state.document,
+        windows: windows.map((window) => window.id === id
+          ? { ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, z: maxZ + 1 } } }
+          : window)
       };
+      return withHistory(state, document, { selectedId: id });
     }
 
     const ordered = [...windows].sort((a, b) => a.layout.desktop.z - b.layout.desktop.z);
@@ -73,51 +147,47 @@ export const useEditorStore = create<EditorState>((set) => ({
       layout: { ...window.layout, desktop: { ...window.layout.desktop, z: index + 1 } }
     }));
     const nextMax = normalized.length;
-    return {
-      selectedId: id,
-      document: {
-        ...state.document,
-        windows: normalized.map((window) => window.id === id
-          ? { ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, z: nextMax + 1 } } }
-          : window)
-      },
-      saveStatus: "dirty"
+    const document = {
+      ...state.document,
+      windows: normalized.map((window) => window.id === id
+        ? { ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, z: nextMax + 1 } } }
+        : window)
     };
+    return withHistory(state, document, { selectedId: id });
   }),
   setDevice: (device) => set({ device }),
-  setSiteName: (siteName) => set((state) => state.document ? {
-    document: { ...state.document, siteName },
-    saveStatus: "dirty"
-  } : {}),
-  setTheme: (theme) => set((state) => state.document ? {
-    document: { ...state.document, theme },
-    saveStatus: "dirty"
-  } : {}),
+  setSiteName: (siteName) => set((state) => state.document
+    ? withHistory(state, { ...state.document, siteName })
+    : {}),
+  setTheme: (theme) => set((state) => state.document
+    ? withHistory(state, { ...state.document, theme })
+    : {}),
   addWindow: (type) => set((state) => {
     if (!state.document) return {};
     const window = makeWindow(type, state.document.windows.length);
-    return {
-      document: { ...state.document, windows: [...state.document.windows, window] },
-      selectedId: window.id,
-      saveStatus: "dirty"
-    };
+    return withHistory(
+      state,
+      { ...state.document, windows: [...state.document.windows, window] },
+      { selectedId: window.id }
+    );
   }),
-  updateWindow: (id, recipe) => set((state) => state.document ? {
-    document: {
+  updateWindow: (id, recipe) => set((state) => {
+    if (!state.document) return {};
+    const document = {
       ...state.document,
       windows: state.document.windows.map((window) => window.id === id ? recipe(window) : window)
-    },
-    saveStatus: "dirty"
-  } : {}),
+    };
+    return withHistory(state, document);
+  }),
   deleteWindow: (id) => set((state) => {
     if (!state.document) return {};
     const windows = state.document.windows
       .filter((window) => window.id !== id)
       .map((window, index) => ({ ...window, layout: { ...window.layout, mobile: { order: index } } }));
-    return {
-      document: { ...state.document, windows },
-      selectedId: windows[0]?.id ?? null,
-      saveStatus: "dirty"
-    };
+    return withHistory(
+      state,
+      { ...state.document, windows },
+      { selectedId: windows[0]?.id ?? null }
+    );
   })
 }));

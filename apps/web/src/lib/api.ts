@@ -9,6 +9,7 @@ export type SiteRecord = {
   site_name: string;
   draft_document: SiteDocument;
   draft_version: number;
+  published_document: SiteDocument | null;
   published_version: number | null;
   published_at: string | null;
   updated_at: string;

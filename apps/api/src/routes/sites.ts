@@ -49,7 +49,7 @@ sites.post("/sites", async (c) => {
       draft_document: body.data.document,
       draft_version: 1
     })
-    .select("id,username,site_name,draft_document,draft_version,published_version,published_at,updated_at")
+    .select("id,username,site_name,draft_document,draft_version,published_document,published_version,published_at,updated_at")
     .single();
 
   if (error?.code === "23505") return jsonError(c, 409, "username_taken", "That username is already in use");
@@ -63,7 +63,7 @@ sites.get("/sites/:siteId", async (c) => {
   const supabase = serviceClient(c.env);
   const { data, error } = await supabase
     .from("sites")
-    .select("id,username,site_name,draft_document,draft_version,published_version,published_at,updated_at")
+    .select("id,username,site_name,draft_document,draft_version,published_document,published_version,published_at,updated_at")
     .eq("id", c.req.param("siteId"))
     .eq("owner_id", user.id)
     .maybeSingle();
