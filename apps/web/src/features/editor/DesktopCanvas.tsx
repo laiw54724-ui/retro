@@ -16,9 +16,12 @@ type Props = {
   onMove: (id: string, x: number, y: number) => void;
   onResize: (id: string, w: number, h: number) => void;
   onIconMove: (id: string, x: number, y: number) => void;
+  siteId?: string;
+  upload?: (file: File, kind?: "image" | "icon") => Promise<string | null>;
+  onUpdateWindow?: (id: string, recipe: (window: DesktopWindow) => DesktopWindow, historyKey?: string) => void;
 };
 
-export function DesktopCanvas({ document, selectedId, onSelect, onFocus, onMove, onResize, onIconMove }: Props) {
+export function DesktopCanvas({ document, selectedId, onSelect, onFocus, onMove, onResize, onIconMove, siteId, upload, onUpdateWindow }: Props) {
   const drag = useRef<Gesture | null>(null);
   // View-only state: never written to the document or saved.
   const [view, setView] = useState<Record<string, "min" | "closed" | "max">>({});
@@ -219,7 +222,7 @@ export function DesktopCanvas({ document, selectedId, onSelect, onFocus, onMove,
               onClose={() => setViewState(window.id, "closed")}
               style={{ height: "100%" }}
             >
-              <WindowRenderer window={window} theme={theme} />
+              <WindowRenderer window={window} theme={theme} editing allWindows={document.windows} siteId={siteId} upload={upload} onUpdate={onUpdateWindow} />
             </RetroWindow>
             {!maximized ? <span className="window-resize-handle" aria-hidden="true" /> : null}
           </div>

@@ -39,14 +39,33 @@ type EditorState = {
   setSiteName: (name: string) => void;
   setTheme: (theme: SiteDocument["theme"]) => void;
   addWindow: (type: DesktopWindow["type"]) => void;
-  updateWindow: (id: string, recipe: (window: DesktopWindow) => DesktopWindow) => void;
+  /** `historyKey`: edits with the same key within 1200ms collapse into one undo step. */
+  updateWindow: (id: string, recipe: (window: DesktopWindow) => DesktopWindow, historyKey?: string) => void;
   deleteWindow: (id: string) => void;
+  duplicateWindow: (id: string) => void;
+  bringToFront: (id: string) => void;
+  moveLayer: (id: string, direction: -1 | 1) => void;
+  layoutMode: boolean;
+  snap: boolean;
+  setLayoutMode: (on: boolean) => void;
+  toggleSnap: () => void;
+  moveIcon: (id: string, x: number, y: number) => void;
+  autoArrangeIcons: (rows: number) => void;
 };
 
 const sameDocument = (a: SiteDocument | null, b: SiteDocument | null) => JSON.stringify(a) === JSON.stringify(b);
 
-function withHistory(state: EditorState, document: SiteDocument, extra: Partial<EditorState> = {}) {
+// Coalesces rapid edits (typing) into one undo step.
+let lastHistoryKey: string | null = null;
+let lastHistoryAt = 0;
+
+function withHistory(state: EditorState, document: SiteDocument, extra: Partial<EditorState> = {}, historyKey?: string) {
   if (!state.document || sameDocument(state.document, document)) return extra;
+  const now = Date.now();
+  const merge = !!historyKey && historyKey === lastHistoryKey && now - lastHistoryAt < 1200 && state.past.length > 0;
+  lastHistoryKey = historyKey ?? null;
+  lastHistoryAt = now;
+  if (merge) return { ...extra, document, future: [], saveStatus: "dirty" as SaveStatus };
   return {
     ...extra,
     document,
@@ -193,11 +212,78 @@ export const useEditorStore = create<EditorState>((set) => ({
       { selectedId: window.id }
     );
   }),
-  updateWindow: (id, recipe) => set((state) => {
+  updateWindow: (id, recipe, historyKey) => set((state) => {
     if (!state.document) return {};
     const document = {
       ...state.document,
       windows: state.document.windows.map((window) => window.id === id ? recipe(window) : window)
+    };
+    return withHistory(state, document, {}, historyKey);
+  }),
+  duplicateWindow: (id) => set((state) => {
+    if (!state.document) return {};
+    const source = state.document.windows.find((window) => window.id === id);
+    if (!source) return {};
+    const copyId = crypto.randomUUID();
+    const maxZ = Math.max(0, ...state.document.windows.map((window) => window.layout.desktop.z));
+    const copy = JSON.parse(JSON.stringify(source)) as DesktopWindow;
+    copy.id = copyId;
+    copy.title = source.title + " 複本";
+    copy.layout = {
+      desktop: { ...source.layout.desktop, x: source.layout.desktop.x + 28, y: source.layout.desktop.y + 28, z: Math.min(9999, maxZ + 1), iconX: source.layout.desktop.iconX + 16, iconY: source.layout.desktop.iconY + 16 },
+      mobile: { order: state.document.windows.length }
+    };
+    return withHistory(state, { ...state.document, windows: [...state.document.windows, copy] }, { selectedId: copyId });
+  }),
+  bringToFront: (id) => set((state) => {
+    if (!state.document) return {};
+    const maxZ = Math.max(0, ...state.document.windows.map((window) => window.layout.desktop.z));
+    const document = {
+      ...state.document,
+      windows: state.document.windows.map((window) => window.id === id
+        ? { ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, z: Math.min(9999, maxZ + 1) } } }
+        : window)
+    };
+    return withHistory(state, document, { selectedId: id });
+  }),
+  moveLayer: (id, direction) => set((state) => {
+    if (!state.document) return {};
+    // Order by z, swap with the neighbour, then renumber 1..n so z stays dense.
+    const ordered = [...state.document.windows].sort((a, b) => a.layout.desktop.z - b.layout.desktop.z);
+    const index = ordered.findIndex((window) => window.id === id);
+    const next = index + direction;
+    if (index < 0 || next < 0 || next >= ordered.length) return {};
+    [ordered[index], ordered[next]] = [ordered[next], ordered[index]];
+    const zById = new Map(ordered.map((window, order) => [window.id, order + 1]));
+    const document = {
+      ...state.document,
+      windows: state.document.windows.map((window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, z: zById.get(window.id) ?? window.layout.desktop.z } } }))
+    };
+    return withHistory(state, document);
+  }),
+  layoutMode: false,
+  snap: true,
+  setLayoutMode: (layoutMode) => set((state) => layoutMode ? { layoutMode, device: "desktop" as const } : { layoutMode }),
+  toggleSnap: () => set((state) => ({ snap: !state.snap })),
+  moveIcon: (id, x, y) => set((state) => {
+    if (!state.document) return {};
+    const document = {
+      ...state.document,
+      windows: state.document.windows.map((window) => window.id === id
+        ? { ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, iconX: x, iconY: y } } }
+        : window)
+    };
+    return withHistory(state, document);
+  }),
+  autoArrangeIcons: (rows) => set((state) => {
+    if (!state.document) return {};
+    const perColumn = Math.max(1, rows);
+    const document = {
+      ...state.document,
+      windows: state.document.windows.map((window, index) => ({
+        ...window,
+        layout: { ...window.layout, desktop: { ...window.layout.desktop, iconX: 8 + Math.floor(index / perColumn) * 86, iconY: 10 + (index % perColumn) * 94 } }
+      }))
     };
     return withHistory(state, document);
   }),

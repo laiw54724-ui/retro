@@ -140,6 +140,29 @@ export function EditorPage() {
 
   if (loading || !store.document) return <div className="boot-screen">Loading desktop...</div>;
 
+  async function uploadImage(file: File, kind: "image" | "icon" = "image"): Promise<string | null> {
+    if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
+      setMessage("無法上傳：請選擇 JPG、PNG、GIF 或 WebP。");
+      return null;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setMessage("檔案太大：單張 8 MB 以內。");
+      return null;
+    }
+    try {
+      const { asset } = await api.uploadAsset(siteId, file, { kind, name: file.name.replace(/\.[^.]+$/, "") });
+      return asset.url;
+    } catch (error) {
+      const code = error instanceof ApiError ? error.code : "";
+      setMessage(code === "unsupported_media" || code === "invalid_image_bytes"
+        ? "無法上傳：請選擇 JPG、PNG、GIF 或 WebP。"
+        : code === "file_too_large"
+          ? "檔案太大：單張 8 MB 以內。"
+          : "上傳失敗，請再試一次。");
+      return null;
+    }
+  }
+
   function requestPublish() {
     const invalid = validationMessage(store.document);
     if (invalid) {
@@ -292,6 +315,9 @@ export function EditorPage() {
               onFocus={store.focusWindow}
               onMove={(id, x, y) => store.updateWindow(id, (window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, x, y } } }))}
               onResize={(id, w, h) => store.updateWindow(id, (window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, w, h } } }))}
+              siteId={siteId}
+              upload={uploadImage}
+              onUpdateWindow={store.updateWindow}
               onIconMove={(id, iconX, iconY) => store.updateWindow(id, (window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, iconX, iconY } } }))}
             />
           ) : (
