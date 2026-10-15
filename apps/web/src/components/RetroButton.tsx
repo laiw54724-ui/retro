@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes } from "react";
 
-export function RetroButton({ className = "", ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
-  return <button className={`retro-button ${className}`} {...props} />;
+/** Win98 button. Pass className "primary", "small", "danger" or "block" for variants. */
+export function RetroButton({ className = "", type = "button", ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
+  return <button type={type} className={`w98-btn retro-button ${className}`} {...props} />;
 }
