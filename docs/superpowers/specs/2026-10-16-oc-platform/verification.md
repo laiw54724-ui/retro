@@ -73,3 +73,6 @@
 - build：pass（shared、API Wrangler dry-run、web Vite）；僅有既有 Wrangler debug-log EPERM 訊息與 bundle-size warning。
 - `git diff --check`：pass。
 - review：獨立 spec review 與 quality review 均通過；spec review 所抓到的 mobile metadata 未消費、重複 module list 與缺少 E2E 均由 `21c988d` 修正。
+- Cloudflare Pages staging deployment：`7c33f804`（部署 source `2056a9e`；第一次 upload 連線失敗，原產物安全重試後成功）。
+- staging canonical：https://retrodesk-staging.pages.dev；immutable deployment：https://7c33f804.retrodesk-staging.pages.dev。
+- HTTP smoke：canonical／immutable 首頁皆 `200`；immutable Windows icon asset 為 `200` 且 MIME 正確；canonical 已提供本次 bundle `index-B1MFNzd-.js`。
