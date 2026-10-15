@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react";
 import type { SiteDocument } from "@retrodesk/shared";
-import { useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { RetroWindow } from "../components/RetroWindow";
 import { WindowRenderer } from "../features/site/WindowRenderer";
 import { VisitorDesktop } from "../features/site/VisitorDesktop";
 
 export function PublicSitePage() {
-  const { username = "" } = useParams();
+  const { handle = "" } = useParams();
+  const username = handle.startsWith("@") ? handle.slice(1) : "";
   const [document, setDocument] = useState<SiteDocument | null>(null);
   const [activeMobile, setActiveMobile] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (!username) return;
     api.publicSite(username)
       .then(({ site }) => {
         setDocument(site.published_document);
@@ -21,6 +23,7 @@ export function PublicSitePage() {
       .catch((reason) => setError(reason instanceof Error ? reason.message : "找不到網站"));
   }, [username]);
 
+  if (!username) return <Navigate to="/" replace />;
   if (error) return <main className="not-found"><div><h1>找不到這個桌面</h1><p>{error}</p></div></main>;
   if (!document) return <div className="boot-screen">Loading desktop...</div>;
 

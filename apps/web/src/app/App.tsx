@@ -22,7 +22,7 @@ export function App() {
       <Route path="/auth" element={<AuthPage />} />
       <Route path="/onboarding" element={<RequireAuth><OnboardingPage /></RequireAuth>} />
       <Route path="/editor/:siteId" element={<RequireAuth><EditorPage /></RequireAuth>} />
-      <Route path="/@:username" element={<PublicSitePage />} />
+      <Route path="/:handle" element={<PublicSitePage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
