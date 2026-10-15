@@ -36,10 +36,10 @@ describe("versioned site document contract", () => {
     const result = migrateSiteDocumentV2(v1, { siteId: "site-a" });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.document.profiles).toHaveLength(1);
-    expect(result.document.posts).toHaveLength(1);
-    expect(result.document.profiles[0]).toMatchObject({ id: "profile:ig-1", siteId: "site-a", kind: "profile", visibility: "published", username: "alice" });
-    expect(result.document.posts[0]).toMatchObject({ id: "post:ig-1:p1", authorProfileId: "profile:ig-1", comments: [{ id: "c1" }], extra: [{ id: "e1" }] });
+    expect(result.document.entities.profiles).toHaveLength(1);
+    expect(result.document.entities.posts).toHaveLength(1);
+    expect(result.document.entities.profiles[0]).toMatchObject({ id: "profile:ig-1", siteId: "site-a", kind: "profile", visibility: "published", username: "alice" });
+    expect(result.document.entities.posts[0]).toMatchObject({ id: "post:ig-1:p1", authorProfileId: "profile:ig-1", comments: [{ id: "c1" }], extra: [{ id: "e1" }] });
     expect(result.document.windows.find((w) => w.id === "ig-1")).toMatchObject({ content: { profileRef: { siteId: "site-a", id: "profile:ig-1", kind: "profile" } } });
     expect(v1).toEqual(before);
     expect(migrateSiteDocumentV2(v1, { siteId: "site-a" })).toEqual(result);
@@ -50,9 +50,9 @@ describe("versioned site document contract", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     const ref = { siteId: "site-a", id: "profile:ig-1", kind: "profile" as const };
-    expect(resolveEntityRef(result.document, ref)).toMatchObject({ ok: true, value: { id: ref.id } });
-    expect(resolveEntityRef(result.document, { ...ref, siteId: "other" })).toMatchObject({ ok: false, code: "cross_site" });
-    expect(resolveEntityRef(result.document, { ...ref, id: "profile:nope" })).toMatchObject({ ok: false, code: "missing" });
-    expect(collectEntityReferrers(result.document, ref)).toEqual([{ kind: "window", windowId: "ig-1" }, { kind: "post", postId: "post:ig-1:p1", field: "authorProfileId" }]);
+    expect(resolveEntityRef(result.document, ref, "site-a")).toMatchObject({ ok: true, value: { id: ref.id } });
+    expect(resolveEntityRef(result.document, { ...ref, siteId: "other" }, "site-a")).toMatchObject({ ok: false, reason: "cross_site" });
+    expect(resolveEntityRef(result.document, { ...ref, id: "profile:nope" }, "site-a")).toMatchObject({ ok: false, reason: "missing" });
+    expect(collectEntityReferrers(result.document, ref, "site-a")).toEqual([{ kind: "window", windowId: "ig-1" }, { kind: "post", postId: "post:ig-1:p1", field: "authorProfileId" }]);
   });
 });
