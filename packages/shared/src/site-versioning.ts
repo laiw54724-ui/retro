@@ -110,6 +110,10 @@ export type SiteDocumentV2 = z.infer<typeof SiteDocumentV2Schema>;
 export type SiteDocumentV2Input = z.input<typeof SiteDocumentV2Schema>;
 export type VersionedSiteDocument = SiteDocument | SiteDocumentV2;
 export const VersionedSiteDocumentSchema = z.union([SiteDocumentSchema, SiteDocumentV2Schema]);
+export type VersionedDocumentLoadResult =
+  | { ok: true; version: 1; document: SiteDocument; migrated: false; diagnostics: [] }
+  | { ok: true; version: 2; document: SiteDocumentV2Input; migrated: boolean; diagnostics: [] }
+  | { ok: false; code: "invalid" | "unsupported_version"; diagnostics: Diagnostic[]; raw: unknown };
 
 export type Diagnostic = { path: (string | number)[]; message: string; code: string };
 type InvalidResult = { ok: false; code: "invalid"; raw: unknown; diagnostics: Diagnostic[] };
@@ -122,6 +126,41 @@ export type MigrateSiteDocumentResult =
   | { ok: true; version: 1; document: SiteDocument }
   | { ok: true; version: 2; document: SiteDocumentV2Input }
   | InvalidResult | UnsupportedResult;
+
+/** One boundary for loading API documents. Editor callers opt into v1→v2 migration. */
+export function loadVersionedSiteDocument(raw: unknown, options: { siteId?: string; migrateV1?: boolean } = {}): VersionedDocumentLoadResult {
+  const parsed = parseSiteDocument(raw);
+  if (!parsed.ok) return parsed.code === "invalid"
+    ? { ok: false, code: "invalid", diagnostics: parsed.diagnostics, raw }
+    : { ok: false, code: "unsupported_version", diagnostics: [{ path: ["schemaVersion"], message: `Unsupported document version: ${parsed.version}`, code: "unsupported_version" }], raw };
+  if (parsed.version === 1 && options.migrateV1) {
+    if (!options.siteId) return { ok: false, code: "invalid", diagnostics: [{ path: ["siteId"], message: "siteId is required to migrate a v1 document", code: "required" }], raw };
+    const migrated = migrateSiteDocumentV2(raw, { siteId: options.siteId });
+    if (!migrated.ok) return migrated.code === "invalid"
+      ? { ok: false, code: "invalid", diagnostics: migrated.diagnostics, raw }
+      : { ok: false, code: "unsupported_version", diagnostics: [{ path: ["schemaVersion"], message: `Unsupported document version: ${migrated.version}`, code: "unsupported_version" }], raw };
+    if (migrated.version === 2) return { ok: true, version: 2, document: migrated.document, migrated: true, diagnostics: [] };
+  }
+  return parsed.version === 1
+    ? { ok: true, version: 1, document: parsed.document, migrated: false, diagnostics: [] }
+    : { ok: true, version: 2, document: raw as SiteDocumentV2Input, migrated: false, diagnostics: [] };
+}
+
+/** Converts a validated v2 document only at legacy module/render boundaries. */
+export function projectV2ToLegacyDocument(document: SiteDocumentV2Input): { ok: true; document: SiteDocument } | { ok: false; diagnostics: Diagnostic[] } {
+  const profiles = new Map(document.entities.profiles.map((profile) => [profile.id, profile]));
+  const windows = document.windows.map((window) => {
+    if (window.type !== "instagram") return window;
+    const profile = profiles.get(window.content.profileRef.id);
+    if (!profile || profile.siteId !== window.content.profileRef.siteId) return null;
+    const { kind: _kind, id: _id, siteId: _siteId, visibility: _visibility, handle: _handle, displayName: _displayName, pronouns: _pronouns, customFields: _customFields, worldTags: _worldTags, themeOverride: _themeOverride, legacyUsernameLabel: _legacyUsernameLabel, legacyFollowersLabel: _legacyFollowersLabel, legacyFollowingLabel: _legacyFollowingLabel, ...legacyProfile } = profile;
+    const posts = document.entities.posts.filter((post) => post.siteId === profile.siteId && post.authorProfileId === profile.id).map(({ kind: _postKind, siteId: _postSiteId, visibility: _postVisibility, authorProfileId: _authorProfileId, ...post }) => post);
+    return { ...window, content: { skin: window.content.skin, profile: { ...legacyProfile, username: profile.handle ?? profile.username, name: profile.displayName ?? profile.name }, images: posts } };
+  });
+  if (windows.some((window) => window === null)) return { ok: false, diagnostics: [{ path: ["windows"], message: "Instagram window references a missing profile", code: "missing_ref" }] };
+  const parsed = SiteDocumentSchema.safeParse({ schemaVersion: 1, siteName: document.siteName, theme: document.theme, windows, mobileColumns: document.mobileColumns });
+  return parsed.success ? { ok: true, document: parsed.data } : { ok: false, diagnostics: diagnosticsFrom(parsed.error) };
+}
 
 export function normalizeProfileHandle(value: string): string {
   return value.trim().toLowerCase();

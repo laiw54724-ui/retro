@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { buildPublishChecks, hasBlockingCheck, normalizeDocument, SiteDocumentSchema, type DesktopWindow } from "@retrodesk/shared";
+import { buildPublishChecks, hasBlockingCheck, loadVersionedSiteDocument, normalizeDocument, projectV2ToLegacyDocument, SiteDocumentSchema, type DesktopWindow } from "@retrodesk/shared";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { useEditorStore } from "../features/editor/store";
@@ -24,6 +24,14 @@ function validationMessage(document: unknown) {
 }
 
 const sameDocument = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+
+function editorDocument(raw: unknown, siteId: string) {
+  const loaded = loadVersionedSiteDocument(raw, { siteId, migrateV1: true });
+  if (!loaded.ok) throw new Error(loaded.diagnostics[0]?.message ?? "文件格式無效");
+  const legacy = loaded.version === 1 ? { ok: true as const, document: normalizeDocument(loaded.document) } : projectV2ToLegacyDocument(loaded.document);
+  if (!legacy.ok) throw new Error(legacy.diagnostics[0]?.message ?? "角色引用無效");
+  return legacy.document;
+}
 
 export function EditorPage() {
   const { siteId = "" } = useParams();
@@ -53,9 +61,9 @@ export function EditorPage() {
         store.setSite(
           site.id,
           site.username,
-          normalizeDocument(site.draft_document),
+          editorDocument(site.draft_document, site.id),
           site.draft_version,
-          site.published_document ?? null,
+          site.published_document ? editorDocument(site.published_document, site.id) : null,
           site.published_version ?? null
         );
         setLoading(false);
@@ -216,9 +224,9 @@ export function EditorPage() {
       store.setSite(
         site.id,
         site.username,
-        normalizeDocument(site.draft_document),
+        editorDocument(site.draft_document, site.id),
         site.draft_version,
-        site.published_document ?? null,
+        site.published_document ? editorDocument(site.published_document, site.id) : null,
         site.published_version ?? null
       );
       setConflict(false);

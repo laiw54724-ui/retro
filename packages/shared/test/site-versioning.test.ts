@@ -6,8 +6,10 @@ import {
   deleteOrRetargetProfile,
   duplicateProfile,
   inspectProfileReferences,
+  loadVersionedSiteDocument,
   migrateSiteDocumentV2,
   parseSiteDocument,
+  projectV2ToLegacyDocument,
   resolveEntityRef,
   updateProfile,
 } from "../src/site-versioning";
@@ -303,5 +305,20 @@ describe("versioned site document contract", () => {
       updated.profile.handle = "mutated result only";
       expect(updated.document.entities.profiles.find((profile) => profile.id === "profile:new")?.handle).toBe("renamed");
     }
+  });
+
+  it("loads editor v1 drafts as v2 and adapts v2 Instagram entities at render boundaries", () => {
+    const v1 = fixture();
+    const loaded = loadVersionedSiteDocument(v1, { siteId: "site-a", migrateV1: true });
+    expect(loaded).toMatchObject({ ok: true, version: 2, migrated: true });
+    if (!loaded.ok || loaded.version !== 2) return;
+    const legacy = projectV2ToLegacyDocument(loaded.document);
+    expect(legacy.ok).toBe(true);
+    if (legacy.ok) {
+      const instagram = legacy.document.windows.find((window) => window.type === "instagram");
+      expect(instagram).toMatchObject({ content: { profile: { username: "alice", name: "Alice" }, images: [{ id: "post:ig-1:p1" }] } });
+    }
+    const publicLoad = loadVersionedSiteDocument(loaded.document);
+    expect(publicLoad).toMatchObject({ ok: true, version: 2, migrated: false });
   });
 });

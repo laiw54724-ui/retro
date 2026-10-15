@@ -1,4 +1,4 @@
-import type { SiteDocument } from "@retrodesk/shared";
+import type { SiteDocument, VersionedSiteDocument } from "@retrodesk/shared";
 import { supabase } from "./supabase";
 
 const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8787").replace(/\/$/, "");
@@ -7,9 +7,9 @@ export type SiteRecord = {
   id: string;
   username: string;
   site_name: string;
-  draft_document: SiteDocument;
+  draft_document: VersionedSiteDocument;
   draft_version: number;
-  published_document: SiteDocument | null;
+  published_document: VersionedSiteDocument | null;
   published_version: number | null;
   published_at: string | null;
   updated_at: string;
@@ -69,7 +69,7 @@ export const api = {
   getSite(siteId: string) {
     return request<{ site: SiteRecord }>("/api/sites/" + siteId);
   },
-  saveDraft(siteId: string, expectedVersion: number, document: SiteDocument) {
+  saveDraft(siteId: string, expectedVersion: number, document: VersionedSiteDocument) {
     return request<{ version: number; updatedAt: string }>("/api/sites/" + siteId + "/draft", {
       method: "PUT",
       body: JSON.stringify({ expectedVersion, document })
@@ -85,7 +85,7 @@ export const api = {
     return request<PublishResult>("/api/sites/" + siteId + "/publish/retry", { method: "POST" });
   },
   publicSite(username: string) {
-    return request<{ site: { username: string; site_name: string; published_document: SiteDocument; published_version: number; published_at: string } }>(
+    return request<{ site: { username: string; site_name: string; published_document: VersionedSiteDocument; published_version: number; published_at: string } }>(
       "/api/public/sites/" + encodeURIComponent(username),
       { cache: "no-store" },
       false
