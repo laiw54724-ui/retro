@@ -140,9 +140,11 @@ sites.post("/sites/:siteId/publish", async (c) => {
     p_site_id: site.id,
     p_owner_id: user.id,
     p_expected_version: payload.data.expectedVersion,
+    p_expected_published_version: site.published_version ?? 0,
     p_document: projection.document
   });
   if (publishError) {
+    if (publishError.message.includes("published_version_conflict")) return jsonError(c, 409, "version_conflict", "This site was published from the same draft elsewhere");
     if (publishError.message.includes("version_conflict")) return jsonError(c, 409, "version_conflict", "Save the latest draft before publishing");
     if (publishError.message.includes("site_not_found")) return jsonError(c, 404, "not_found", "Site not found");
     return jsonError(c, 500, "db_error", "Could not publish site");
@@ -172,6 +174,7 @@ sites.post("/sites/:siteId/publish/retry", async (c) => {
     .eq("owner_id", user.id)
     .maybeSingle();
   if (error) return jsonError(c, 500, "db_error", "Could not load published site");
+  if (!site) return jsonError(c, 404, "not_found", "Site not found");
   if (!site?.published_document || !site.published_version || !site.published_at) return jsonError(c, 409, "not_published", "Publish a version before retrying its artifact");
   const artifact = await writePublishedArtifact(c.env, {
     username: site.username,

@@ -28,7 +28,7 @@ const { sites } = await import("../src/routes/sites");
 
 describe("public site freshness", () => {
   it("prevents browsers and intermediaries from serving a stale published document", async () => {
-    const response = await sites.request("/public/sites/demo", {}, {} as never);
+    const response = await sites.request("/public/sites/demo", {}, { get ASSETS() { throw new Error("public endpoint must not read R2"); } } as never);
 
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toBe("no-store");

@@ -16,6 +16,8 @@ describe("atomic publish migration contract", () => {
   it("locks the owner row, checks the draft version, inserts one version, and advances the pointer", () => {
     expect(migration).toMatch(/owner_id\s*=\s*p_owner_id[\s\S]*for update/);
     expect(migration).toContain("v_site.draft_version <> p_expected_version");
+    expect(migration).toContain("p_expected_published_version integer");
+    expect(migration).toContain("published_version_conflict");
     expect(migration).toContain("insert into public.site_versions");
     expect(migration).toContain("unique(site_id, version)");
     expect(migration).toContain("published_document = p_document");
@@ -27,7 +29,7 @@ describe("atomic publish migration contract", () => {
     expect(migration).toContain("security definer");
     expect(migration).toContain("set search_path = public, pg_catalog");
     expect(migration).toContain("revoke all on function public.publish_site_atomic");
-    expect(migration).toContain("grant execute on function public.publish_site_atomic");
+    expect(migration).toContain("grant execute on function public.publish_site_atomic(uuid, uuid, integer, integer, jsonb)");
     expect(migration).toContain("to service_role");
   });
 });

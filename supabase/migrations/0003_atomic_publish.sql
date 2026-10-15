@@ -14,6 +14,7 @@ create or replace function public.publish_site_atomic(
   p_site_id uuid,
   p_owner_id uuid,
   p_expected_version integer,
+  p_expected_published_version integer,
   p_document jsonb
 )
 returns table (
@@ -43,6 +44,9 @@ begin
   if v_site.draft_version <> p_expected_version then
     raise exception 'version_conflict' using errcode = 'P0001', detail = v_site.draft_version::text;
   end if;
+  if coalesce(v_site.published_version, 0) <> coalesce(p_expected_published_version, 0) then
+    raise exception 'published_version_conflict' using errcode = 'P0001', detail = coalesce(v_site.published_version, 0)::text;
+  end if;
 
   v_version := coalesce(v_site.published_version, 0) + 1;
   v_artifact_key := format('published/%s/versions/%s/site.json', v_site.username, v_version);
@@ -65,5 +69,5 @@ begin
 end;
 $$;
 
-revoke all on function public.publish_site_atomic(uuid, uuid, integer, jsonb) from public, anon, authenticated;
-grant execute on function public.publish_site_atomic(uuid, uuid, integer, jsonb) to service_role;
+revoke all on function public.publish_site_atomic(uuid, uuid, integer, integer, jsonb) from public, anon, authenticated;
+grant execute on function public.publish_site_atomic(uuid, uuid, integer, integer, jsonb) to service_role;

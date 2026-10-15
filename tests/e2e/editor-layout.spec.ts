@@ -104,6 +104,21 @@ test("publish reports artifact failure and retries without republishing", async 
   expect(publishCalls).toBe(1);
 });
 
+test("publish shows a synced artifact after the DB commit", async ({ page }) => {
+  await openEditor(page);
+  let publishCalls = 0;
+  await page.route("**/api/sites/site-1/publish", (route) => {
+    publishCalls += 1;
+    return route.fulfill({ json: { publishedVersion: 3, publishedAt: "2026-10-16T00:00:00.000Z", url: "/@demo", artifactStatus: "synced", retryable: false } });
+  });
+  await page.getByRole("button", { name: "發布", exact: true }).click();
+  await page.getByRole("dialog", { name: "發布 Retro Desktop" }).getByRole("button", { name: "確認發布" }).click();
+  const success = page.getByRole("dialog", { name: "發布完成" });
+  await expect(success).toContainText("公開檔案已同步完成");
+  await expect(success.getByRole("button", { name: "重試同步" })).toHaveCount(0);
+  expect(publishCalls).toBe(1);
+});
+
 test("one window can override, flatten and reset its title bar", async ({ page }) => {
   const saves = await openEditor(page);
   const dialog = page.getByRole("dialog", { name: "About.exe" });
