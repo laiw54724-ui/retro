@@ -36,6 +36,8 @@ export function EditorPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [conflict, setConflict] = useState(false);
+  // Transient invalid drafts (e.g. a field cleared mid-edit) pause autosave quietly instead of raising a popup.
+  const [draftIssue, setDraftIssue] = useState<string | null>(null);
   const [publishPrompt, setPublishPrompt] = useState(false);
   const [publishSuccess, setPublishSuccess] = useState<{ version: number; url: string } | null>(null);
   const [publishing, setPublishing] = useState(false);
@@ -70,10 +72,10 @@ export function EditorPage() {
       const versionToSave = store.version;
       const invalid = validationMessage(documentToSave);
       if (invalid) {
-        store.setSaveStatus("error");
-        setMessage(invalid);
+        setDraftIssue(invalid);
         return;
       }
+      setDraftIssue(null);
 
       saveInFlight.current = true;
       store.setSaveStatus("saving");
@@ -231,8 +233,8 @@ export function EditorPage() {
         <span className="site-url">retrodesk.me/{store.username}</span>
         <RetroButton className="history-button" disabled={store.past.length === 0} onClick={store.undo}>↶ 復原</RetroButton>
         <RetroButton className="history-button" disabled={store.future.length === 0} onClick={store.redo}>↷ 重做</RetroButton>
-        <span className={"save-pill " + store.saveStatus}>
-          {store.saveStatus === "saving" ? "儲存中" : store.saveStatus === "dirty" ? "尚未儲存" : store.saveStatus === "error" ? "儲存需處理" : "已儲存"}
+        <span className={"save-pill " + store.saveStatus} title={draftIssue ?? undefined}>
+          {draftIssue && store.saveStatus === "dirty" ? "有欄位未完成，暫不儲存" : store.saveStatus === "saving" ? "儲存中" : store.saveStatus === "dirty" ? "尚未儲存" : store.saveStatus === "error" ? "儲存需處理" : "已儲存"}
         </span>
         <span className={"publish-pill " + (hasUnpublishedChanges ? "changed" : "synced")}>{publishState}</span>
         <div className="top-spacer" />
