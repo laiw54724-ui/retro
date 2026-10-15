@@ -25,7 +25,7 @@ Retro 的主線是「創作者自己的角色小電腦」，不是另一個真�
 | 媒體上傳可直接給音樂用 | API 只允許圖片、8 MB 上限 | 直連播放器先做，音訊上傳單獨驗證 |
 | 草稿／隱藏即私密 | 原始圖片 URL 可匿名取得 | #18B 先處理公開投影與媒體存取 |
 | 分享按鈕已存在 | 目前只有成功 toast，沒真的複製 | #28A 提前完成實際連結與錯誤處理 |
-| 開源最後整理 | 已追蹤圖示來源授權未確認 | #27A 提前，不能把程式 MIT 當素材許可 |
+| 開源最後整理 | Windows 圖示來源已指定，但來源 repo 未提供 license | #27A 提前建立來源清單，程式 MIT 與圖示權利分開 |
 
 完整證據與檔案位置在每張單內；[初始方向](00-initial-direction.md) 保留作對照。
 
@@ -176,7 +176,7 @@ A／B／C 是同一張 Issue 的里程碑，不是新建的重複工作單。
 | [#24](https://github.com/laiw54724-ui/retro/issues/24) | [Explorer](issues/24-explorer.md) | 循環／引用／刪除 |
 | [#25](https://github.com/laiw54724-ui/retro/issues/25) | [玩具與留言簿](issues/25-miniapps-guestbook.md) | 公開 UGC 運營 |
 | [#26](https://github.com/laiw54724-ui/retro/issues/26) | [Win98 設計規則](issues/26-design-system.md) | CSS 汙染與可及性 |
-| [#27](https://github.com/laiw54724-ui/retro/issues/27) | [開源發行](issues/27-open-source-readiness.md) | 圖示來源不明 |
+| [#27](https://github.com/laiw54724-ui/retro/issues/27) | [開源發行](issues/27-open-source-readiness.md) | Windows 圖示的非 MIT 發行方式 |
 | [#28](https://github.com/laiw54724-ui/retro/issues/28) | [分享與匯出](issues/28-sharing-seo-export.md) | 草稿外洩與虛假成功 |
 
 ## 10. 跨單測試與發布門檻
@@ -200,7 +200,7 @@ A／B／C 是同一張 Issue 的里程碑，不是新建的重複工作單。
 
 目前採用的設計預設已明示，不需要為每個小項再次確認；以下是實作前需實際驗證的門檻，不是空白規格：
 
-- 圖示來源：拿到明確授權證據才能保留於開源發行，否則使用替代映射。
+- 圖示來源：使用 trapd00r/win95-winxp_icons 與 WinClassic 作固定來源；仍須決定非 MIT 圖示採 repo 內附、獨立 asset pack 或安裝時取得。
 - 正式 LICENSE：建議 MIT，但要核對權利人與第三方排除範圍，不能替他人作品重授權。
 - 大型套件：Konva／dnd-kit 等先做限定測試，再鎖定版本；本輪未安裝。
 - 容量／成本：Profile／Post／Board／音訊配額依實測訂定；已提出的 Board／Folder 數值是初始設計預算，不是測量結果。

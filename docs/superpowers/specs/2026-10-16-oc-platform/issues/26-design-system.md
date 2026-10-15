@@ -34,7 +34,7 @@ Cubic 11 作為中英文優先字型，所有 input／button／select 繼承。�
 ## 開源選型
 
 [98.css（MIT）](https://github.com/jdan/98.css) 作細節參考／scoped 抽取；[react95-io/React95](https://github.com/react95-io/React95) 不作全面替換。另一個 [@react95/core 的 license](https://raw.githubusercontent.com/React95/React95/master/LICENSE) 排除 Windows 圖片，不能順便複製圖示。
-圖示候選 [Pixelarticons 免費版](https://github.com/halfmage/pixelarticons)；字型沿用 [Cubic 11 OFL](https://github.com/ACh-K/Cubic-11)。任何引用附 notices。
+Windows 圖示採使用者指定的 [trapd00r/win95-winxp_icons](https://github.com/trapd00r/win95-winxp_icons) 為主要來源、[WinClassic resources](https://winclassic.github.io/resources) 為查找與年代對照；Pixelarticons 免費版只作缺漏圖示的替代候選。字型沿用 [Cubic 11 OFL](https://github.com/ACh-K/Cubic-11)。圖示選擇仍是「精選＋搜尋」，任何引用附來源與適用的權利聲明。
 
 ## 工作拆分與驗收
 

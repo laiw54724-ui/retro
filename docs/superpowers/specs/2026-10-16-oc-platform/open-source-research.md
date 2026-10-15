@@ -16,6 +16,8 @@
 | react95-io/React95 | [專案](https://github.com/react95-io/React95)、[MIT](https://raw.githubusercontent.com/react95-io/React95/master/LICENSE) | #26 | 比較用，不作整套替換；重疊既有元件與主題，新增樣式體系成本大。 |
 | React95/React95（@react95/core） | [授權](https://raw.githubusercontent.com/React95/React95/master/LICENSE) | #26、#27 | 另一個不同專案。程式 MIT，但文件明確排除 Windows 相關圖片；不能拿來替現有圖示背書。 |
 | Pixelarticons 免費版 | [MIT](https://raw.githubusercontent.com/halfmage/pixelarticons/master/LICENSE)、[官方安裝說明](https://pixelarticons.com/docs/) | #26、#27 | 圖示替代候選，維持原創 SVG／像素風並做統一映射。只採免費版，付費 Pro 素材不列入公開 repo。 |
+| trapd00r/win95-winxp_icons | [收藏 repo](https://github.com/trapd00r/win95-winxp_icons)、固定 commit [728a866](https://github.com/trapd00r/win95-winxp_icons/tree/728a866ad59a54fd4082dbe000e1e62e50bd90e9) | #26、#27 | 使用者指定的主要 Windows 95／98／2000／XP 圖示來源。作為圖示 ID、檔名與來源基準；repo 未宣告 license，因此不把素材標成 MIT。 |
+| WinClassic resources | [資源頁](https://winclassic.github.io/resources)、[舊程式圖示頁](https://winclassic.github.io/icons) | #26、#27 | 次要查找與年代／程式對照來源。網站明示所列圖示屬各自權利人，作歷史收藏；不是 Retro 的再授權來源。 |
 | Cubic 11 | [專案與 OFL 說明](https://github.com/ACh-K/Cubic-11)、[OFL](https://github.com/ACh-K/Cubic-11/blob/main/OFL.txt) | #26、#27 | 繼續沿用，保留 OFL；修改字型時需另核對保留名稱條件。字型缺字仍要安全 fallback，不承諾涵蓋所有 Unicode。 |
 | dnd-kit | [專案](https://github.com/clauderic/dnd-kit)、[MIT](https://raw.githubusercontent.com/clauderic/dnd-kit/master/LICENSE) | #20、#24 | 排序需求成形後做小型驗證；即使採用仍保留上移／下移和移動到選單，避免只有拖曳。 |
 | react-konva／Konva | [MIT](https://raw.githubusercontent.com/konvajs/react-konva/master/LICENSE)、[peer dependencies](https://raw.githubusercontent.com/konvajs/react-konva/master/package.json) | #23 | Moodboard 優先試作候選；查核時 master 要求 React ^19.3.0，與目前鎖檔系列相符，但須選定發布版實測。文字輸入／讀屏使用 DOM 層。 |
@@ -37,9 +39,10 @@
 在 e4d9722 查核：
 
 - 尚未找到已追蹤的專案根目錄 LICENSE；建議自有程式 MIT，實際加入授權前記錄權利人與授權範圍。
-- 已追蹤的 apps/web/public/win98-icons 下有 1,757 個檔案，但未找到對應授權清單；不能直接推定可再散布。先逐來源盤點，證據不明的素材排除於開源發行或用允許再散布的替代品。此輪不刪圖、不改現有網站。
+- 已追蹤的 apps/web/public/win98-icons 下有 1,757 個檔案。使用者已指定 [trapd00r/win95-winxp_icons](https://github.com/trapd00r/win95-winxp_icons) 為主要來源、[WinClassic resources](https://winclassic.github.io/resources) 為補充來源；後續以固定 commit、原檔名與 hash 建立對照，不再標記為「來源不明」。
+- 來源可追溯不等於取得再散布授權：GitHub repo 沒有 license，WinClassic 也說明圖示屬各自權利人。Retro 程式可採 MIT，但 Windows 圖示必須列為非 MIT 的第三方／原權利人素材，並在正式開源發行前決定隨 repo 提供、獨立 asset pack 或安裝時由使用者取得的方式。
 - 字型已附 apps/web/public/fonts/OFL.txt，但仍應補來源與版本／檔案 hash。
-- 使用者提供的圖示資料夾、zip、參考圖只作研究輸入，不能自動納入發行。
+- 使用者提供的 Windows 圖示資料夾與 zip 可依上述兩個指定來源做檔案對照；未比對成功的檔案仍先留在研究輸入，不自動納入發行。參考圖只作設計研究。
 - 角色插畫、上傳照片、音樂、歌詞與引用作品的權利，不隨程式碼 MIT 改變；預設保留原作者權利。範例資料要用自製或有明確授權的內容。
 - Instagram.exe 作為既有稱呼可先保留相容，但公開產品名稱建議「OC Social.exe／角色社群」，避免暗示官方關聯；這是命名建議，不在本輪自動更名。
 

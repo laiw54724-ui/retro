@@ -9,6 +9,7 @@
 - 完成 Markdown 內部連結存在性、規劃數量與 TODO／TBD 占位掃描；無損壞的本地連結或這類占位。
 - 人工交叉檢查首發依賴：#18A → #19 → #20 → #21A；#18B 為共同發布門檻；#28A 接實體 ID 與公開投影。沒有要求先完成 #21B 才能發布虛構互動。
 - 開源庫只做來源／license／契約調查，沒有安裝、執行套件相容性或效能測試。
+- 使用者後續指定 trapd00r/win95-winxp_icons（固定 commit 728a866）為 Windows 圖示主要來源、WinClassic resources 為補充來源；已同步 #26、#27 與整體路線。來源 repo 未宣告 license，故記為非 Retro MIT 素材，而不是來源不明。
 - 未修改 apps／packages／migration／lockfile；未執行產品 build／unit／E2E，因本輪未變更產品程式。
 - 未部署、未修改使用者站點，原先未追蹤的 zip／設計資料夾保留。
 

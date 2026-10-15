@@ -31,9 +31,9 @@ A/B/C 是既有 Issue 內的里程碑；不要等整張大單全做完才接下�
 
 ### 開源決定
 
-延伸現有 React／Zod／CSS，不搬整套社群 clone。98.css 作 scoped 細節參考；Pixelarticons 免費 MIT 作圖示候選；Konva 是 Moodboard 試作候選；基本音樂先用原生 audio；ZIP 階段評估 fflate。
+延伸現有 React／Zod／CSS，不搬整套社群 clone。Windows 圖示採 [trapd00r/win95-winxp_icons](https://github.com/trapd00r/win95-winxp_icons) 為主要來源、[WinClassic resources](https://winclassic.github.io/resources) 為補充查找與年代對照；Pixelarticons 免費 MIT 只作缺漏替代。Konva 是 Moodboard 試作候選；基本音樂先用原生 audio；ZIP 階段評估 fflate。
 
-重要限制：[@react95/core 授權](https://raw.githubusercontent.com/React95/React95/master/LICENSE) 不含 Windows 圖片；[tldraw 目前授權](https://raw.githubusercontent.com/tldraw/tldraw/main/LICENSE.md) 不能當成無條件 production MIT 依賴。repo 已追蹤圖示來源未完成清查，#27 必須提前。候選均未安裝或完成相容性測試。
+重要限制：圖示來源已指定，但 trapd00r repo 沒有 license，WinClassic 也明示圖示屬各原權利人；Retro 的 MIT 不涵蓋這些素材。#27 會固定來源 commit、建立檔名／hash 對照並決定非 MIT 素材的發行方式。[tldraw 目前授權](https://raw.githubusercontent.com/tldraw/tldraw/main/LICENSE.md) 也不能當成無條件 production MIT 依賴。候選套件均未安裝或完成相容性測試。
 
 ### 首發驗收情境
 

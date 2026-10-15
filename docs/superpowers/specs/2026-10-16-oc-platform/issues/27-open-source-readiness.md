@@ -6,9 +6,9 @@
 
 ## 獨立調查
 
-在 e4d9722 的 git tracked 清單中未找到根目錄 LICENSE；[字型 OFL](https://github.com/laiw54724-ui/retro/blob/e4d9722/apps/web/public/fonts/OFL.txt) 已存在。apps/web/public/win98-icons 下有 1,757 個已追蹤檔案，查核未找到逐來源授權清單。使用者提供的 windows98-icons 與 zip 仍是未追蹤研究輸入。
+在 e4d9722 的 git tracked 清單中未找到根目錄 LICENSE；[字型 OFL](https://github.com/laiw54724-ui/retro/blob/e4d9722/apps/web/public/fonts/OFL.txt) 已存在。apps/web/public/win98-icons 下有 1,757 個已追蹤檔案。使用者已指定 [trapd00r/win95-winxp_icons](https://github.com/trapd00r/win95-winxp_icons) 為 Windows 95／98／2000／XP 圖示主要來源，[WinClassic resources](https://winclassic.github.io/resources) 為補充查找來源。
 
-「圖示可下載」「repo 公開」「套件程式 MIT」都不是所有素材可再散布的證據。尤其 [@react95/core 上游授權](https://raw.githubusercontent.com/React95/React95/master/LICENSE) 明確排除 Windows 相關圖片。
+這解決了來源識別，但沒有自動解決再散布授權：trapd00r repo 沒有 license，WinClassic 的[舊程式圖示頁](https://winclassic.github.io/icons)明示圖示屬各自權利人。尤其 [@react95/core 上游授權](https://raw.githubusercontent.com/React95/React95/master/LICENSE) 也明確排除 Windows 相關圖片。
 
 ## 決定與範圍
 
@@ -20,7 +20,7 @@
 
 建立 third-party manifest，欄位含 path／來源 URL／版本或 commit／hash／作者／license／notice／允許的使用範圍／審核狀態。狀態至少 confirmed、needs-evidence、replace。
 
-圖示不明者先尋來源與授權，無證據則排除發行或換成原創 SVG／[Pixelarticons 免費 MIT](https://github.com/halfmage/pixelarticons)。不可僅改檔名就當自製。既有使用者設定要有 icon ID fallback 與映射，不讓替換造成桌面空白。
+以 trapd00r 固定 commit 728a866ad59a54fd4082dbe000e1e62e50bd90e9、WinClassic 頁面、原檔名與 hash 建立 provenance manifest。Windows 圖示維持原權利人素材，不納入 Retro MIT 授權宣告；正式開源發行前明確選擇「repo 內附且附權利聲明」「獨立 asset pack」或「安裝時由使用者取得」。未比對成功者可換成原創 SVG／[Pixelarticons 免費 MIT](https://github.com/halfmage/pixelarticons)。既有 icon ID 要有 fallback 與映射，不讓資產包差異造成桌面空白。
 
 [Cubic 11](https://github.com/ACh-K/Cubic-11) 保留 OFL、來源與版本，衍生修改另核對保留名稱。背景、demo avatar、貼紙、音樂、歌詞逐項盤點。先不刪使用者資料；若移除發行素材，記錄 exact paths、替代與恢復方式。
 
@@ -41,8 +41,8 @@
 3. 加上範圍明確的程式授權與 notices，完成 contributor／security 文件。
 4. 乾淨 clone 以文件步驟安裝、測試與 build；只使用測試素材與測試環境，不動使用者站點。
 
-- [ ] 每個隨發行散布的第三方資產都有來源、授權與必要 notices。
-- [ ] 證據不明的素材不進開源發行；舊 icon ID 有可用 fallback。
+- [ ] 每個隨發行散布的第三方資產都有來源、權利狀態與必要 notices；「無獨立 license」不得誤標成 MIT。
+- [ ] Windows 圖示能對應 trapd00r 固定 commit 或 WinClassic 條目；未比對素材不進開源發行，舊 icon ID 有可用 fallback。
 - [ ] LICENSE 範圍不誤涵蓋使用者作品、第三方字型與商標。
 - [ ] README 清楚區分 demo／自架／代管，安裝步驟可重現。
 - [ ] 新 contributor 可執行 frozen-lockfile、typecheck、測試及 build，不需讀取生產 secrets。
@@ -51,4 +51,4 @@
 
 ## 依賴與風險
 
-27A 無功能前置依賴，立即開始；27B 在正式開源發行前完成。不阻止作者繼續編輯，也不等 #22–#25 全做好。規模 M／L（取決於資產來源可追溯性）。最大不確定是已匯入圖示來源；未找到證據不等於已判定侵權，但也不能標為已清查。
+27A 無功能前置依賴，立即開始；27B 在正式開源發行前完成。不阻止作者繼續編輯，也不等 #22–#25 全做好。規模 M。Windows 圖示來源已指定，剩餘決策是其非 MIT 素材的發行方式及少數檔案比對，不再把整個合集描述成來源不明。
