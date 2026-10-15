@@ -48,9 +48,7 @@ function projectV2(document: SiteDocumentV2, currentSiteId: string): SiteDocumen
         ...window,
         content: {
           ...window.content,
-          links: window.content.links.map((link) => link.target === "window" && link.windowId && !retainedWindowIds.has(link.windowId)
-            ? { ...link, target: "url" as const, windowId: "" }
-            : link)
+          links: window.content.links.filter((link) => !(link.target === "window" && link.windowId && !retainedWindowIds.has(link.windowId)))
         }
       };
     });

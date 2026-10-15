@@ -2,7 +2,7 @@ import type { Env } from "../env";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type ArtifactStatus = "synced" | "failed";
-export type PublishArtifactResult = { artifactStatus: ArtifactStatus; retryable: boolean; artifactKey: string };
+export type PublishArtifactResult = { artifactStatus: ArtifactStatus; retryable: boolean; artifactKey: string; error?: string };
 
 export function publishedArtifactKey(username: string, version: number): string {
   return `published/${username}/versions/${version}/site.json`;
@@ -23,8 +23,8 @@ export async function writePublishedArtifact(
       customMetadata: { site: input.username, version: String(input.version) }
     });
     return { artifactStatus: "synced", retryable: false, artifactKey };
-  } catch {
-    return { artifactStatus: "failed", retryable: true, artifactKey };
+  } catch (error) {
+    return { artifactStatus: "failed", retryable: true, artifactKey, error: error instanceof Error ? error.message : "R2 write failed" };
   }
 }
 

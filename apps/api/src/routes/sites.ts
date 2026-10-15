@@ -156,7 +156,7 @@ sites.post("/sites/:siteId/publish", async (c) => {
     publishedAt: row.published_at,
     artifactKey: row.artifact_key ?? publishedArtifactKey(site.username, row.published_version)
   });
-  const statusResult = await recordArtifactStatus(supabase, site.id, user.id, row.published_version, artifact.artifactStatus);
+  const statusResult = await recordArtifactStatus(supabase, site.id, user.id, row.published_version, artifact.artifactStatus, artifact.error);
   if (statusResult.error) return c.json({ publishedVersion: row.published_version, publishedAt: row.published_at, url: `/@${site.username}`, ...artifact, artifactStatus: "failed", retryable: true, warning: "Published database version is live; artifact status could not be recorded." });
   return c.json({ publishedVersion: row.published_version, publishedAt: row.published_at, url: `/@${site.username}`, ...artifact });
 });
@@ -180,7 +180,7 @@ sites.post("/sites/:siteId/publish/retry", async (c) => {
     publishedAt: site.published_at,
     artifactKey: site.published_artifact_key ?? publishedArtifactKey(site.username, site.published_version)
   });
-  const statusResult = await recordArtifactStatus(supabase, site.id, user.id, site.published_version, artifact.artifactStatus);
+  const statusResult = await recordArtifactStatus(supabase, site.id, user.id, site.published_version, artifact.artifactStatus, artifact.error);
   if (statusResult.error) return c.json({ publishedVersion: site.published_version, publishedAt: site.published_at, url: `/@${site.username}`, ...artifact, artifactStatus: "failed", retryable: true, warning: "Artifact was written but status could not be recorded." });
   return c.json({ publishedVersion: site.published_version, publishedAt: site.published_at, url: `/@${site.username}`, ...artifact });
 });

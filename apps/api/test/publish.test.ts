@@ -48,7 +48,7 @@ describe("atomic publication API", () => {
     const response = await sites.request("/sites/site-a/publish", { method: "POST", body: JSON.stringify({ expectedVersion: 2 }) }, { ASSETS: { put } } as never);
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ publishedVersion: 4, artifactStatus: "failed", retryable: true });
-    expect(state.updates).toContainEqual({ published_artifact_status: "failed", published_artifact_error: null });
+    expect(state.updates).toContainEqual({ published_artifact_status: "failed", published_artifact_error: "r2 down" });
   });
 
   it("maps the atomic expected-version conflict without touching R2", async () => {
