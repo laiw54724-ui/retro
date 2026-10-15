@@ -10,17 +10,19 @@ const state = {
   updates: [] as Array<Record<string, unknown>>,
   rpcCalls: [] as Array<{ name: string; args: Record<string, unknown> }>,
   updateError: null as { message: string } | null,
+  updateNoMatch: false,
   requestUser: { id: "user-a" }
 };
 const baseDocument = state.site.draft_document;
 
 function query(result: unknown) {
   let ownerFilter = "";
+  let updateMode = false;
   const q = {
     select: () => q,
     eq: (field: string, value: string) => { if (field === "owner_id") ownerFilter = value; return q; },
-    maybeSingle: async () => ({ data: ownerFilter && ownerFilter !== state.site.owner_id ? null : result, error: null }),
-    update: (value: Record<string, unknown>) => { state.updates.push(value); return q; },
+    maybeSingle: async () => ({ data: updateMode ? (state.updateNoMatch ? null : { id: "site-a" }) : (ownerFilter && ownerFilter !== state.site.owner_id ? null : result), error: updateMode ? state.updateError : null }),
+    update: (value: Record<string, unknown>) => { state.updates.push(value); updateMode = true; return q; },
     then: (resolve: (value: unknown) => unknown) => Promise.resolve({ data: null, error: state.updateError }).then(resolve)
   };
   return q;
@@ -37,7 +39,7 @@ vi.mock("../src/lib/supabase", () => ({
 const { sites } = await import("../src/routes/sites");
 
 describe("atomic publication API", () => {
-  beforeEach(() => { state.site = { ...state.site, draft_document: baseDocument, published_document: undefined, published_version: null, published_at: undefined, published_artifact_key: undefined }; state.requestUser = { id: "user-a" }; state.rpcError = null; state.artifactError = false; state.updates.length = 0; state.rpcCalls.length = 0; state.updateError = null; });
+  beforeEach(() => { state.site = { ...state.site, draft_document: baseDocument, published_document: undefined, published_version: null, published_at: undefined, published_artifact_key: undefined }; state.requestUser = { id: "user-a" }; state.rpcError = null; state.artifactError = false; state.updates.length = 0; state.rpcCalls.length = 0; state.updateError = null; state.updateNoMatch = false; });
 
   it("projects before calling the atomic RPC and writes a versioned immutable artifact", async () => {
     const put = vi.fn(async () => undefined);
@@ -91,6 +93,13 @@ describe("atomic publication API", () => {
     expect(await response.json()).toMatchObject({ publishedVersion: 4, artifactStatus: "failed", retryable: true });
   });
 
+  it("does not report synced when a publish status update matches zero rows", async () => {
+    state.updateNoMatch = true;
+    const response = await sites.request("/sites/site-a/publish", { method: "POST", body: JSON.stringify({ expectedVersion: 2 }) }, { ASSETS: { put: vi.fn(async () => undefined) } } as never);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ artifactStatus: "failed", retryable: true, warning: expect.stringContaining("stale") });
+  });
+
   it("retries the current committed version and key without invoking publish RPC", async () => {
     state.site = { ...state.site, published_document: state.site.draft_document, published_version: 4, published_at: "2026-10-16T00:00:00.000Z", published_artifact_key: "published/demo/versions/4/site.json" };
     const put = vi.fn(async () => undefined);
@@ -106,5 +115,13 @@ describe("atomic publication API", () => {
     const response = await sites.request("/sites/site-a/publish/retry", { method: "POST" }, { ASSETS: { put } } as never);
     expect(response.status).toBe(404);
     expect(put).not.toHaveBeenCalled();
+  });
+
+  it("does not report synced when retry status update matches zero rows", async () => {
+    state.site = { ...state.site, published_document: state.site.draft_document, published_version: 4, published_at: "2026-10-16T00:00:00.000Z", published_artifact_key: "published/demo/versions/4/site.json" };
+    state.updateNoMatch = true;
+    const response = await sites.request("/sites/site-a/publish/retry", { method: "POST" }, { ASSETS: { put: vi.fn(async () => undefined) } } as never);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ artifactStatus: "failed", retryable: true, warning: expect.stringContaining("stale") });
   });
 });

@@ -34,12 +34,15 @@ export async function recordArtifactStatus(
   ownerId: string,
   version: number,
   status: ArtifactStatus,
-  error?: string
+  statusError?: string
 ) {
-  return supabase
+  const { data, error } = await supabase
     .from("sites")
-    .update({ published_artifact_status: status, published_artifact_error: error ?? null })
+    .update({ published_artifact_status: status, published_artifact_error: statusError ?? null })
     .eq("id", siteId)
     .eq("owner_id", ownerId)
-    .eq("published_version", version);
+    .eq("published_version", version)
+    .select("id")
+    .maybeSingle();
+  return { error, updated: Boolean(data) };
 }

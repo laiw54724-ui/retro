@@ -159,7 +159,7 @@ sites.post("/sites/:siteId/publish", async (c) => {
     artifactKey: row.artifact_key ?? publishedArtifactKey(site.username, row.published_version)
   });
   const statusResult = await recordArtifactStatus(supabase, site.id, user.id, row.published_version, artifact.artifactStatus, artifact.error);
-  if (statusResult.error) return c.json({ publishedVersion: row.published_version, publishedAt: row.published_at, url: `/@${site.username}`, ...artifact, artifactStatus: "failed", retryable: true, warning: "Published database version is live; artifact status could not be recorded." });
+  if (statusResult.error || !statusResult.updated) return c.json({ publishedVersion: row.published_version, publishedAt: row.published_at, url: `/@${site.username}`, ...artifact, artifactStatus: "failed", retryable: true, warning: statusResult.error ? "Published database version is live; artifact status could not be recorded." : "This publication is stale; the artifact was written but its status was not recorded for the current version." });
   return c.json({ publishedVersion: row.published_version, publishedAt: row.published_at, url: `/@${site.username}`, ...artifact });
 });
 
@@ -184,7 +184,7 @@ sites.post("/sites/:siteId/publish/retry", async (c) => {
     artifactKey: site.published_artifact_key ?? publishedArtifactKey(site.username, site.published_version)
   });
   const statusResult = await recordArtifactStatus(supabase, site.id, user.id, site.published_version, artifact.artifactStatus, artifact.error);
-  if (statusResult.error) return c.json({ publishedVersion: site.published_version, publishedAt: site.published_at, url: `/@${site.username}`, ...artifact, artifactStatus: "failed", retryable: true, warning: "Artifact was written but status could not be recorded." });
+  if (statusResult.error || !statusResult.updated) return c.json({ publishedVersion: site.published_version, publishedAt: site.published_at, url: `/@${site.username}`, ...artifact, artifactStatus: "failed", retryable: true, warning: statusResult.error ? "Artifact was written but status could not be recorded." : "This artifact status is stale; retry from the current published version." });
   return c.json({ publishedVersion: site.published_version, publishedAt: site.published_at, url: `/@${site.username}`, ...artifact });
 });
 
