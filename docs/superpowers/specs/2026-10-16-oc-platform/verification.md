@@ -52,3 +52,6 @@
 - build：pass（shared、API Wrangler dry-run、web Vite）；Wrangler 仍有既有 debug-log EPERM 訊息，但 dry-run 與 build 均成功完成。
 - `git diff --check`：pass。
 - review：獨立 spec review 與 quality review 均通過；window ID/reference remap 風險已由 `7f93936` 修正，v2 identity-preservation 風險已由 `a2b3a07` 修正，raw/canonical v2 型別契約再由 `57a2b05` 校正；相關行為皆有回歸測試或 typecheck 保護。
+- Cloudflare Pages staging deployment：`66ee9c16`（部署 source `81fae02`；本段只有 shared contract 與文件變更，API runtime 未改動）。
+- staging canonical：https://retrodesk-staging.pages.dev；immutable deployment：https://66ee9c16.retrodesk-staging.pages.dev。
+- HTTP smoke：canonical／immutable 首頁皆 `200`；immutable `/windows-icons/brown.ico` 為 `200` 且 `content-type: image/vnd.microsoft.icon`；canonical 已提供本次 bundle `index-ad9TLqki.js`。
