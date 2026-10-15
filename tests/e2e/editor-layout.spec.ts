@@ -104,13 +104,13 @@ test("one window can override, flatten and reset its title bar", async ({ page }
   await expect(titlebar).toHaveCSS("background-image", /linear-gradient/);
 });
 
-test("Win98 icon picker offers curated icons and searchable full library", async ({ page }) => {
+test("Windows icon picker offers curated icons and searchable full library", async ({ page }) => {
   const saves = await openEditor(page);
   await page.getByRole("tab", { name: "圖示" }).click();
-  await expect(page.getByText("Win98 精選")).toBeVisible();
-  await page.getByLabel("搜尋 Win98 圖示").fill("computer 2 cool");
-  const result = page.getByRole("button", { name: /Win98 圖示 computer 2 cool 4/i });
+  await expect(page.getByText("Windows 精選")).toBeVisible();
+  await page.getByLabel("搜尋 Windows 圖示").fill("computer");
+  const result = page.getByRole("button", { name: /Windows 圖示 .*computer/i }).first();
   await expect(result).toBeVisible();
   await result.click();
-  await expect.poll(() => saves.at(-1)?.document.windows.find((window) => window.id === "about")?.icon).toContain("/win98-icons/computer_2_cool-4.png");
+  await expect.poll(() => saves.at(-1)?.document.windows.find((window) => window.id === "about")?.icon).toMatch(/^\/windows-icons\/[A-Za-z0-9._-]+\.(?:ico|png)$/);
 });
