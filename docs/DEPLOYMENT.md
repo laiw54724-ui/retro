@@ -20,9 +20,9 @@ For each project:
    - anon key
    - service-role key
 4. Configure Auth:
-   - enable Email/Password
-   - add the Pages/custom-domain origins to allowed redirect URLs
-   - keep email confirmation enabled for production unless there is a product reason not to
+   - enable the Google provider and configure its OAuth client ID/secret
+   - add the Pages/custom-domain `/auth` callback URLs to the Supabase redirect allowlist
+   - keep Email/Password disabled while the product remains Google-only
 
 The Worker uses the service-role key server-side. Never expose that key to Vite or Cloudflare Pages.
 
@@ -41,8 +41,8 @@ The bucket names already match `apps/api/wrangler.toml`.
 ## 3. Create Pages projects
 
 ```bash
-pnpm --filter @retrodesk/web exec wrangler pages project create retrodesk-staging --production-branch main
-pnpm --filter @retrodesk/web exec wrangler pages project create retrodesk --production-branch main
+pnpm --filter @retrodesk/web exec wrangler pages project create retrodesk-staging --production-branch main --force
+pnpm --filter @retrodesk/web exec wrangler pages project create retrodesk --production-branch main --force
 ```
 
 The Vite build output is `apps/web/dist`.
@@ -156,7 +156,7 @@ Then configure:
 
 Before production:
 
-- [ ] sign up / email verification / sign in
+- [ ] sign in with a real Google account and confirm the `/auth` callback returns to the app
 - [ ] create username and starter desktop
 - [ ] edit all five MVP window types
 - [ ] upload an image and reload; R2 URL still works

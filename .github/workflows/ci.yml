@@ -17,7 +17,7 @@ jobs:
       - name: Enable pnpm
         run: corepack enable && corepack prepare pnpm@10.18.2 --activate
       - name: Install
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Typecheck
         run: pnpm typecheck
       - name: Unit security tests
