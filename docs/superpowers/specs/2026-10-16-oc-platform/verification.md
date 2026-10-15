@@ -94,3 +94,7 @@
 - build：pass（shared、API Wrangler dry-run、web Vite）；僅有既有 Wrangler debug-log EPERM 訊息與 bundle-size warning。
 - `git diff --check`：pass。
 - review：獨立 spec 與 quality review 通過；補齊 concurrency、projection/RPC、retry/public-source/success UX tests，並修正 quality review 發現的 zero-row stale status 誤報風險。
+- staging DB：`supabase db push --project-ref gabvecfxlvchsoehzelq --dry-run` 只列出 `0003_atomic_publish.sql`；正式 push 成功套用同一 migration。
+- staging Worker：先以 `wrangler deploy --env staging --dry-run --keep-vars` 驗證，再部署 version `bbed29ee-e71c-4d0c-95f6-14d79fdf4ba0`；使用 `--keep-vars` 保留 dashboard vars/secrets。
+- Cloudflare Pages staging deployment：`3f3b7854`（部署 source `8e2e4db`）。canonical：https://retrodesk-staging.pages.dev；immutable：https://3f3b7854.retrodesk-staging.pages.dev。
+- HTTP smoke：API health `200`、既有 published site DB read `200`、未登入 publish boundary `401`、Pages canonical／immutable `200`；canonical 已提供 bundle `index-CGG28UzR.js`。
