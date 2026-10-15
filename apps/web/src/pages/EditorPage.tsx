@@ -37,7 +37,7 @@ export function EditorPage() {
   const [draftIssue, setDraftIssue] = useState<string | null>(null);
   const [publishPrompt, setPublishPrompt] = useState(false);
   const [preview, setPreview] = useState(false);
-  const [publishSuccess, setPublishSuccess] = useState<{ version: number; url: string } | null>(null);
+  const [publishSuccess, setPublishSuccess] = useState<{ version: number; url: string; artifactStatus: "synced" | "failed"; retryable: boolean } | null>(null);
   const [publishing, setPublishing] = useState(false);
   const publishChecks = useMemo(() => store.document ? buildPublishChecks(store.document) : [], [store.document]);
 
@@ -187,7 +187,7 @@ export function EditorPage() {
       const absoluteUrl = new URL(result.url, window.location.origin).toString();
       store.markPublished(result.publishedVersion);
       setPublishPrompt(false);
-      setPublishSuccess({ version: result.publishedVersion, url: absoluteUrl });
+      setPublishSuccess({ version: result.publishedVersion, url: absoluteUrl, artifactStatus: result.artifactStatus, retryable: result.retryable });
     } catch (error) {
       if (error instanceof ApiError && error.code === "version_conflict") {
         setConflict(true);
@@ -387,9 +387,16 @@ export function EditorPage() {
             <header className="landing-titlebar" id="success-title">發布完成</header>
             <div className="dialog-body">
               <h2>公開版本 v{publishSuccess.version} 已上線</h2>
+              {publishSuccess.artifactStatus === "failed" ? <p role="alert">資料庫版本已發布，但 CDN 檔案同步失敗。公開網站仍可使用；你可以重試同步。</p> : <p>公開檔案已同步完成。</p>}
               <input className="share-url" readOnly value={publishSuccess.url} onFocus={(event) => event.currentTarget.select()} />
               <div className="button-row end">
                 <RetroButton onClick={copyPublishedUrl}>複製網址</RetroButton>
+                {publishSuccess.retryable ? <RetroButton onClick={async () => {
+                  try {
+                    const result = await api.retryPublish(siteId);
+                    setPublishSuccess((current) => current ? { ...current, artifactStatus: result.artifactStatus, retryable: result.retryable } : current);
+                  } catch (error) { setMessage(error instanceof Error ? error.message : "同步重試失敗"); }
+                }}>重試同步</RetroButton> : null}
                 <a className="retro-link" href={publishSuccess.url} target="_blank" rel="noreferrer">開啟網站</a>
                 <RetroButton className="primary" onClick={() => setPublishSuccess(null)}>完成</RetroButton>
               </div>

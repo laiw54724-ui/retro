@@ -83,6 +83,27 @@ test("visitor preview opens over the editor and closes", async ({ page }) => {
   await expect(overlay).toBeHidden();
 });
 
+test("publish reports artifact failure and retries without republishing", async ({ page }) => {
+  await openEditor(page);
+  let publishCalls = 0;
+  let retryCalls = 0;
+  await page.route("**/api/sites/site-1/publish", (route) => {
+    publishCalls += 1;
+    return route.fulfill({ json: { publishedVersion: 3, publishedAt: "2026-10-16T00:00:00.000Z", url: "/@demo", artifactStatus: "failed", retryable: true } });
+  });
+  await page.route("**/api/sites/site-1/publish/retry", (route) => {
+    retryCalls += 1;
+    return route.fulfill({ json: { publishedVersion: 3, publishedAt: "2026-10-16T00:00:00.000Z", url: "/@demo", artifactStatus: "synced", retryable: false } });
+  });
+  await page.getByRole("button", { name: "發布", exact: true }).click();
+  await page.getByRole("dialog", { name: "發布 Retro Desktop" }).getByRole("button", { name: "確認發布" }).click();
+  await expect(page.getByRole("dialog", { name: "發布完成" })).toContainText("CDN 檔案同步失敗");
+  await page.getByRole("dialog", { name: "發布完成" }).getByRole("button", { name: "重試同步" }).click();
+  await expect.poll(() => retryCalls).toBe(1);
+  await expect(page.getByRole("dialog", { name: "發布完成" })).toContainText("公開檔案已同步完成");
+  expect(publishCalls).toBe(1);
+});
+
 test("one window can override, flatten and reset its title bar", async ({ page }) => {
   const saves = await openEditor(page);
   const dialog = page.getByRole("dialog", { name: "About.exe" });

@@ -16,6 +16,7 @@ export type SiteRecord = {
 };
 
 export type AssetKind = "image" | "icon";
+export type PublishResult = { publishedVersion: number; publishedAt: string; url: string; artifactStatus: "synced" | "failed"; retryable: boolean; artifactKey?: string; warning?: string };
 export type AssetRecord = { id: string; url: string; mimeType: string; size: number; kind: AssetKind; name: string; createdAt: string };
 
 export class ApiError extends Error {
@@ -75,10 +76,13 @@ export const api = {
     });
   },
   publish(siteId: string, expectedVersion: number) {
-    return request<{ publishedVersion: number; publishedAt: string; url: string }>("/api/sites/" + siteId + "/publish", {
+    return request<PublishResult>("/api/sites/" + siteId + "/publish", {
       method: "POST",
       body: JSON.stringify({ expectedVersion })
     });
+  },
+  retryPublish(siteId: string) {
+    return request<PublishResult>("/api/sites/" + siteId + "/publish/retry", { method: "POST" });
   },
   publicSite(username: string) {
     return request<{ site: { username: string; site_name: string; published_document: SiteDocument; published_version: number; published_at: string } }>(

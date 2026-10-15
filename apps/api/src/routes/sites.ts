@@ -1,9 +1,10 @@
 import { Hono } from "hono";
-import { UsernameSchema } from "@retrodesk/shared";
+import { projectPublicSiteDocument, UsernameSchema } from "@retrodesk/shared";
 import type { Env } from "../env";
 import { jsonError } from "../lib/http";
 import { requireUser, serviceClient } from "../lib/supabase";
 import { CreateSiteSchema, PublishSchema, SaveDraftSchema } from "../lib/site";
+import { publishedArtifactKey, recordArtifactStatus, writePublishedArtifact } from "../lib/publish";
 
 export const sites = new Hono<{ Bindings: Env }>();
 
@@ -129,30 +130,59 @@ sites.post("/sites/:siteId/publish", async (c) => {
   if (site.draft_version !== payload.data.expectedVersion) {
     return jsonError(c, 409, "version_conflict", "Save the latest draft before publishing", { currentVersion: site.draft_version });
   }
-
-  const nextPublishedVersion = (site.published_version ?? 0) + 1;
-  const now = new Date().toISOString();
-  const { error: versionError } = await supabase.from("site_versions").insert({
-    site_id: site.id,
-    version: nextPublishedVersion,
-    document: site.draft_document,
-    created_by: user.id
+  const projection = projectPublicSiteDocument(site.draft_document, site.id);
+  if (!projection.ok) {
+    return projection.code === "unsupported_version"
+      ? jsonError(c, 400, "unsupported_document_version", "This document version cannot be published", { version: projection.version })
+      : jsonError(c, 400, "invalid_publish_document", "The draft cannot be published", { diagnostics: projection.diagnostics });
+  }
+  const { data: committed, error: publishError } = await supabase.rpc("publish_site_atomic", {
+    p_site_id: site.id,
+    p_owner_id: user.id,
+    p_expected_version: payload.data.expectedVersion,
+    p_document: projection.document
   });
-  if (versionError) return jsonError(c, 500, "db_error", "Could not create published version");
+  if (publishError) {
+    if (publishError.message.includes("version_conflict")) return jsonError(c, 409, "version_conflict", "Save the latest draft before publishing");
+    if (publishError.message.includes("site_not_found")) return jsonError(c, 404, "not_found", "Site not found");
+    return jsonError(c, 500, "db_error", "Could not publish site");
+  }
+  const row = Array.isArray(committed) ? committed[0] : committed;
+  if (!row?.published_version || !row.published_at) return jsonError(c, 500, "db_error", "Publish did not return a committed version");
+  const artifact = await writePublishedArtifact(c.env, {
+    username: site.username,
+    version: row.published_version,
+    document: projection.document,
+    publishedAt: row.published_at,
+    artifactKey: row.artifact_key ?? publishedArtifactKey(site.username, row.published_version)
+  });
+  const statusResult = await recordArtifactStatus(supabase, site.id, user.id, row.published_version, artifact.artifactStatus);
+  if (statusResult.error) return c.json({ publishedVersion: row.published_version, publishedAt: row.published_at, url: `/@${site.username}`, ...artifact, artifactStatus: "failed", retryable: true, warning: "Published database version is live; artifact status could not be recorded." });
+  return c.json({ publishedVersion: row.published_version, publishedAt: row.published_at, url: `/@${site.username}`, ...artifact });
+});
 
-  const { error } = await supabase
+sites.post("/sites/:siteId/publish/retry", async (c) => {
+  const user = await requireUser(c);
+  if (user instanceof Response) return user;
+  const supabase = serviceClient(c.env);
+  const { data: site, error } = await supabase
     .from("sites")
-    .update({ published_document: site.draft_document, published_version: nextPublishedVersion, published_at: now, updated_at: now })
-    .eq("id", site.id)
-    .eq("owner_id", user.id);
-  if (error) return jsonError(c, 500, "db_error", "Could not publish site");
-
-  const publishedJson = JSON.stringify({ username: site.username, version: nextPublishedVersion, document: site.draft_document, publishedAt: now });
-  await c.env.ASSETS.put(`published/${site.username}/site.json`, publishedJson, {
-    httpMetadata: { contentType: "application/json; charset=utf-8", cacheControl: "public, max-age=60" }
+    .select("id,owner_id,username,published_document,published_version,published_at,published_artifact_key")
+    .eq("id", c.req.param("siteId"))
+    .eq("owner_id", user.id)
+    .maybeSingle();
+  if (error) return jsonError(c, 500, "db_error", "Could not load published site");
+  if (!site?.published_document || !site.published_version || !site.published_at) return jsonError(c, 409, "not_published", "Publish a version before retrying its artifact");
+  const artifact = await writePublishedArtifact(c.env, {
+    username: site.username,
+    version: site.published_version,
+    document: site.published_document,
+    publishedAt: site.published_at,
+    artifactKey: site.published_artifact_key ?? publishedArtifactKey(site.username, site.published_version)
   });
-
-  return c.json({ publishedVersion: nextPublishedVersion, publishedAt: now, url: `/@${site.username}` });
+  const statusResult = await recordArtifactStatus(supabase, site.id, user.id, site.published_version, artifact.artifactStatus);
+  if (statusResult.error) return c.json({ publishedVersion: site.published_version, publishedAt: site.published_at, url: `/@${site.username}`, ...artifact, artifactStatus: "failed", retryable: true, warning: "Artifact was written but status could not be recorded." });
+  return c.json({ publishedVersion: site.published_version, publishedAt: site.published_at, url: `/@${site.username}`, ...artifact });
 });
 
 sites.get("/public/sites/:username", async (c) => {
