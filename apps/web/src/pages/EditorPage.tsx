@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { THEME_PRESETS, type DesktopWindow } from "@retrodesk/shared";
+import { SiteDocumentSchema, THEME_PRESETS, type DesktopWindow } from "@retrodesk/shared";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { useEditorStore } from "../features/editor/store";
 import { DesktopCanvas } from "../features/editor/DesktopCanvas";
 import { MobilePreview } from "../features/editor/MobilePreview";
+import { InspectorContent } from "../features/editor/InspectorContent";
 import { RetroButton } from "../components/RetroButton";
 import { useAuth } from "../app/AuthProvider";
 
@@ -15,6 +16,14 @@ const moduleTypes: Array<{ type: DesktopWindow["type"]; label: string; desc: str
   { type: "about", label: "名片／關於我", desc: "頭像、簡介與欄位" },
   { type: "instagram", label: "復古 IG", desc: "個人頁與貼文格狀" }
 ];
+
+function validationMessage(document: unknown) {
+  const parsed = SiteDocumentSchema.safeParse(document);
+  if (parsed.success) return null;
+  const first = parsed.error.issues[0];
+  const path = first?.path.length ? first.path.join(" → ") + "：" : "";
+  return "請先修正內容格式。" + (first ? " " + path + first.message : "");
+}
 
 export function EditorPage() {
   const { siteId = "" } = useParams();
@@ -43,6 +52,13 @@ export function EditorPage() {
   useEffect(() => {
     if (!store.document || store.saveStatus !== "dirty" || !store.siteId) return;
     const timer = window.setTimeout(async () => {
+      const invalid = validationMessage(store.document);
+      if (invalid) {
+        store.setSaveStatus("error");
+        setMessage(invalid);
+        return;
+      }
+
       store.setSaveStatus("saving");
       try {
         const result = await api.saveDraft(store.siteId!, store.version, store.document!);
@@ -68,10 +84,20 @@ export function EditorPage() {
   if (loading || !store.document) return <div className="boot-screen">Loading desktop...</div>;
 
   async function publish() {
+    const invalid = validationMessage(store.document);
+    if (invalid) {
+      setMessage(invalid);
+      return;
+    }
     if (store.saveStatus === "dirty" || store.saveStatus === "saving") {
       setMessage("請等草稿儲存完成後再發布。");
       return;
     }
+    if (store.saveStatus === "error") {
+      setMessage("目前草稿有儲存或格式錯誤，請先修正後再發布。");
+      return;
+    }
+
     setPublishing(true);
     setMessage("");
     try {
@@ -94,7 +120,7 @@ export function EditorPage() {
         <Link to="/" className="brand">Retro Desktop</Link>
         <span className="site-url">retrodesk.me/{store.username}</span>
         <span className={"save-pill " + store.saveStatus}>
-          {store.saveStatus === "saving" ? "儲存中" : store.saveStatus === "dirty" ? "尚未儲存" : store.saveStatus === "error" ? "儲存失敗" : "已儲存"}
+          {store.saveStatus === "saving" ? "儲存中" : store.saveStatus === "dirty" ? "尚未儲存" : store.saveStatus === "error" ? "請修正內容" : "已儲存"}
         </span>
         <div className="top-spacer" />
         <div className="device-toggle">
@@ -147,13 +173,20 @@ export function EditorPage() {
               <div className="inspector-title"><span className="module-icon" /><strong>{selected.title}</strong></div>
               <label>視窗標題<input value={selected.title} onChange={(event) => updateSelected((window) => ({ ...window, title: event.target.value }))} /></label>
               <label>桌面圖示<input value={selected.icon} onChange={(event) => updateSelected((window) => ({ ...window, icon: event.target.value }))} /></label>
+              <label className="check-row"><input type="checkbox" checked={selected.defaultOpen} onChange={(event) => updateSelected((window) => ({ ...window, defaultOpen: event.target.checked }))} />訪客打開網站時預設開啟</label>
               <div className="geometry-grid">
                 <label>X<input type="number" value={selected.layout.desktop.x} onChange={(event) => updateSelected((window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, x: Number(event.target.value) } } }))} /></label>
                 <label>Y<input type="number" value={selected.layout.desktop.y} onChange={(event) => updateSelected((window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, y: Number(event.target.value) } } }))} /></label>
-                <label>寬<input type="number" value={selected.layout.desktop.w} onChange={(event) => updateSelected((window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, w: Number(event.target.value) } } }))} /></label>
-                <label>高<input type="number" value={selected.layout.desktop.h} onChange={(event) => updateSelected((window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, h: Number(event.target.value) } } }))} /></label>
+                <label>寬<input min={220} max={1400} type="number" value={selected.layout.desktop.w} onChange={(event) => updateSelected((window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, w: Number(event.target.value) } } }))} /></label>
+                <label>高<input min={140} max={1200} type="number" value={selected.layout.desktop.h} onChange={(event) => updateSelected((window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, h: Number(event.target.value) } } }))} /></label>
               </div>
-              <InspectorContent window={selected} update={updateSelected} />
+              <InspectorContent
+                window={selected}
+                allWindows={store.document.windows}
+                siteId={siteId}
+                update={updateSelected}
+                onMessage={setMessage}
+              />
               <RetroButton className="danger" onClick={() => store.deleteWindow(selected.id)}>刪除視窗</RetroButton>
             </>
           ) : (
@@ -174,64 +207,5 @@ export function EditorPage() {
         {store.document.windows.length} 個視窗 · 草稿自動儲存
       </footer>
     </main>
-  );
-}
-
-function InspectorContent({ window, update }: { window: DesktopWindow; update: (recipe: (window: DesktopWindow) => DesktopWindow) => void }) {
-  if (window.type === "about") {
-    return (
-      <>
-        <hr />
-        <strong>內容</strong>
-        <label>暱稱<input value={window.content.nickname} onChange={(event) => update((current) => current.type === "about" ? { ...current, content: { ...current.content, nickname: event.target.value } } : current)} /></label>
-        <label>簡介<textarea rows={6} value={window.content.bio} onChange={(event) => update((current) => current.type === "about" ? { ...current, content: { ...current.content, bio: event.target.value } } : current)} /></label>
-      </>
-    );
-  }
-
-  if (window.type === "document") {
-    return (
-      <>
-        <hr />
-        <strong>文件內容</strong>
-        {window.content.blocks.map((block, index) => block.kind === "heading" || block.kind === "text" ? (
-          <label key={block.id}>
-            {block.kind === "heading" ? "標題" : "段落"}
-            <textarea rows={block.kind === "heading" ? 2 : 4} value={block.text} onChange={(event) => update((current) => current.type === "document" ? {
-              ...current,
-              content: { blocks: current.content.blocks.map((item, itemIndex) => itemIndex === index ? { ...item, text: event.target.value } : item) }
-            } : current)} />
-          </label>
-        ) : null)}
-      </>
-    );
-  }
-
-  if (window.type === "links") {
-    return (
-      <>
-        <hr />
-        <strong>連結</strong>
-        {window.content.links.map((link, index) => (
-          <div className="link-editor" key={link.id}>
-            <input value={link.label} onChange={(event) => update((current) => current.type === "links" ? {
-              ...current,
-              content: { links: current.content.links.map((item, itemIndex) => itemIndex === index ? { ...item, label: event.target.value } : item) }
-            } : current)} />
-            <input value={link.url} onChange={(event) => update((current) => current.type === "links" ? {
-              ...current,
-              content: { links: current.content.links.map((item, itemIndex) => itemIndex === index ? { ...item, url: event.target.value } : item) }
-            } : current)} />
-          </div>
-        ))}
-      </>
-    );
-  }
-
-  return (
-    <>
-      <hr />
-      <p className="panel-help">相簿與復古 IG 的完整圖片管理會接到 R2 上傳流程；目前標題、位置與大小已會真實儲存。</p>
-    </>
   );
 }
