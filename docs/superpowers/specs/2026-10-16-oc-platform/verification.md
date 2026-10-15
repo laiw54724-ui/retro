@@ -121,3 +121,23 @@
 - Cloudflare Pages staging deployment：`22002270`。canonical：https://retrodesk-staging.pages.dev；immutable：https://22002270.retrodesk-staging.pages.dev；canonical HTML 指向 bundle `index-cOeIdTF-.js`。
 - live smoke：API `/api/health` `200`、published site `beibei` `200`、Pages canonical／immutable `200`、synthetic draft key anonymous request `404`、既有 published wallpaper `200 image/jpeg` 且 `cache-control: public, max-age=31536000, immutable`。
 - live Chromium visual/DOM：title `bei — Retro Desktop`、`.visitor-page` 1、desktop visible、2 dialogs、taskbar clock present，背景使用 API published asset；1440×900 截圖確認 Win98 視窗、背景 cover、Start 與時鐘皆正常。沒有使用或建立 staging 測試帳密，因此 authenticated live upload/preview 由 API unit integration coverage 驗證，未宣稱人工帳號驗收。
+
+## #19A multi-OC profile domain and migration contract
+
+驗證日期：2026-10-16（Asia/Singapore）。本節建立多 OC 的資料完整性與 API 寫入邊界；尚未切換 editor 寫 v2，也尚未提供訪客追蹤列表，這兩部分分別保留給 19B／19C。
+
+- 實作計畫：`docs/superpowers/plans/2026-10-16-multi-oc-profiles.md`。
+- 實作 commits：`cedac91`、`a4fe7e6`、`54bbfac`、`43c914b`。
+- profile contract：additive OC 欄位包含 canonical handle/display name、pronouns、自訂欄位、world tags、內容區 theme override；舊 v2 文件的 optional 欄位與 validation-only identity 行為維持相容，新建／修改則統一正規化 handle。
+- migration：兩個 legacy Instagram 視窗即使 handle 大小寫重複也不合併，依來源順序產生 deterministic `-2` suffix，保留 legacy username／followers／following labels；重跑 v2 不增加角色或貼文。
+- operations：pure create/update/duplicate/reference inspection/delete-or-retarget；輸入與輸出都經完整 semantic validation，跨站 scope、case-insensitive handle 衝突、dangling refs、錯誤 retarget 與 referenced delete 均回 typed diagnostics，不 throw、不修改輸入，回傳 profile 不與文件物件 alias。
+- API boundary：CreateSite 保持 v1；SaveDraft 接受 validated v1/v2。v2 除 structural/semantic validation 外，所有 profile、post、Instagram profileRef 的 siteId 必須等於實際 `/sites/:siteId` owner route，self-consistent 但屬另一站的文件會在寫入前回 `400 invalid_draft`。
+- typecheck：pass（shared、api、web）。
+- full unit：93 passed（shared 36 + API 46 + web 11）。
+- full E2E：49 passed（單 worker最終發布閘門 37.8s）。
+- build：pass（shared、API Wrangler dry-run、web Vite）；只有既有 multi-environment 與 bundle-size warnings。
+- `git diff --check`：pass。
+- review：spec review 經兩輪 site semantic/scope 修正後 APPROVED；quality review 經 migration no-throw、operation validation、handle canonicalization 與回傳 alias isolation 修正後 APPROVED。
+- staging Worker：version `3f469ce9-75c8-4de2-9dc9-bbda693175b9`。
+- Cloudflare Pages staging deployment：`7656f73c`。canonical：https://retrodesk-staging.pages.dev；immutable：https://7656f73c.retrodesk-staging.pages.dev；canonical HTML 指向 `index-CwObkPGQ.js`。
+- live smoke：API health `200`、published site `beibei` `200`、Pages canonical／immutable `200`；390×780 real Chromium 顯示 mobile visitor、2 個 icon、horizontal overflow `0`、page errors `[]`。沒有安全的 staging 測試帳密，因此 cross-site authenticated rejection 由實際 route integration test 覆蓋，未宣稱人工登入驗收。
