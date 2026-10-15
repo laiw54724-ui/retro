@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { useEditorStore } from "../features/editor/store";
 import { DesktopCanvas } from "../features/editor/DesktopCanvas";
-import { MobilePreview } from "../features/editor/MobilePreview";
+import { MobileEditor } from "../features/editor/MobileEditor";
 import { InspectorContent } from "../features/editor/InspectorContent";
 import { RetroButton } from "../components/RetroButton";
 import { useAuth } from "../app/AuthProvider";
@@ -114,6 +114,16 @@ export function EditorPage() {
     window.addEventListener("keydown", keydown);
     return () => window.removeEventListener("keydown", keydown);
   }, [store.undo, store.redo]);
+
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 767px)");
+    if (query.matches) store.setDevice("mobile");
+    const change = (event: MediaQueryListEvent) => {
+      if (event.matches) store.setDevice("mobile");
+    };
+    query.addEventListener("change", change);
+    return () => query.removeEventListener("change", change);
+  }, [store.setDevice]);
 
   const selected = useMemo(
     () => store.document?.windows.find((window) => window.id === store.selectedId) ?? null,
@@ -282,7 +292,21 @@ export function EditorPage() {
               onResize={(id, w, h) => store.updateWindow(id, (window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, w, h } } }))}
               onIconMove={(id, iconX, iconY) => store.updateWindow(id, (window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, iconX, iconY } } }))}
             />
-          ) : <MobilePreview document={store.document} />}
+          ) : (
+            <MobileEditor
+              document={store.document}
+              siteId={siteId}
+              selectedId={store.selectedId}
+              onSelect={store.select}
+              onAdd={store.addWindow}
+              onUpdate={store.updateWindow}
+              onDelete={store.deleteWindow}
+              onTheme={store.setTheme}
+              onReorder={store.reorderMobile}
+              onColumns={store.setMobileColumns}
+              onMessage={setMessage}
+            />
+          )}
         </section>
 
         <aside className="right-panel retro-panel">

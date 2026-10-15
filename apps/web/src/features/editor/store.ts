@@ -34,6 +34,8 @@ type EditorState = {
   select: (id: string | null) => void;
   focusWindow: (id: string) => void;
   setDevice: (device: "desktop" | "mobile") => void;
+  reorderMobile: (id: string, direction: -1 | 1) => void;
+  setMobileColumns: (columns: 3 | 4) => void;
   setSiteName: (name: string) => void;
   setTheme: (theme: SiteDocument["theme"]) => void;
   addWindow: (type: DesktopWindow["type"]) => void;
@@ -156,6 +158,26 @@ export const useEditorStore = create<EditorState>((set) => ({
     return withHistory(state, document, { selectedId: id });
   }),
   setDevice: (device) => set({ device }),
+  reorderMobile: (id, direction) => set((state) => {
+    if (!state.document) return {};
+    const ordered = [...state.document.windows].sort((a, b) => a.layout.mobile.order - b.layout.mobile.order);
+    const index = ordered.findIndex((window) => window.id === id);
+    const nextIndex = index + direction;
+    if (index < 0 || nextIndex < 0 || nextIndex >= ordered.length) return {};
+    [ordered[index], ordered[nextIndex]] = [ordered[nextIndex], ordered[index]];
+    const orderMap = new Map(ordered.map((window, order) => [window.id, order]));
+    const document = {
+      ...state.document,
+      windows: state.document.windows.map((window) => ({
+        ...window,
+        layout: { ...window.layout, mobile: { order: orderMap.get(window.id) ?? window.layout.mobile.order } }
+      }))
+    };
+    return withHistory(state, document, { selectedId: id });
+  }),
+  setMobileColumns: (columns) => set((state) => state.document
+    ? withHistory(state, { ...state.document, mobileColumns: columns })
+    : {}),
   setSiteName: (siteName) => set((state) => state.document
     ? withHistory(state, { ...state.document, siteName })
     : {}),
