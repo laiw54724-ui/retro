@@ -20,6 +20,8 @@ const PROVENANCE_TEMP = `${PROVENANCE}.__tmp__`;
 const MANIFEST_BACKUP = `${MANIFEST}.__backup__`;
 const PROVENANCE_BACKUP = `${PROVENANCE}.__backup__`;
 const JOURNAL = path.join(path.dirname(OUT_DIR), 'windows-icons.__transaction__.json');
+const JOURNAL_TEMP = `${JOURNAL}.__tmp__`;
+const COMMIT_MARKER = path.join(path.dirname(OUT_DIR), 'windows-icons.__committed__');
 const SUPPORTED = new Set(['.ico', '.png']);
 const UNSUPPORTED = new Set(['.ani', '.icl']);
 
@@ -57,11 +59,53 @@ async function exists(file) {
   try { await fs.access(file); return true; } catch { return false; }
 }
 async function remove(file) { await fs.rm(file, { recursive: true, force: true }); }
+async function fsyncParent(file) {
+  try { const handle = await fs.open(path.dirname(file), 'r'); await handle.sync(); await handle.close(); }
+  catch { /* Best effort: directory fsync is unsupported on some platforms (notably Windows). */ }
+}
+async function durableExclusiveWrite(file, contents) {
+  const handle = await fs.open(file, 'wx');
+  try { await handle.writeFile(contents); await handle.sync(); }
+  finally { await handle.close(); }
+  await fsyncParent(file);
+}
+async function durableJournalWrite(journal) {
+  await remove(JOURNAL_TEMP);
+  await durableExclusiveWrite(JOURNAL_TEMP, JSON.stringify(journal, null, 2) + '\n');
+  await fs.rename(JOURNAL_TEMP, JOURNAL);
+  await fsyncParent(JOURNAL);
+}
+async function cleanupCommitted(journal) {
+  const errors = [];
+  for (const item of journal.targets) {
+    try { await remove(item.backup); } catch (error) { errors.push(`${item.backup}: ${error.message}`); }
+  }
+  for (const file of [STAGING_DIR, MANIFEST_TEMP, PROVENANCE_TEMP, JOURNAL_TEMP]) {
+    try { await remove(file); } catch (error) { errors.push(`${file}: ${error.message}`); }
+  }
+  if (errors.length) throw new Error(`committed cleanup failed; recovery paths: ${errors.join('; ')}`);
+  try { await remove(JOURNAL); await fsyncParent(JOURNAL); } catch (error) { throw new Error(`committed cleanup failed; recovery paths: ${JOURNAL}: ${error.message}`); }
+  try { await remove(COMMIT_MARKER); await fsyncParent(COMMIT_MARKER); } catch (error) { throw new Error(`committed cleanup failed; recovery paths: ${COMMIT_MARKER}: ${error.message}`); }
+}
 async function recoverTransaction() {
-  if (!await exists(JOURNAL)) return;
+  const journalExists = await exists(JOURNAL);
+  const markerExists = await exists(COMMIT_MARKER);
+  if (!journalExists && !markerExists) {
+    await cleanStaleTransactionArtifacts();
+    return;
+  }
+  if (!journalExists && markerExists) {
+    try {
+      await cleanStaleTransactionArtifacts();
+      await remove(COMMIT_MARKER);
+      await fsyncParent(COMMIT_MARKER);
+    } catch (error) { throw new Error(`committed cleanup failed; recovery paths: ${error.message}`); }
+    return;
+  }
   let journal;
   try { journal = JSON.parse(await fs.readFile(JOURNAL, 'utf8')); }
   catch (error) { throw new Error(`cannot read transaction journal ${JOURNAL}: ${error.message}`); }
+  if (markerExists) { await cleanupCommitted(journal); return; }
   const recoveryErrors = [];
   for (const item of [...journal.targets].reverse()) {
     try {
@@ -75,13 +119,11 @@ async function recoverTransaction() {
       }
     } catch (error) { recoveryErrors.push(`${item.target}: ${error.message}`); }
   }
-  for (const file of [STAGING_DIR, BACKUP_DIR, MANIFEST_TEMP, PROVENANCE_TEMP, MANIFEST_BACKUP, PROVENANCE_BACKUP, JOURNAL]) {
-    try { await remove(file); } catch (error) { recoveryErrors.push(`${file}: ${error.message}`); }
-  }
-  if (recoveryErrors.length) throw new Error(`transaction recovery failed; recovery paths: ${recoveryErrors.join('; ')}`);
+  if (recoveryErrors.length) throw new Error(`transaction recovery failed; recovery paths retained: ${recoveryErrors.join('; ')}`);
+  for (const file of [STAGING_DIR, BACKUP_DIR, MANIFEST_TEMP, PROVENANCE_TEMP, MANIFEST_BACKUP, PROVENANCE_BACKUP, JOURNAL, JOURNAL_TEMP]) await remove(file);
 }
 async function cleanStaleTransactionArtifacts() {
-  for (const file of [STAGING_DIR, BACKUP_DIR, MANIFEST_TEMP, PROVENANCE_TEMP, MANIFEST_BACKUP, PROVENANCE_BACKUP]) await remove(file);
+  for (const file of [STAGING_DIR, BACKUP_DIR, MANIFEST_TEMP, PROVENANCE_TEMP, MANIFEST_BACKUP, PROVENANCE_BACKUP, JOURNAL_TEMP]) await remove(file);
 }
 function tsManifest(records, curated) {
   const lines = [
@@ -190,8 +232,8 @@ async function run() {
       const input = await hashFile(path.join(source, record.upstreamPath));
       if (staged.sha256 !== input.sha256 || staged.bytes !== input.bytes) throw new Error(`staging hash mismatch: ${record.path}`);
     }
-    await fs.writeFile(MANIFEST_TEMP, built.manifest, { flag: 'wx' });
-    await fs.writeFile(PROVENANCE_TEMP, built.provenance, { flag: 'wx' });
+    await durableExclusiveWrite(MANIFEST_TEMP, built.manifest);
+    await durableExclusiveWrite(PROVENANCE_TEMP, built.provenance);
     const targets = [
       { target: OUT_DIR, staging: STAGING_DIR, backup: BACKUP_DIR },
       { target: MANIFEST, staging: MANIFEST_TEMP, backup: MANIFEST_BACKUP },
@@ -199,16 +241,16 @@ async function run() {
     ];
     const journal = { schemaVersion: 1, targets: [] };
     for (const item of targets) journal.targets.push({ ...item, hadOriginal: await exists(item.target) });
-    await fs.writeFile(JOURNAL, JSON.stringify(journal, null, 2) + '\n', { flag: 'wx' });
+    await durableJournalWrite(journal);
     for (const item of journal.targets) {
       if (await exists(item.backup)) await remove(item.backup);
       if (item.hadOriginal) await fs.rename(item.target, item.backup);
     }
     for (const item of journal.targets) await fs.rename(item.staging, item.target);
-    await remove(JOURNAL);
-    for (const item of journal.targets) await remove(item.backup);
+    await durableExclusiveWrite(COMMIT_MARKER, 'committed\n');
+    await cleanupCommitted(journal);
   } catch (error) {
-    try { await recoverTransaction(); await cleanStaleTransactionArtifacts(); }
+    try { await recoverTransaction(); }
     catch (recoveryError) { throw new Error(`${error.message}; ${recoveryError.message}`); }
     throw error;
   }
