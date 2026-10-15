@@ -90,6 +90,8 @@ export const SiteDocumentV2Schema = z.object({
   entities: z.object({ profiles: z.array(ProfileEntityV2Schema).max(100), posts: z.array(PostEntityV2Schema).max(500) }).strict()
 }).strict();
 export type SiteDocumentV2 = z.infer<typeof SiteDocumentV2Schema>;
+/** Raw v2 shape accepted by Zod; defaulted fields may be omitted intentionally. */
+export type SiteDocumentV2Input = z.input<typeof SiteDocumentV2Schema>;
 export type VersionedSiteDocument = SiteDocument | SiteDocumentV2;
 export const VersionedSiteDocumentSchema = z.union([SiteDocumentSchema, SiteDocumentV2Schema]);
 
@@ -99,6 +101,10 @@ type UnsupportedResult = { ok: false; code: "unsupported_version"; raw: unknown;
 export type ParseSiteDocumentResult =
   | { ok: true; version: 1; document: SiteDocument }
   | { ok: true; version: 2; document: SiteDocumentV2 }
+  | InvalidResult | UnsupportedResult;
+export type MigrateSiteDocumentResult =
+  | { ok: true; version: 1; document: SiteDocument }
+  | { ok: true; version: 2; document: SiteDocumentV2Input }
   | InvalidResult | UnsupportedResult;
 
 function diagnosticsFrom(error: z.ZodError): Diagnostic[] {
@@ -151,7 +157,7 @@ function boundedGeneratedId(base: string, used: Set<string>): string {
   while (used.has(id)) { const suffix = `:${n++}`; id = fit(`${base.slice(0, Math.max(1, 160 - suffix.length))}${suffix}`); }
   used.add(id); return id;
 }
-export function migrateSiteDocumentV2(raw: unknown, options: { siteId: string }): ParseSiteDocumentResult {
+export function migrateSiteDocumentV2(raw: unknown, options: { siteId: string }): MigrateSiteDocumentResult {
   if (!BoundedId.safeParse(options.siteId).success) return invalid(raw, [{ path: ["siteId"], message: "siteId must be a non-empty bounded string", code: "invalid" }]);
   const parsed = parseSiteDocument(raw);
   if (!parsed.ok) return parsed;
@@ -159,7 +165,7 @@ export function migrateSiteDocumentV2(raw: unknown, options: { siteId: string })
     // Structural parsing may materialize Zod defaults. Migration of an already
     // v2 document is intentionally a validation-only operation: preserve the
     // caller's exact object and identity after validation succeeds.
-    return { ok: true, version: 2, document: raw as SiteDocumentV2 };
+    return { ok: true, version: 2, document: raw as SiteDocumentV2Input };
   }
   const source = parsed.document, profiles: ProfileEntityV2[] = [], posts: PostEntityV2[] = [], profileIds = new Set<string>(), postIds = new Set<string>(), windowIds = new Set<string>();
   if (new Set(source.windows.map((w) => w.id)).size !== source.windows.length) return invalid(raw, [{ path: ["windows"], message: "Duplicate window id", code: "duplicate_id" }]);
@@ -189,13 +195,13 @@ export function migrateSiteDocumentV2(raw: unknown, options: { siteId: string })
 }
 
 export type ResolveResult<T> = { ok: true; value: T } | { ok: false; reason: "cross_site" | "missing" };
-export function resolveEntityRef(document: SiteDocumentV2, ref: EntityRef, currentSiteId: string): ResolveResult<SiteDocumentV2["entities"]["profiles"][number] | SiteDocumentV2["entities"]["posts"][number] | SiteDocumentV2["windows"][number]> {
+export function resolveEntityRef(document: SiteDocumentV2Input, ref: EntityRef, currentSiteId: string): ResolveResult<SiteDocumentV2Input["entities"]["profiles"][number] | SiteDocumentV2Input["entities"]["posts"][number] | SiteDocumentV2Input["windows"][number]> {
   if (ref.siteId !== currentSiteId) return { ok: false, reason: "cross_site" };
   const value = ref.kind === "profile" ? document.entities.profiles.find((entity) => entity.id === ref.id && entity.siteId === currentSiteId) : ref.kind === "post" ? document.entities.posts.find((entity) => entity.id === ref.id && entity.siteId === currentSiteId) : document.windows.find((window) => window.id === ref.id);
   return value ? { ok: true, value } : { ok: false, reason: "missing" };
 }
 export type EntityReferrer = { kind: "window"; windowId: string } | { kind: "post"; postId: string; field: "authorProfileId" };
-export function collectEntityReferrers(document: SiteDocumentV2, ref: EntityRef, currentSiteId: string): EntityReferrer[] {
+export function collectEntityReferrers(document: SiteDocumentV2Input, ref: EntityRef, currentSiteId: string): EntityReferrer[] {
   if (ref.siteId !== currentSiteId || ref.kind !== "profile") return [];
   const out: EntityReferrer[] = [];
   for (const window of document.windows) if (window.type === "instagram" && window.content.profileRef.siteId === ref.siteId && window.content.profileRef.id === ref.id) out.push({ kind: "window", windowId: window.id });
