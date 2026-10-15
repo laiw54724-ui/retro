@@ -45,7 +45,7 @@ export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, m
   const module = registry[win.type] as unknown as { View: ComponentType<Record<string, unknown>>; InlineEditor: ComponentType<Record<string, unknown>> };
   const Component = ctx.editing ? module.InlineEditor : module.View;
   return (
-    <div className="module-host" style={{ fontFamily: tv.fontFamily, color: tv.text, background: win.type === "about" || win.type === "instagram" ? tv.face : "#fff" }}>
+    <div className={`module-host module-${win.type}`} style={{ fontFamily: tv.fontFamily, color: tv.text, background: win.type === "about" || win.type === "instagram" ? tv.face : "#fff" }}>
       <Component window={win} ctx={ctx} update={update} />
     </div>
   );

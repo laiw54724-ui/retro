@@ -32,15 +32,18 @@ export function useIgSession(highlightCount: () => number) {
     clearInterval(timers.current.story);
   }, []);
 
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: 0 });
+  }, [screen, postId]);
+
   const showToast = useCallback((message: string) => {
     clearTimeout(timers.current.toast);
     setToast(message);
     timers.current.toast = setTimeout(() => setToast(null), 1800);
   }, []);
 
-  const scrollTop = () => { if (scrollRef.current) scrollRef.current.scrollTop = 0; };
-  const go = (next: IgScreen) => { setScreen(next); setPostId(null); setSheetId(null); scrollTop(); };
-  const openPost = (id: string) => { setBack(screen === "post" ? back : screen); setScreen("post"); setPostId(id); setSheetId(null); scrollTop(); };
+  const go = (next: IgScreen) => { setScreen(next); setPostId(null); setSheetId(null); };
+  const openPost = (id: string) => { setBack(screen === "post" ? back : screen); setScreen("post"); setPostId(id); setSheetId(null); };
   const toggleLike = (id: string) => setLiked((s) => ({ ...s, [id]: !s[id] }));
   const doubleLike = (id: string) => {
     setLiked((s) => ({ ...s, [id]: true }));

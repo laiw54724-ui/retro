@@ -10,7 +10,7 @@
 .ig-title { flex: 1; min-width: 0; display: flex; align-items: center; gap: 4px; }
 .ig-title strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ig-verified { width: 16px; height: 16px; flex-shrink: 0; border-radius: 50%; background: #1d7bf0; color: #fff; font-size: 10px; font-weight: 700; display: grid; place-items: center; }
-.ig-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; background: #fff; }
+.ig-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; touch-action: pan-y; -webkit-overflow-scrolling: touch; background: #fff; }
 .ig-icbtn { width: 32px; height: 32px; padding: 0; border: 0; background: none; cursor: pointer; display: grid; place-items: center; }
 .ig-icbtn.lg { width: 38px; height: 38px; }
 .ig-avatar { display: block; flex-shrink: 0; border-radius: 50%; overflow: hidden; }

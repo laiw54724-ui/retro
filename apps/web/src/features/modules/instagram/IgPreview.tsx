@@ -140,7 +140,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
         {s.screen === "profile" ? <button type="button" className="ig-icbtn lg" aria-label="分享個人檔案" onClick={() => s.showToast("已複製個人檔案連結")}><Ic bg={I.send} size={22} /></button> : null}
       </div>
 
-      <div className="ig-scroll" ref={s.scrollRef}>
+      <div className="ig-scroll w98-scroll" ref={s.scrollRef} tabIndex={0} aria-label="Instagram 內容">
         {s.screen === "profile" ? (
           <>
             <div className="ig-profile2">

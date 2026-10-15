@@ -100,3 +100,25 @@ test("turning off comments and likes hides those controls for visitors", async (
   await first.locator(".ig-media").dblclick();
   await expect(first.getByText("10 個讚")).toBeVisible();
 });
+
+test("desktop Instagram window owns wheel and keyboard scrolling", async ({ page }) => {
+  const { win } = await openEditor(page);
+  await win.getByRole("tab", { name: "▶ 預覽互動" }).click();
+  await win.getByRole("button", { name: "首頁" }).click();
+
+  const scroll = win.locator(".ig-scroll");
+  await expect.poll(() => scroll.evaluate((node) => node.scrollHeight > node.clientHeight)).toBe(true);
+  await scroll.hover();
+  await page.mouse.wheel(0, 480);
+  await expect.poll(() => scroll.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+
+  await scroll.evaluate((node) => { node.scrollTop = 0; });
+  await scroll.focus();
+  await page.keyboard.press("PageDown");
+  await expect.poll(() => scroll.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+
+  await win.getByRole("button", { name: "已收藏" }).click();
+  await expect.poll(() => scroll.evaluate((node) => node.scrollTop)).toBe(0);
+});

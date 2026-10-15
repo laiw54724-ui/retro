@@ -265,26 +265,26 @@ export function EditorPage() {
     <main className="editor-app">
       <header className="editor-topbar">
         <Link to="/" className="brand" title="回到首頁"><Icon name="computer" size={22} />Retro Desktop</Link>
-        <span className="w98-vsep" />
+        <span className="w98-vsep mobile-hide" />
         <div className="topbar-meta">
           <span className="site-url">retrodesk.me/{store.username}</span>
           <span className="status-badge" title={badge.text} style={{ background: badge.bg, color: badge.color, borderColor: badge.color }}>{badge.text}</span>
         </div>
-        <span className="w98-vsep" />
-        <RetroButton disabled={store.past.length === 0} onClick={store.undo} aria-label="復原" title="復原 (Ctrl+Z)">↶ 復原</RetroButton>
-        <RetroButton disabled={store.future.length === 0} onClick={store.redo} aria-label="重做" title="重做 (Ctrl+Shift+Z)">↷ 重做</RetroButton>
-        <span className={"save-text " + store.saveStatus} title={draftIssue ?? undefined} role="status">{saveText}</span>
+        <span className="w98-vsep mobile-hide" />
+        <RetroButton className="mobile-hide" disabled={store.past.length === 0} onClick={store.undo} aria-label="復原" title="復原 (Ctrl+Z)">↶ 復原</RetroButton>
+        <RetroButton className="mobile-hide" disabled={store.future.length === 0} onClick={store.redo} aria-label="重做" title="重做 (Ctrl+Shift+Z)">↷ 重做</RetroButton>
+        <span className={"save-text mobile-hide " + store.saveStatus} title={draftIssue ?? undefined} role="status">{saveText}</span>
         <div className="top-spacer" />
-        <div role="group" aria-label="裝置" className="device-toggle">
+        <div role="group" aria-label="裝置" className="device-toggle mobile-hide">
           <button type="button" aria-pressed={store.device === "desktop"} className={"w98-btn" + (store.device === "desktop" ? " on" : "")} onClick={() => store.setDevice("desktop")}>桌面版</button>
           <button type="button" aria-pressed={store.device === "mobile"} className={"w98-btn" + (store.device === "mobile" ? " on" : "")} onClick={() => { store.setLayoutMode(false); store.setDevice("mobile"); }}>手機版</button>
         </div>
         <RetroButton onClick={() => setPreview(true)}>▶ 訪客預覽</RetroButton>
-        {store.publishedDocument ? <a className="w98-btn" href={"/@" + store.username} target="_blank" rel="noreferrer">開啟已發布網站</a> : null}
+        {store.publishedDocument ? <a className="w98-btn mobile-hide" href={"/@" + store.username} target="_blank" rel="noreferrer">開啟已發布網站</a> : null}
         <RetroButton className="primary" onClick={requestPublish} disabled={publishing || (!!store.publishedDocument && !hasUnpublishedChanges)}>
           {store.publishedDocument ? "重新發布" : "發布"}
         </RetroButton>
-        <RetroButton onClick={async () => { await signOut(); navigate("/"); }}>登出</RetroButton>
+        <RetroButton className="mobile-hide" onClick={async () => { await signOut(); navigate("/"); }}>登出</RetroButton>
       </header>
 
       {message ? (
