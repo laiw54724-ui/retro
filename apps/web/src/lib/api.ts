@@ -17,7 +17,7 @@ export type SiteRecord = {
 
 export type AssetKind = "image" | "icon";
 export type PublishResult = { publishedVersion: number; publishedAt: string; url: string; artifactStatus: "synced" | "failed"; retryable: boolean; artifactKey?: string; warning?: string };
-export type AssetRecord = { id: string; url: string; mimeType: string; size: number; kind: AssetKind; name: string; createdAt: string; storageScope?: "legacy_public" | "draft_private"; migrationStatus?: string; migrationRequired?: boolean };
+export type AssetRecord = { id: string; url: string; mimeType: string; size: number; kind: AssetKind; name: string; createdAt: string; storageScope?: "legacy_public" | "draft_private"; migrationStatus?: string; migrationRequired?: boolean; publicCopyRemaining?: boolean };
 
 export class ApiError extends Error {
   status: number;
@@ -101,8 +101,8 @@ export const api = {
   listAssets(siteId: string, kind?: AssetKind) {
     return request<{ assets: AssetRecord[] }>("/api/sites/" + siteId + "/assets" + (kind ? "?kind=" + kind : ""));
   },
-  migrateLegacyAssets(siteId: string, expectedVersion: number, document: SiteDocument) {
-    return request<{ version: number; document: SiteDocument; migratedCount: number; cleanupWarnings: string[] }>("/api/sites/" + siteId + "/assets/migrate", { method: "POST", body: JSON.stringify({ expectedVersion, document }) });
+  migrateLegacyAssets(siteId: string, expectedVersion: number) {
+    return request<{ version: number; document: SiteDocument; migratedCount: number; cleanupWarnings: string[] }>("/api/sites/" + siteId + "/assets/migrate", { method: "POST", body: JSON.stringify({ expectedVersion }) });
   },
   deleteAsset(siteId: string, assetId: string) {
     return request<void>("/api/sites/" + siteId + "/assets/" + assetId, { method: "DELETE" });

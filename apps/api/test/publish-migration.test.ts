@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const migration = readFileSync(resolve(process.cwd(), "../../supabase/migrations/0003_atomic_publish.sql"), "utf8");
+const sitesSource = readFileSync(resolve(process.cwd(), "src/routes/sites.ts"), "utf8");
 
 describe("atomic publish migration contract", () => {
   it("stores constrained artifact state and versioned keys", () => {
@@ -31,5 +32,12 @@ describe("atomic publish migration contract", () => {
     expect(migration).toContain("revoke all on function public.publish_site_atomic");
     expect(migration).toContain("grant execute on function public.publish_site_atomic(uuid, uuid, integer, integer, jsonb)");
     expect(migration).toContain("to service_role");
+  });
+
+  it("cleans pending legacy objects after both publish paths and reports warnings", () => {
+    expect(sitesSource).toContain("async function cleanupPendingLegacyAssets");
+    expect(sitesSource.match(/cleanupPendingLegacyAssets\(c\.env, supabase/g)?.length).toBeGreaterThanOrEqual(2);
+    expect(sitesSource).toContain("inventory-unavailable");
+    expect(sitesSource).toContain("cleanupWarnings");
   });
 });

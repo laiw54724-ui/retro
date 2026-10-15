@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { readFileSync as readSource } from "node:fs";
 
 const migration = readFileSync(resolve(process.cwd(), "../../supabase/migrations/0004_protected_draft_assets.sql"), "utf8");
+const routeSource = readSource(resolve(process.cwd(), "src/routes/assets.ts"), "utf8");
 
 describe("protected draft asset migration contract", () => {
   it("labels legacy rows and constrains storage state", () => {
@@ -34,5 +36,12 @@ describe("protected draft asset migration contract", () => {
     expect(migration).toContain("legacy_object_key");
     expect(migration).toContain("legacy_public_url");
     expect(migration).toContain("jpg|jpeg|png|webp|gif");
+  });
+
+  it("keeps migration authoritative and preserves published legacy references", () => {
+    expect(routeSource).toContain("replaceExactStrings(site.draft_document");
+    expect(routeSource).toContain("publishedText.includes");
+    expect(routeSource).toContain("cleanupWarnings");
+    expect(routeSource).toContain("if (!(rows ?? []).length)");
   });
 });

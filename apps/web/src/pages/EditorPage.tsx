@@ -41,6 +41,7 @@ export function EditorPage() {
   const [publishSuccess, setPublishSuccess] = useState<{ version: number; url: string; artifactStatus: "synced" | "failed"; retryable: boolean } | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [legacyAssetCount, setLegacyAssetCount] = useState(0);
+  const [pendingPublicCopyCount, setPendingPublicCopyCount] = useState(0);
   const [migratingAssets, setMigratingAssets] = useState(false);
   const publishChecks = useMemo(() => store.document ? buildPublishChecks(store.document) : [], [store.document]);
 
@@ -66,9 +67,11 @@ export function EditorPage() {
     return () => { alive = false; };
   }, [siteId]);
 
-  useEffect(() => {
-    api.listAssets(siteId).then(({ assets }) => setLegacyAssetCount(assets.filter((asset) => asset.migrationRequired).length)).catch(() => undefined);
-  }, [siteId]);
+  const refreshAssetInventory = () => api.listAssets(siteId).then(({ assets }) => {
+    setLegacyAssetCount(assets.filter((asset) => asset.storageScope === "legacy_public").length);
+    setPendingPublicCopyCount(assets.filter((asset) => asset.publicCopyRemaining).length);
+  }).catch(() => undefined);
+  useEffect(() => { refreshAssetInventory(); }, [siteId]);
 
   useEffect(() => {
     if (!store.document || store.saveStatus !== "dirty" || !store.siteId || saveInFlight.current || conflict) return;
@@ -195,6 +198,7 @@ export function EditorPage() {
       store.markPublished(result.publishedVersion);
       setPublishPrompt(false);
       setPublishSuccess({ version: result.publishedVersion, url: absoluteUrl, artifactStatus: result.artifactStatus, retryable: result.retryable });
+      await refreshAssetInventory();
     } catch (error) {
       if (error instanceof ApiError && error.code === "version_conflict") {
         setConflict(true);
@@ -255,10 +259,10 @@ export function EditorPage() {
         store.markSaved(saved.version, store.document);
         version = saved.version;
       }
-      const result = await api.migrateLegacyAssets(siteId, version, store.document);
+      const result = await api.migrateLegacyAssets(siteId, version);
       store.setSite(store.siteId!, store.username, result.document, result.version, store.publishedDocument, store.publishedVersion);
-      setLegacyAssetCount(0);
-      setMessage(result.cleanupWarnings.length ? `素材已轉為私有；${result.cleanupWarnings.length} 個舊檔案待清理。` : "舊素材已轉為私有預覽。");
+      await refreshAssetInventory();
+      setMessage(result.cleanupWarnings.length ? `素材已轉為私有預覽；${result.cleanupWarnings.length} 個舊公開副本仍需保留或清理。` : "舊素材已轉為私有預覽。");
     } catch (error) { setMessage(error instanceof Error ? error.message : "素材遷移失敗"); }
     finally { setMigratingAssets(false); }
   }
@@ -321,7 +325,7 @@ export function EditorPage() {
         </div>
       ) : null}
 
-      {legacyAssetCount > 0 ? <div className="editor-message" role="status"><span>有 {legacyAssetCount} 個舊素材仍是公開網址，尚未轉為私有。</span><button disabled={migratingAssets} onClick={migrateLegacyAssets}>{migratingAssets ? "遷移中…" : "轉為私有素材"}</button></div> : null}
+      {legacyAssetCount > 0 || pendingPublicCopyCount > 0 ? <div className="editor-message" role="status"><span>{legacyAssetCount > 0 ? `有 ${legacyAssetCount} 個舊素材仍是公開網址，尚未轉為私有。` : `有 ${pendingPublicCopyCount} 個舊公開副本因目前發布版本仍在使用，暫時保留。`}</span>{legacyAssetCount > 0 ? <button disabled={migratingAssets || store.saveStatus === "saving" || store.saveStatus === "error" || conflict} onClick={migrateLegacyAssets}>{migratingAssets ? "遷移中…" : "轉為私有素材"}</button> : null}</div> : null}
 
       <div className="editor-grid2">
         {!layoutMode ? (

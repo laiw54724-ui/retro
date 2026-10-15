@@ -10,13 +10,15 @@ export const sites = new Hono<{ Bindings: Env }>();
 
 async function cleanupPendingLegacyAssets(env: Env, supabase: ReturnType<typeof serviceClient>, siteId: string, ownerId: string) {
   const result = await supabase.from("site_assets").select("id,legacy_object_key").eq("site_id", siteId).eq("owner_id", ownerId).eq("migration_status", "pending");
+  if (result.error) return ["inventory-unavailable"];
   const rows = Array.isArray(result.data) ? result.data : [];
   const warnings: string[] = [];
   for (const row of rows) {
     if (!row.legacy_object_key) continue;
     try {
       await env.ASSETS.delete(row.legacy_object_key);
-      await supabase.from("site_assets").update({ migration_status: "migrated", legacy_object_key: null, legacy_public_url: null }).eq("id", row.id).eq("owner_id", ownerId);
+      const updated = await supabase.from("site_assets").update({ migration_status: "migrated", legacy_object_key: null, legacy_public_url: null }).eq("id", row.id).eq("owner_id", ownerId);
+      if (updated.error) warnings.push(String(row.id));
     } catch { warnings.push(String(row.id)); }
   }
   return warnings;
@@ -206,8 +208,9 @@ sites.post("/sites/:siteId/publish/retry", async (c) => {
     artifactKey: site.published_artifact_key ?? publishedArtifactKey(site.username, site.published_version)
   });
   const statusResult = await recordArtifactStatus(supabase, site.id, user.id, site.published_version, artifact.artifactStatus, artifact.error);
-  if (statusResult.error || !statusResult.updated) return c.json({ publishedVersion: site.published_version, publishedAt: site.published_at, url: `/@${site.username}`, ...artifact, artifactStatus: "failed", retryable: true, warning: statusResult.error ? "Artifact was written but status could not be recorded." : "This artifact status is stale; retry from the current published version." });
-  return c.json({ publishedVersion: site.published_version, publishedAt: site.published_at, url: `/@${site.username}`, ...artifact });
+  const cleanupWarnings = await cleanupPendingLegacyAssets(c.env, supabase, site.id, user.id);
+  if (statusResult.error || !statusResult.updated) return c.json({ publishedVersion: site.published_version, publishedAt: site.published_at, url: `/@${site.username}`, ...artifact, artifactStatus: "failed", retryable: true, cleanupWarnings, warning: statusResult.error ? "Artifact was written but status could not be recorded." : "This artifact status is stale; retry from the current published version." });
+  return c.json({ publishedVersion: site.published_version, publishedAt: site.published_at, url: `/@${site.username}`, ...artifact, cleanupWarnings });
 });
 
 sites.get("/public/sites/:username", async (c) => {

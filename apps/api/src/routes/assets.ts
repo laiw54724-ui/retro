@@ -120,7 +120,10 @@ assets.post("/sites/:siteId/assets/migrate", async (c) => {
       return jsonError(c, 400, "asset_migration_failed", `Legacy asset ${row.id} has an unsupported extension`, { assetId: row.id });
     }
     const object = await c.env.ASSETS.get(row.object_key);
-    if (!object) return jsonError(c, 400, "asset_migration_failed", `Legacy asset ${row.id} is missing from storage`, { assetId: row.id });
+    if (!object) {
+      for (const copied of copiedKeys) await c.env.ASSETS.delete(copied);
+      return jsonError(c, 400, "asset_migration_failed", `Legacy asset ${row.id} is missing from storage`, { assetId: row.id });
+    }
     const normalizedExtension = extension === "jpeg" ? "jpg" : extension;
     const key = `draft/users/${user.id}/sites/${siteId}/${row.id}.${normalizedExtension}`;
     try {
@@ -153,7 +156,8 @@ assets.post("/sites/:siteId/assets/migrate", async (c) => {
     if (publishedText.includes(JSON.stringify(update.oldPublicUrl))) { cleanupWarnings.push(String(update.id)); continue; }
     try {
       await c.env.ASSETS.delete(update.oldObjectKey);
-      await supabase.from("site_assets").update({ migration_status: "migrated", legacy_object_key: null, legacy_public_url: null }).eq("id", update.id).eq("owner_id", user.id);
+      const cleaned = await supabase.from("site_assets").update({ migration_status: "migrated", legacy_object_key: null, legacy_public_url: null }).eq("id", update.id).eq("owner_id", user.id);
+      if (cleaned.error) cleanupWarnings.push(String(update.id));
     } catch { cleanupWarnings.push(String(update.id)); }
   }
   return c.json({ version: row?.draft_version ?? version + 1, document: row?.draft_document ?? document, migratedCount: updates.length, cleanupWarnings });
