@@ -112,7 +112,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
             <div className="m-sheet-body">
               {sheet === "add" ? moduleDefinitions.map((module) => (
                 <button key={module.type} type="button" className="w98-btn m-add" onClick={() => { store.addWindow(module.type); setSheet(null); }}>
-                  <Icon name={module.icon} size={32} />
+                  <Icon name={module.mobile.icon} size={32} />
                   <span className="add-card-text"><strong>{module.label}</strong><span>{module.description}</span></span>
                 </button>
               )) : null}

@@ -114,3 +114,19 @@ test("Windows icon picker offers curated icons and searchable full library", asy
   await result.click();
   await expect.poll(() => saves.at(-1)?.document.windows.find((window) => window.id === "about")?.icon).toMatch(/^\/windows-icons\/[A-Za-z0-9._-]+\.(?:ico|png)$/);
 });
+
+test("desktop and mobile add surfaces share the registry modules", async ({ page }) => {
+  const saves = await openEditor(page);
+  const desktopLabels = await page.locator(".left-panel2 .add-card strong").allTextContents();
+  expect(desktopLabels).toEqual(["文件視窗", "相簿視窗", "連結視窗", "名片／關於我", "復古 IG 個人頁"]);
+
+  await page.getByRole("button", { name: "手機版" }).click();
+  await page.locator(".m-toolbar").getByRole("button", { name: "新增" }).click();
+  const mobileSheet = page.getByRole("dialog", { name: "新增視窗" });
+  await expect(mobileSheet).toBeVisible();
+  const mobileLabels = await mobileSheet.locator(".m-add strong").allTextContents();
+  expect(mobileLabels).toEqual(desktopLabels);
+
+  await mobileSheet.getByRole("button", { name: /文件視窗/ }).click();
+  await expect.poll(() => saves.at(-1)?.document.windows.some((window) => window.type === "document")).toBe(true);
+});

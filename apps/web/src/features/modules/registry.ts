@@ -26,7 +26,8 @@ export const registry: Registry = {
   instagram: { type: "instagram", schemaVersion: 1, label: "復古 IG 個人頁", description: "帳號、追蹤數、簡介與貼文格狀", icon: "camera", capabilities: defaultCapabilities, mobile: { mode: "window", icon: "camera" }, create: (index) => factory("instagram", index), View: IgView, InlineEditor: IgInlineEditor }
 };
 
-export const moduleDefinitions = Object.freeze([registry.document, registry.gallery, registry.links, registry.about, registry.instagram] as const);
+// Object insertion order is the single source of truth for authoring surfaces.
+export const moduleDefinitions = Object.freeze(Object.values(registry));
 export const WINDOW_TYPES = moduleDefinitions.map((module) => module.type) as WindowType[];
 export const COMING_SOON = ["日記", "留言板", "音樂播放器", "角色檔案", "視覺小說"];
 

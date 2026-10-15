@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { THEME_PRESETS, type DesktopWindow, type SiteDocument } from "@retrodesk/shared";
 import { RetroButton } from "../../components/RetroButton";
 import { RetroWindow } from "../../components/RetroWindow";
+import { Icon } from "../../components/Icon";
 import { InspectorContent } from "./InspectorContent";
 import { WindowRenderer } from "../site/WindowRenderer";
 import { moduleDefinitions } from "../modules/registry";
@@ -99,7 +100,7 @@ export function MobileEditor({
             <div className="mobile-module-list">
               {moduleDefinitions.map((module) => (
                 <button key={module.type} type="button" onClick={() => add(module.type)}>
-                  <span className="module-icon" />
+                  <Icon name={module.mobile.icon} size={32} className="module-icon" />
                   <span><strong>{module.label}</strong><small>{module.description}</small></span>
                 </button>
               ))}
