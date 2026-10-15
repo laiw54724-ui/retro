@@ -25,14 +25,6 @@ function validationMessage(document: unknown) {
 
 const sameDocument = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
-function editorDocument(raw: unknown, siteId: string) {
-  const loaded = loadVersionedSiteDocument(raw, { siteId, migrateV1: true });
-  if (!loaded.ok) throw new Error(loaded.diagnostics[0]?.message ?? "文件格式無效");
-  const legacy = loaded.version === 1 ? { ok: true as const, document: normalizeDocument(loaded.document) } : projectV2ToLegacyDocument(loaded.document);
-  if (!legacy.ok) throw new Error(legacy.diagnostics[0]?.message ?? "角色引用無效");
-  return legacy.document;
-}
-
 function loadedLegacyDocument(loaded: ReturnType<typeof loadVersionedSiteDocument>) {
   if (!loaded.ok) throw new Error(loaded.diagnostics[0]?.message ?? "文件格式無效");
   if (loaded.version === 1) return normalizeDocument(loaded.document);
@@ -62,25 +54,31 @@ export function EditorPage() {
   const [versionedDraft, setVersionedDraft] = useState<SiteDocumentV2Input | null>(null);
   const publishChecks = useMemo(() => store.document ? buildPublishChecks(store.document) : [], [store.document]);
 
+  function applyLoadedSite(site: Awaited<ReturnType<typeof api.getSite>>["site"]) {
+    const loadedDraft = loadVersionedSiteDocument(site.draft_document, { siteId: site.id, migrateV1: true });
+    if (!loadedDraft.ok) throw new Error(loadedDraft.diagnostics[0]?.message ?? "草稿格式無效");
+    const loadedPublished = site.published_document ? loadVersionedSiteDocument(site.published_document, { siteId: site.id }) : null;
+    if (loadedPublished && !loadedPublished.ok) throw new Error(loadedPublished.diagnostics[0]?.message ?? "發布版本格式無效");
+    store.setSite(
+      site.id,
+      site.username,
+      loadedLegacyDocument(loadedDraft),
+      site.draft_version,
+      loadedPublished ? loadedLegacyDocument(loadedPublished) : null,
+      site.published_version ?? null
+    );
+    // Set the canonical v2 state in the same transaction as the legacy render
+    // adapter, so an autosave can never observe a stale v2 document after reload.
+    setVersionedDraft(loadedDraft.version === 2 ? loadedDraft.document : null);
+    if (loadedDraft.migrated) store.setSaveStatus("dirty");
+  }
+
   useEffect(() => {
     let alive = true;
     api.getSite(siteId)
       .then(({ site }) => {
         if (!alive) return;
-        const loadedDraft = loadVersionedSiteDocument(site.draft_document, { siteId: site.id, migrateV1: true });
-        if (!loadedDraft.ok) throw new Error(loadedDraft.diagnostics[0]?.message ?? "草稿格式無效");
-        const loadedPublished = site.published_document ? loadVersionedSiteDocument(site.published_document, { siteId: site.id }) : null;
-        if (loadedPublished && !loadedPublished.ok) throw new Error(loadedPublished.diagnostics[0]?.message ?? "發布版本格式無效");
-        store.setSite(
-          site.id,
-          site.username,
-          loadedLegacyDocument(loadedDraft),
-          site.draft_version,
-          loadedPublished ? loadedLegacyDocument(loadedPublished) : null,
-          site.published_version ?? null
-        );
-        setVersionedDraft(loadedDraft.version === 2 ? loadedDraft.document : null);
-        if (loadedDraft.migrated) store.setSaveStatus("dirty");
+        applyLoadedSite(site);
         setLoading(false);
       })
       .catch((error) => {
@@ -94,7 +92,7 @@ export function EditorPage() {
   // module editor until the full v2 module UI cutover lands.
   useEffect(() => {
     if (!versionedDraft || !store.document) return;
-    setVersionedDraft((current) => current ? mergeLegacyDocumentIntoV2(current, store.document!) : current);
+    setVersionedDraft((current) => current ? mergeLegacyDocumentIntoV2(current, store.document!, { siteId: store.siteId! }) : current);
   }, [store.document]);
 
   const refreshAssetInventory = () => api.listAssets(siteId).then(({ assets }) => {
@@ -243,14 +241,7 @@ export function EditorPage() {
     setLoading(true);
     try {
       const { site } = await api.getSite(siteId);
-      store.setSite(
-        site.id,
-        site.username,
-        editorDocument(site.draft_document, site.id),
-        site.draft_version,
-        site.published_document ? editorDocument(site.published_document, site.id) : null,
-        site.published_version ?? null
-      );
+      applyLoadedSite(site);
       setConflict(false);
       setMessage("已重新載入雲端最新草稿。");
     } catch (error) {

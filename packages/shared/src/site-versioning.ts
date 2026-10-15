@@ -164,26 +164,75 @@ export function projectV2ToLegacyDocument(document: SiteDocumentV2Input): { ok: 
 }
 
 /** Applies legacy module edits back onto an existing v2 document without replacing entity IDs. */
-export function mergeLegacyDocumentIntoV2(document: SiteDocumentV2Input, legacy: SiteDocument): SiteDocumentV2Input {
+export function mergeLegacyDocumentIntoV2(document: SiteDocumentV2Input, legacy: SiteDocument, options: { siteId: string }): SiteDocumentV2Input {
   const next = structuredClone(document);
+  const siteId = options.siteId;
+  const usedProfileIds = new Set(next.entities.profiles.map((profile) => profile.id));
+  const profileEdits = new Set<string>();
+  const postEdits = new Set<string>();
+  const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+  const legacyProfileOf = (profile: ProfileEntityV2) => {
+    const { kind: _kind, id: _id, siteId: _siteId, visibility: _visibility, handle: _handle, displayName: _displayName, pronouns: _pronouns, customFields: _customFields, worldTags: _worldTags, themeOverride: _themeOverride, legacyUsernameLabel: _legacyUsernameLabel, legacyFollowersLabel: _legacyFollowersLabel, legacyFollowingLabel: _legacyFollowingLabel, ...legacyProfile } = profile;
+    return { ...legacyProfile, username: profile.handle ?? profile.username, name: profile.displayName ?? profile.name };
+  };
+  // Keep this local helper structurally typed so legacy module edits do not
+  // need to know about v2-only authoring fields.
+  const profileForLegacy = (legacyProfile: Record<string, unknown>, windowId: string): ProfileEntityV2 | null => {
+    const normalized = normalizeProfileHandle(String(legacyProfile.username ?? ""));
+    const existing = next.entities.profiles.find((profile) => profile.handle === normalized || profile.username === String(legacyProfile.username ?? ""));
+    if (existing) return ProfileEntityV2Schema.safeParse(existing).data ?? null;
+    const id = boundedGeneratedId(`profile:${windowId}`, usedProfileIds);
+    const parsed = ProfileEntityV2Schema.safeParse({ kind: "profile", id, siteId, visibility: "published", ...legacyProfile, handle: normalized, displayName: String(legacyProfile.name ?? normalized), pronouns: "", customFields: [], worldTags: [], legacyUsernameLabel: String(legacyProfile.username ?? ""), legacyFollowersLabel: String(legacyProfile.followers ?? ""), legacyFollowingLabel: String(legacyProfile.following ?? "") });
+    if (!parsed.success) return null;
+    next.entities.profiles.push(parsed.data);
+    return parsed.data;
+  };
   for (const legacyWindow of legacy.windows) {
     const versionedWindow = next.windows.find((window) => window.id === legacyWindow.id);
-    if (!versionedWindow) continue;
-    if (legacyWindow.type !== "instagram" || versionedWindow.type !== "instagram") {
+    if (legacyWindow.type !== "instagram") {
       const index = next.windows.findIndex((window) => window.id === legacyWindow.id);
       if (index >= 0) next.windows[index] = legacyWindow as typeof next.windows[number];
+      else next.windows.push(legacyWindow as typeof next.windows[number]);
       continue;
     }
-    const profileIndex = next.entities.profiles.findIndex((profile) => profile.id === versionedWindow.content.profileRef.id && profile.siteId === versionedWindow.content.profileRef.siteId);
-    if (profileIndex < 0) continue;
-    const profile = next.entities.profiles[profileIndex];
+    const profile = versionedWindow?.type === "instagram"
+      ? (() => {
+        const candidate = next.entities.profiles.find((item) => item.id === versionedWindow.content.profileRef.id && item.siteId === versionedWindow.content.profileRef.siteId);
+        return candidate ? ProfileEntityV2Schema.safeParse(candidate).data ?? null : profileForLegacy(legacyWindow.content.profile as unknown as Record<string, unknown>, legacyWindow.id);
+      })()
+      : profileForLegacy(legacyWindow.content.profile as unknown as Record<string, unknown>, legacyWindow.id);
+    if (!profile) continue;
+    const profileIndex = next.entities.profiles.findIndex((candidate) => candidate.id === profile.id);
     const legacyProfile = legacyWindow.content.profile;
-    next.entities.profiles[profileIndex] = { ...profile, ...legacyProfile, handle: profile.handle ?? legacyProfile.username, displayName: profile.displayName ?? legacyProfile.name };
+    const profileChanged = !same(legacyProfile, legacyProfileOf(profile));
+    if (profileChanged && !profileEdits.has(profile.id)) {
+      const patched = ProfileEntityV2Schema.safeParse({ ...profile, ...legacyProfile, handle: profile.handle ?? legacyProfile.username, displayName: String(legacyProfile.name ?? profile.displayName ?? profile.name) });
+      if (patched.success) {
+        next.entities.profiles[profileIndex] = patched.data;
+        profileEdits.add(profile.id);
+      }
+    }
     const posts = legacyWindow.content.images;
-    const existingIds = new Set(next.entities.posts.filter((post) => post.authorProfileId === profile.id).map((post) => post.id));
-    next.entities.posts = next.entities.posts.filter((post) => post.authorProfileId !== profile.id);
-    next.entities.posts.push(...posts.map((post) => ({ kind: "post" as const, siteId: profile.siteId, visibility: "published" as const, authorProfileId: profile.id, ...post, id: existingIds.has(post.id) ? post.id : `post:${profile.id}:${post.id}` })));
+    const existing = next.entities.posts.filter((post) => post.authorProfileId === profile.id);
+    const baseline = existing.map(({ kind: _kind, siteId: _siteId, visibility: _visibility, authorProfileId: _authorProfileId, ...post }) => post);
+    const postsChanged = !same(posts, baseline);
+    if (postsChanged && !postEdits.has(profile.id)) {
+      const existingIds = new Set(existing.map((post) => post.id));
+      next.entities.posts = next.entities.posts.filter((post) => post.authorProfileId !== profile.id);
+      next.entities.posts.push(...posts.map((post) => ({ kind: "post" as const, siteId: profile.siteId, visibility: "published" as const, authorProfileId: profile.id, ...post, id: existingIds.has(post.id) ? post.id : `post:${profile.id}:${post.id}` })));
+      postEdits.add(profile.id);
+    }
+    if (!versionedWindow) {
+      const index = next.windows.findIndex((window) => window.id === legacyWindow.id);
+      const migratedWindow = { ...legacyWindow, content: { skin: legacyWindow.content.skin, profileRef: { siteId: profile.siteId, id: profile.id, kind: "profile" as const } } };
+      if (index >= 0) next.windows[index] = migratedWindow as typeof next.windows[number];
+      else next.windows.push(migratedWindow as typeof next.windows[number]);
+    }
   }
+  // Window deletion is authoritative for the window list, while profiles and
+  // posts remain site-level entities so deleting one view cannot destroy a
+  // profile still shared by another view.
+  next.windows = next.windows.filter((window) => legacy.windows.some((candidate) => candidate.id === window.id));
   return next;
 }
 

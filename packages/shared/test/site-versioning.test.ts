@@ -324,7 +324,63 @@ describe("versioned site document contract", () => {
     const legacyEdited = structuredClone(legacy.ok ? legacy.document : v1);
     const instagram = legacyEdited.windows.find((window) => window.type === "instagram");
     if (instagram?.type === "instagram") instagram.content.profile.name = "Edited together";
-    const merged = mergeLegacyDocumentIntoV2(loaded.document, legacyEdited);
+    const merged = mergeLegacyDocumentIntoV2(loaded.document, legacyEdited, { siteId: "site-a" });
     expect(merged.entities.profiles.find((profile) => profile.id === "profile:ig-1")?.name).toBe("Edited together");
+  });
+
+  it("reconciles legacy window CRUD and shared Instagram edits by stable IDs", () => {
+    const migrated = migrateSiteDocumentV2(fixture(), { siteId: "site-a" });
+    expect(migrated.ok).toBe(true);
+    if (!migrated.ok) return;
+    const rendered = projectV2ToLegacyDocument(migrated.document);
+    expect(rendered.ok).toBe(true);
+    if (!rendered.ok) return;
+    const edited = structuredClone(rendered.document);
+    edited.windows = edited.windows.filter((window) => window.id !== "gallery-1");
+    const documentWindow = edited.windows.find((window) => window.id === "doc-1");
+    if (!documentWindow) throw new Error("fixture missing document window");
+    edited.windows.push({ ...documentWindow, id: "doc-copy", title: "Doc copy" });
+    const instagram = edited.windows.find((window) => window.id === "ig-1");
+    if (!instagram || instagram.type !== "instagram") throw new Error("fixture missing Instagram window");
+    edited.windows.push({ ...instagram, id: "ig-copy", title: "Instagram copy", layout: { ...instagram.layout, desktop: { ...instagram.layout.desktop, z: 8 }, mobile: { order: 8 } } });
+    // The original window is edited while the duplicated legacy projection is
+    // stale. The first stable window ID wins, so a later stale copy cannot
+    // roll the shared profile back.
+    instagram.content.profile.name = "Edited shared OC";
+    const merged = mergeLegacyDocumentIntoV2(migrated.document, edited, { siteId: "site-a" });
+    expect(merged.windows.map((window) => window.id)).toEqual(expect.arrayContaining(["doc-1", "doc-copy", "ig-1", "ig-copy"]));
+    expect(merged.windows.some((window) => window.id === "gallery-1")).toBe(false);
+    const igRefs = merged.windows.filter((window) => window.type === "instagram").map((window) => window.content.profileRef.id);
+    expect(new Set(igRefs).size).toBe(1);
+    expect(merged.entities.profiles.find((profile) => profile.id === igRefs[0])?.displayName).toBe("Edited shared OC");
+    expect(merged.entities.profiles.find((profile) => profile.id === igRefs[0])?.name).toBe("Edited shared OC");
+    expect(parseSiteDocument(merged)).toMatchObject({ ok: true, version: 2 });
+    const rerendered = projectV2ToLegacyDocument(merged);
+    expect(rerendered.ok).toBe(true);
+    if (rerendered.ok) {
+      expect(rerendered.document.windows.filter((window) => window.type === "instagram").map((window) => window.content.profile.name)).toEqual(["Edited shared OC", "Edited shared OC"]);
+    }
+    const deletedCopy = mergeLegacyDocumentIntoV2(migrated.document, {
+      ...edited,
+      windows: edited.windows.filter((window) => window.id !== "ig-copy"),
+    }, { siteId: "site-a" });
+    expect(deletedCopy.windows.map((window) => window.id)).not.toContain("ig-copy");
+    expect(deletedCopy.windows.map((window) => window.id)).toContain("ig-1");
+    expect(deletedCopy.entities.profiles.map((profile) => profile.id)).toContain("profile:ig-1");
+  });
+
+  it("uses the explicit site scope when adding the first Instagram window", () => {
+    const migrated = migrateSiteDocumentV2(fixture(), { siteId: "site-a" });
+    expect(migrated.ok).toBe(true);
+    if (!migrated.ok) return;
+    const rendered = projectV2ToLegacyDocument(migrated.document);
+    expect(rendered.ok).toBe(true);
+    if (!rendered.ok) return;
+    const instagram = rendered.document.windows.find((window) => window.type === "instagram");
+    if (!instagram) throw new Error("fixture missing Instagram window");
+    const empty = { ...migrated.document, windows: [], entities: { profiles: [], posts: [] } };
+    const merged = mergeLegacyDocumentIntoV2(empty, { ...rendered.document, windows: [instagram] }, { siteId: "site-a" });
+    expect(merged.entities.profiles[0]?.siteId).toBe("site-a");
+    expect(parseSiteDocument(merged)).toMatchObject({ ok: true, version: 2 });
   });
 });
