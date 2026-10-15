@@ -17,15 +17,20 @@
 
 ## P0 Windows icon and Win98 OC visual implementation
 
-驗證日期：2026-10-16（Asia/Singapore）。本節記錄 P0 實作與本輪可重現的本地驗證證據；未部署、未 push，且保留既有未追蹤使用者檔案。
+驗證日期：2026-10-16（Asia/Singapore）。本節記錄 P0 實作、本地驗證與 staging 部署證據；既有未追蹤使用者檔案全程保留且未進入部署輸出。
 
 - Windows icon source checkout：`/private/tmp/retro-win95-winxp-icons`，HEAD `728a866ad59a54fd4082dbe000e1e62e50bd90e9`（upstream full commit）。
-- 實作 commits：Task1 `c0673bf`、`974e77e`、`06c280d`、`a5391d5`、`fa2bb84`；Task2 `5fffbd7`；Task3 `31780ce`、`df54db2`；Task4 `c15448a`；回歸斷言修正 `fc0c71a`。
+- 實作 commits：Task1 `c0673bf`、`974e77e`、`06c280d`、`a5391d5`、`fa2bb84`；Task2 `5fffbd7`；Task3 `31780ce`、`df54db2`；Task4 `c15448a`；回歸斷言修正 `fc0c71a`；runtime rights notice 修正 `3e0531e`。
 - `pnpm icons:audit -- --source=/private/tmp/retro-win95-winxp-icons`：pass；`Imported 1193`，`unsupported 7`。
 - legacy/new path：pass。E2E 的 sourced Windows icons desktop/mobile 與 legacy PNG preservation case passed；audit 亦驗證新匯入 manifest。
 - typecheck：pass（shared、api、web 均完成）。
 - unit：pass，6 test files、24 tests（shared 1 file/14 tests；api 5 files/10 tests）。
 - build：pass（shared、api dry-run、web Vite build 均完成；Wrangler 僅輸出既有 log-file EPERM 訊息後仍完成 dry-run，web bundle 成功產出）。
-- full E2E：46 tests、46 passed（17.4s）。responsive 與 scroll 已包含在 full E2E；responsive viewport cases、Instagram wheel/keyboard scrolling、Win98 OC circular media cases，以及 Windows icon picker case 均 passed。
+- full E2E：46 tests、46 passed（最終部署前重跑 17.3s）。responsive 與 scroll 已包含在 full E2E；responsive viewport cases、Instagram wheel/keyboard scrolling、Win98 OC circular media cases，以及 Windows icon picker case 均 passed。
 - round regression：typecheck、unit、full E2E、build、icon audit 均 pass；P0 Windows icon and Win98 OC visual implementation regression 完成。
 - `git diff --check`：pass；verification 文件占位掃描無匹配。
+- GitHub Actions staging run `38789562062` 的 install／verify 已通過；API deploy 因 staging environment 缺少 `CLOUDFLARE_API_TOKEN` 而停止。API 本輪無程式變更，故改以既有本機 Wrangler OAuth 僅部署 web Pages，未把 token 或公開 runtime values 寫入 repository。
+- Cloudflare Pages production deployment for staging project：`4e1258f5-eaf4-43de-b952-70f34d865607`，source `3e0531e`。
+- staging canonical：https://retrodesk-staging.pages.dev；immutable deployment：https://4e1258f5.retrodesk-staging.pages.dev。
+- HTTP smoke：canonical／immutable 首頁皆 `200`；`/windows-icons/brown.ico` 皆 `200` 且 `content-type: image/vnd.microsoft.icon`。
+- GitHub Issue evidence：[#26 comment](https://github.com/laiw54724-ui/retro/issues/26#issuecomment-6200008656)、[#27 comment](https://github.com/laiw54724-ui/retro/issues/27#issuecomment-6200008335)；兩張 Issue 皆維持 OPEN。
