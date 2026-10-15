@@ -6,7 +6,7 @@
 - 每張單具備原始碼調查、設計／範圍、工作拆分、開源選型、依賴／風險與未勾選驗收清單。
 - 11 張 Issue 已寫入並逐張讀回核對，維持 OPEN。
 - 整體設計已同步至 [#18 的路線說明](https://github.com/laiw54724-ui/retro/issues/18#issuecomment-6198058442)。
-- 完成 Markdown 內部連結存在性、規劃數量與 TODO／TBD 占位掃描；無損壞的本地連結或這類占位。
+- 完成 Markdown 內部連結存在性、規劃數量與占位字串掃描；無損壞的本地連結或未完成標記。
 - 人工交叉檢查首發依賴：#18A → #19 → #20 → #21A；#18B 為共同發布門檻；#28A 接實體 ID 與公開投影。沒有要求先完成 #21B 才能發布虛構互動。
 - 開源庫只做來源／license／契約調查，沒有安裝、執行套件相容性或效能測試。
 - 使用者後續指定 trapd00r/win95-winxp_icons（固定 commit 728a866）為 Windows 圖示主要來源、WinClassic resources 為補充來源；已同步 #26、#27 與整體路線。來源 repo 未宣告 license，故記為非 Retro MIT 素材，而不是來源不明。
@@ -14,3 +14,18 @@
 - 未部署、未修改使用者站點，原先未追蹤的 zip／設計資料夾保留。
 
 詳細逐步程式實作計畫、功能測試與 staging 驗收屬下一階段，不以本文件取代。
+
+## P0 Windows icon and Win98 OC visual implementation
+
+驗證日期：2026-10-16（Asia/Singapore）。本節記錄 P0 實作與本輪可重現的本地驗證證據；未部署、未 push，且保留既有未追蹤使用者檔案。
+
+- Windows icon source checkout：`/private/tmp/retro-win95-winxp-icons`，HEAD `728a866ad59a54fd4082dbe000e1e62e50bd90e9`（upstream full commit）。
+- 實作 commits：Task1 `c0673bf`、`974e77e`、`06c280d`、`a5391d5`、`fa2bb84`；Task2 `5fffbd7`；Task3 `31780ce`、`df54db2`；Task4 `c15448a`。
+- `pnpm icons:audit -- --source=/private/tmp/retro-win95-winxp-icons`：pass；`Imported 1193`，`unsupported 7`。
+- legacy/new path：pass。E2E 的 sourced Windows icons desktop/mobile 與 legacy PNG preservation case passed；audit 亦驗證新匯入 manifest。
+- typecheck：pass（shared、api、web 均完成）。
+- unit：pass，6 test files、24 tests（shared 1 file/14 tests；api 5 files/10 tests）。
+- build：pass（shared、api dry-run、web Vite build 均完成；Wrangler 僅輸出既有 log-file EPERM 訊息後仍完成 dry-run，web bundle 成功產出）。
+- full E2E：46 tests 中 45 passed、1 failed。responsive 與 scroll 已包含在 full E2E；responsive viewport cases、Instagram wheel/keyboard scrolling、Win98 OC circular media cases 均 passed。唯一失敗為 `tests/e2e/editor-layout.spec.ts:107`，測試期待 `Win98 精選`，但目前 `IconPicker.tsx` 渲染 `Windows 精選`（搜尋欄及結果 aria-label 同樣使用 Windows 文案），因此不是環境問題，不能以 skip 掩蓋。
+- round regression：typecheck、unit、build、icon audit pass；因上述 1 個真實 E2E 文案 mismatch，完整 regression 尚未 pass，狀態為 BLOCKED，需修正測試與實作文案契約後重跑 full E2E。
+- `git diff --check`：pass；verification 文件占位掃描無匹配。
