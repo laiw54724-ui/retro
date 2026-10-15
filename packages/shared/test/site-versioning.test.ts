@@ -55,4 +55,37 @@ describe("versioned site document contract", () => {
     expect(resolveEntityRef(result.document, { ...ref, id: "profile:nope" }, "site-a")).toMatchObject({ ok: false, reason: "missing" });
     expect(collectEntityReferrers(result.document, ref, "site-a")).toEqual([{ kind: "window", windowId: "ig-1" }, { kind: "post", postId: "post:ig-1:p1", field: "authorProfileId" }]);
   });
+
+  it("keeps same legacy post ids unique across Instagram windows and is idempotent", () => {
+    const input = fixture();
+    const ig = input.windows.find((w) => w.id === "ig-1")!;
+    input.windows.push({ ...ig, id: "ig-2", title: "Instagram 2", layout: { ...ig.layout, desktop: { ...ig.layout.desktop, z: 6 }, mobile: { order: 5 } } });
+    const first = migrateSiteDocumentV2(input, { siteId: "site-a" });
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    expect(first.document.entities.posts.map((p) => p.id)).toEqual(["post:ig-1:p1", "post:ig-2:p1"]);
+    expect(migrateSiteDocumentV2(first.document, { siteId: "site-a" })).toEqual(first);
+  });
+
+  it("rejects strict v2 nested extras and semantic duplicates/missing refs", () => {
+    const migrated = migrateSiteDocumentV2(fixture(), { siteId: "site-a" });
+    expect(migrated.ok).toBe(true);
+    if (!migrated.ok) return;
+    const strictCases = [
+      { ...migrated.document, theme: { ...migrated.document.theme, extra: true } },
+      { ...migrated.document, windows: [{ ...migrated.document.windows[0], layout: { ...migrated.document.windows[0].layout, desktop: { ...migrated.document.windows[0].layout.desktop, extra: 1 } } }] },
+      { ...migrated.document, entities: { ...migrated.document.entities, profiles: [{ ...migrated.document.entities.profiles[0], highlights: [{ ...migrated.document.entities.profiles[0].highlights[0], extra: true }] }] } },
+    ];
+    for (const value of strictCases) expect(parseSiteDocument(value)).toMatchObject({ ok: false, code: "invalid" });
+    expect(parseSiteDocument({ ...migrated.document, windows: [...migrated.document.windows, migrated.document.windows[0]] })).toMatchObject({ ok: false, code: "invalid" });
+    expect(parseSiteDocument({ ...migrated.document, entities: { ...migrated.document.entities, posts: [{ ...migrated.document.entities.posts[0], authorProfileId: "missing" }] } })).toMatchObject({ ok: false, code: "invalid" });
+  });
+
+  it("reports duplicate legacy windows and accepts an empty v2 site", () => {
+    const input = fixture();
+    input.windows.push(input.windows[0]);
+    expect(migrateSiteDocumentV2(input, { siteId: "site-a" })).toMatchObject({ ok: false, code: "invalid" });
+    const empty = { ...fixture(), windows: [], entities: { profiles: [], posts: [] }, schemaVersion: 2 };
+    expect(parseSiteDocument(empty)).toMatchObject({ ok: true, version: 2 });
+  });
 });

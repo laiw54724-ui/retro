@@ -35,9 +35,15 @@ const StrictSocialLinkSchema = z.object(SocialLinkSchema.shape).strict();
 const StrictCommentSchema = z.object(IgCommentSchema.shape).strict();
 const StrictExtraImageSchema = z.object(IgExtraImageSchema.shape).strict();
 const StrictHighlightSchema = z.object(IgHighlightSchema.shape).strict();
+const StrictImageCropSchema = z.object(ImageCropSchema.shape).strict();
+const StrictDesktopLayoutSchema = z.object(WindowLayoutSchema.shape.desktop.shape).strict();
+const StrictMobileLayoutSchema = z.object(WindowLayoutSchema.shape.mobile.shape).strict();
+const StrictWindowLayoutSchema = z.object({ desktop: StrictDesktopLayoutSchema, mobile: StrictMobileLayoutSchema }).strict();
+const StrictAppearanceSchema = z.object(WindowAppearanceSchema.shape).strict();
+const StrictThemeSchema = z.object(ThemeSchema.shape).strict();
 const { highlights: _legacyHighlights, ...ProfileFields } = InstagramProfileSchema.shape;
 const { id: _legacyPostId, comments: _legacyComments, extra: _legacyExtra, ...PostFields } = IgPostSchema.shape;
-const StrictProfileFields = { ...ProfileFields, highlights: z.array(StrictHighlightSchema).max(20).default([]) };
+const StrictProfileFields = { ...ProfileFields, avatarCrop: StrictImageCropSchema.optional(), highlights: z.array(StrictHighlightSchema).max(20).default([]) };
 const StrictPostFields = { ...PostFields, comments: z.array(StrictCommentSchema).max(200).default([]), extra: z.array(StrictExtraImageSchema).max(9).default([]) };
 export const ProfileEntityV2Schema = z.object({
   kind: z.literal("profile"), id: BoundedId, siteId: BoundedId, visibility: VisibilitySchema, ...StrictProfileFields
@@ -49,15 +55,15 @@ export type ProfileEntityV2 = z.infer<typeof ProfileEntityV2Schema>;
 export type PostEntityV2 = z.infer<typeof PostEntityV2Schema>;
 
 const BaseV2Window = z.object({
-  id: BoundedId, title: z.string().min(1).max(160), icon: z.string().min(1).max(500), layout: WindowLayoutSchema,
-  defaultOpen: z.boolean(), appearance: WindowAppearanceSchema.optional()
+  id: BoundedId, title: z.string().min(1).max(160), icon: z.string().min(1).max(500), layout: StrictWindowLayoutSchema,
+  defaultOpen: z.boolean(), appearance: StrictAppearanceSchema.optional()
 }).strict();
 const NonInstagramWindowV2Schema = z.discriminatedUnion("type", [
   BaseV2Window.extend({ type: z.literal("document"), content: z.object({ blocks: z.array(StrictDocumentBlockSchema).max(100) }).strict() }),
   BaseV2Window.extend({ type: z.literal("gallery"), content: z.object({ columns: z.number().int().min(1).max(5), images: z.array(StrictGalleryImageSchema).max(200) }).strict() }),
   BaseV2Window.extend({ type: z.literal("links"), content: z.object({ links: z.array(StrictLinkItemSchema).max(100) }).strict() }),
   BaseV2Window.extend({ type: z.literal("about"), content: z.object({
-    avatar: z.union([z.string().refine((value) => { try { return ["http:", "https:"].includes(new URL(value).protocol); } catch { return false; } }), z.null()]), avatarCrop: ImageCropSchema.optional(), nickname: z.string().max(160), bio: z.string().max(5000),
+    avatar: z.union([z.string().max(2048).refine((value) => { try { return ["http:", "https:"].includes(new URL(value).protocol); } catch { return false; } }), z.null()]), avatarCrop: StrictImageCropSchema.optional(), nickname: z.string().max(160), bio: z.string().max(5000),
     banner: z.string().max(500).default(""), quote: z.string().max(500).default(""), detailsTitle: z.string().max(100).default("File Details"),
     avatarUrl: z.string().max(2048).default(""), fields: z.array(StrictAboutFieldSchema).max(50), socials: z.array(StrictSocialLinkSchema).max(50)
   }).strict() })
@@ -69,7 +75,7 @@ export const DesktopWindowV2Schema = z.union([
 export type DesktopWindowV2 = z.infer<typeof DesktopWindowV2Schema>;
 
 export const SiteDocumentV2Schema = z.object({
-  schemaVersion: z.literal(2), siteName: z.string().min(1).max(120), theme: ThemeSchema,
+  schemaVersion: z.literal(2), siteName: z.string().min(1).max(120), theme: StrictThemeSchema,
   windows: z.array(DesktopWindowV2Schema).max(100), mobileColumns: z.number().int().min(3).max(4).default(4),
   entities: z.object({ profiles: z.array(ProfileEntityV2Schema).max(100), posts: z.array(PostEntityV2Schema).max(500) }).strict()
 }).strict();
@@ -95,27 +101,23 @@ function semanticDiagnostics(document: SiteDocumentV2): Diagnostic[] {
   const out: Diagnostic[] = [], windowIds = new Set<string>(), profileIds = new Set<string>(), postIds = new Set<string>();
   const scopeSites = new Set<string>([...document.entities.profiles, ...document.entities.posts].map((e) => e.siteId));
   for (const window of document.windows) if (window.type === "instagram") scopeSites.add(window.content.profileRef.siteId);
-  if (scopeSites.size > 1) out.push({ path: ["entities"], message: "Mixed site scope", code: "cross_site" });
+  const mixedSiteScope = scopeSites.size > 1;
+  if (mixedSiteScope) out.push({ path: ["entities"], message: "Mixed site scope", code: "cross_site" });
   for (const [i, window] of document.windows.entries()) {
     if (windowIds.has(window.id)) out.push({ path: ["windows", i, "id"], message: "Duplicate window id", code: "duplicate_id" });
     windowIds.add(window.id);
     if (window.type === "instagram") {
       const ref = window.content.profileRef;
-      if (ref.siteId !== siteScope(document) || document.entities.profiles.some((p) => p.id === ref.id && p.siteId !== ref.siteId)) out.push({ path: ["windows", i, "content", "profileRef", "siteId"], message: "Cross-site reference", code: "cross_site" });
       if (!document.entities.profiles.some((p) => p.id === ref.id && p.siteId === ref.siteId)) out.push({ path: ["windows", i, "content", "profileRef"], message: "Missing profile", code: "missing_ref" });
     }
   }
   for (const [i, profile] of document.entities.profiles.entries()) { if (profileIds.has(profile.id)) out.push({ path: ["entities", "profiles", i, "id"], message: "Duplicate entity id", code: "duplicate_id" }); profileIds.add(profile.id); }
   for (const [i, post] of document.entities.posts.entries()) {
-    if (postIds.has(post.id)) out.push({ path: ["posts", i, "id"], message: "Duplicate entity id", code: "duplicate_id" }); postIds.add(post.id);
-    if (document.entities.profiles.some((p) => p.id === post.authorProfileId && p.siteId !== post.siteId)) out.push({ path: ["entities", "posts", i, "authorProfileId"], message: "Cross-site reference", code: "cross_site" });
-    else if (!document.entities.profiles.some((p) => p.id === post.authorProfileId && p.siteId === post.siteId)) out.push({ path: ["entities", "posts", i, "authorProfileId"], message: "Missing author profile", code: "missing_ref" });
-    if (post.siteId !== siteScope(document)) out.push({ path: ["entities", "posts", i, "siteId"], message: "Cross-site entity", code: "cross_site" });
+    if (postIds.has(post.id)) out.push({ path: ["entities", "posts", i, "id"], message: "Duplicate entity id", code: "duplicate_id" }); postIds.add(post.id);
+    if (!document.entities.profiles.some((p) => p.id === post.authorProfileId && p.siteId === post.siteId)) out.push({ path: ["entities", "posts", i, "authorProfileId"], message: mixedSiteScope ? "Cross-site author profile" : "Missing author profile", code: mixedSiteScope ? "cross_site" : "missing_ref" });
   }
-  for (const [i, profile] of document.entities.profiles.entries()) if (profile.siteId !== siteScope(document)) out.push({ path: ["entities", "profiles", i, "siteId"], message: "Cross-site entity", code: "cross_site" });
   return out;
 }
-function siteScope(document: SiteDocumentV2): string { const first = document.entities.profiles[0]?.siteId ?? document.entities.posts[0]?.siteId; return first ?? (document.windows.find((w) => w.type === "instagram")?.content.profileRef.siteId ?? ""); }
 
 export function parseSiteDocument(raw: unknown): ParseSiteDocumentResult {
   if (!isRecord(raw) || !Number.isInteger(raw.schemaVersion)) return invalid(raw, [{ path: ["schemaVersion"], message: "schemaVersion must be an integer", code: "invalid_type" }]);
