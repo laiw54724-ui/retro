@@ -17,6 +17,9 @@ const STAGING_DIR = `${OUT_DIR}.__staging__`;
 const BACKUP_DIR = `${OUT_DIR}.__backup__`;
 const MANIFEST_TEMP = `${MANIFEST}.__tmp__`;
 const PROVENANCE_TEMP = `${PROVENANCE}.__tmp__`;
+const MANIFEST_BACKUP = `${MANIFEST}.__backup__`;
+const PROVENANCE_BACKUP = `${PROVENANCE}.__backup__`;
+const JOURNAL = path.join(path.dirname(OUT_DIR), 'windows-icons.__transaction__.json');
 const SUPPORTED = new Set(['.ico', '.png']);
 const UNSUPPORTED = new Set(['.ani', '.icl']);
 
@@ -49,6 +52,36 @@ async function walk(directory, base = directory) {
 async function hashFile(file) {
   const data = await fs.readFile(file);
   return { sha256: sha256(data), bytes: data.length };
+}
+async function exists(file) {
+  try { await fs.access(file); return true; } catch { return false; }
+}
+async function remove(file) { await fs.rm(file, { recursive: true, force: true }); }
+async function recoverTransaction() {
+  if (!await exists(JOURNAL)) return;
+  let journal;
+  try { journal = JSON.parse(await fs.readFile(JOURNAL, 'utf8')); }
+  catch (error) { throw new Error(`cannot read transaction journal ${JOURNAL}: ${error.message}`); }
+  const recoveryErrors = [];
+  for (const item of [...journal.targets].reverse()) {
+    try {
+      const targetExists = await exists(item.target);
+      const backupExists = await exists(item.backup);
+      if (item.hadOriginal && backupExists) {
+        if (targetExists) await remove(item.target);
+        await fs.rename(item.backup, item.target);
+      } else if (!item.hadOriginal && targetExists) {
+        await remove(item.target);
+      }
+    } catch (error) { recoveryErrors.push(`${item.target}: ${error.message}`); }
+  }
+  for (const file of [STAGING_DIR, BACKUP_DIR, MANIFEST_TEMP, PROVENANCE_TEMP, MANIFEST_BACKUP, PROVENANCE_BACKUP, JOURNAL]) {
+    try { await remove(file); } catch (error) { recoveryErrors.push(`${file}: ${error.message}`); }
+  }
+  if (recoveryErrors.length) throw new Error(`transaction recovery failed; recovery paths: ${recoveryErrors.join('; ')}`);
+}
+async function cleanStaleTransactionArtifacts() {
+  for (const file of [STAGING_DIR, BACKUP_DIR, MANIFEST_TEMP, PROVENANCE_TEMP, MANIFEST_BACKUP, PROVENANCE_BACKUP]) await remove(file);
 }
 function tsManifest(records, curated) {
   const lines = [
@@ -121,6 +154,8 @@ async function build(source) {
   return { data, manifest: tsManifest(data.records, data.curated), provenance: json(provenance) };
 }
 async function run() {
+  await recoverTransaction();
+  await cleanStaleTransactionArtifacts();
   const source = arg('source');
   const check = process.argv.includes('--check');
   if (!source || !path.isAbsolute(source)) throw new Error('--source must be an absolute path; run `pnpm icons:audit -- --source=/absolute/path/to/win95-winxp_icons`');
@@ -147,8 +182,6 @@ async function run() {
     console.log(`icons: audit ok (${built.data.records.length} imported, ${built.data.unsupported.length} unsupported)`);
     return;
   }
-  await fs.rm(STAGING_DIR, { recursive: true, force: true });
-  await fs.rm(BACKUP_DIR, { recursive: true, force: true });
   await fs.mkdir(STAGING_DIR, { recursive: true });
   try {
     for (const record of built.data.records) await fs.copyFile(path.join(source, record.upstreamPath), path.join(STAGING_DIR, path.basename(record.path)));
@@ -157,32 +190,27 @@ async function run() {
       const input = await hashFile(path.join(source, record.upstreamPath));
       if (staged.sha256 !== input.sha256 || staged.bytes !== input.bytes) throw new Error(`staging hash mismatch: ${record.path}`);
     }
-    let hadOriginal = true;
-    try { await fs.access(OUT_DIR); } catch { hadOriginal = false; }
-    if (hadOriginal) await fs.rename(OUT_DIR, BACKUP_DIR);
-    try {
-      await fs.rename(STAGING_DIR, OUT_DIR);
-    } catch (error) {
-      if (hadOriginal) await fs.rename(BACKUP_DIR, OUT_DIR);
-      throw error;
+    await fs.writeFile(MANIFEST_TEMP, built.manifest, { flag: 'wx' });
+    await fs.writeFile(PROVENANCE_TEMP, built.provenance, { flag: 'wx' });
+    const targets = [
+      { target: OUT_DIR, staging: STAGING_DIR, backup: BACKUP_DIR },
+      { target: MANIFEST, staging: MANIFEST_TEMP, backup: MANIFEST_BACKUP },
+      { target: PROVENANCE, staging: PROVENANCE_TEMP, backup: PROVENANCE_BACKUP },
+    ];
+    const journal = { schemaVersion: 1, targets: [] };
+    for (const item of targets) journal.targets.push({ ...item, hadOriginal: await exists(item.target) });
+    await fs.writeFile(JOURNAL, JSON.stringify(journal, null, 2) + '\n', { flag: 'wx' });
+    for (const item of journal.targets) {
+      if (await exists(item.backup)) await remove(item.backup);
+      if (item.hadOriginal) await fs.rename(item.target, item.backup);
     }
-    if (hadOriginal) await fs.rm(BACKUP_DIR, { recursive: true, force: true });
+    for (const item of journal.targets) await fs.rename(item.staging, item.target);
+    await remove(JOURNAL);
+    for (const item of journal.targets) await remove(item.backup);
   } catch (error) {
-    await fs.rm(STAGING_DIR, { recursive: true, force: true });
+    try { await recoverTransaction(); await cleanStaleTransactionArtifacts(); }
+    catch (recoveryError) { throw new Error(`${error.message}; ${recoveryError.message}`); }
     throw error;
-  }
-  await fs.mkdir(path.dirname(MANIFEST), { recursive: true });
-  await fs.mkdir(path.dirname(PROVENANCE), { recursive: true });
-  await fs.rm(MANIFEST_TEMP, { force: true });
-  await fs.rm(PROVENANCE_TEMP, { force: true });
-  try {
-    await fs.writeFile(MANIFEST_TEMP, built.manifest);
-    await fs.writeFile(PROVENANCE_TEMP, built.provenance);
-    await fs.rename(MANIFEST_TEMP, MANIFEST);
-    await fs.rename(PROVENANCE_TEMP, PROVENANCE);
-  } finally {
-    await fs.rm(MANIFEST_TEMP, { force: true });
-    await fs.rm(PROVENANCE_TEMP, { force: true });
   }
   console.log(`icons: imported ${built.data.records.length}; unsupported ${built.data.unsupported.length}`);
 }
