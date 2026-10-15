@@ -20,7 +20,7 @@ Both skins use the same data and session state. Win98 changes only presentation:
 
 Only PNG assets from the user-supplied `windows98-icons/png` directory are shipped. `.ico`, `.ani`, `.icl`, and metadata files are excluded. A generated TypeScript manifest maps a stable icon key to its public path and searchable filename tokens.
 
-The picker initially renders about 120 curated, broadly useful icons. A search field queries all 1,758 PNG records locally and renders at most the first 100 matches; image files load only for visible results. Existing built-in SVG icons and user-uploaded icons remain available. Missing static assets fall back to the existing document icon rather than displaying a broken image.
+The picker initially renders about 120 curated, broadly useful icons. A search field queries all 1,757 PNG records locally and renders at most the first 100 matches; image files load only for visible results. Existing built-in SVG icons and user-uploaded icons remain available. Missing static assets fall back to the existing document icon rather than displaying a broken image.
 
 The source folder has no bundled provenance document. The assets are treated as user-provided project inputs; no ownership claim is added by the application.
 
@@ -42,4 +42,3 @@ The font continues to use `font-display: swap`, is preloaded from the same origi
 ## Verification
 
 Unit tests cover legacy normalization, new defaults, and appearance schema validation. E2E tests cover per-window gradient and solid title bars, inheritance reset, Instagram skin switching and scroll behavior, curated/search icon selection, missing-icon fallback, and computed Cubic 11 typography on desktop and mobile. Final verification runs typecheck, lint, unit tests, the complete Playwright suite, production build, a bounded phone/tablet/desktop visual pass, and staging smoke tests.
-

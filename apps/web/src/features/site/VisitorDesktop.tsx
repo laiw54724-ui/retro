@@ -217,6 +217,7 @@ export function VisitorDesktop({ document }: { document: SiteDocument }) {
             <RetroWindow
               title={window.title}
               theme={document.theme}
+              appearance={window.appearance}
               active={state.z === topZ}
               maximized={state.maximized}
               interactiveControls

@@ -233,6 +233,7 @@ export function DesktopCanvas({ siteId, upload }: Props) {
               title={win.title}
               icon={win.icon}
               theme={document.theme}
+              appearance={win.appearance}
               active={isSel || layout.z === topZ}
               interactiveControls
               maximized={maximized}

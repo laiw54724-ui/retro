@@ -160,12 +160,19 @@ const InstagramProfileSchema = z.object({
   highlights: z.array(IgHighlightSchema).max(20).default([])
 });
 
+export const WindowAppearanceSchema = z.object({
+  titleFrom: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  titleTo: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  titleGradient: z.boolean().default(true)
+});
+
 const BaseWindowSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1).max(160),
   icon: z.string().min(1).max(500),
   layout: WindowLayoutSchema,
-  defaultOpen: z.boolean()
+  defaultOpen: z.boolean(),
+  appearance: WindowAppearanceSchema.optional()
 });
 
 export const DesktopWindowSchema = z.discriminatedUnion("type", [
@@ -198,7 +205,7 @@ export const DesktopWindowSchema = z.discriminatedUnion("type", [
   }),
   BaseWindowSchema.extend({
     type: z.literal("instagram"),
-    content: z.object({ profile: InstagramProfileSchema, images: z.array(IgPostSchema).max(60) })
+    content: z.object({ skin: z.enum(["win98", "modern"]).default("win98"), profile: InstagramProfileSchema, images: z.array(IgPostSchema).max(60) })
   })
 ]);
 
@@ -331,7 +338,7 @@ export function makeWindow(type: DesktopWindow["type"], index = 0): DesktopWindo
     case "instagram":
       return {
         id: id(), type, title: "Instagram.exe", icon: "camera", layout: { ...layout, desktop: { ...layout.desktop, w: 420, h: 560 } }, defaultOpen: true,
-        content: { profile: { username: "retro", avatar: null, name: "Retro User", alt: "", bio: "", followers: "0", following: "0", followedBy: "", avatarUrl: "", linkLabel: "", linkUrl: "", dmUrl: "", verified: false, showCounts: true, showHighlights: true, showFollowedBy: true, showLikes: true, allowLikes: true, allowComments: true, highlights: [] }, images: [] }
+        content: { skin: "win98", profile: { username: "retro", avatar: null, name: "Retro User", alt: "", bio: "", followers: "0", following: "0", followedBy: "", avatarUrl: "", linkLabel: "", linkUrl: "", dmUrl: "", verified: false, showCounts: true, showHighlights: true, showFollowedBy: true, showLikes: true, allowLikes: true, allowComments: true, highlights: [] }, images: [] }
       };
     default:
       return {

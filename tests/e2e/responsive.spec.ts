@@ -39,6 +39,7 @@ for (const width of [320, 375, 390, 430]) {
     await expect(page.locator(".right-panel2")).toBeHidden();
     await expect(page.locator(".editor-stage2 .m-screen")).toBeVisible();
     await expect(page.getByRole("toolbar", { name: "手機編輯工具" })).toBeVisible();
+    await expect(page.locator(".editor-topbar .brand")).toHaveCSS("font-family", /Cubic 11/);
     await expectNoHorizontalOverflow(page);
   });
 }

@@ -13,7 +13,7 @@ test("Google sign-in button starts the Supabase OAuth redirect", async ({ page }
 
   const url = new URL(authorizeUrl);
   expect(url.searchParams.get("provider")).toBe("google");
-  expect(url.searchParams.get("redirect_to")).toBe("http://127.0.0.1:5173/auth");
+  expect(url.searchParams.get("redirect_to")).toBe(`http://127.0.0.1:${process.env.PLAYWRIGHT_PORT ?? 5173}/auth`);
 });
 
 test("OAuth errors returned to /auth are shown to the user", async ({ page }) => {

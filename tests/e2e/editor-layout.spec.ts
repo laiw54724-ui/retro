@@ -82,3 +82,35 @@ test("visitor preview opens over the editor and closes", async ({ page }) => {
   await overlay.getByRole("button", { name: "‹ 回到編輯器" }).click();
   await expect(overlay).toBeHidden();
 });
+
+test("one window can override, flatten and reset its title bar", async ({ page }) => {
+  const saves = await openEditor(page);
+  const dialog = page.getByRole("dialog", { name: "About.exe" });
+  const titlebar = dialog.locator(".retro-titlebar");
+
+  await page.getByRole("tab", { name: "版面" }).click();
+  await page.getByLabel("自訂標題列").check();
+  await page.getByLabel("標題起始色").fill("#112233");
+  await page.getByLabel("標題結束色").fill("#445566");
+  await expect(titlebar).toHaveCSS("background-image", /linear-gradient/);
+  await expect.poll(() => saves.at(-1)?.document.windows.find((window) => window.id === "about")?.appearance?.titleFrom).toBe("#112233");
+
+  await page.getByLabel("使用漸層").uncheck();
+  await expect(titlebar).toHaveCSS("background-image", "none");
+  await expect(titlebar).toHaveCSS("background-color", "rgb(17, 34, 51)");
+
+  await page.getByRole("button", { name: "恢復主題設定" }).click();
+  await expect.poll(() => saves.at(-1)?.document.windows.find((window) => window.id === "about")?.appearance).toBeUndefined();
+  await expect(titlebar).toHaveCSS("background-image", /linear-gradient/);
+});
+
+test("Win98 icon picker offers curated icons and searchable full library", async ({ page }) => {
+  const saves = await openEditor(page);
+  await page.getByRole("tab", { name: "圖示" }).click();
+  await expect(page.getByText("Win98 精選")).toBeVisible();
+  await page.getByLabel("搜尋 Win98 圖示").fill("computer 2 cool");
+  const result = page.getByRole("button", { name: /Win98 圖示 computer 2 cool 4/i });
+  await expect(result).toBeVisible();
+  await result.click();
+  await expect.poll(() => saves.at(-1)?.document.windows.find((window) => window.id === "about")?.icon).toContain("/win98-icons/computer_2_cool-4.png");
+});

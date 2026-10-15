@@ -167,7 +167,7 @@ export function MobileEditor({
             {previewWindow ? (
               <>
                 <button className="mobile-back" type="button" onClick={() => setPreviewId(null)}>‹ 預覽桌面</button>
-                <RetroWindow title={previewWindow.title} theme={document.theme}>
+                <RetroWindow title={previewWindow.title} theme={document.theme} appearance={previewWindow.appearance}>
                   <WindowRenderer window={previewWindow} theme={document.theme} onOpenWindow={setPreviewId} />
                 </RetroWindow>
               </>

@@ -1,11 +1,12 @@
 import type { CSSProperties, HTMLAttributes, MouseEvent, PointerEvent, ReactNode } from "react";
-import type { RetroTheme } from "@retrodesk/shared";
-import { themeView } from "../lib/themeView";
+import type { DesktopWindow, RetroTheme } from "@retrodesk/shared";
+import { readableOn, themeView } from "../lib/themeView";
 import { Icon } from "./Icon";
 
 type Props = {
   title: string;
   theme: RetroTheme;
+  appearance?: DesktopWindow["appearance"];
   children: ReactNode;
   icon?: string;
   style?: CSSProperties;
@@ -23,6 +24,7 @@ type Props = {
 export function RetroWindow({
   title,
   theme,
+  appearance,
   children,
   icon,
   style,
@@ -42,6 +44,12 @@ export function RetroWindow({
     handler?.();
   };
   const btn: CSSProperties = { background: tv.face, color: tv.text, boxShadow: tv.bevel };
+  const activeTitle = appearance
+    ? appearance.titleGradient
+      ? `linear-gradient(90deg, ${appearance.titleFrom}, ${appearance.titleTo})`
+      : appearance.titleFrom
+    : tv.titleBg;
+  const activeTitleText = appearance ? readableOn(appearance.titleFrom) : "#fff";
 
   return (
     <section
@@ -54,8 +62,8 @@ export function RetroWindow({
         {...titleBarProps}
         className={"retro-titlebar " + (titleBarProps?.className ?? "")}
         style={{
-          background: active ? tv.titleBg : tv.inactiveTitle,
-          color: active ? "#fff" : tv.text,
+          background: active ? activeTitle : tv.inactiveTitle,
+          color: active ? activeTitleText : tv.text,
           ...titleBarProps?.style
         }}
       >

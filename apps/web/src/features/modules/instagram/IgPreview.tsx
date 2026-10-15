@@ -130,11 +130,11 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
   const story = s.story >= 0 ? highlights[s.story] : undefined;
 
   return (
-    <div className="ig-app" style={{ background: "#fff", boxShadow: tv.sunken }}>
+    <div className={`ig-app ig-skin-${window.content.skin}`} style={{ background: "#fff", boxShadow: tv.sunken }}>
       <div className="ig-top">
         {s.screen === "post" ? <button type="button" className="ig-icbtn lg" aria-label="返回" onClick={() => s.go(s.back)}><Ic bg={I.back} size={22} /></button> : null}
         <span className="ig-title">
-          <strong style={{ fontFamily: s.screen === "feed" ? "'Pixelify Sans', sans-serif" : undefined, fontSize: s.screen === "feed" ? 20 : 15 }}>{headTitle}</strong>
+          <strong style={{ fontSize: s.screen === "feed" ? 20 : 15 }}>{headTitle}</strong>
           {s.screen === "profile" && profile.verified ? <span role="img" aria-label="已認證" className="ig-verified">✓</span> : null}
         </span>
         {s.screen === "profile" ? <button type="button" className="ig-icbtn lg" aria-label="分享個人檔案" onClick={() => s.showToast("已複製個人檔案連結")}><Ic bg={I.send} size={22} /></button> : null}

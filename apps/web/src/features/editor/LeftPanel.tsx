@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { THEME_PRESETS, type DesktopWindow, type RetroTheme, type SiteDocument } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
-import { FONT_STACKS, isDark, mixHex, themeView } from "../../lib/themeView";
+import { isDark, mixHex, themeView } from "../../lib/themeView";
 import { COMING_SOON, WINDOW_TYPES, registry } from "../modules/registry";
 import { FilePick } from "../modules/ui";
 
@@ -130,9 +130,7 @@ function ThemeTab({ theme, onTheme, upload }: { theme: RetroTheme; onTheme: Prop
       </fieldset>
       <fieldset className="w98-fieldset"><legend>圖示樣式與字型</legend>
         <div className="swatches">{ICON_STYLES.map(([id, label]) => <button key={id} type="button" className={"mini-btn grow" + (theme.iconStyle === id ? " on" : "")} onClick={() => patch({ iconStyle: id })}>{label}</button>)}</div>
-        <select className="w98-select" aria-label="字型" value={theme.font} onChange={(event) => patch({ font: event.target.value as RetroTheme["font"] })}>
-          {(Object.keys(FONT_STACKS) as Array<RetroTheme["font"]>).map((id) => <option key={id} value={id}>{FONT_STACKS[id].label}</option>)}
-        </select>
+        <span className="w98-hint">全站字型：Cubic 11（中英文）</span>
       </fieldset>
     </>
   );

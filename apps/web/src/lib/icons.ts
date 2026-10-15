@@ -30,7 +30,7 @@ export function builtinIconBackground(key: string): string {
 
 /** Only http(s) image URLs are ever used as an icon source. */
 export function isImageIcon(value: string): boolean {
-  return /^https:\/\//i.test(value) || /^http:\/\/localhost[:/]/i.test(value);
+  return /^https:\/\//i.test(value) || /^http:\/\/localhost[:/]/i.test(value) || /^\/win98-icons\/[A-Za-z0-9._-]+\.png$/i.test(value);
 }
 
 /** Escapes a URL so it can sit inside CSS url("...") without breaking out of it. */

@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { normalizeImageUrl } from "@retrodesk/shared";
 import { api, type AssetRecord } from "../../../lib/api";
 import { BUILTIN_ICON_KEYS } from "../../../lib/icons";
 import { Icon } from "../../../components/Icon";
+import { CURATED_WIN98_ICON_KEYS, WIN98_ICON_RECORDS } from "../../../lib/win98IconManifest";
 import { FilePick, MiniBtn } from "../ui";
 
 type Props = {
@@ -20,6 +21,12 @@ export function IconPicker({ siteId, value, onChange, upload, onDone, size = 24 
   const [status, setStatus] = useState("");
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
+  const [search, setSearch] = useState("");
+  const win98 = useMemo(() => {
+    const terms = search.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const pool = terms.length ? WIN98_ICON_RECORDS : WIN98_ICON_RECORDS.filter((record) => CURATED_WIN98_ICON_KEYS.has(record.key));
+    return pool.filter((record) => terms.every((term) => `${record.key} ${record.label}`.toLowerCase().includes(term))).slice(0, 100);
+  }, [search]);
 
   const refresh = useCallback(async () => {
     if (!siteId) return;
@@ -89,6 +96,10 @@ export function IconPicker({ siteId, value, onChange, upload, onDone, size = 24 
     <div className="icon-picker">
       <strong className="icon-picker-h">內建圖示</strong>
       <div className="icon-grid">{BUILTIN_ICON_KEYS.map((key) => cell(key, key, `圖示 ${key}`))}</div>
+      <strong className="icon-picker-h">{search.trim() ? "Win98 搜尋結果" : "Win98 精選"}</strong>
+      <label className="icon-search"><span className="visually-hidden">搜尋 Win98 圖示</span><input className="w98-input" type="search" value={search} placeholder="搜尋 1,757 個 Win98 圖示" aria-label="搜尋 Win98 圖示" onChange={(event) => setSearch(event.target.value)} /></label>
+      {win98.length ? <div className="icon-grid win98-icon-grid">{win98.map((record) => cell(record.key, record.path, `Win98 圖示 ${record.label}`))}</div> : <span className="w98-hint">找不到相符的 Win98 圖示。</span>}
+      {search.trim() && win98.length === 100 ? <span className="w98-hint">顯示前 100 筆結果，請輸入更多關鍵字縮小範圍。</span> : null}
       {siteId ? (
         <>
           <strong className="icon-picker-h">我的圖示</strong>

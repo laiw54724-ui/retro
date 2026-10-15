@@ -73,11 +73,23 @@ describe("v2 schema extensions", () => {
     if (ig.type !== "instagram") throw new Error("missing ig");
     const legacy = JSON.parse(JSON.stringify(doc));
     const profile = legacy.windows.find((w: { type: string }) => w.type === "instagram").content.profile;
+    delete legacy.windows.find((w: { type: string }) => w.type === "instagram").content.skin;
     for (const key of ["avatarUrl", "linkLabel", "linkUrl", "dmUrl", "verified", "showCounts", "showHighlights", "showFollowedBy", "showLikes", "allowLikes", "allowComments", "highlights"]) delete profile[key];
     const normalized = normalizeDocument(legacy);
     const out = normalized.windows.find((w) => w.type === "instagram");
     if (!out || out.type !== "instagram") throw new Error("missing ig");
     expect(out.content.profile).toMatchObject({ allowLikes: true, allowComments: true, showCounts: true, verified: false, dmUrl: "", highlights: [] });
+    expect(out.content.skin).toBe("win98");
+  });
+
+  it("supports optional per-window title appearance and defaults new Instagram windows to Win98", () => {
+    const doc = createStarterDocument("T", "classic98", "instagram");
+    const ig = doc.windows.find((window) => window.type === "instagram");
+    if (!ig || ig.type !== "instagram") throw new Error("missing ig");
+    expect(ig.content.skin).toBe("win98");
+    expect(ig.appearance).toBeUndefined();
+    ig.appearance = { titleFrom: "#112233", titleTo: "#445566", titleGradient: false };
+    expect(SiteDocumentSchema.parse(doc).windows[0].appearance).toEqual(ig.appearance);
   });
 
   it("rejects more than 9 carousel images and unsafe dmUrl", () => {

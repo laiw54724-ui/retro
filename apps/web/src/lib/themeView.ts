@@ -1,12 +1,7 @@
 import type { RetroTheme } from "@retrodesk/shared";
 import { cssUrl } from "./icons";
 
-export const FONT_STACKS: Record<RetroTheme["font"], { family: string; label: string }> = {
-  noto: { family: "'Noto Sans TC', sans-serif", label: "清晰黑體（推薦）" },
-  maru: { family: "'Zen Maru Gothic','Noto Sans TC', sans-serif", label: "可愛圓體" },
-  dot: { family: "'Cubic 11','DotGothic16','Noto Sans TC', sans-serif", label: "點陣復古" },
-  pixel: { family: "'Pixelify Sans','Noto Sans TC', sans-serif", label: "像素英文 + 黑體" }
-};
+export const CUBIC_FONT_STACK = "'Cubic 11', system-ui, sans-serif";
 
 export function isDark(hex: string): boolean {
   const n = parseInt((hex || "#ffffff").slice(1), 16);
@@ -64,7 +59,7 @@ export function themeView(t: RetroTheme): ThemeView {
     ...t,
     wallImageCss,
     wallSize,
-    fontFamily: (FONT_STACKS[t.font] ?? FONT_STACKS.noto).family,
+    fontFamily: CUBIC_FONT_STACK,
     bevel,
     sunken: `inset -1px -1px #ffffff, inset 1px 1px ${t.shadow}, inset -2px -2px ${t.light}, inset 2px 2px ${t.dark}`,
     pressed: `inset -1px -1px #ffffff, inset 1px 1px ${t.dark}, inset -2px -2px ${t.light}, inset 2px 2px ${t.shadow}`,

@@ -122,3 +122,15 @@ test("desktop Instagram window owns wheel and keyboard scrolling", async ({ page
   await win.getByRole("button", { name: "已收藏" }).click();
   await expect.poll(() => scroll.evaluate((node) => node.scrollTop)).toBe(0);
 });
+
+test("legacy Instagram defaults to Win98 and can switch to Modern", async ({ page }) => {
+  const { win, saves } = await openEditor(page);
+  await expect(win.getByRole("button", { name: "Win98" })).toHaveAttribute("aria-pressed", "true");
+  await win.getByRole("tab", { name: "▶ 預覽互動" }).click();
+  await expect(win.locator(".ig-app")).toHaveClass(/ig-skin-win98/);
+  await expect(win.locator(".ig-title strong")).toHaveCSS("font-family", /Cubic 11/);
+
+  await win.getByRole("button", { name: "現代" }).click();
+  await expect(win.locator(".ig-app")).toHaveClass(/ig-skin-modern/);
+  await expect.poll(() => saves.at(-1)?.document.windows[0] && (saves.at(-1) as never as { document: { windows: Array<{ content: { skin: string } }> } }).document.windows[0].content.skin).toBe("modern");
+});
