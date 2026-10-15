@@ -13,6 +13,7 @@ const SECONDARY_URL = 'https://winclassic.github.io/resources';
 const OUT_DIR = path.join(ROOT, 'apps/web/public/windows-icons');
 const MANIFEST = path.join(ROOT, 'apps/web/src/lib/windowsIconManifest.ts');
 const PROVENANCE = path.join(ROOT, 'docs/assets/windows-icons.provenance.json');
+const THIRD_PARTY_ASSETS = path.join(ROOT, 'docs/THIRD_PARTY_ASSETS.md');
 const STAGING_DIR = `${OUT_DIR}.__staging__`;
 const BACKUP_DIR = `${OUT_DIR}.__backup__`;
 const MANIFEST_TEMP = `${MANIFEST}.__tmp__`;
@@ -204,6 +205,18 @@ async function run() {
   const built = await build(path.resolve(source));
   if (built.data.supported.length !== 1193 || built.data.unsupported.length !== 7) throw new Error(`unexpected inventory: ${built.data.supported.length} supported, ${built.data.unsupported.length} unsupported`);
   if (check) {
+    let assetPolicy;
+    try { assetPolicy = await fs.readFile(THIRD_PARTY_ASSETS, 'utf8'); }
+    catch (error) { throw new Error(`missing asset licensing policy: ${path.relative(ROOT, THIRD_PARTY_ASSETS)} (${error.message})`); }
+    const policyRequirements = [
+      ['primary URL', PRIMARY_URL],
+      ['exact pinned commit', EXPECTED_COMMIT],
+      ['license status NOASSERTION', 'NOASSERTION'],
+    ];
+    const missingPolicyRequirements = policyRequirements.filter(([, required]) => !assetPolicy.includes(required));
+    if (missingPolicyRequirements.length) {
+      throw new Error(`asset licensing policy is incomplete (${path.relative(ROOT, THIRD_PARTY_ASSETS)}); missing ${missingPolicyRequirements.map(([label]) => label).join(', ')}`);
+    }
     const [manifest, provenance] = await Promise.all([fs.readFile(MANIFEST, 'utf8'), fs.readFile(PROVENANCE, 'utf8')]);
     if (manifest !== built.manifest) throw new Error(`generated manifest differs: ${path.relative(ROOT, MANIFEST)}`);
     if (provenance !== built.provenance) throw new Error(`generated provenance differs: ${path.relative(ROOT, PROVENANCE)}`);

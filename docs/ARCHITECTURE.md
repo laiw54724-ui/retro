@@ -52,6 +52,13 @@ Initial module types:
 
 Future modules such as diary, guestbook, music player, character profile and visual novel should be added without changing the desktop canvas data model.
 
+### Bundled icon collections
+
+New icon choices are generated from the pinned upstream checkout into the
+`/windows-icons/` namespace. Legacy documents may continue to reference the
+read-only `/win98-icons/` compatibility namespace. The provenance JSON is
+evidence of the importer inputs and outputs, not a license grant.
+
 ## Security boundaries
 
 1. Supabase is used for identity, not trusted client-side authorization.
