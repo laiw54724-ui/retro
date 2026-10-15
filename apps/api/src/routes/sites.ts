@@ -4,7 +4,7 @@ import type { Env } from "../env";
 import { jsonError } from "../lib/http";
 import { requireUser, serviceClient } from "../lib/supabase";
 import { CreateSiteSchema, PublishSchema, SaveDraftSchema } from "../lib/site";
-import { publishedArtifactKey, recordArtifactStatus, writePublishedArtifact } from "../lib/publish";
+import { copyReferencedAssets, publishedArtifactKey, recordArtifactStatus, writePublishedArtifact } from "../lib/publish";
 
 export const sites = new Hono<{ Bindings: Env }>();
 
@@ -136,12 +136,19 @@ sites.post("/sites/:siteId/publish", async (c) => {
       ? jsonError(c, 400, "unsupported_document_version", "This document version cannot be published", { version: projection.version })
       : jsonError(c, 400, "invalid_publish_document", "The draft cannot be published", { diagnostics: projection.diagnostics });
   }
+  const assetCopy = await copyReferencedAssets(c.env, supabase, { ownerId: user.id, siteId: site.id, username: site.username, document: projection.document });
+  if (!assetCopy.ok) {
+    const status = assetCopy.code === "copy_failed" || assetCopy.code === "unavailable" ? 502 : 400;
+    return jsonError(c, status, "publish_assets_failed", assetCopy.message, { assetId: assetCopy.assetId, reason: assetCopy.code });
+  }
+  const rewrittenProjection = projectPublicSiteDocument(assetCopy.document, site.id);
+  if (!rewrittenProjection.ok) return jsonError(c, 400, "invalid_publish_document", "The published document is invalid after asset replacement", { diagnostics: rewrittenProjection.code === "invalid" ? rewrittenProjection.diagnostics : [] });
   const { data: committed, error: publishError } = await supabase.rpc("publish_site_atomic", {
     p_site_id: site.id,
     p_owner_id: user.id,
     p_expected_version: payload.data.expectedVersion,
     p_expected_published_version: site.published_version ?? 0,
-    p_document: projection.document
+    p_document: rewrittenProjection.document
   });
   if (publishError) {
     if (publishError.message.includes("published_version_conflict")) return jsonError(c, 409, "version_conflict", "This site was published from the same draft elsewhere");
@@ -154,7 +161,7 @@ sites.post("/sites/:siteId/publish", async (c) => {
   const artifact = await writePublishedArtifact(c.env, {
     username: site.username,
     version: row.published_version,
-    document: projection.document,
+    document: rewrittenProjection.document,
     publishedAt: row.published_at,
     artifactKey: row.artifact_key ?? publishedArtifactKey(site.username, row.published_version)
   });

@@ -1,8 +1,50 @@
 import type { Env } from "../env";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { collectAssetReferences, parseAssetReference, replaceAssetReferences, type VersionedSiteDocument } from "@retrodesk/shared";
 
 export type ArtifactStatus = "synced" | "failed";
 export type PublishArtifactResult = { artifactStatus: ArtifactStatus; retryable: boolean; artifactKey: string; error?: string };
+
+export type PublishedAssetCopyResult =
+  | { ok: true; document: VersionedSiteDocument; copied: Array<{ id: string; key: string; url: string }> }
+  | { ok: false; code: "missing" | "foreign" | "unavailable" | "copy_failed"; assetId?: string; message: string };
+
+export async function copyReferencedAssets(
+  env: Env,
+  supabase: SupabaseClient,
+  input: { ownerId: string; siteId: string; username: string; document: VersionedSiteDocument }
+): Promise<PublishedAssetCopyResult> {
+  const ids = collectAssetReferences(input.document);
+  if (!ids.length) return { ok: true, document: input.document, copied: [] };
+  const { data: rows, error } = await supabase.from("site_assets").select("id,owner_id,site_id,object_key,storage_scope,mime_type").in("id", ids);
+  if (error) return { ok: false, code: "unavailable", message: "Could not load referenced assets" };
+  const byId = new Map((rows ?? []).map((row) => [String(row.id), row]));
+  const replacements = new Map<string, string>();
+  const copied: Array<{ id: string; key: string; url: string }> = [];
+  for (const id of ids) {
+    const row = byId.get(id);
+    if (!row) return { ok: false, code: "missing", assetId: id, message: `Referenced asset ${id} was not found` };
+    if (row.owner_id !== input.ownerId || row.site_id !== input.siteId) return { ok: false, code: "foreign", assetId: id, message: `Referenced asset ${id} does not belong to this site` };
+    const draftPrefix = `draft/users/${input.ownerId}/sites/${input.siteId}/`;
+    if (row.storage_scope !== "draft_private" || !row.object_key.startsWith(draftPrefix)) return { ok: false, code: "foreign", assetId: id, message: `Referenced asset ${id} is not a private draft asset` };
+    const extension = row.object_key.match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase();
+    if (!extension || !["jpg", "jpeg", "png", "webp", "gif"].includes(extension)) return { ok: false, code: "unavailable", assetId: id, message: `Referenced asset ${id} has an unsupported key` };
+    const object = await env.ASSETS.get(row.object_key);
+    if (!object) return { ok: false, code: "missing", assetId: id, message: `Referenced asset ${id} is missing from storage` };
+    const key = `published/${input.username}/assets/${id}.${extension === "jpeg" ? "jpg" : extension}`;
+    try {
+      await env.ASSETS.put(key, object.body, { httpMetadata: { contentType: row.mime_type, cacheControl: "public, max-age=31536000, immutable" }, customMetadata: { site: input.username, assetId: id } });
+    } catch (copyError) {
+      return { ok: false, code: "copy_failed", assetId: id, message: copyError instanceof Error ? copyError.message : "Asset copy failed" };
+    }
+    const url = `${env.PUBLIC_ASSET_BASE_URL.replace(/\/$/, "")}/${key}`;
+    replacements.set(id, url);
+    copied.push({ id, key, url });
+  }
+  const document = replaceAssetReferences(input.document, replacements);
+  if (collectAssetReferences(document).length) return { ok: false, code: "copy_failed", message: "Some asset references could not be rewritten" };
+  return { ok: true, document, copied };
+}
 
 export function publishedArtifactKey(username: string, version: number): string {
   return `published/${username}/versions/${version}/site.json`;

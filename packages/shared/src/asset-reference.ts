@@ -48,3 +48,13 @@ export function replaceAssetReferences<T>(value: T, replacements: ReadonlyMap<st
   };
   return visit(value) as T;
 }
+
+export function replaceExactStrings<T>(value: T, replacements: ReadonlyMap<string, string>): T {
+  const visit = (node: unknown): unknown => {
+    if (typeof node === "string") return replacements.get(node) ?? node;
+    if (Array.isArray(node)) return node.map(visit);
+    if (node && typeof node === "object") return Object.fromEntries(Object.entries(node).map(([key, item]) => [key, visit(item)]));
+    return node;
+  };
+  return visit(value) as T;
+}
