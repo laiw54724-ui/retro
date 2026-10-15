@@ -12,6 +12,10 @@ checked out at the pinned commit
 `728a866ad59a54fd4082dbe000e1e62e50bd90e9`. A historical lookup reference is
 [WinClassic resources](https://winclassic.github.io/resources).
 
+- Primary source: https://github.com/trapd00r/win95-winxp_icons
+- Pinned source commit: 728a866ad59a54fd4082dbe000e1e62e50bd90e9
+- License status: NOASSERTION; the upstream repository does not declare a software or asset license.
+
 The local evidence inventory is
 [`docs/assets/windows-icons.provenance.json`](assets/windows-icons.provenance.json).
 The upstream repository does not declare a software or asset license; its
@@ -36,7 +40,7 @@ it.
 
 ## User uploads
 
-Users retain responsibility for the rights and permissions for content they
-upload. The site owner is responsible for handling user uploads lawfully;
-Retro's source-code license does not relicense, waive, or grant rights to
-those uploads.
+Uploaders must own or have the necessary rights and permissions for content
+they upload. Deployment operators should define and enforce an upload policy
+appropriate to the applicable context. Retro's source-code license does not
+relicense, waive, or grant rights to user uploads.

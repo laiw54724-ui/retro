@@ -208,14 +208,23 @@ async function run() {
     let assetPolicy;
     try { assetPolicy = await fs.readFile(THIRD_PARTY_ASSETS, 'utf8'); }
     catch (error) { throw new Error(`missing asset licensing policy: ${path.relative(ROOT, THIRD_PARTY_ASSETS)} (${error.message})`); }
-    const policyRequirements = [
-      ['primary URL', PRIMARY_URL],
-      ['exact pinned commit', EXPECTED_COMMIT],
-      ['license status NOASSERTION', 'NOASSERTION'],
+    const heading = '## Windows 95–XP icons';
+    const headingStart = assetPolicy.indexOf(heading);
+    if (headingStart < 0) throw new Error(`asset licensing policy is incomplete (${path.relative(ROOT, THIRD_PARTY_ASSETS)}); missing section ${heading}`);
+    const sectionStart = headingStart + heading.length;
+    const following = assetPolicy.slice(sectionStart);
+    const nextSection = following.search(/^## /m);
+    const iconSection = following.slice(0, nextSection < 0 ? following.length : nextSection);
+    const policyLines = iconSection.split(/\r?\n/).map((line) => line.trim());
+    const exactPolicyLines = [
+      `- Primary source: ${PRIMARY_URL}`,
+      `- Pinned source commit: ${EXPECTED_COMMIT}`,
     ];
-    const missingPolicyRequirements = policyRequirements.filter(([, required]) => !assetPolicy.includes(required));
+    const missingPolicyRequirements = exactPolicyLines.filter((line) => !policyLines.includes(line));
+    const licenseLine = policyLines.find((line) => line.startsWith('- License status:'));
+    if (!licenseLine || !licenseLine.startsWith('- License status: NOASSERTION;')) missingPolicyRequirements.push('license status NOASSERTION;');
     if (missingPolicyRequirements.length) {
-      throw new Error(`asset licensing policy is incomplete (${path.relative(ROOT, THIRD_PARTY_ASSETS)}); missing ${missingPolicyRequirements.map(([label]) => label).join(', ')}`);
+      throw new Error(`asset licensing policy is incomplete (${path.relative(ROOT, THIRD_PARTY_ASSETS)}); missing exact lines: ${missingPolicyRequirements.join(', ')}`);
     }
     const [manifest, provenance] = await Promise.all([fs.readFile(MANIFEST, 'utf8'), fs.readFile(PROVENANCE, 'utf8')]);
     if (manifest !== built.manifest) throw new Error(`generated manifest differs: ${path.relative(ROOT, MANIFEST)}`);
