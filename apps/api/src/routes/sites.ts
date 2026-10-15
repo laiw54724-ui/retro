@@ -8,13 +8,21 @@ import { copyReferencedAssets, publishedArtifactKey, recordArtifactStatus, write
 
 export const sites = new Hono<{ Bindings: Env }>();
 
-async function cleanupPendingLegacyAssets(env: Env, supabase: ReturnType<typeof serviceClient>, siteId: string, ownerId: string) {
-  const result = await supabase.from("site_assets").select("id,legacy_object_key").eq("site_id", siteId).eq("owner_id", ownerId).eq("migration_status", "pending");
+function containsExactString(value: unknown, needle: string): boolean {
+  if (typeof value === "string") return value === needle;
+  if (Array.isArray(value)) return value.some((item) => containsExactString(item, needle));
+  if (value && typeof value === "object") return Object.values(value).some((item) => containsExactString(item, needle));
+  return false;
+}
+
+export async function cleanupPendingLegacyAssets(env: Env, supabase: ReturnType<typeof serviceClient>, siteId: string, ownerId: string, liveDocument: unknown) {
+  const result = await supabase.from("site_assets").select("id,legacy_object_key,legacy_public_url").eq("site_id", siteId).eq("owner_id", ownerId).eq("migration_status", "pending");
   if (result.error) return ["inventory-unavailable"];
   const rows = Array.isArray(result.data) ? result.data : [];
   const warnings: string[] = [];
   for (const row of rows) {
     if (!row.legacy_object_key) continue;
+    if (row.legacy_public_url && containsExactString(liveDocument, row.legacy_public_url)) { warnings.push(String(row.id)); continue; }
     try {
       await env.ASSETS.delete(row.legacy_object_key);
       const updated = await supabase.from("site_assets").update({ migration_status: "migrated", legacy_object_key: null, legacy_public_url: null }).eq("id", row.id).eq("owner_id", ownerId);
@@ -182,7 +190,7 @@ sites.post("/sites/:siteId/publish", async (c) => {
     artifactKey: row.artifact_key ?? publishedArtifactKey(site.username, row.published_version)
   });
   const statusResult = await recordArtifactStatus(supabase, site.id, user.id, row.published_version, artifact.artifactStatus, artifact.error);
-  const cleanupWarnings = await cleanupPendingLegacyAssets(c.env, supabase, site.id, user.id);
+  const cleanupWarnings = await cleanupPendingLegacyAssets(c.env, supabase, site.id, user.id, rewrittenProjection.document);
   if (statusResult.error || !statusResult.updated) return c.json({ publishedVersion: row.published_version, publishedAt: row.published_at, url: `/@${site.username}`, ...artifact, artifactStatus: "failed", retryable: true, cleanupWarnings, warning: statusResult.error ? "Published database version is live; artifact status could not be recorded." : "This publication is stale; the artifact was written but its status was not recorded for the current version." });
   return c.json({ publishedVersion: row.published_version, publishedAt: row.published_at, url: `/@${site.username}`, ...artifact, cleanupWarnings });
 });
@@ -208,7 +216,7 @@ sites.post("/sites/:siteId/publish/retry", async (c) => {
     artifactKey: site.published_artifact_key ?? publishedArtifactKey(site.username, site.published_version)
   });
   const statusResult = await recordArtifactStatus(supabase, site.id, user.id, site.published_version, artifact.artifactStatus, artifact.error);
-  const cleanupWarnings = await cleanupPendingLegacyAssets(c.env, supabase, site.id, user.id);
+  const cleanupWarnings = await cleanupPendingLegacyAssets(c.env, supabase, site.id, user.id, site.published_document);
   if (statusResult.error || !statusResult.updated) return c.json({ publishedVersion: site.published_version, publishedAt: site.published_at, url: `/@${site.username}`, ...artifact, artifactStatus: "failed", retryable: true, cleanupWarnings, warning: statusResult.error ? "Artifact was written but status could not be recorded." : "This artifact status is stale; retry from the current published version." });
   return c.json({ publishedVersion: site.published_version, publishedAt: site.published_at, url: `/@${site.username}`, ...artifact, cleanupWarnings });
 });

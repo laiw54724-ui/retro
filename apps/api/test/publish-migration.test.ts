@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { cleanupPendingLegacyAssets } from "../src/routes/sites";
 
 const migration = readFileSync(resolve(process.cwd(), "../../supabase/migrations/0003_atomic_publish.sql"), "utf8");
 const sitesSource = readFileSync(resolve(process.cwd(), "src/routes/sites.ts"), "utf8");
@@ -39,5 +40,23 @@ describe("atomic publish migration contract", () => {
     expect(sitesSource.match(/cleanupPendingLegacyAssets\(c\.env, supabase/g)?.length).toBeGreaterThanOrEqual(2);
     expect(sitesSource).toContain("inventory-unavailable");
     expect(sitesSource).toContain("cleanupWarnings");
+  });
+
+  it("does not delete a legacy object still referenced by the live document", async () => {
+    const deleted: string[] = [];
+    const supabase = { from: () => ({ select: () => ({ eq: () => ({ eq: () => ({ eq: async () => ({ data: [{ id: "a", legacy_object_key: "users/a", legacy_public_url: "https://old/a.png" }], error: null }) }) }) }) }) } as any;
+    const warnings = await cleanupPendingLegacyAssets({ ASSETS: { delete: async (key: string) => { deleted.push(key); } } } as any, supabase, "site", "owner", { image: "https://old/a.png" });
+    expect(deleted).toEqual([]);
+    expect(warnings).toEqual(["a"]);
+  });
+
+  it("deletes a legacy object when the new live document no longer references it", async () => {
+    const deleted: string[] = [];
+    const updated: any[] = [];
+    const supabase = { from: () => ({ select: () => ({ eq: () => ({ eq: () => ({ eq: async () => ({ data: [{ id: "a", legacy_object_key: "users/a", legacy_public_url: "https://old/a.png" }], error: null }) }) }) }), update: (value: unknown) => ({ eq: () => ({ eq: async () => { updated.push(value); return { error: null }; } }) }) }) } as any;
+    const warnings = await cleanupPendingLegacyAssets({ ASSETS: { delete: async (key: string) => { deleted.push(key); } } } as any, supabase, "site", "owner", { image: "https://new/a.png" });
+    expect(warnings).toEqual([]);
+    expect(deleted).toEqual(["users/a"]);
+    expect(updated).toHaveLength(1);
   });
 });
