@@ -229,12 +229,13 @@ export function mergeLegacyDocumentIntoV2(document: SiteDocumentV2Input, legacy:
       next.entities.posts.push(...posts.map((post) => ({ kind: "post" as const, siteId: profile.siteId, visibility: "published" as const, authorProfileId: profile.id, ...post, id: existingIds.has(post.id) ? post.id : `post:${profile.id}:${post.id}` })));
       postEdits.add(profile.id);
     }
-    if (!versionedWindow) {
-      const index = next.windows.findIndex((window) => window.id === legacyWindow.id);
-      const migratedWindow = { ...legacyWindow, content: { skin: legacyWindow.content.skin, profileRef: { siteId: profile.siteId, id: profile.id, kind: "profile" as const } } };
-      if (index >= 0) next.windows[index] = migratedWindow as typeof next.windows[number];
-      else next.windows.push(migratedWindow as typeof next.windows[number]);
-    }
+    const index = next.windows.findIndex((window) => window.id === legacyWindow.id);
+    const profileRef = versionedWindow?.type === "instagram"
+      ? versionedWindow.content.profileRef
+      : { siteId: profile.siteId, id: profile.id, kind: "profile" as const };
+    const migratedWindow = { ...legacyWindow, content: { skin: legacyWindow.content.skin, profileRef } };
+    if (index >= 0) next.windows[index] = migratedWindow as typeof next.windows[number];
+    else next.windows.push(migratedWindow as typeof next.windows[number]);
   }
   // Window deletion is authoritative for the window list, while profiles and
   // posts remain site-level entities so deleting one view cannot destroy a

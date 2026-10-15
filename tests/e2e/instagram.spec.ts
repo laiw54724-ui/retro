@@ -5,7 +5,11 @@ async function openEditor(page: Page, profile: Record<string, unknown> = {}) {
   const session = { access_token: "a.b.c", refresh_token: "r", expires_at: 4102444800, expires_in: 3600, token_type: "bearer", user: { id: "u", email: "x@y.z", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01" } };
   await page.addInitScript((value) => localStorage.setItem("sb-example-auth-token", JSON.stringify(value)), session);
   const site = { id: "site-1", username: "demo", site_name: "D", draft_document: igDocument(profile), draft_version: 1, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-15T00:00:00.000Z" };
-  const saves: Array<{ document: ReturnType<typeof igDocument> }> = [];
+  const saves: Array<{ document: {
+    schemaVersion: number;
+    windows: Array<{ content: { skin?: string } }>;
+    entities?: { profiles: Array<{ handle?: string; username: string }> };
+  } }> = [];
   await page.route("**/api/sites/site-1", (route) => route.fulfill({ json: { site } }));
   await page.route("**/api/sites/site-1/assets**", (route) => route.fulfill({ json: { assets: [] } }));
   await page.route("**/api/sites/site-1/draft", (route) => { saves.push(route.request().postDataJSON()); return route.fulfill({ json: { version: 2, updatedAt: "2026-10-15T00:01:00.000Z" } }); });
@@ -22,7 +26,7 @@ test("edit tab changes the profile and the preview tab reflects it", async ({ pa
   await win.getByLabel("帳號", { exact: true }).fill("newname");
   await win.getByRole("tab", { name: "▶ 預覽互動" }).click();
   await expect(win.locator(".ig-title strong")).toHaveText("newname");
-  await expect.poll(() => saves.at(-1)?.document.windows[0] && (saves.at(-1) as never as { document: { windows: Array<{ content: { profile: { username: string } } }> } }).document.windows[0].content.profile.username).toBe("newname");
+  await expect.poll(() => saves.at(-1)?.document.entities?.profiles[0]?.handle).toBe("newname");
 });
 
 test("preview: navigation, follow, double-tap like, carousel, comment, save, stories and menu", async ({ page }) => {
@@ -144,5 +148,5 @@ test("legacy Instagram defaults to Win98 and can switch to Modern", async ({ pag
 
   await win.getByRole("button", { name: "現代" }).click();
   await expect(win.locator(".ig-app")).toHaveClass(/ig-skin-modern/);
-  await expect.poll(() => saves.at(-1)?.document.windows[0] && (saves.at(-1) as never as { document: { windows: Array<{ content: { skin: string } }> } }).document.windows[0].content.skin).toBe("modern");
+  await expect.poll(() => saves.at(-1)?.document.windows[0]?.content.skin).toBe("modern");
 });

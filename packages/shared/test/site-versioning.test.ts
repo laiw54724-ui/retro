@@ -351,6 +351,8 @@ describe("versioned site document contract", () => {
     // roll the shared profile back.
     instagram.content.profile.name = "Edited shared OC";
     instagram.content.profile.username = "renamed-oc";
+    instagram.content.skin = "modern";
+    instagram.title = "Updated Instagram";
     const merged = mergeLegacyDocumentIntoV2(migrated.document, edited, { siteId: "site-a" });
     expect(merged.windows.map((window) => window.id)).toEqual(expect.arrayContaining(["doc-1", "doc-copy", "ig-1", "ig-copy"]));
     expect(merged.windows.some((window) => window.id === "gallery-1")).toBe(false);
@@ -360,6 +362,7 @@ describe("versioned site document contract", () => {
     expect(merged.entities.profiles.find((profile) => profile.id === igRefs[0])?.displayName).toBe("Edited shared OC");
     expect(merged.entities.profiles.find((profile) => profile.id === igRefs[0])?.name).toBe("Edited shared OC");
     expect(merged.entities.profiles.find((profile) => profile.id === igRefs[0])?.handle).toBe("renamed-oc");
+    expect(merged.windows.find((window) => window.id === "ig-1")).toMatchObject({ title: "Updated Instagram", content: { skin: "modern" } });
     expect(parseSiteDocument(merged)).toMatchObject({ ok: true, version: 2 });
     const rerendered = projectV2ToLegacyDocument(merged);
     expect(rerendered.ok).toBe(true);

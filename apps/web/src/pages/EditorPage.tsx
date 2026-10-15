@@ -105,6 +105,7 @@ export function EditorPage() {
     if (!store.document || store.saveStatus !== "dirty" || !store.siteId || saveInFlight.current || conflict) return;
 
     const timer = window.setTimeout(async () => {
+      const legacyDocumentToSave = store.document!;
       const documentToSave = versionedDraft ?? store.document!;
       const versionToSave = store.version;
       const invalid = validationMessage(documentToSave);
@@ -118,8 +119,14 @@ export function EditorPage() {
       store.setSaveStatus("saving");
       try {
         const result = await api.saveDraft(store.siteId!, versionToSave, documentToSave);
-        store.markSaved(result.version, store.document!);
+        // Release the in-flight guard before updating the store. If the user
+        // edited while this request was pending, markSaved leaves the draft
+        // dirty and the resulting render must be allowed to schedule the next
+        // autosave immediately.
+        saveInFlight.current = false;
+        store.markSaved(result.version, legacyDocumentToSave);
       } catch (error) {
+        saveInFlight.current = false;
         store.setSaveStatus("error");
         if (error instanceof ApiError && error.code === "version_conflict") {
           setConflict(true);
@@ -127,8 +134,6 @@ export function EditorPage() {
         } else {
           setMessage(error instanceof Error ? error.message : "儲存失敗");
         }
-      } finally {
-        saveInFlight.current = false;
       }
     }, 650);
 

@@ -1,11 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
+import type { VersionedSiteDocumentInput } from "@retrodesk/shared";
 import { documentFixture } from "./fixture";
 
 async function openEditor(page: Page) {
   const session = { access_token: "a.b.c", refresh_token: "r", expires_at: 4102444800, expires_in: 3600, token_type: "bearer", user: { id: "u", email: "x@y.z", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01" } };
   await page.addInitScript((value) => localStorage.setItem("sb-example-auth-token", JSON.stringify(value)), session);
   const site = { id: "site-1", username: "demo", site_name: "Demo Desk", draft_document: documentFixture, draft_version: 1, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-15T00:00:00.000Z" };
-  const saves: Array<{ document: typeof documentFixture }> = [];
+  const saves: Array<{ document: VersionedSiteDocumentInput }> = [];
   await page.route("**/api/sites/site-1", (route) => route.fulfill({ json: { site } }));
   await page.route("**/api/sites/site-1/assets**", (route) => route.fulfill({ json: { assets: [] } }));
   await page.route("**/api/sites/site-1/draft", (route) => {
@@ -15,6 +16,10 @@ async function openEditor(page: Page) {
   await page.setViewportSize({ width: 1400, height: 860 });
   await page.goto("/editor/site-1");
   await expect(page.getByRole("dialog", { name: "About.exe" })).toBeVisible();
+  // v1 fixtures are migrated once on load. Wait for that canonical v2 draft
+  // save before tests attempt to publish or make assertions about later saves.
+  await expect.poll(() => saves.at(-1)?.document.schemaVersion).toBe(2);
+  await expect(page.getByRole("status")).toHaveText("已儲存");
   return saves;
 }
 
@@ -45,7 +50,7 @@ test("layout mode drags windows and icons with 8px snapping and Esc exits", asyn
   await page.keyboard.press("Escape");
   await expect(toolbar).toBeHidden();
 
-  await expect.poll(() => saves.length).toBeGreaterThan(0);
+  await expect.poll(() => saves.at(-1)?.document.windows.find((w) => w.id === "about")?.layout.desktop.x).not.toBe(140);
   const about = saves.at(-1)!.document.windows.find((w) => w.id === "about")!.layout.desktop;
   expect(about.x % 8).toBe(0);
   expect(about.y % 8).toBe(0);
