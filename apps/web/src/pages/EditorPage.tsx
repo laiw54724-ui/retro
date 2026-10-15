@@ -162,7 +162,10 @@ export function EditorPage() {
               document={store.document}
               selectedId={store.selectedId}
               onSelect={store.select}
+              onFocus={store.focusWindow}
               onMove={(id, x, y) => store.updateWindow(id, (window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, x, y } } }))}
+              onResize={(id, w, h) => store.updateWindow(id, (window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, w, h } } }))}
+              onIconMove={(id, iconX, iconY) => store.updateWindow(id, (window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, iconX, iconY } } }))}
             />
           ) : <MobilePreview document={store.document} />}
         </section>

@@ -50,7 +50,9 @@ const DesktopLayoutSchema = z.object({
   y: z.number().finite(),
   w: z.number().min(220).max(1400),
   h: z.number().min(140).max(1200),
-  z: z.number().int().min(1).max(9999)
+  z: z.number().int().min(1).max(9999),
+  iconX: z.number().finite().default(16),
+  iconY: z.number().finite().default(16)
 });
 
 const MobileLayoutSchema = z.object({
@@ -246,7 +248,20 @@ const id = () => crypto.randomUUID();
 
 export function makeWindow(type: DesktopWindow["type"], index = 0): DesktopWindow {
   const offset = (index % 6) * 28;
-  const layout = { desktop: { x: 130 + offset, y: 24 + offset, w: 380, h: 320, z: index + 1 }, mobile: { order: index } };
+  const iconColumn = Math.floor(index / 7);
+  const iconRow = index % 7;
+  const layout = {
+    desktop: {
+      x: 130 + offset,
+      y: 24 + offset,
+      w: 380,
+      h: 320,
+      z: index + 1,
+      iconX: 16 + iconColumn * 88,
+      iconY: 18 + iconRow * 78
+    },
+    mobile: { order: index }
+  };
 
   switch (type) {
     case "gallery":

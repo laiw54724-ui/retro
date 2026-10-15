@@ -4,11 +4,11 @@ import { useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { RetroWindow } from "../components/RetroWindow";
 import { WindowRenderer } from "../features/site/WindowRenderer";
+import { VisitorDesktop } from "../features/site/VisitorDesktop";
 
 export function PublicSitePage() {
   const { username = "" } = useParams();
   const [document, setDocument] = useState<SiteDocument | null>(null);
-  const [open, setOpen] = useState<string[]>([]);
   const [activeMobile, setActiveMobile] = useState<string | null>(null);
   const [error, setError] = useState("");
 
@@ -16,7 +16,6 @@ export function PublicSitePage() {
     api.publicSite(username)
       .then(({ site }) => {
         setDocument(site.published_document);
-        setOpen(site.published_document.windows.filter((window) => window.defaultOpen).map((window) => window.id));
         window.document.title = site.site_name + " — Retro Desktop";
       })
       .catch((reason) => setError(reason instanceof Error ? reason.message : "找不到網站"));
@@ -41,36 +40,7 @@ export function PublicSitePage() {
         backgroundImage: theme.wallImage ? `url(${theme.wallImage})` : pattern
       }}
     >
-      <div className="visitor-desktop">
-        {document.windows.map((window) => {
-          const layout = window.layout.desktop;
-          if (!open.includes(window.id)) {
-            return (
-              <button key={window.id} className="desktop-file" onClick={() => setOpen((current) => [...current, window.id])}>
-                <span className="file-icon" />
-                <small>{window.title}</small>
-              </button>
-            );
-          }
-
-          return (
-            <div key={window.id} className="visitor-window" style={{ left: layout.x, top: layout.y, width: layout.w, height: layout.h, zIndex: layout.z }}>
-              <RetroWindow title={window.title} theme={theme} style={{ height: "100%" }}>
-                <WindowRenderer
-                  window={window}
-                  theme={theme}
-                  onOpenWindow={(id) => setOpen((current) => current.includes(id) ? current : [...current, id])}
-                />
-              </RetroWindow>
-            </div>
-          );
-        })}
-
-        <div className="taskbar visitor-taskbar" style={{ background: theme.taskbar }}>
-          <button type="button">開始</button>
-          <span>{document.siteName}</span>
-        </div>
-      </div>
+      <VisitorDesktop document={document} />
 
       <div className="visitor-mobile">
         {activeWindow ? (
