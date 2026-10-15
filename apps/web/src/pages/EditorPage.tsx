@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { normalizeDocument, SiteDocumentSchema, THEME_PRESETS, type DesktopWindow } from "@retrodesk/shared";
+import { buildPublishChecks, hasBlockingCheck, normalizeDocument, SiteDocumentSchema, type DesktopWindow } from "@retrodesk/shared";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { useEditorStore } from "../features/editor/store";
 import { DesktopCanvas } from "../features/editor/DesktopCanvas";
-import { MobileEditor } from "../features/editor/MobileEditor";
+import { MobileScreen } from "../features/site/MobileScreen";
 import { LeftPanel } from "../features/editor/LeftPanel";
 import { RightPanel } from "../features/editor/RightPanel";
 import { VisitorPreview } from "../features/editor/VisitorPreview";
@@ -39,6 +39,7 @@ export function EditorPage() {
   const [preview, setPreview] = useState(false);
   const [publishSuccess, setPublishSuccess] = useState<{ version: number; url: string } | null>(null);
   const [publishing, setPublishing] = useState(false);
+  const publishChecks = useMemo(() => store.document ? buildPublishChecks(store.document) : [], [store.document]);
 
   useEffect(() => {
     let alive = true;
@@ -313,19 +314,7 @@ export function EditorPage() {
           {store.device === "desktop" ? (
             <DesktopCanvas siteId={siteId} upload={uploadImage} />
           ) : (
-            <MobileEditor
-              document={store.document}
-              siteId={siteId}
-              selectedId={store.selectedId}
-              onSelect={store.select}
-              onAdd={store.addWindow}
-              onUpdate={store.updateWindow}
-              onDelete={store.deleteWindow}
-              onTheme={store.setTheme}
-              onReorder={store.reorderMobile}
-              onColumns={store.setMobileColumns}
-              onMessage={setMessage}
-            />
+            <MobileScreen document={store.document} mode="editor" framed siteId={siteId} upload={uploadImage} onPreview={() => setPreview(true)} />
           )}
         </section>
 
@@ -376,12 +365,16 @@ export function EditorPage() {
           <section className="retro-panel editor-dialog" role="dialog" aria-modal="true" aria-labelledby="publish-title">
             <header className="landing-titlebar" id="publish-title">發布 Retro Desktop</header>
             <div className="dialog-body">
-              <h2>要把目前草稿發布給訪客嗎？</h2>
+              <h2>發布前檢查</h2>
               <p>公開網址：<strong>retrodesk.me/{store.username}</strong></p>
-              <p>發布只會更新公開版本，你仍然可以繼續編輯下一版草稿。</p>
+              <ul className="publish-checks" aria-label="發布前檢查結果">
+                {publishChecks.map((check, index) => <li key={index} className={check.level}><span aria-hidden="true">{check.level === "ok" ? "✓" : check.level === "warn" ? "!" : "×"}</span>{check.text}</li>)}
+              </ul>
+              <p>{hasBlockingCheck(publishChecks) ? "請先修正紅色項目，再重新發布。" : "黃色項目是建議，不會阻擋發布。發布後仍可繼續編輯下一版草稿。"}</p>
+              {publishing ? <div className="publish-progress" role="progressbar" aria-label="發布中"><i /></div> : null}
               <div className="button-row end">
                 <RetroButton disabled={publishing} onClick={() => setPublishPrompt(false)}>取消</RetroButton>
-                <RetroButton className="primary" disabled={publishing} onClick={confirmPublish}>{publishing ? "發布中…" : "確認發布"}</RetroButton>
+                <RetroButton className="primary" disabled={publishing || hasBlockingCheck(publishChecks)} onClick={confirmPublish}>{publishing ? "發布中…" : "確認發布"}</RetroButton>
               </div>
             </div>
           </section>

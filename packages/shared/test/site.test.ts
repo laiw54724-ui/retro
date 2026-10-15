@@ -99,3 +99,38 @@ describe("v2 schema extensions", () => {
     expect(SiteDocumentSchema.safeParse(createStarterDocument("x", "whiteweb", "oc")).success).toBe(true);
   });
 });
+
+import { buildPublishChecks, hasBlockingCheck } from "../src/publish-checks";
+import { createDemoDocument, DEMO_EXAMPLES } from "../src/demo";
+
+describe("publish checks", () => {
+  it("blocks an empty desktop and untitled windows, only warns on advice", () => {
+    expect(hasBlockingCheck(buildPublishChecks(createStarterDocument("x", "classic98", "blank")))).toBe(true);
+    const doc = createStarterDocument("x", "classic98", "card");
+    expect(hasBlockingCheck(buildPublishChecks(doc))).toBe(false);
+    doc.windows[0].title = " ";
+    expect(buildPublishChecks(doc).some((c) => c.level === "error" && c.text.includes("沒有標題"))).toBe(true);
+  });
+
+  it("warns about unset links and missing alt text", () => {
+    const doc = createStarterDocument("x", "classic98", "card");
+    const links = doc.windows.find((w) => w.type === "links")!;
+    if (links.type !== "links") throw new Error("x");
+    links.content.links[0].url = "https://";
+    const checks = buildPublishChecks(doc);
+    expect(checks.find((c) => c.text.includes("連結還沒設定"))?.level).toBe("warn");
+    expect(hasBlockingCheck(checks)).toBe(false);
+  });
+});
+
+describe("demo documents", () => {
+  it("are valid for every example", () => {
+    for (const example of DEMO_EXAMPLES) {
+      const doc = createDemoDocument(example.kind);
+      const parsed = SiteDocumentSchema.safeParse(doc);
+      expect(parsed.success, example.kind + ": " + (parsed.success ? "" : JSON.stringify(parsed.error.issues[0]))).toBe(true);
+      expect(doc.windows.length).toBeGreaterThan(0);
+      expect(hasBlockingCheck(buildPublishChecks(doc))).toBe(false);
+    }
+  });
+});

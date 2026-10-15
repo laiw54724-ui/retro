@@ -1,9 +1,13 @@
+import { useState } from "react";
+import { createDemoDocument, DEMO_EXAMPLES, type DemoKind } from "@retrodesk/shared";
 import { Link } from "react-router-dom";
 import { useAuth } from "../app/AuthProvider";
 import { RetroButton } from "../components/RetroButton";
+import { VisitorPreview } from "../features/editor/VisitorPreview";
 
 export function LandingPage() {
   const { user } = useAuth();
+  const [demo, setDemo] = useState<DemoKind | null>(null);
   return (
     <main className="landing-shell">
       <section className="landing-window retro-panel">
@@ -46,15 +50,17 @@ export function LandingPage() {
       <section id="examples" className="retro-panel examples">
         <header className="landing-titlebar">範例作品</header>
         <div className="example-grid">
-          {["電子名片", "復古 IG", "OC 展示頁", "作品集"].map((name) => (
-            <article key={name}>
+          {DEMO_EXAMPLES.map((example) => (
+            <button type="button" className="example-card" key={example.kind} onClick={() => setDemo(example.kind)}>
               <div className="example-thumb"><div /><div /></div>
-              <strong>{name}</strong>
-              <p>用不同視窗組成自己的小網站。</p>
-            </article>
+              <strong>{example.name}</strong>
+              <p>{example.desc}</p>
+              <span>開啟互動範例 →</span>
+            </button>
           ))}
         </div>
       </section>
+      {demo ? <VisitorPreview document={createDemoDocument(demo)} username={`demo-${demo}`} published onClose={() => setDemo(null)} /> : null}
     </main>
   );
 }

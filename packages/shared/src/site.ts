@@ -65,7 +65,8 @@ export const WindowLayoutSchema = z.object({
 });
 
 const SafeUrlSchema = z.string().max(2048).refine((value) => {
-  if (value === "") return true;
+  // A bare scheme is what the editor pre-fills; treat it as "not filled in yet" (rendered as an inert link).
+  if (value === "" || value === "https://" || value === "http://") return true;
   try {
     const url = new URL(value);
     return ["http:", "https:", "mailto:"].includes(url.protocol);

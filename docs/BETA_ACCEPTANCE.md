@@ -69,6 +69,26 @@ It runs Chromium against a local Vite build with mocked public API data and chec
 - horizontal overflow
 - critical axe violations on the landing page
 
+## V2 redesign repository acceptance
+
+Verified on the `feat/v2-redesign` branch with unit tests, typechecking, production builds, and Chromium E2E:
+
+- [x] layout mode drags and resizes windows, drags desktop icons, applies optional 8 px snapping, and persists positions in the draft
+- [x] the asset library lists, uploads, filters, and deletes owner-scoped image/icon assets
+- [x] document, gallery, links, about, and Instagram modules share visitor views with inline editor controls
+- [x] gallery and profile media accept uploaded images and normalized public Google Drive links
+- [x] custom link colors/icons render in the editor and visitor views
+- [x] Instagram navigation, follow, likes, carousel, comments, saves, highlights, and overflow menu are interactive
+- [x] Instagram visibility/interaction switches affect the visitor view
+- [x] documents saved before the v2 fields were added load through schema defaults
+- [x] onboarding offers blank, card, OC, portfolio, and Instagram starters
+- [x] landing examples open as interactive visitor previews
+- [x] publishing shows blocking errors separately from non-blocking advice
+- [x] the shared mobile screen is used by editing, draft preview, and published visitor pages
+- [x] public pages remain reachable without horizontal overflow at 320 / 390 / 430 px
+
+These checks verify repository behavior only. They do not replace the staging-only acceptance below.
+
 ## Staging-only acceptance before inviting users
 
 These require real Supabase + Cloudflare resources and therefore cannot be honestly marked complete from repository CI alone.
