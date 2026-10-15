@@ -15,6 +15,7 @@ test("editor window controls minimize, close, maximize and restore without chang
 
   const dialog = page.getByRole("dialog", { name: "About.exe" });
   await expect(dialog).toBeVisible();
+  await expect(page.locator(".taskbar-clock")).toHaveText(/^\d{2}:\d{2}$/);
 
   await dialog.getByRole("button", { name: "最小化" }).click();
   await expect(dialog).toBeHidden();

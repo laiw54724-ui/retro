@@ -8,6 +8,7 @@ import { MobilePreview } from "./MobilePreview";
 export function VisitorPreview({ document, username, published, onClose }: { document: SiteDocument; username: string; published: boolean; onClose: () => void }) {
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const tv = themeView(document.theme);
+  const imageWallpaper = document.theme.pattern === "image" && !!document.theme.wallImage;
   return (
     <div className="preview-overlay" role="dialog" aria-label="訪客預覽">
       <div className="preview-bar">
@@ -21,7 +22,7 @@ export function VisitorPreview({ document, username, published, onClose }: { doc
       </div>
       <div className="preview-body">
         {device === "desktop" ? (
-          <main className="visitor-page preview-page" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize }}>
+          <main className="visitor-page preview-page" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: imageWallpaper ? "center" : "0 0", backgroundRepeat: imageWallpaper ? "no-repeat" : "repeat" }}>
             <VisitorDesktop document={document} />
           </main>
         ) : (

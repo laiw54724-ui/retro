@@ -1,6 +1,9 @@
 import { useMemo, useRef, useState, type PointerEvent } from "react";
 import type { DesktopWindow, SiteDocument } from "@retrodesk/shared";
+import { Icon } from "../../components/Icon";
 import { RetroWindow } from "../../components/RetroWindow";
+import { themeView } from "../../lib/themeView";
+import { DesktopTaskbar } from "./DesktopTaskbar";
 import { WindowRenderer } from "./WindowRenderer";
 
 type WindowStatus = "open" | "minimized" | "closed";
@@ -40,6 +43,7 @@ export function VisitorDesktop({ document }: { document: SiteDocument }) {
   const [runtime, setRuntime] = useState<RuntimeMap>(() => initialRuntime(document));
   const desktopRef = useRef<HTMLDivElement | null>(null);
   const gesture = useRef<Gesture | null>(null);
+  const tv = themeView(document.theme);
 
   const topZ = useMemo(
     () => Math.max(0, ...Object.values(runtime).filter((item) => item.status === "open").map((item) => item.z)),
@@ -177,7 +181,7 @@ export function VisitorDesktop({ document }: { document: SiteDocument }) {
   }
 
   return (
-    <div ref={desktopRef} className="visitor-desktop">
+    <div ref={desktopRef} className="visitor-desktop" style={{ fontFamily: tv.fontFamily, color: tv.text }}>
       {document.windows.map((window, index) => {
         const layout = window.layout.desktop;
         const iconX = layout.iconX ?? 16 + Math.floor(index / 7) * 88;
@@ -186,12 +190,12 @@ export function VisitorDesktop({ document }: { document: SiteDocument }) {
           <button
             key={"desktop-icon-" + window.id}
             type="button"
-            className="desktop-file visitor-icon"
+            className="deskicon visitor-icon"
             style={{ left: iconX, top: iconY }}
             onClick={() => openWindow(window.id)}
           >
-            <span className="file-icon" />
-            <small>{window.title}</small>
+            <span className="deskicon-tile" style={{ background: tv.tileBg, boxShadow: tv.tileShadow }}><Icon name={window.icon} size={32} /></span>
+            <small className="deskicon-label" style={{ background: tv.labelBg, color: tv.labelColor, border: tv.labelBorder, borderRadius: tv.labelRadius, textShadow: tv.labelShadow }}>{window.title}</small>
           </button>
         );
       })}
@@ -233,22 +237,17 @@ export function VisitorDesktop({ document }: { document: SiteDocument }) {
         );
       })}
 
-      <div className="taskbar visitor-taskbar" style={{ background: document.theme.taskbar }}>
-        <button type="button" className="start-button">開始</button>
-        <div className="visitor-task-buttons">
-          {document.windows.filter((window) => runtime[window.id]?.status !== "closed").map((window) => (
-            <button
-              key={window.id}
-              type="button"
-              className={runtime[window.id]?.status === "open" ? "active" : ""}
-              onClick={() => taskbarToggle(window.id)}
-            >
-              {window.title}
-            </button>
-          ))}
-        </div>
-        <span className="visitor-clock">{document.siteName}</span>
-      </div>
+      <DesktopTaskbar
+        document={document}
+        visitor
+        tasks={document.windows.map((desktopWindow) => ({
+          window: desktopWindow,
+          visible: runtime[desktopWindow.id]?.status !== "closed",
+          active: runtime[desktopWindow.id]?.status === "open" && runtime[desktopWindow.id]?.z === topZ
+        }))}
+        onOpen={openWindow}
+        onToggle={taskbarToggle}
+      />
     </div>
   );
 }
