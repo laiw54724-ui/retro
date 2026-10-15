@@ -1,7 +1,8 @@
 import { useId, useState, type ChangeEvent } from "react";
-import type { DesktopWindow, DocumentBlock } from "@retrodesk/shared";
+import { normalizeImageUrl, type DesktopWindow, type DocumentBlock } from "@retrodesk/shared";
 import { api } from "../../lib/api";
 import { RetroButton } from "../../components/RetroButton";
+import { CropEditor } from "./CropEditor";
 
 type Props = {
   window: DesktopWindow;
@@ -65,14 +66,32 @@ function ItemActions({ index, length, onMove, onRemove }: {
   );
 }
 
+function fileTitle(file?: File) {
+  return file ? file.name.replace(/\.[^.]+$/, "") : "圖片";
+}
+
 function MediaUpload({ siteId, label, onUploaded, onMessage }: {
   siteId: string;
   label: string;
-  onUploaded: (url: string, file: File) => void;
+  onUploaded: (url: string, file?: File) => void;
   onMessage: (message: string) => void;
 }) {
   const inputId = useId();
   const [busy, setBusy] = useState(false);
+  const [linking, setLinking] = useState(false);
+  const [link, setLink] = useState("");
+
+  function useLink() {
+    const result = normalizeImageUrl(link);
+    if (!result.ok) {
+      onMessage(result.reason);
+      return;
+    }
+    onUploaded(result.url);
+    onMessage(result.source === "google-drive" ? "已使用 Google 雲端圖片。請確認檔案共用權限是「知道連結的任何人都能檢視」。" : "已使用圖片連結。");
+    setLink("");
+    setLinking(false);
+  }
 
   async function upload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -100,10 +119,21 @@ function MediaUpload({ siteId, label, onUploaded, onMessage }: {
   }
 
   return (
-    <label className={"media-upload " + (busy ? "busy" : "")} htmlFor={inputId}>
-      <input id={inputId} type="file" accept="image/jpeg,image/png,image/webp,image/gif" disabled={busy} onChange={upload} />
-      <span>{busy ? "上傳中…" : label}</span>
-    </label>
+    <div className="media-source">
+      <label className={"media-upload " + (busy ? "busy" : "")} htmlFor={inputId}>
+        <input id={inputId} type="file" accept="image/jpeg,image/png,image/webp,image/gif" disabled={busy} onChange={upload} />
+        <span>{busy ? "上傳中…" : label}</span>
+      </label>
+      {linking ? (
+        <div className="media-link">
+          <input type="url" inputMode="url" placeholder="貼上圖片或 Google 雲端連結" value={link} onChange={(event) => setLink(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); useLink(); } }} />
+          <RetroButton type="button" className="primary" onClick={useLink}>使用連結</RetroButton>
+          <RetroButton type="button" onClick={() => setLinking(false)}>取消</RetroButton>
+        </div>
+      ) : (
+        <button type="button" className="media-link-toggle" onClick={() => setLinking(true)}>或貼上圖片連結（含 Google 雲端）</button>
+      )}
+    </div>
   );
 }
 
@@ -159,7 +189,7 @@ export function InspectorContent({ window, allWindows, siteId, update, onMessage
 
               {block.kind === "image" ? (
                 <>
-                  {block.src ? <img className="inspector-thumb" src={block.src} alt="" /> : <div className="inspector-thumb placeholder">尚未上傳</div>}
+                  {block.src ? <img className="inspector-thumb" referrerPolicy="no-referrer" src={block.src} alt="" /> : <div className="inspector-thumb placeholder">尚未上傳</div>}
                   <MediaUpload
                     siteId={siteId}
                     label={block.src ? "更換圖片" : "上傳圖片"}
@@ -210,12 +240,12 @@ export function InspectorContent({ window, allWindows, siteId, update, onMessage
           siteId={siteId}
           label="+ 上傳圖片"
           onMessage={onMessage}
-          onUploaded={(url, file) => updateImages([...images, { id: makeId(), src: url, title: file.name.replace(/\.[^.]+$/, ""), caption: "" }])}
+          onUploaded={(url, file) => updateImages([...images, { id: makeId(), src: url, title: fileTitle(file), caption: "" }])}
         />
         <div className="inspector-items">
           {images.map((image, index) => (
             <div className="inspector-item media-item" key={image.id}>
-              {image.src ? <img className="inspector-thumb" src={image.src} alt="" /> : null}
+              {image.src ? <img className="inspector-thumb" referrerPolicy="no-referrer" src={image.src} alt="" /> : null}
               <div className="item-title">
                 <strong>圖片 {index + 1}</strong>
                 <ItemActions
@@ -288,8 +318,8 @@ export function InspectorContent({ window, allWindows, siteId, update, onMessage
     return (
       <section className="inspector-section">
         <div className="section-heading"><strong>名片內容</strong></div>
-        {content.avatar ? <img className="inspector-thumb avatar-thumb" src={content.avatar} alt="" /> : null}
-        <MediaUpload siteId={siteId} label={content.avatar ? "更換頭像" : "上傳頭像"} onMessage={onMessage} onUploaded={(url) => setContent({ ...content, avatar: url })} />
+        {content.avatar ? <CropEditor src={content.avatar} crop={content.avatarCrop} onChange={(avatarCrop) => setContent({ ...content, avatarCrop })} /> : null}
+        <MediaUpload siteId={siteId} label={content.avatar ? "更換頭像" : "上傳頭像"} onMessage={onMessage} onUploaded={(url) => setContent({ ...content, avatar: url, avatarCrop: undefined })} />
         <label>暱稱<input value={content.nickname} onChange={(event) => setContent({ ...content, nickname: event.target.value })} /></label>
         <label>橫幅文字<input value={content.banner} onChange={(event) => setContent({ ...content, banner: event.target.value })} /></label>
         <label>簡介<textarea rows={6} value={content.bio} onChange={(event) => setContent({ ...content, bio: event.target.value })} /></label>
@@ -325,8 +355,8 @@ export function InspectorContent({ window, allWindows, siteId, update, onMessage
   return (
     <section className="inspector-section">
       <div className="section-heading"><strong>Retro IG 個人頁</strong></div>
-      {profile.avatar ? <img className="inspector-thumb avatar-thumb" src={profile.avatar} alt="" /> : null}
-      <MediaUpload siteId={siteId} label={profile.avatar ? "更換頭像" : "上傳頭像"} onMessage={onMessage} onUploaded={(url) => setContent({ ...content, profile: { ...profile, avatar: url } })} />
+      {profile.avatar ? <CropEditor src={profile.avatar} crop={profile.avatarCrop} onChange={(avatarCrop) => setContent({ ...content, profile: { ...profile, avatarCrop } })} /> : null}
+      <MediaUpload siteId={siteId} label={profile.avatar ? "更換頭像" : "上傳頭像"} onMessage={onMessage} onUploaded={(url) => setContent({ ...content, profile: { ...profile, avatar: url, avatarCrop: undefined } })} />
       <label>帳號<input value={profile.username} onChange={(event) => setContent({ ...content, profile: { ...profile, username: event.target.value } })} /></label>
       <label>顯示名稱<input value={profile.name} onChange={(event) => setContent({ ...content, profile: { ...profile, name: event.target.value } })} /></label>
       <label>補充文字<input value={profile.alt} onChange={(event) => setContent({ ...content, profile: { ...profile, alt: event.target.value } })} /></label>
@@ -338,10 +368,10 @@ export function InspectorContent({ window, allWindows, siteId, update, onMessage
       <label>Followed by<input value={profile.followedBy} onChange={(event) => setContent({ ...content, profile: { ...profile, followedBy: event.target.value } })} /></label>
 
       <div className="section-heading compact"><strong>貼文</strong><span>{images.length} 張</span></div>
-      <MediaUpload siteId={siteId} label="+ 上傳貼文圖片" onMessage={onMessage} onUploaded={(url, file) => setContent({ ...content, images: [...images, { id: makeId(), src: url, title: file.name.replace(/\.[^.]+$/, ""), caption: "" }] })} />
+      <MediaUpload siteId={siteId} label="+ 上傳貼文圖片" onMessage={onMessage} onUploaded={(url, file) => setContent({ ...content, images: [...images, { id: makeId(), src: url, title: fileTitle(file), caption: "" }] })} />
       {images.map((image, index) => (
         <div className="inspector-item media-item" key={image.id}>
-          {image.src ? <img className="inspector-thumb" src={image.src} alt="" /> : null}
+          {image.src ? <img className="inspector-thumb" referrerPolicy="no-referrer" src={image.src} alt="" /> : null}
           <div className="item-title"><strong>貼文 {index + 1}</strong><ItemActions index={index} length={images.length} onMove={(direction) => setContent({ ...content, images: moveItem(images, index, direction) })} onRemove={() => setContent({ ...content, images: images.filter((item) => item.id !== image.id) })} /></div>
           <input placeholder="圖片標題" value={image.title} onChange={(event) => setContent({ ...content, images: images.map((item) => item.id === image.id ? { ...item, title: event.target.value } : item) })} />
           <textarea rows={3} placeholder="貼文說明" value={image.caption} onChange={(event) => setContent({ ...content, images: images.map((item) => item.id === image.id ? { ...item, caption: event.target.value } : item) })} />
