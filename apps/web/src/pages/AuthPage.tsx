@@ -37,6 +37,20 @@ export function AuthPage() {
     navigate("/onboarding");
   }
 
+  async function signInWithGoogle() {
+    setBusy(true);
+    setError("");
+    setMessage("");
+    const result = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/onboarding` }
+    });
+    if (result.error) {
+      setBusy(false);
+      setError(result.error.message);
+    }
+  }
+
   return (
     <main className="auth-shell">
       <form className="retro-panel auth-window" onSubmit={submit}>
@@ -45,6 +59,10 @@ export function AuthPage() {
           <button type="button" className={mode === "login" ? "active" : ""} onClick={() => setMode("login")}>登入</button>
           <button type="button" className={mode === "signup" ? "active" : ""} onClick={() => setMode("signup")}>註冊</button>
         </div>
+        <div className="button-row oauth-row">
+          <RetroButton type="button" disabled={busy} onClick={signInWithGoogle}>使用 Google 繼續</RetroButton>
+        </div>
+        <p className="oauth-divider">或使用電子郵件</p>
         <label>電子郵件<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
         <label>密碼<input type="password" value={password} minLength={6} onChange={(event) => setPassword(event.target.value)} required /></label>
         {error ? <p className="error-box">{error}</p> : null}
