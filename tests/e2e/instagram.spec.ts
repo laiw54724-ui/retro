@@ -123,6 +123,18 @@ test("desktop Instagram window owns wheel and keyboard scrolling", async ({ page
   await expect.poll(() => scroll.evaluate((node) => node.scrollTop)).toBe(0);
 });
 
+test("Win98 keeps window chrome square and OC media circular", async ({ page }) => {
+  const { win } = await openEditor(page);
+  await win.getByRole("tab", { name: "▶ 預覽互動" }).click();
+  await expect(win.locator(".ig-app")).toHaveClass(/ig-skin-win98/);
+
+  await expect(win.locator(".ig-avatar").first()).toHaveCSS("border-radius", "50%");
+  await expect(win.locator(".ig-avatar-ring").first()).toHaveCSS("border-radius", "50%");
+  await expect(win.locator(".ig-hl-ring").first()).toHaveCSS("border-radius", "50%");
+  await expect(win.locator(".ig-hl-in").first()).toHaveCSS("border-radius", "50%");
+  await expect(win.locator(".retro-titlebar")).toHaveCSS("border-radius", "0px");
+});
+
 test("legacy Instagram defaults to Win98 and can switch to Modern", async ({ page }) => {
   const { win, saves } = await openEditor(page);
   await expect(win.getByRole("button", { name: "Win98" })).toHaveAttribute("aria-pressed", "true");
