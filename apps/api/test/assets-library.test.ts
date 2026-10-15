@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const filters: Array<[string, unknown]> = [];
 const deletedKeys: string[] = [];
-const assetRow = { id: "asset-1", object_key: "users/user-a/sites/site-a/asset-1.png" };
+const assetRow = { id: "asset-1", object_key: "users/user-a/sites/site-a/asset-1.png", migration_status: "not_required", legacy_object_key: null as string | null };
 
 function fakeQuery() {
   const query: Record<string, unknown> = {
@@ -58,6 +58,17 @@ describe("icon library endpoints", () => {
     const response = await assets.request("/sites/site-b/assets/asset-1", { method: "DELETE" }, env);
     expect(response.status).toBe(404);
     expect(deletedKeys).toEqual([]);
+  });
+
+  it("does not delete while a tracked legacy public copy is pending", async () => {
+    assetRow.migration_status = "pending";
+    assetRow.legacy_object_key = "users/user-a/sites/site-a/asset-1.png";
+    const response = await assets.request("/sites/site-a/assets/asset-1", { method: "DELETE" }, env);
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toMatchObject({ error: { code: "asset_public_copy_pending" } });
+    expect(deletedKeys).toEqual([]);
+    assetRow.migration_status = "not_required";
+    assetRow.legacy_object_key = null;
   });
 
   it("rejects anonymous draft and unknown namespaces before touching R2", async () => {

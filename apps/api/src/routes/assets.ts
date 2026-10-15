@@ -172,13 +172,14 @@ assets.delete("/sites/:siteId/assets/:assetId", async (c) => {
   const supabase = serviceClient(c.env);
   const { data: asset, error } = await supabase
     .from("site_assets")
-    .select("id,object_key")
+    .select("id,object_key,migration_status,legacy_object_key")
     .eq("id", assetId)
     .eq("site_id", siteId)
     .eq("owner_id", user.id)
     .maybeSingle();
   if (error) return jsonError(c, 500, "db_error", "Could not load asset");
   if (!asset) return jsonError(c, 404, "not_found", "Asset not found");
+  if (asset.migration_status === "pending" && asset.legacy_object_key) return jsonError(c, 409, "asset_public_copy_pending", "Republish the site and finish cleaning the old public copy before deleting this asset");
   // Defense in depth: never delete outside this user's own prefix.
   if (!asset.object_key.startsWith(`draft/users/${user.id}/sites/${siteId}/`) && !asset.object_key.startsWith(`users/${user.id}/sites/${siteId}/`)) return jsonError(c, 404, "not_found", "Asset not found");
 

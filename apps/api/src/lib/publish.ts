@@ -25,10 +25,10 @@ export async function copyReferencedAssets(
     const row = byId.get(id);
     if (!row) return { ok: false, code: "missing", assetId: id, message: `Referenced asset ${id} was not found` };
     if (row.owner_id !== input.ownerId || row.site_id !== input.siteId) return { ok: false, code: "foreign", assetId: id, message: `Referenced asset ${id} does not belong to this site` };
-    const draftPrefix = `draft/users/${input.ownerId}/sites/${input.siteId}/`;
-    if (row.storage_scope !== "draft_private" || !row.object_key.startsWith(draftPrefix)) return { ok: false, code: "foreign", assetId: id, message: `Referenced asset ${id} is not a private draft asset` };
-    const extension = row.object_key.match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase();
-    if (!extension || !["jpg", "jpeg", "png", "webp", "gif"].includes(extension)) return { ok: false, code: "unavailable", assetId: id, message: `Referenced asset ${id} has an unsupported key` };
+    const draftKey = new RegExp(`^draft/users/${escapeRegExp(input.ownerId)}/sites/${escapeRegExp(input.siteId)}/${escapeRegExp(id)}\\.(jpg|png|webp|gif)$`, "i");
+    const keyMatch = typeof row.object_key === "string" ? row.object_key.match(draftKey) : null;
+    if (row.storage_scope !== "draft_private" || !keyMatch) return { ok: false, code: "foreign", assetId: id, message: `Referenced asset ${id} is not a private draft asset` };
+    const extension = keyMatch[1].toLowerCase();
     const object = await env.ASSETS.get(row.object_key);
     if (!object) return { ok: false, code: "missing", assetId: id, message: `Referenced asset ${id} is missing from storage` };
     const key = `published/${input.username}/assets/${id}.${extension === "jpeg" ? "jpg" : extension}`;
@@ -44,6 +44,10 @@ export async function copyReferencedAssets(
   const document = replaceAssetReferences(input.document, replacements);
   if (collectAssetReferences(document).length) return { ok: false, code: "copy_failed", message: "Some asset references could not be rewritten" };
   return { ok: true, document, copied };
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 export function publishedArtifactKey(username: string, version: number): string {

@@ -25,6 +25,9 @@ describe("asset references", () => {
   it("allows references in image fields but rejects other schemes", () => {
     expect(ImageUrlSchema.safeParse(`retro-asset:${id}`).success).toBe(true);
     expect(ImageUrlSchema.safeParse("data:image/png;base64,abc").success).toBe(false);
+    expect(ThemeSchema.shape.wallImage.safeParse("ftp://example.com/wall.png").success).toBe(false);
+    expect(ThemeSchema.shape.wallImage.safeParse("javascript:alert(1)").success).toBe(false);
+    expect(ThemeSchema.shape.wallImage.safeParse("https://example.com/wall.png").success).toBe(true);
     expect(ThemeSchema.safeParse({ id: "x", name: "x", wall: "#000000", pattern: "image", patternColor: "#ffffff", wallImage: `retro-asset:${id}`, face: "#000000", light: "#ffffff", shadow: "#888888", dark: "#000000", text: "#000000", titleFrom: "#000000", titleTo: "#000000", taskbar: "#ffffff", accent: "#000000", font: "noto", iconStyle: "classic" }).success).toBe(true);
   });
 });

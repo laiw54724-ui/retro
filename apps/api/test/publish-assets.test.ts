@@ -23,4 +23,12 @@ describe("publish asset preparation", () => {
     expect(result).toMatchObject({ ok: false, code: "missing", assetId: id });
     expect(put).not.toHaveBeenCalled();
   });
+
+  it("rejects a draft key whose filename UUID does not match the reference", async () => {
+    const put = vi.fn();
+    const supabase = { from: () => ({ select: () => ({ in: async () => ({ data: [{ id, owner_id: "user-a", site_id: "site-a", object_key: `draft/users/user-a/sites/site-a/22222222-2222-4222-8222-222222222222.png`, storage_scope: "draft_private", mime_type: "image/png" }], error: null }) }) }) } as any;
+    const result = await copyReferencedAssets({ PUBLIC_ASSET_BASE_URL: "https://assets.example", ASSETS: { get: vi.fn(), put } } as any, supabase, { ownerId: "user-a", siteId: "site-a", username: "demo", document: withRef() });
+    expect(result).toMatchObject({ ok: false, code: "foreign", assetId: id });
+    expect(put).not.toHaveBeenCalled();
+  });
 });

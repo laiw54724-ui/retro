@@ -17,6 +17,14 @@ export const reservedUsernames = new Set([
   "www"
 ]);
 
+export const ImageUrlSchema = z.union([z.string().max(2048).refine((value) => {
+  try {
+    return ["http:", "https:"].includes(new URL(value).protocol);
+  } catch {
+    return false;
+  }
+}, "Unsupported image URL"), AssetReferenceSchema]);
+
 export const UsernameSchema = z
   .string()
   .trim()
@@ -32,7 +40,7 @@ export const ThemeSchema = z.object({
   wall: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   pattern: z.enum(["none", "dots", "checker", "stars", "image"]),
   patternColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
-  wallImage: z.union([z.string().url(), AssetReferenceSchema]).nullable().optional(),
+  wallImage: ImageUrlSchema.nullable().optional(),
   face: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   light: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   shadow: z.string().regex(/^#[0-9a-fA-F]{6}$/),
@@ -75,14 +83,6 @@ export const SafeUrlSchema = z.string().max(2048).refine((value) => {
     return false;
   }
 }, "Unsupported URL protocol");
-
-export const ImageUrlSchema = z.union([z.string().max(2048).refine((value) => {
-  try {
-    return ["http:", "https:"].includes(new URL(value).protocol);
-  } catch {
-    return false;
-  }
-}, "Unsupported image URL"), AssetReferenceSchema]);
 
 export const ImageCropSchema = z.object({
   x: z.number().min(0).max(100),
