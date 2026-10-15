@@ -158,9 +158,16 @@ export function migrateSiteDocumentV2(raw: unknown, options: { siteId: string })
   if (parsed.version === 2) return parsed;
   const source = parsed.document, profiles: ProfileEntityV2[] = [], posts: PostEntityV2[] = [], profileIds = new Set<string>(), postIds = new Set<string>(), windowIds = new Set<string>();
   if (new Set(source.windows.map((w) => w.id)).size !== source.windows.length) return invalid(raw, [{ path: ["windows"], message: "Duplicate window id", code: "duplicate_id" }]);
+  const windowIdMap = new Map<string, string>();
+  for (const window of source.windows) windowIdMap.set(window.id, boundedGeneratedId(window.id, windowIds));
   const windows = source.windows.map((window): DesktopWindowV2 => {
-    const windowId = boundedGeneratedId(window.id, windowIds);
-    if (window.type !== "instagram") return DesktopWindowV2Schema.parse({ ...window, id: windowId });
+    const windowId = windowIdMap.get(window.id)!;
+    if (window.type !== "instagram") {
+      const normalized = window.type === "links"
+        ? { ...window, id: windowId, content: { ...window.content, links: window.content.links.map((link) => ({ ...link, windowId: link.windowId ? (windowIdMap.get(link.windowId) ?? link.windowId) : "" })) } }
+        : { ...window, id: windowId };
+      return DesktopWindowV2Schema.parse(normalized);
+    }
     const profileId = boundedGeneratedId(`profile:${windowId}`, profileIds);
     profiles.push({ kind: "profile", id: profileId, siteId: options.siteId, visibility: "published", ...window.content.profile });
     for (const post of window.content.images) {

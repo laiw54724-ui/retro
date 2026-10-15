@@ -164,4 +164,23 @@ describe("versioned site document contract", () => {
     expect(parseSiteDocument(first.document)).toMatchObject({ ok: true, version: 2 });
     expect(migrateSiteDocumentV2(input, { siteId: "site-a" })).toEqual(first);
   });
+
+  it("rewrites links to bounded overlong non-Instagram window IDs", () => {
+    const input = fixture();
+    // v1 LinkItem.windowId is capped at 120; exercise the upper boundary while
+    // keeping the source document valid under the unchanged v1 contract.
+    const longTarget = "target-" + "t".repeat(113);
+    input.windows = input.windows.map((window) => window.id === "gallery-1" ? { ...window, id: longTarget } : window);
+    const links = input.windows.find((window) => window.id === "links-1");
+    if (!links || links.type !== "links") throw new Error("links fixture missing");
+    links.content.links[0].windowId = longTarget;
+    const migrated = migrateSiteDocumentV2(input, { siteId: "site-a" });
+    expect(migrated.ok).toBe(true);
+    if (!migrated.ok) return;
+    const target = migrated.document.windows.find((window) => window.title === "Gallery");
+    const linkWindow = migrated.document.windows.find((window) => window.id === "links-1");
+    expect(target?.id.length).toBeLessThanOrEqual(160);
+    expect(linkWindow && linkWindow.type === "links" ? linkWindow.content.links[0].windowId : "").toBe(target?.id);
+    expect(resolveEntityRef(migrated.document, { siteId: "site-a", id: target!.id, kind: "window" }, "site-a")).toMatchObject({ ok: true });
+  });
 });
