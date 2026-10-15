@@ -233,13 +233,21 @@ export function migrateSiteDocumentV2(raw: unknown, options: { siteId: string })
   if (new Set(source.windows.map((w) => w.id)).size !== source.windows.length) return invalid(raw, [{ path: ["windows"], message: "Duplicate window id", code: "duplicate_id" }]);
   const windowIdMap = new Map<string, string>();
   for (const window of source.windows) windowIdMap.set(window.id, boundedGeneratedId(window.id, windowIds));
-  const windows = source.windows.map((window): DesktopWindowV2 => {
+  // Legacy documents are compared using the canonical handle policy during
+  // migration, while an already-valid v2 raw document keeps validation-only
+  // identity semantics above. Validate every converted window without letting
+  // an adversarial but v1-valid nested identifier throw from `.parse()`.
+  const windows: DesktopWindowV2[] = [];
+  for (const window of source.windows) {
     const windowId = windowIdMap.get(window.id)!;
     if (window.type !== "instagram") {
       const normalized = window.type === "links"
         ? { ...window, id: windowId, content: { ...window.content, links: window.content.links.map((link) => ({ ...link, windowId: link.windowId ? (windowIdMap.get(link.windowId) ?? link.windowId) : "" })) } }
         : { ...window, id: windowId };
-      return DesktopWindowV2Schema.parse(normalized);
+      const parsedWindow = DesktopWindowV2Schema.safeParse(normalized);
+      if (!parsedWindow.success) return invalid(raw, diagnosticsFrom(parsedWindow.error));
+      windows.push(parsedWindow.data);
+      continue;
     }
     const profileId = boundedGeneratedId(`profile:${windowId}`, profileIds);
     const legacy = window.content.profile;
@@ -249,8 +257,10 @@ export function migrateSiteDocumentV2(raw: unknown, options: { siteId: string })
       const postId = boundedGeneratedId(`post:${windowId}:${post.id}`, postIds);
       posts.push({ kind: "post", siteId: options.siteId, visibility: "published", authorProfileId: profileId, ...post, id: postId });
     }
-    return { ...window, id: windowId, content: { skin: window.content.skin, profileRef: { siteId: options.siteId, id: profileId, kind: "profile" } } };
-  });
+    const migratedWindow = DesktopWindowV2Schema.safeParse({ ...window, id: windowId, content: { skin: window.content.skin, profileRef: { siteId: options.siteId, id: profileId, kind: "profile" } } });
+    if (!migratedWindow.success) return invalid(raw, diagnosticsFrom(migratedWindow.error));
+    windows.push(migratedWindow.data);
+  }
   const migrated: SiteDocumentV2 = { schemaVersion: 2, siteName: source.siteName, theme: source.theme, windows, mobileColumns: source.mobileColumns, entities: { profiles, posts } };
   const validated = parseSiteDocument(migrated);
   if (validated.ok && validated.version === 2) return validated;
@@ -352,7 +362,7 @@ export function createProfile(document: SiteDocumentV2Input, input: Record<strin
   next.entities.profiles = [...next.entities.profiles, profile];
   const outputDiagnostics = validatedOutput(next);
   if (outputDiagnostics.length) return { ok: false, code: "invalid", diagnostics: outputDiagnostics };
-  return { ok: true, document: next, profile };
+  return { ok: true, document: next, profile: structuredClone(profile) };
 }
 
 export function updateProfile(document: SiteDocumentV2Input, profileId: string, patch: Record<string, unknown>, options: { siteId: string }): ProfileOperationResult {
@@ -368,10 +378,12 @@ export function updateProfile(document: SiteDocumentV2Input, profileId: string, 
   const next = structuredClone(document); next.entities.profiles[index] = parsed.data;
   const outputDiagnostics = validatedOutput(next);
   if (outputDiagnostics.length) return { ok: false, code: "invalid", diagnostics: outputDiagnostics };
-  return { ok: true, document: next, profile: parsed.data };
+  return { ok: true, document: next, profile: structuredClone(parsed.data) };
 }
 
 export function duplicateProfile(document: SiteDocumentV2Input, profileId: string, options: { siteId: string; id?: string; handle?: string }): ProfileOperationResult {
+  const diagnostics = validDocument(document);
+  if (diagnostics.length) return { ok: false, code: "invalid", diagnostics };
   const source = document.entities.profiles.find((profile) => profile.id === profileId && profile.siteId === options.siteId);
   if (!source) return profileError(["entities", "profiles"], "Profile not found", "missing");
   const handle = options.handle ?? `${source.handle ?? source.username}-copy`;
@@ -396,7 +408,7 @@ export function deleteOrRetargetProfile(document: SiteDocumentV2Input, profileId
   next.entities.profiles = next.entities.profiles.filter((profile) => profile.id !== profileId);
   const outputDiagnostics = validatedOutput(next);
   if (outputDiagnostics.length) return { ok: false, code: "invalid", diagnostics: outputDiagnostics };
-  return { ok: true, document: next, profile: ProfileEntityV2Schema.parse(source) };
+  return { ok: true, document: next, profile: structuredClone(ProfileEntityV2Schema.parse(source)) };
 }
 
 export const createProfileEntity = createProfile;

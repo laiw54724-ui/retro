@@ -273,4 +273,35 @@ describe("versioned site document contract", () => {
     expect(unreferenced.ok).toBe(true);
     if (unreferenced.ok) expect(parseSiteDocument(unreferenced.document)).toMatchObject({ ok: true, version: 2 });
   });
+
+  it("returns typed diagnostics instead of throwing for v1-valid overlong nested IDs", () => {
+    const input = fixture();
+    const links = input.windows.find((window) => window.type === "links");
+    if (!links || links.type !== "links") throw new Error("fixture missing links window");
+    links.content.links[0].id = "link-" + "x".repeat(300);
+    expect(() => migrateSiteDocumentV2(input, { siteId: "site-a" })).not.toThrow();
+    expect(migrateSiteDocumentV2(input, { siteId: "site-a" })).toMatchObject({ ok: false, code: "invalid", diagnostics: expect.arrayContaining([expect.objectContaining({ path: expect.arrayContaining(["links"]) })]) });
+  });
+
+  it("normalizes authored handles while preserving raw-v2 validation identity and isolating returned profiles", () => {
+    const migrated = migrateSiteDocumentV2(fixture(), { siteId: "site-a" });
+    expect(migrated.ok).toBe(true);
+    if (!migrated.ok) return;
+    const raw = structuredClone(migrated.document);
+    delete raw.mobileColumns;
+    const validated = migrateSiteDocumentV2(raw, { siteId: "site-a" });
+    expect(validated.ok && validated.document).toBe(raw);
+    const created = createProfile(migrated.document, { handle: "  New-OC  ", displayName: "New OC", name: "New OC", avatar: null }, { siteId: "site-a", id: "profile:new" });
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    expect(created.profile.handle).toBe("new-oc");
+    created.profile.displayName = "changed result only";
+    expect(created.document.entities.profiles.find((profile) => profile.id === "profile:new")?.displayName).toBe("New OC");
+    const updated = updateProfile(created.document, "profile:new", { handle: "  RENAMED  " }, { siteId: "site-a" });
+    expect(updated.ok).toBe(true);
+    if (updated.ok) {
+      updated.profile.handle = "mutated result only";
+      expect(updated.document.entities.profiles.find((profile) => profile.id === "profile:new")?.handle).toBe("renamed");
+    }
+  });
 });
