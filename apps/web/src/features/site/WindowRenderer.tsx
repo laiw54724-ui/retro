@@ -1,5 +1,5 @@
 import type { DesktopWindow, RetroTheme } from "@retrodesk/shared";
-import { themeView } from "../../lib/themeView";
+import { useThemeView } from "../../lib/themeView";
 import { renderModule } from "../modules/registry";
 import type { LinkAction, ModuleCtx } from "../modules/types";
 
@@ -28,7 +28,7 @@ function openExternal(url: string) {
 }
 
 export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, mobile = false, editing = false, siteId, upload, onUpdate }: Props) {
-  const tv = themeView(theme);
+  const tv = useThemeView(theme);
   const onLink = (action: LinkAction) => {
     if (editing) return; // links are inert while editing
     if (action.target === "window") { if (action.windowId) onOpenWindow?.(action.windowId); return; }

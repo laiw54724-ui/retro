@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { THEME_PRESETS, type DesktopWindow, type SiteDocument } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { IconPicker } from "../modules/links/IconPicker";
-import { themeView } from "../../lib/themeView";
+import { themeView, useThemeView } from "../../lib/themeView";
 import { moduleDefinitions } from "../modules/registry";
 import { useEditorStore } from "../editor/store";
 import { WindowRenderer } from "./WindowRenderer";
@@ -25,7 +25,7 @@ const clock = () => new Date().toTimeString().slice(0, 5);
 export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview }: Props) {
   const editor = mode === "editor";
   const store = useEditorStore();
-  const tv = themeView(document.theme);
+  const tv = useThemeView(document.theme);
   const [openId, setOpenId] = useState<string | null>(null);
   const [sheet, setSheet] = useState<Sheet>(null);
   const [inlineEdit, setInlineEdit] = useState(false);

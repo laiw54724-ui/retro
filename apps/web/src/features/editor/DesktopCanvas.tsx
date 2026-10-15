@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type PointerEvent } from "react";
 import type { DesktopWindow } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { RetroWindow } from "../../components/RetroWindow";
-import { themeView } from "../../lib/themeView";
+import { useThemeView } from "../../lib/themeView";
 import { WindowRenderer } from "../site/WindowRenderer";
 import { DesktopTaskbar } from "../site/DesktopTaskbar";
 import { useEditorStore } from "./store";
@@ -35,7 +35,7 @@ export function DesktopCanvas({ siteId, upload }: Props) {
   const drag = useRef<Gesture | null>(null);
   const suppressClick = useRef(false);
   const canvasRef = useRef<HTMLDivElement | null>(null);
-  const tv = themeView(document.theme);
+  const tv = useThemeView(document.theme);
   const snapping = layoutMode && snap;
 
   const round = (value: number) => (snapping ? Math.round(value / GRID) * GRID : Math.round(value));

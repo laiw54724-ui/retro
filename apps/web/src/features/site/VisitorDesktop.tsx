@@ -2,7 +2,7 @@ import { useMemo, useRef, useState, type PointerEvent } from "react";
 import type { DesktopWindow, SiteDocument } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { RetroWindow } from "../../components/RetroWindow";
-import { themeView } from "../../lib/themeView";
+import { useThemeView } from "../../lib/themeView";
 import { DesktopTaskbar } from "./DesktopTaskbar";
 import { WindowRenderer } from "./WindowRenderer";
 
@@ -43,7 +43,7 @@ export function VisitorDesktop({ document }: { document: SiteDocument }) {
   const [runtime, setRuntime] = useState<RuntimeMap>(() => initialRuntime(document));
   const desktopRef = useRef<HTMLDivElement | null>(null);
   const gesture = useRef<Gesture | null>(null);
-  const tv = themeView(document.theme);
+  const tv = useThemeView(document.theme);
 
   const topZ = useMemo(
     () => Math.max(0, ...Object.values(runtime).filter((item) => item.status === "open").map((item) => item.z)),

@@ -1,5 +1,7 @@
 import type { RetroTheme } from "@retrodesk/shared";
 import { cssUrl } from "./icons";
+import { useMemo } from "react";
+import { useAssetSource } from "./assetSource";
 
 export const CUBIC_FONT_STACK = "'Cubic 11', system-ui, sans-serif";
 
@@ -75,6 +77,15 @@ export function themeView(t: RetroTheme): ThemeView {
     tileBg: tile ? t.face : "transparent",
     tileShadow: tile ? bevel : "none"
   };
+}
+
+export function useThemeView(t: RetroTheme): ThemeView {
+  const view = useMemo(() => themeView(t), [t]);
+  const resolvedWallpaper = useAssetSource(t.wallImage);
+  return useMemo(() => {
+    if (t.pattern !== "image" || !resolvedWallpaper || resolvedWallpaper === t.wallImage) return view;
+    return { ...view, wallImageCss: cssUrl(resolvedWallpaper) };
+  }, [resolvedWallpaper, t.pattern, t.wallImage, view]);
 }
 
 /** Linear blend of two #rrggbb colours (t = 0 → a, t = 1 → b). */

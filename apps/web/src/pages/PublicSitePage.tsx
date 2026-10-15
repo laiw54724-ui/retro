@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { normalizeDocument, type SiteDocument } from "@retrodesk/shared";
 import { Navigate, useParams } from "react-router-dom";
 import { api } from "../lib/api";
-import { themeView } from "../lib/themeView";
+import { useThemeView } from "../lib/themeView";
 import { MobileScreen } from "../features/site/MobileScreen";
 import { VisitorDesktop } from "../features/site/VisitorDesktop";
 
@@ -27,7 +27,7 @@ export function PublicSitePage() {
   if (!document) return <div className="boot-screen">Loading desktop...</div>;
 
   const theme = document.theme;
-  const tv = themeView(theme);
+  const tv = useThemeView(theme);
   const imageWallpaper = theme.pattern === "image" && !!theme.wallImage;
   return (
     <main

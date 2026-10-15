@@ -1,13 +1,13 @@
 import { useState } from "react";
 import type { SiteDocument } from "@retrodesk/shared";
-import { themeView } from "../../lib/themeView";
+import { useThemeView } from "../../lib/themeView";
 import { VisitorDesktop } from "../site/VisitorDesktop";
 import { MobilePreview } from "./MobilePreview";
 
 /** Full-screen "what a visitor sees" view of the current draft. */
 export function VisitorPreview({ document, username, published, onClose }: { document: SiteDocument; username: string; published: boolean; onClose: () => void }) {
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
-  const tv = themeView(document.theme);
+  const tv = useThemeView(document.theme);
   const imageWallpaper = document.theme.pattern === "image" && !!document.theme.wallImage;
   return (
     <div className="preview-overlay" role="dialog" aria-label="訪客預覽">

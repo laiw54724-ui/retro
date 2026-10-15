@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { THEME_PRESETS, type DesktopWindow, type RetroTheme, type SiteDocument } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
-import { isDark, mixHex, themeView } from "../../lib/themeView";
+import { isDark, mixHex, themeView, useThemeView } from "../../lib/themeView";
 import { COMING_SOON, moduleDefinitions, registry } from "../modules/registry";
 import { FilePick } from "../modules/ui";
 

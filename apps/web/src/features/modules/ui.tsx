@@ -1,5 +1,6 @@
 import { useEffect, useId, useState, type ChangeEvent, type ReactNode } from "react";
 import { normalizeImageUrl } from "@retrodesk/shared";
+import { useAssetSource } from "../../lib/assetSource";
 
 export const IMAGE_FAIL_TEXT = "圖片無法載入。Google 雲端連結請設為「知道連結的任何人」。";
 
@@ -30,9 +31,11 @@ export function FilePick({ children, onFiles, multiple, className = "mini-btn wi
 /** <img> that swaps to a clear message if the URL cannot be loaded. */
 export function SafeImg({ src, alt, className, style, compact }: { src: string; alt: string; className?: string; style?: React.CSSProperties; compact?: boolean }) {
   const [failed, setFailed] = useState(false);
+  const resolved = useAssetSource(src);
   useEffect(() => setFailed(false), [src]);
   if (failed) return <div className={"img-fail" + (compact ? " compact" : "")} role="alert">{compact ? "無法載入" : IMAGE_FAIL_TEXT}</div>;
-  return <img src={src} alt={alt} className={className} style={style} referrerPolicy="no-referrer" loading="lazy" decoding="async" onError={() => setFailed(true)} />;
+  if (!resolved) return <span className={className} style={style} aria-label={alt} />;
+  return <img src={resolved} alt={alt} className={className} style={style} referrerPolicy="no-referrer" loading="lazy" decoding="async" onError={() => setFailed(true)} />;
 }
 
 /**

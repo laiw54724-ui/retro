@@ -11,6 +11,7 @@ import { VisitorPreview } from "../features/editor/VisitorPreview";
 import { Icon } from "../components/Icon";
 import { RetroButton } from "../components/RetroButton";
 import { useAuth } from "../app/AuthProvider";
+import { AssetSourceProvider } from "../lib/assetSource";
 
 
 
@@ -39,6 +40,8 @@ export function EditorPage() {
   const [preview, setPreview] = useState(false);
   const [publishSuccess, setPublishSuccess] = useState<{ version: number; url: string; artifactStatus: "synced" | "failed"; retryable: boolean } | null>(null);
   const [publishing, setPublishing] = useState(false);
+  const [legacyAssetCount, setLegacyAssetCount] = useState(0);
+  const [migratingAssets, setMigratingAssets] = useState(false);
   const publishChecks = useMemo(() => store.document ? buildPublishChecks(store.document) : [], [store.document]);
 
   useEffect(() => {
@@ -61,6 +64,10 @@ export function EditorPage() {
         setLoading(false);
       });
     return () => { alive = false; };
+  }, [siteId]);
+
+  useEffect(() => {
+    api.listAssets(siteId).then(({ assets }) => setLegacyAssetCount(assets.filter((asset) => asset.migrationRequired).length)).catch(() => undefined);
   }, [siteId]);
 
   useEffect(() => {
@@ -238,6 +245,24 @@ export function EditorPage() {
     }
   }
 
+  async function migrateLegacyAssets() {
+    if (!store.document || migratingAssets) return;
+    setMigratingAssets(true);
+    try {
+      let version = store.version;
+      if (store.saveStatus === "dirty") {
+        const saved = await api.saveDraft(siteId, version, store.document);
+        store.markSaved(saved.version, store.document);
+        version = saved.version;
+      }
+      const result = await api.migrateLegacyAssets(siteId, version, store.document);
+      store.setSite(store.siteId!, store.username, result.document, result.version, store.publishedDocument, store.publishedVersion);
+      setLegacyAssetCount(0);
+      setMessage(result.cleanupWarnings.length ? `素材已轉為私有；${result.cleanupWarnings.length} 個舊檔案待清理。` : "舊素材已轉為私有預覽。");
+    } catch (error) { setMessage(error instanceof Error ? error.message : "素材遷移失敗"); }
+    finally { setMigratingAssets(false); }
+  }
+
   function updateSelected(recipe: (window: DesktopWindow) => DesktopWindow, historyKey?: string) {
     if (selected) store.updateWindow(selected.id, recipe, historyKey);
   }
@@ -262,6 +287,7 @@ export function EditorPage() {
   const layoutMode = store.layoutMode && store.device === "desktop";
 
   return (
+    <AssetSourceProvider siteId={siteId}>
     <main className="editor-app">
       <header className="editor-topbar">
         <Link to="/" className="brand" title="回到首頁"><Icon name="computer" size={22} />Retro Desktop</Link>
@@ -294,6 +320,8 @@ export function EditorPage() {
           <button aria-label="關閉通知" onClick={() => setMessage("")}>×</button>
         </div>
       ) : null}
+
+      {legacyAssetCount > 0 ? <div className="editor-message" role="status"><span>有 {legacyAssetCount} 個舊素材仍是公開網址，尚未轉為私有。</span><button disabled={migratingAssets} onClick={migrateLegacyAssets}>{migratingAssets ? "遷移中…" : "轉為私有素材"}</button></div> : null}
 
       <div className="editor-grid2">
         {!layoutMode ? (
@@ -405,5 +433,6 @@ export function EditorPage() {
         </div>
       ) : null}
     </main>
+    </AssetSourceProvider>
   );
 }

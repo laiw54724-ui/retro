@@ -1,6 +1,6 @@
 import type { CSSProperties, HTMLAttributes, MouseEvent, PointerEvent, ReactNode } from "react";
 import type { DesktopWindow, RetroTheme } from "@retrodesk/shared";
-import { readableOn, themeView } from "../lib/themeView";
+import { readableOn, useThemeView } from "../lib/themeView";
 import { Icon } from "./Icon";
 
 type Props = {
@@ -37,7 +37,7 @@ export function RetroWindow({
   onMaximize,
   onClose
 }: Props) {
-  const tv = themeView(theme);
+  const tv = useThemeView(theme);
   const stopPointer = (event: PointerEvent<HTMLButtonElement>) => event.stopPropagation();
   const click = (handler?: () => void) => (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();

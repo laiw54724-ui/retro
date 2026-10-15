@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import type { DesktopWindow, SiteDocument } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
-import { themeView } from "../../lib/themeView";
+import { useThemeView } from "../../lib/themeView";
 
 export type DesktopTask = {
   window: DesktopWindow;
@@ -44,7 +44,7 @@ export function DesktopTaskbar({ document, tasks, onOpen, onToggle, visitor = fa
   const startButtonRef = useRef<HTMLButtonElement | null>(null);
   const menuId = `desktop-start-${useId().replaceAll(":", "")}`;
   const clock = useLocalClock();
-  const tv = themeView(document.theme);
+  const tv = useThemeView(document.theme);
 
   useEffect(() => {
     if (!startOpen) return;
