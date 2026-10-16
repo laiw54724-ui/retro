@@ -12,7 +12,8 @@ const Ic = ({ bg, size = 24 }: { bg: string; size?: number }) => <span aria-hidd
 export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "window" | "ctx">) {
   const entryProfileId = ctx.profileId ?? "entry";
   const profileDirectory = ctx.profileDirectory ?? [];
-  const session = useIgSession((profileId) => profileDirectory.find((entry) => entry.id === profileId)?.profile.highlights.length ?? window.content.profile.highlights.length, entryProfileId);
+  const entrySiteId = profileDirectory.find((entry) => entry.id === entryProfileId)?.siteId ?? ctx.siteId ?? "public";
+  const session = useIgSession((profileId) => profileDirectory.find((entry) => entry.id === profileId)?.profile.highlights.length ?? window.content.profile.highlights.length, entryProfileId, `${entrySiteId}:${window.id}`);
   const s = session;
   const directoryEntry = ctx.profileDirectory?.find((entry) => entry.id === s.activeProfileId);
   const profile = directoryEntry?.profile ?? window.content.profile;

@@ -6,7 +6,7 @@ type Route = { screen: IgScreen; profileId: string; postId: string | null };
 type HistoryFrame = { route: Route; scrollTop: number };
 
 /** Visitor-only Instagram state. Lives in memory; never writes the document or API. */
-export function useIgSession(highlightCount: (profileId: string) => number, entryProfileId = "entry") {
+export function useIgSession(highlightCount: (profileId: string) => number, entryProfileId = "entry", sessionScope = "ig") {
   const [route, setRoute] = useState<Route>({ screen: "profile", profileId: entryProfileId, postId: null });
   const history = useRef<HistoryFrame[]>([]);
   const pendingScroll = useRef<number | null>(null);
@@ -47,7 +47,7 @@ export function useIgSession(highlightCount: (profileId: string) => number, entr
     setRoute({ screen: "profile", profileId: entryProfileId, postId: null });
     setHistoryVersion((value) => value + 1);
     closeStory();
-  }, [entryProfileId, closeStory]);
+  }, [entryProfileId, sessionScope, closeStory]);
 
   useEffect(() => {
     const top = pendingScroll.current;
@@ -62,7 +62,8 @@ export function useIgSession(highlightCount: (profileId: string) => number, entr
     timers.current.toast = setTimeout(() => setToast(null), 1800);
   }, []);
 
-  const interactionKey = (id: string) => `${route.profileId}:${id}`;
+  const profileKey = `${sessionScope}:${route.profileId}`;
+  const interactionKey = (id: string) => `${profileKey}:${id}`;
   const push = (next: Route) => {
     history.current.push({ route, scrollTop: scrollRef.current?.scrollTop ?? 0 });
     pendingScroll.current = 0;
@@ -139,12 +140,12 @@ export function useIgSession(highlightCount: (profileId: string) => number, entr
   return {
     screen: route.screen, postId: route.postId, activeProfileId,
     previousScreen: history.current.at(-1)?.route.screen ?? "profile", historyDepth: history.current.length,
-    interactionKey, gridTab: gridTabs[activeProfileId] ?? "grid", followed: !!followedProfiles[activeProfileId],
-    liked, saved, extraComments, drafts, showAll, commentOpen, slide, query: queries[activeProfileId] ?? "", sheetId, burst, toast, story, storyProgress, scrollRef,
-    setGridTab: (value: "grid" | "list") => setGridTabs((state) => ({ ...state, [activeProfileId]: value })),
-    setFollowed: (value: boolean) => setFollowedProfiles((state) => ({ ...state, [activeProfileId]: value })),
+    interactionKey, gridTab: gridTabs[profileKey] ?? "grid", followed: !!followedProfiles[profileKey],
+    liked, saved, extraComments, drafts, showAll, commentOpen, slide, query: queries[profileKey] ?? "", sheetId, burst, toast, story, storyProgress, scrollRef,
+    setGridTab: (value: "grid" | "list") => setGridTabs((state) => ({ ...state, [profileKey]: value })),
+    setFollowed: (value: boolean) => setFollowedProfiles((state) => ({ ...state, [profileKey]: value })),
     setDrafts, setShowAll, setCommentOpen, setSlide,
-    setQuery: (value: string) => setQueries((state) => ({ ...state, [activeProfileId]: value })),
+    setQuery: (value: string) => setQueries((state) => ({ ...state, [profileKey]: value })),
     setSheetId, showToast, go, openDirectory, openPost, navigateProfile, back,
     toggleLike, doubleLike, toggleSave, postComment, openStory, closeStory, stepStory
   };

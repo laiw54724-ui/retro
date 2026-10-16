@@ -44,6 +44,20 @@ function navigationDocument(): SiteDocumentV2Input {
   return hidden.document;
 }
 
+function twoWindowDocument(): SiteDocumentV2Input {
+  const document = navigationDocument();
+  const original = document.windows.find((window) => window.type === "instagram");
+  if (!original || original.type !== "instagram") throw new Error("Instagram fixture missing");
+  const second = structuredClone(original);
+  second.id = "ig-two";
+  second.title = "Other.exe";
+  second.defaultOpen = false;
+  second.layout.desktop = { ...second.layout.desktop, x: 520, y: 40, z: 2, iconX: 112, iconY: 18 };
+  second.layout.mobile = { order: 1 };
+  document.windows.push(second);
+  return document;
+}
+
 async function mockEditor(page: Page, document = ocDocument()) {
   await page.addInitScript((value) => localStorage.setItem("sb-example-auth-token", JSON.stringify(value)), session);
   const saves: Array<{ document: SiteDocumentV2Input }> = [];
@@ -193,5 +207,24 @@ test("mobile visitor can browse the published OC directory without draft leakage
   await expect(win.locator(".ig-title strong")).toHaveText("貼文");
   await win.getByRole("button", { name: "返回" }).click();
   await expect(win.locator(".ig-title strong")).toHaveText("bei");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
+});
+
+test("mobile visitor keeps Instagram interactions isolated per window", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await mockPublic(page, twoWindowDocument());
+  await page.goto("/@demo");
+
+  await page.getByRole("button", { name: "Instagram.exe" }).click();
+  let win = page.getByRole("dialog", { name: "Instagram.exe" });
+  await win.getByRole("button", { name: "+ Follow" }).click();
+  await expect(win.getByRole("button", { name: "✓ Following" })).toBeVisible();
+  await page.getByRole("button", { name: "關閉" }).click();
+
+  await page.getByRole("button", { name: "Other.exe" }).click();
+  win = page.getByRole("dialog", { name: "Other.exe" });
+  await expect(win.getByRole("button", { name: "+ Follow" })).toBeVisible();
+  await win.getByRole("button", { name: "+ Follow" }).click();
+  await expect(win.getByRole("button", { name: "✓ Following" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
 });

@@ -3,7 +3,7 @@ import type { DesktopWindow, EntityRef, IgPost, ProfileEntityV2, RetroTheme } fr
 import type { ThemeView } from "../../lib/themeView";
 
 export type LinkAction = { target: "url" | "window"; url?: string; windowId?: string; label?: string };
-export type ProfileDirectoryEntry = { id: string; profile: Extract<DesktopWindow, { type: "instagram" }>["content"]["profile"]; posts: IgPost[]; themeOverride?: { accent: string; background: string } };
+export type ProfileDirectoryEntry = { id: string; siteId: string; profile: Extract<DesktopWindow, { type: "instagram" }>["content"]["profile"]; posts: IgPost[]; themeOverride?: { accent: string; background: string } };
 
 export type ModuleCtx = {
   theme: RetroTheme;

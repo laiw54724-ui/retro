@@ -15,7 +15,7 @@ export function buildProfileDirectory(document: SiteDocumentV2Input, publishedOn
         .map(({ kind: _kind, siteId: _siteId, visibility: _visibility, authorProfileId: _authorProfileId, ...post }) => ({
           ...post, srcUrl: post.srcUrl ?? "", href: post.href ?? "", location: post.location ?? "", date: post.date ?? "", likes: post.likes ?? 0, comments: post.comments ?? [], extra: (post.extra ?? []).map((extra) => ({ ...extra, srcUrl: extra.srcUrl ?? "" }))
         }));
-      return [{ id: normalizedProfile.id, profile: legacyProfile, posts, themeOverride: normalizedProfile.themeOverride }];
+      return [{ id: normalizedProfile.id, siteId: normalizedProfile.siteId, profile: legacyProfile, posts, themeOverride: normalizedProfile.themeOverride }];
     });
 }
 
