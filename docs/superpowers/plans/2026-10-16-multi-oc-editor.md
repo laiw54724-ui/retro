@@ -30,3 +30,11 @@ Date: 2026-10-16 (Asia/Singapore)
 2. Component/E2E: create two OCs, switch/reload, shared edits appear in two IG windows, validation for duplicate/case handle and empty display name, avatar/protected reference rendering, desktop/mobile switcher usability.
 3. Regression: all current editor/public/Instagram/responsive tests continue passing; add public v2 rendering/projection coverage.
 4. Run independent spec review and quality review, typecheck, all unit tests, full serial E2E and production build. Deploy Worker only if API changed; deploy Pages, run canonical/immutable and real-Chromium desktop/mobile smoke, update Issue #19 and keep it open for 19C.
+
+## 19C visitor profile navigation
+
+1. Add a read-only `profileDirectory` module boundary containing stable profile IDs and their authored posts. Editor preview may receive the draft directory; public desktop/mobile receive only the already-published projection. Legacy windows remain render adapters and never gain copied profile entities.
+2. Until #21 adds explicit `FollowEdge` data, follower/following statistics open a clearly labelled “此桌面的角色” directory. It is discoverability, not a claim that every character follows every other character.
+3. Replace the single previous-screen field with navigation frames keyed by `siteId/windowId/profileId/postId`. Push the current inner scroll offset before directory/profile/post navigation and restore it on pop after render. Closing and reopening a window still starts at its configured entry profile.
+4. Key visit-only likes, saves, comments, carousel positions, follows and drafts by stable profile/post identity so same-shaped post IDs from different characters cannot share state. No visitor action writes the document or API.
+5. Test A → directory → B → post → back → back on desktop and phone, scroll restoration, handle rename stability, per-window session isolation and server/public-projection removal of draft profile names, media and posts.
