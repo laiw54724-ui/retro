@@ -106,6 +106,17 @@ describe("site schema security boundaries", () => {
     expect(SiteDocumentSchema.safeParse(document).success).toBe(false);
   });
 
+  it("keeps guestbook configuration bounded and disabled by default", () => {
+    const document = createStarterDocument("Guestbook", "classic98", "blank");
+    const guestbook = makeWindow("guestbook");
+    if (guestbook.type !== "guestbook") throw new Error("guestbook factory mismatch");
+    document.windows = [guestbook];
+    expect(guestbook.content.enabled).toBe(false);
+    expect(SiteDocumentSchema.safeParse(document).success).toBe(true);
+    guestbook.content.intro = "x".repeat(1001);
+    expect(SiteDocumentSchema.safeParse(document).success).toBe(false);
+  });
+
   it("rejects reserved usernames and normalizes safe ones", () => {
     expect(UsernameSchema.safeParse("admin").success).toBe(false);
     expect(UsernameSchema.parse("my-desk")).toBe("my-desk");

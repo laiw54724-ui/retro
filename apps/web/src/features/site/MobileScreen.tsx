@@ -36,12 +36,13 @@ type Props = {
   initialOpenId?: string;
   initialPostId?: string;
   publicShareBaseUrl?: string;
+  siteHandle?: string;
 };
 
 const clock = () => new Date().toTimeString().slice(0, 5);
 
 /** The single-window phone experience. Used for visitors, the editor preview and the mobile editor. */
-export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview, profiles, posts, collections, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument, initialOpenId, initialPostId, publicShareBaseUrl }: Props) {
+export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview, profiles, posts, collections, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument, initialOpenId, initialPostId, publicShareBaseUrl, siteHandle }: Props) {
   const editor = mode === "editor";
   const store = useEditorStore();
   const tv = useThemeView(document.theme);
@@ -117,6 +118,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
                 socialDocument={socialDocument}
                 initialPostId={openWindow.id === initialOpenId ? initialPostId : undefined}
                 publicShareBaseUrl={publicShareBaseUrl}
+                siteHandle={siteHandle}
               />
             </div>
             {editor ? <button type="button" className="m-fab" onClick={() => setInlineEdit(!inlineEdit)}>{inlineEdit ? "完成編輯" : "編輯此視窗"}</button> : null}

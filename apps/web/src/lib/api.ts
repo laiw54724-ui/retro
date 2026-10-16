@@ -22,6 +22,8 @@ export type SiteListRecord = Pick<SiteRecord, "id" | "username" | "site_name" | 
 export type AssetKind = "image" | "icon" | "audio";
 export type PublishResult = { publishedVersion: number; publishedAt: string; url: string; artifactStatus: "synced" | "failed"; retryable: boolean; artifactKey?: string; warning?: string };
 export type AssetRecord = { id: string; url: string; mimeType: string; size: number; kind: AssetKind; name: string; createdAt: string; storageScope?: "legacy_public" | "draft_private"; migrationStatus?: string; migrationRequired?: boolean; publicCopyRemaining?: boolean };
+export type GuestbookStatus = "pending" | "approved" | "rejected";
+export type GuestbookEntry = { id: string; displayName: string; body: string; status: GuestbookStatus; createdAt: string; reportCount?: number; openReportCount?: number };
 
 export class ApiError extends Error {
   status: number;
@@ -94,6 +96,27 @@ export const api = {
       { cache: "no-store" },
       false
     );
+  },
+  publicGuestbook(username: string) {
+    return request<{ entries: GuestbookEntry[] }>(`/api/public/sites/${encodeURIComponent(username)}/guestbook`, { cache: "no-store" }, false);
+  },
+  submitGuestbook(username: string, input: { displayName: string; body: string; requestId: string }) {
+    return request<{ entry: GuestbookEntry }>(`/api/public/sites/${encodeURIComponent(username)}/guestbook`, { method: "POST", body: JSON.stringify(input) }, false);
+  },
+  reportGuestbookEntry(username: string, entryId: string, input: { requestId: string; reason?: string }) {
+    return request<{ accepted: true }>(`/api/public/sites/${encodeURIComponent(username)}/guestbook/${encodeURIComponent(entryId)}/reports`, { method: "POST", body: JSON.stringify(input) }, false);
+  },
+  listGuestbookEntries(siteId: string) {
+    return request<{ entries: GuestbookEntry[] }>(`/api/sites/${siteId}/guestbook`, { cache: "no-store" });
+  },
+  moderateGuestbookEntry(siteId: string, entryId: string, status: Exclude<GuestbookStatus, "pending">) {
+    return request<{ entry: GuestbookEntry }>(`/api/sites/${siteId}/guestbook/${entryId}`, { method: "PUT", body: JSON.stringify({ status }) });
+  },
+  deleteGuestbookEntry(siteId: string, entryId: string) {
+    return request<void>(`/api/sites/${siteId}/guestbook/${entryId}`, { method: "DELETE" });
+  },
+  resolveGuestbookReports(siteId: string, entryId: string) {
+    return request<{ resolved: number }>(`/api/sites/${siteId}/guestbook/${entryId}/reports/resolve`, { method: "POST" });
   },
   async uploadAsset(siteId: string, file: File, options: { kind?: AssetKind; name?: string } = {}) {
     const form = new FormData();

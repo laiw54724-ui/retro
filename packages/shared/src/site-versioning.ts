@@ -14,6 +14,7 @@ import {
   ExplorerContentSchema,
   MinesweeperContentSchema,
   CharacterDialogContentSchema,
+  GuestbookContentSchema,
   SiteDocumentSchema,
   SafeUrlSchema,
   ImageUrlSchema,
@@ -159,7 +160,8 @@ const NonInstagramWindowV2Schema = z.discriminatedUnion("type", [
   BaseV2Window.extend({ type: z.literal("moodboard"), content: MoodboardContentSchema }),
   BaseV2Window.extend({ type: z.literal("explorer"), content: ExplorerContentSchema }),
   BaseV2Window.extend({ type: z.literal("minesweeper"), content: MinesweeperContentSchema }),
-  BaseV2Window.extend({ type: z.literal("character-dialog"), content: CharacterDialogContentSchema })
+  BaseV2Window.extend({ type: z.literal("character-dialog"), content: CharacterDialogContentSchema }),
+  BaseV2Window.extend({ type: z.literal("guestbook"), content: GuestbookContentSchema })
 ]);
 export const DesktopWindowV2Schema = z.union([
   NonInstagramWindowV2Schema,

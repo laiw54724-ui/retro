@@ -250,6 +250,10 @@ export const CharacterDialogContentSchema = z.object({
   characterName: z.string().max(120), image: ImageUrlSchema.nullable(), imageUrl: z.string().max(2048).default(""), message: z.string().max(2000),
   linkLabel: z.string().max(120).default(""), linkUrl: SafeUrlSchema.default(""), autoShow: z.boolean().default(false)
 }).strict();
+export const GuestbookContentSchema = z.object({
+  enabled: z.boolean().default(false),
+  intro: z.string().max(1000).default("歡迎留下訊息。新留言會先交由站長審核。")
+}).strict();
 
 export const InstagramProfileSchema = z.object({
   username: z.string().max(64),
@@ -341,6 +345,10 @@ export const DesktopWindowSchema = z.discriminatedUnion("type", [
   BaseWindowSchema.extend({
     type: z.literal("character-dialog"),
     content: CharacterDialogContentSchema
+  }),
+  BaseWindowSchema.extend({
+    type: z.literal("guestbook"),
+    content: GuestbookContentSchema
   })
 ]);
 
@@ -501,6 +509,11 @@ export function makeWindow(type: DesktopWindow["type"], index = 0): DesktopWindo
       return {
         id: id(), type, title: "Character.exe", icon: "user", layout: { ...layout, desktop: { ...layout.desktop, w: 360, h: 360 } }, defaultOpen: false,
         content: { characterName: "我的角色", image: null, imageUrl: "", message: "嗨！歡迎來到我的桌面。", linkLabel: "", linkUrl: "", autoShow: false }
+      };
+    case "guestbook":
+      return {
+        id: id(), type, title: "Guestbook.exe", icon: "doc", layout: { ...layout, desktop: { ...layout.desktop, w: 430, h: 500 } }, defaultOpen: false,
+        content: { enabled: false, intro: "歡迎留下訊息。新留言會先交由站長審核。" }
       };
     default:
       return {

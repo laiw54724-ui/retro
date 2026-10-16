@@ -5,8 +5,8 @@ import { createWindow, getModule, moduleDefinitions, registry, renderModule, WIN
 
 describe("module registry contract", () => {
   it("keeps one stable ordered definition for all registered v1 modules", () => {
-    expect(WINDOW_TYPES).toEqual(["document", "gallery", "links", "about", "instagram", "music", "moodboard", "explorer", "minesweeper", "character-dialog"]);
-    expect(new Set(moduleDefinitions.map((module) => module.type)).size).toBe(10);
+    expect(WINDOW_TYPES).toEqual(["document", "gallery", "links", "about", "instagram", "music", "moodboard", "explorer", "minesweeper", "character-dialog", "guestbook"]);
+    expect(new Set(moduleDefinitions.map((module) => module.type)).size).toBe(11);
     expect(moduleDefinitions.map((module) => module.type)).toEqual(Object.keys(registry));
   });
 
@@ -35,6 +35,7 @@ describe("module registry contract", () => {
     expect(createWindow("explorer", 0).content).toEqual({ folders: [], shortcuts: [] });
     expect(createWindow("minesweeper", 0).content).toEqual({ rows: 8, columns: 8, mines: 10 });
     expect(createWindow("character-dialog", 0).content.autoShow).toBe(false);
+    expect(createWindow("guestbook", 0).content.enabled).toBe(false);
   });
 
   it("rejects missing registrations instead of returning an undefined renderer", () => {

@@ -66,6 +66,12 @@ test("minesweeper first click is safe and supports keyboard flagging", async ({ 
   await flagTarget.focus();
   await page.keyboard.press("f");
   await expect(flagTarget).toHaveAttribute("aria-label", /已標記/);
+  await expect(dialog.locator(".minesweeper-status span")).toHaveText(/00[1-9]/, { timeout: 3_000 });
+  await dialog.getByRole("button", { name: "最小化" }).click();
+  await expect(dialog).toBeHidden();
+  await page.waitForTimeout(1_100);
+  await page.locator(".visitor-taskbar").getByRole("button", { name: /Minesweeper\.exe/ }).click();
+  await expect(dialog.locator(".minesweeper-status span")).toHaveText("000");
   expect(writes()).toBe(0);
 });
 

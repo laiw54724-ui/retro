@@ -77,10 +77,10 @@ export function PublicSitePage() {
   if (error) return <main className="not-found"><div><h1>找不到這個桌面</h1><p>{error}</p></div></main>;
   if (!document) return <div className="boot-screen">Loading desktop...</div>;
 
-  return <PublishedDesktop key={`${username}:${profileId ?? ""}:${postId ?? ""}`} document={document} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialTarget={initialTarget} shareBaseUrl={`${window.location.origin}/@${encodeURIComponent(username)}`} />;
+  return <PublishedDesktop key={`${username}:${profileId ?? ""}:${postId ?? ""}`} document={document} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialTarget={initialTarget} shareBaseUrl={`${window.location.origin}/@${encodeURIComponent(username)}`} siteHandle={username} />;
 }
 
-function PublishedDesktop({ document, profiles, profileIdsByWindow, profileDirectory, initialTarget, shareBaseUrl }: { document: SiteDocument; profiles: ProfileEntityV2[]; profileIdsByWindow: Record<string, string>; profileDirectory: ReturnType<typeof buildProfileDirectory>; initialTarget: { windowId: string; postId?: string } | null; shareBaseUrl: string }) {
+function PublishedDesktop({ document, profiles, profileIdsByWindow, profileDirectory, initialTarget, shareBaseUrl, siteHandle }: { document: SiteDocument; profiles: ProfileEntityV2[]; profileIdsByWindow: Record<string, string>; profileDirectory: ReturnType<typeof buildProfileDirectory>; initialTarget: { windowId: string; postId?: string } | null; shareBaseUrl: string; siteHandle: string }) {
   const theme = document.theme;
   const tv = useThemeView(theme);
   const imageWallpaper = theme.pattern === "image" && !!theme.wallImage;
@@ -95,9 +95,9 @@ function PublishedDesktop({ document, profiles, profileIdsByWindow, profileDirec
         backgroundRepeat: imageWallpaper ? "no-repeat" : "repeat"
       }}
     >
-      <VisitorDesktop document={document} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialOpenId={initialTarget?.windowId} initialPostId={initialTarget?.postId} publicShareBaseUrl={shareBaseUrl} />
+      <VisitorDesktop document={document} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialOpenId={initialTarget?.windowId} initialPostId={initialTarget?.postId} publicShareBaseUrl={shareBaseUrl} siteHandle={siteHandle} />
 
-      <MobileScreen document={document} mode="visitor" profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialOpenId={initialTarget?.windowId} initialPostId={initialTarget?.postId} publicShareBaseUrl={shareBaseUrl} />
+      <MobileScreen document={document} mode="visitor" profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialOpenId={initialTarget?.windowId} initialPostId={initialTarget?.postId} publicShareBaseUrl={shareBaseUrl} siteHandle={siteHandle} />
     </main>
   );
 }

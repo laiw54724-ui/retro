@@ -26,6 +26,7 @@ export type ModuleCtx = {
   profileId?: string;
   initialPostId?: string;
   publicShareBaseUrl?: string;
+  siteHandle?: string;
   profileThemeOverride?: { accent: string; background: string };
   onProfileSelect?: (id: string, windowId?: string) => void;
   onProfileAdd?: (windowId?: string) => void;

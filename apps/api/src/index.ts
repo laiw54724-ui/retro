@@ -6,6 +6,7 @@ import { parseAllowedOrigins } from "./lib/http";
 import { assets } from "./routes/assets";
 import { sites } from "./routes/sites";
 import { collaboration } from "./routes/collaboration";
+import { guestbook } from "./routes/guestbook";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -25,6 +26,7 @@ app.get("/api/health", (c) => c.json({ ok: true, service: "retrodesk-api" }));
 app.route("/api", sites);
 app.route("/api", assets);
 app.route("/api", collaboration);
+app.route("/api", guestbook);
 
 app.onError((error, c) => {
   console.error(error);

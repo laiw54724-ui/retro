@@ -380,11 +380,11 @@ export function InspectorContent({ window, allWindows, siteId, update, onMessage
     );
   }
 
-  if (window.type === "minesweeper" || window.type === "character-dialog") {
+  if (window.type === "minesweeper" || window.type === "character-dialog" || window.type === "guestbook") {
     return (
       <section className="inspector-section">
-        <div className="section-heading"><strong>{window.type === "minesweeper" ? "掃雷" : "角色彈窗"}</strong></div>
-        <p>直接在視窗內容中調整設定並預覽；訪客操作只保留在本次瀏覽。</p>
+        <div className="section-heading"><strong>{window.type === "minesweeper" ? "掃雷" : window.type === "character-dialog" ? "角色彈窗" : "訪客留言簿"}</strong></div>
+        <p>{window.type === "guestbook" ? "在視窗內開啟留言並管理待審內容；留言不會寫入桌面文件。" : "直接在視窗內容中調整設定並預覽；訪客操作只保留在本次瀏覽。"}</p>
       </section>
     );
   }

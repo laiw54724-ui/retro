@@ -21,6 +21,7 @@ type Props = {
   profileId?: string;
   initialPostId?: string;
   publicShareBaseUrl?: string;
+  siteHandle?: string;
   profileIdsByWindow?: Record<string, string>;
   onProfileSelect?: (id: string, windowId?: string) => void;
   onProfileAdd?: (windowId?: string) => void;
@@ -44,7 +45,7 @@ function openExternal(url: string) {
   }
 }
 
-export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, mobile = false, editing = false, siteId, upload, onUpdate, profiles, posts, collections, profileId, initialPostId, publicShareBaseUrl, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
+export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, mobile = false, editing = false, siteId, upload, onUpdate, profiles, posts, collections, profileId, initialPostId, publicShareBaseUrl, siteHandle, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
   const tv = useThemeView(theme);
   const onLink = (action: LinkAction) => {
     if (editing) return; // links are inert while editing
@@ -55,7 +56,7 @@ export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, m
   const profileThemeOverride = profiles?.find((profile) => profile.id === resolvedProfileId)?.themeOverride;
   const ctx: ModuleCtx = {
     theme, tv, editing: editing && !!onUpdate, mobile, siteId,
-    windows: (allWindows ?? []).map((candidate) => ({ id: candidate.id, title: candidate.title })), initialPostId, publicShareBaseUrl,
+    windows: (allWindows ?? []).map((candidate) => ({ id: candidate.id, title: candidate.title })), initialPostId, publicShareBaseUrl, siteHandle,
     onLink, upload, profiles, posts, collections, profileId: resolvedProfileId, profileThemeOverride,
     onProfileSelect: (id) => onProfileSelect?.(id, win.id),
     onProfileAdd: () => onProfileAdd?.(win.id),
