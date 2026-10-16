@@ -18,6 +18,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
   const directoryEntry = ctx.profileDirectory?.find((entry) => entry.id === s.activeProfileId);
   const profile = directoryEntry?.profile ?? window.content.profile;
   const posts = directoryEntry?.posts ?? window.content.images;
+  const canBrowseProfiles = profileDirectory.some((entry) => entry.id !== s.activeProfileId);
   const highlights = profile.highlights;
   const profileThemeOverride = directoryEntry?.themeOverride ?? (s.activeProfileId === entryProfileId ? ctx.profileThemeOverride : undefined);
   const tv = profileThemeOverride ? { ...ctx.tv, face: profileThemeOverride.background, accent: profileThemeOverride.accent } : ctx.tv;
@@ -165,8 +166,8 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
                 {profile.showCounts ? (
                   <div className="ig-counts3">
                     <div><strong>{posts.length}</strong><span>貼文</span></div>
-                    <button type="button" className="ig-stat-button" onClick={s.openDirectory}><strong>{followersText}</strong><span>粉絲</span></button>
-                    <button type="button" className="ig-stat-button" onClick={s.openDirectory}><strong>{profile.following}</strong><span>追蹤中</span></button>
+                    {canBrowseProfiles ? <button type="button" className="ig-stat-button" onClick={s.openDirectory}><strong>{followersText}</strong><span>粉絲</span></button> : <div><strong>{followersText}</strong><span>粉絲</span></div>}
+                    {canBrowseProfiles ? <button type="button" className="ig-stat-button" onClick={s.openDirectory}><strong>{profile.following}</strong><span>追蹤中</span></button> : <div><strong>{profile.following}</strong><span>追蹤中</span></div>}
                   </div>
                 ) : null}
               </div>

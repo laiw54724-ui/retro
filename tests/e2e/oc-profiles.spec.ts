@@ -250,3 +250,13 @@ test("mobile visitor keeps Instagram interactions isolated per window", async ({
   await expect(win.getByRole("button", { name: "✓ Following" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
 });
+
+test("single-profile legacy visitor stats do not open an empty directory", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await mockPublic(page, igDocument());
+  await page.goto("/@demo");
+  const win = page.getByRole("dialog", { name: "Instagram.exe" });
+  await expect(win.getByText("粉絲", { exact: true })).toBeVisible();
+  await expect(win.getByRole("button", { name: /粉絲/ })).toHaveCount(0);
+  await expect(win.getByRole("heading", { name: "此桌面的角色" })).toHaveCount(0);
+});
