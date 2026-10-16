@@ -135,3 +135,29 @@
 
 .media-source{margin:7px 0}.media-source .media-upload{margin:0!important}.media-link-toggle{display:block;width:100%;margin-top:4px;padding:2px 0;border:0;background:transparent;color:#000080;text-decoration:underline;text-align:left;cursor:pointer;font-size:12px}.media-link{display:grid;gap:6px;margin-top:6px}.media-link input{width:100%;min-width:0}.media-link .retro-button{min-height:30px}
 .crop-editor{display:grid;gap:6px;justify-items:start;margin:8px 0}.crop-frame{width:140px;height:140px;border-radius:50%;overflow:hidden;background:#ddd;cursor:grab;touch-action:none;box-shadow:inset 1px 1px #808080,0 0 0 2px #fff}.crop-frame:active{cursor:grabbing}.crop-editor small{color:#444}.crop-zoom{display:flex!important;flex-direction:row!important;align-items:center;gap:8px;margin:0!important;width:100%}.crop-zoom input{flex:1;min-width:0;min-height:0!important;padding:0!important;box-shadow:none!important}
+
+/* Authenticated desktop hub */
+.desktop-hub-window{width:min(920px,100%);padding:3px}
+.desktop-hub-body{padding:14px;min-width:0}
+.desktop-hub-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px}
+.desktop-hub-heading h1{font-family:'Cubic 11',system-ui,sans-serif;font-size:28px;font-weight:400;margin:0}
+.desktop-hub-heading p{margin:4px 0 0;color:#444;overflow-wrap:anywhere}
+.desktop-hub-add{min-height:44px;white-space:nowrap}
+.desktop-hub-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.desktop-hub-card{min-width:0;display:flex;flex-direction:column;gap:10px;background:#e5e5e5;padding:12px;box-shadow:inset -1px -1px #000,inset 1px 1px #fff,inset -2px -2px #808080,inset 2px 2px #dfdfdf}
+.desktop-hub-card-title{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;min-width:0}
+.desktop-hub-card-title>div{display:grid;min-width:0}
+.desktop-hub-card-title strong{font-size:18px;overflow-wrap:anywhere}
+.desktop-hub-card-title div span{color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.desktop-role-badge{flex:0 0 auto;padding:3px 7px;border:1px solid #555;background:#fff;font-size:12px;font-weight:700}
+.desktop-role-badge.owner{color:#000080;border-color:#000080}.desktop-role-badge.editor{color:#075c3d;border-color:#075c3d}.desktop-role-badge.viewer{color:#4b4b4b}
+.desktop-hub-card dl{display:grid;gap:4px;margin:0;font-size:13px}
+.desktop-hub-card dl>div{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px}
+.desktop-hub-card dt{font-weight:700}.desktop-hub-card dd{margin:0;overflow-wrap:anywhere}
+.desktop-role-help{margin:0;color:#444;line-height:1.45;font-size:13px}
+.desktop-hub-open{min-height:44px;margin-top:auto}
+.desktop-hub-empty{margin:8px 0;padding:30px 18px;background:#fff;text-align:center;border:1px solid #808080}
+.desktop-hub-empty strong{display:block;font-size:20px}.desktop-hub-empty p{line-height:1.5}.desktop-hub-empty .retro-link{min-height:44px}
+.desktop-hub-error{display:flex;align-items:center;justify-content:space-between;gap:12px}.desktop-hub-error span{overflow-wrap:anywhere}.desktop-hub-error .retro-button{min-height:44px;flex:0 0 auto}
+.desktop-hub-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid #808080}.desktop-hub-footer>*{min-height:44px}
+@media(max-width:720px){.desktop-hub-body{padding:10px}.desktop-hub-list{grid-template-columns:minmax(0,1fr)}.desktop-hub-heading{align-items:stretch;flex-direction:column}.desktop-hub-add{width:100%}.desktop-hub-footer{justify-content:stretch}.desktop-hub-footer>*{flex:1}.desktop-hub-error{align-items:stretch;flex-direction:column}.desktop-hub-error .retro-button{width:100%}}
