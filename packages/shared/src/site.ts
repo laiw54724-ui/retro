@@ -187,6 +187,27 @@ export const MusicContentSchema = z.object({ tracks: z.array(MusicTrackSchema).m
   }
 });
 
+const MoodboardElementBaseSchema = z.object({
+  id: z.string().min(1).max(160),
+  x: z.number().finite().min(0).max(4096),
+  y: z.number().finite().min(0).max(4096),
+  width: z.number().finite().min(24).max(4096),
+  height: z.number().finite().min(24).max(4096),
+  zOrder: z.number().int().min(0).max(9999),
+  locked: z.boolean().default(false)
+});
+export const MoodboardElementSchema = z.discriminatedUnion("kind", [
+  MoodboardElementBaseSchema.extend({ kind: z.literal("text"), content: z.string().max(5000), color: z.string().regex(/^#[0-9a-fA-F]{6}$/), fontSize: z.number().int().min(10).max(160), align: z.enum(["left", "center", "right"]).default("left") }).strict(),
+  MoodboardElementBaseSchema.extend({ kind: z.literal("color"), color: z.string().regex(/^#[0-9a-fA-F]{6}$/) }).strict(),
+  MoodboardElementBaseSchema.extend({ kind: z.literal("image"), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default(""), alt: z.string().max(300).default(""), crop: ImageCropSchema.optional() }).strict()
+]);
+export const MoodboardContentSchema = z.object({
+  width: z.number().int().min(240).max(4096),
+  height: z.number().int().min(240).max(4096),
+  background: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  elements: z.array(MoodboardElementSchema).max(100)
+}).strict();
+
 export const InstagramProfileSchema = z.object({
   username: z.string().max(64),
   avatar: ImageUrlSchema.nullable(),
@@ -261,6 +282,10 @@ export const DesktopWindowSchema = z.discriminatedUnion("type", [
   BaseWindowSchema.extend({
     type: z.literal("music"),
     content: MusicContentSchema
+  }),
+  BaseWindowSchema.extend({
+    type: z.literal("moodboard"),
+    content: MoodboardContentSchema
   })
 ]);
 
@@ -402,6 +427,11 @@ export function makeWindow(type: DesktopWindow["type"], index = 0): DesktopWindo
         content: { tracks: [], playlist: { id: playlistId, title: "我的播放清單", trackIds: [] } }
       };
     }
+    case "moodboard":
+      return {
+        id: id(), type, title: "Moodboard.exe", icon: "photo", layout: { ...layout, desktop: { ...layout.desktop, w: 560, h: 520 } }, defaultOpen: true,
+        content: { width: 800, height: 600, background: "#ffffff", elements: [] }
+      };
     default:
       return {
         id: id(), type: "document", title: "新文件.txt", icon: "doc", layout, defaultOpen: true,
@@ -471,6 +501,7 @@ export type IgComment = IgPost["comments"][number];
 export type IgHighlight = Extract<DesktopWindow, { type: "instagram" }>["content"]["profile"]["highlights"][number];
 export type MusicTrack = z.infer<typeof MusicTrackSchema>;
 export type MusicPlaylist = z.infer<typeof MusicPlaylistSchema>;
+export type MoodboardElement = z.infer<typeof MoodboardElementSchema>;
 
 export function makeGalleryImage(init: Partial<GalleryImage> = {}): GalleryImage {
   return { id: newId(), src: null, title: "", caption: "", srcUrl: "", href: "", ...init };

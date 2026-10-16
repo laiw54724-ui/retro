@@ -362,6 +362,15 @@ export function InspectorContent({ window, allWindows, siteId, update, onMessage
     );
   }
 
+  if (window.type === "moodboard") {
+    return (
+      <section className="inspector-section">
+        <div className="section-heading"><strong>Moodboard 畫板</strong></div>
+        <p>直接在視窗內容加入、選取及排列圖片、文字與色塊。</p>
+      </section>
+    );
+  }
+
   const content = window.content;
   const setContent = (next: typeof content) => update((current) => current.type === "instagram" ? { ...current, content: next } : current);
   const profile = content.profile;

@@ -12,6 +12,7 @@ export function buildPublishChecks(document: SiteDocument): PublishCheck[] {
   for (const window of windows) {
     if (window.type === "gallery") for (const image of window.content.images) if (image.src) captions.push(image.caption || image.title);
     if (window.type === "document") for (const block of window.content.blocks) if (block.kind === "image" && block.src) captions.push(block.alt);
+    if (window.type === "moodboard") for (const element of window.content.elements) if (element.kind === "image" && element.src) captions.push(element.alt);
   }
   const missingAlt = captions.filter((text) => !text || !text.trim()).length;
 

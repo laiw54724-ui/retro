@@ -47,6 +47,23 @@ describe("site schema security boundaries", () => {
     expect(SiteDocumentSchema.safeParse(document).success).toBe(false);
   });
 
+  it("validates bounded moodboard elements and protected image references", () => {
+    const document = createStarterDocument("Board", "classic98", "blank");
+    const board = makeWindow("moodboard");
+    if (board.type !== "moodboard") throw new Error("moodboard factory mismatch");
+    board.content.elements = [
+      { id: "text", kind: "text", x: 10, y: 10, width: 200, height: 80, zOrder: 1, locked: false, content: "中文文字", color: "#111111", fontSize: 24, align: "left" },
+      { id: "image", kind: "image", x: 20, y: 100, width: 240, height: 180, zOrder: 2, locked: false, src: "retro-asset:11111111-1111-4111-8111-111111111111", srcUrl: "", alt: "原創角色" }
+    ];
+    document.windows = [board];
+    expect(SiteDocumentSchema.safeParse(document).success).toBe(true);
+    board.content.width = 5000;
+    expect(SiteDocumentSchema.safeParse(document).success).toBe(false);
+    board.content.width = 800;
+    board.content.elements = Array.from({ length: 101 }, (_, index) => ({ id: `color-${index}`, kind: "color" as const, x: 0, y: 0, width: 24, height: 24, zOrder: index, locked: false, color: "#ffffff" }));
+    expect(SiteDocumentSchema.safeParse(document).success).toBe(false);
+  });
+
   it("rejects reserved usernames and normalizes safe ones", () => {
     expect(UsernameSchema.safeParse("admin").success).toBe(false);
     expect(UsernameSchema.parse("my-desk")).toBe("my-desk");
