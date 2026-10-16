@@ -9,8 +9,9 @@
     "typecheck": "tsc -b --pretty false",
     "lint": "tsc -b --pretty false",
     "test:unit": "vitest run",
-    "deploy:staging": "wrangler pages deploy dist --project-name=retrodesk-staging --branch=main",
-    "deploy:production": "wrangler pages deploy dist --project-name=retrodesk --branch=main"
+    "verify:deploy-env": "node scripts/verify-deploy-env.mjs",
+    "deploy:staging": "npm run verify:deploy-env && wrangler pages deploy dist --project-name=retrodesk-staging --branch=main",
+    "deploy:production": "npm run verify:deploy-env && wrangler pages deploy dist --project-name=retrodesk --branch=main"
   },
   "dependencies": {
     "@retrodesk/shared": "workspace:*",
