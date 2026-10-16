@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { THEME_PRESETS, type DesktopWindow, type PostEntityV2, type ProfileEntityV2, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
+import { THEME_PRESETS, type CollectionEntityV2, type DesktopWindow, type PostEntityV2, type ProfileEntityV2, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { IconPicker } from "../modules/links/IconPicker";
 import { themeView, useThemeView } from "../../lib/themeView";
@@ -20,6 +20,7 @@ type Props = {
   onPreview?: () => void;
   profiles?: ProfileEntityV2[];
   posts?: PostEntityV2[];
+  collections?: CollectionEntityV2[];
   profileIdsByWindow?: Record<string, string>;
   onProfileSelect?: (id: string, windowId?: string) => void;
   onProfileAdd?: (windowId?: string) => void;
@@ -35,7 +36,7 @@ type Props = {
 const clock = () => new Date().toTimeString().slice(0, 5);
 
 /** The single-window phone experience. Used for visitors, the editor preview and the mobile editor. */
-export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview, profiles, posts, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent }: Props) {
+export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview, profiles, posts, collections, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent }: Props) {
   const editor = mode === "editor";
   const store = useEditorStore();
   const tv = useThemeView(document.theme);
@@ -95,6 +96,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
                 onOpenWindow={open}
                 profiles={profiles}
                 posts={posts}
+                collections={collections}
                 profileIdsByWindow={profileIdsByWindow}
                 onProfileSelect={onProfileSelect}
                 onProfileAdd={onProfileAdd}

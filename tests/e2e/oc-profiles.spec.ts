@@ -217,6 +217,50 @@ test("canonical post media edits autosave and survive reload", async ({ page }) 
   await expect(reloaded.getByRole("textbox", { name: "精選第 3 頁替代文字" })).toHaveValue("旅程第三幕");
 });
 
+test("collection authoring autosaves ordered post membership and survives reload", async ({ page }) => {
+  await page.setViewportSize({ width: 1400, height: 1000 });
+  const document = ocDocument();
+  const firstPost = document.entities.posts.find((post) => post.authorProfileId === "profile:ig");
+  if (!firstPost) throw new Error("fixture post missing");
+  document.entities.posts.push({
+    ...structuredClone(firstPost),
+    id: "post:ig:second",
+    title: "Second work",
+    caption: "Second work caption",
+    collectionIds: [],
+  });
+  const saves = await mockEditor(page, document);
+  const win = page.getByRole("dialog", { name: "Instagram.exe" });
+
+  await win.getByRole("button", { name: "＋ 新增合集" }).click();
+  await win.getByRole("textbox", { name: "合集標題" }).fill("雪國作品集");
+  await win.getByRole("textbox", { name: "合集說明" }).fill("角色在雪國旅行的作品");
+  await win.getByRole("checkbox", { name: "公開合集" }).check();
+  await win.getByRole("checkbox", { name: "收錄 Second work" }).check();
+  await win.getByRole("checkbox", { name: "收錄 p1" }).check();
+  await win.getByRole("button", { name: "合集貼文 p1 往前" }).click();
+
+  await expect.poll(() => saves.at(-1)?.document.entities.collections[0]?.title).toBe("雪國作品集");
+  const savedCollection = saves.at(-1)?.document.entities.collections[0];
+  expect(savedCollection).toMatchObject({
+    description: "角色在雪國旅行的作品",
+    visibility: "published",
+    postIds: ["post:ig:p1", "post:ig:second"],
+  });
+  expect(saves.at(-1)?.document.entities.posts.find((post) => post.id === "post:ig:p1")?.collectionIds).toContain(savedCollection?.id);
+  expect(saves.at(-1)?.document.entities.posts.find((post) => post.id === "post:ig:second")?.collectionIds).toContain(savedCollection?.id);
+
+  await page.reload();
+  const reloaded = page.getByRole("dialog", { name: "Instagram.exe" });
+  await expect(reloaded.getByRole("textbox", { name: "合集標題" })).toHaveValue("雪國作品集");
+  await expect(reloaded.getByRole("textbox", { name: "合集說明" })).toHaveValue("角色在雪國旅行的作品");
+  await expect(reloaded.getByRole("checkbox", { name: "公開合集" })).toBeChecked();
+  await expect(reloaded.getByRole("checkbox", { name: "收錄 p1" })).toBeChecked();
+  await expect(reloaded.getByRole("checkbox", { name: "收錄 Second work" })).toBeChecked();
+  await expect(reloaded.locator(".ig-collection-post-row").filter({ hasText: "p1" })).toHaveAttribute("data-order", "1");
+  await expect(reloaded.locator(".ig-collection-post-row").filter({ hasText: "Second work" })).toHaveAttribute("data-order", "2");
+});
+
 for (const width of [1280, 390]) {
   test(`published OC theme stays inside Instagram at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: width < 500 ? 844 : 800 });

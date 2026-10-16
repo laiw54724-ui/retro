@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import type { DesktopWindow, EntityRef, HighlightEntityV2, IgPost, PostEntityV2, ProfileEntityV2, RetroTheme, SiteDocumentV2Input } from "@retrodesk/shared";
+import type { CollectionEntityV2, DesktopWindow, EntityRef, HighlightEntityV2, IgPost, PostEntityV2, ProfileEntityV2, RetroTheme, SiteDocumentV2Input } from "@retrodesk/shared";
 import type { ThemeView } from "../../lib/themeView";
 
 export type LinkAction = { target: "url" | "window"; url?: string; windowId?: string; label?: string };
@@ -21,6 +21,7 @@ export type ModuleCtx = {
   /** v2 Instagram profile authoring channel; omitted for public/v1 callers. */
   profiles?: ProfileEntityV2[];
   posts?: PostEntityV2[];
+  collections?: CollectionEntityV2[];
   profileId?: string;
   profileThemeOverride?: { accent: string; background: string };
   onProfileSelect?: (id: string, windowId?: string) => void;

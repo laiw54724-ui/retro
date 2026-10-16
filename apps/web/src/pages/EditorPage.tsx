@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { buildPublishChecks, createProfile, deleteOrRetargetProfile, duplicateProfile, hasBlockingCheck, loadVersionedSiteDocument, normalizeDocument, parseSiteDocument, PostEntityV2Schema, ProfileEntityV2Schema, projectV2ToLegacyDocument, updateProfile, type DesktopWindow, type SiteDocumentV2Input } from "@retrodesk/shared";
+import { buildPublishChecks, CollectionEntityV2Schema, createProfile, deleteOrRetargetProfile, duplicateProfile, hasBlockingCheck, loadVersionedSiteDocument, normalizeDocument, parseSiteDocument, PostEntityV2Schema, ProfileEntityV2Schema, projectV2ToLegacyDocument, updateProfile, type DesktopWindow, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, ApiError, type AssetRecord } from "../lib/api";
 import { useEditorStore } from "../features/editor/store";
@@ -254,6 +254,7 @@ export function EditorPage() {
   );
   const editorProfiles = versionedDraft?.entities.profiles.flatMap((profile) => { const parsed = ProfileEntityV2Schema.safeParse(profile); return parsed.success ? [parsed.data] : []; }) ?? [];
   const editorPosts = versionedDraft?.entities.posts.flatMap((post) => { const parsed = PostEntityV2Schema.safeParse(post); return parsed.success ? [parsed.data] : []; }) ?? [];
+  const editorCollections = (versionedDraft?.entities.collections ?? []).flatMap((collection) => { const parsed = CollectionEntityV2Schema.safeParse(collection); return parsed.success ? [parsed.data] : []; });
   const selectedV2Window = selected ? versionedDraft?.windows.find((window) => window.id === selected.id) : undefined;
   const selectedProfileId = selectedV2Window?.type === "instagram" ? selectedV2Window.content.profileRef.id : undefined;
   const profileIdsByWindow = Object.fromEntries((versionedDraft?.windows ?? []).flatMap((window) => window.type === "instagram" ? [[window.id, window.content.profileRef.id] as const] : []));
@@ -548,6 +549,7 @@ export function EditorPage() {
               upload={uploadImage}
               profiles={editorProfiles}
               posts={editorPosts}
+              collections={editorCollections}
               profileId={selectedProfileId}
               profileIdsByWindow={profileIdsByWindow}
               onProfileSelect={selectProfile}
@@ -561,7 +563,7 @@ export function EditorPage() {
               updateContent={updateContent}
             />
           ) : (
-            <MobileScreen document={store.document} mode="editor" framed siteId={siteId} upload={uploadImage} onPreview={() => setPreview(true)} profiles={editorProfiles} posts={editorPosts} profileIdsByWindow={profileIdsByWindow} onProfileSelect={selectProfile} onProfileAdd={addProfile} onProfileDuplicate={duplicateProfileForWindow} onProfileChange={changeProfile} onProfileDelete={deleteProfile} profileDeleteBlocked={selectedProfileReferenced} profileDeleteGuardById={profileDeleteGuardById} profileDirectory={profileDirectory} updateContent={updateContent} />
+            <MobileScreen document={store.document} mode="editor" framed siteId={siteId} upload={uploadImage} onPreview={() => setPreview(true)} profiles={editorProfiles} posts={editorPosts} collections={editorCollections} profileIdsByWindow={profileIdsByWindow} onProfileSelect={selectProfile} onProfileAdd={addProfile} onProfileDuplicate={duplicateProfileForWindow} onProfileChange={changeProfile} onProfileDelete={deleteProfile} profileDeleteBlocked={selectedProfileReferenced} profileDeleteGuardById={profileDeleteGuardById} profileDirectory={profileDirectory} updateContent={updateContent} />
           )}
         </section>
 

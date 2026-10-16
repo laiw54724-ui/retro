@@ -1,4 +1,4 @@
-import type { DesktopWindow, PostEntityV2, ProfileEntityV2, RetroTheme, SiteDocumentV2Input } from "@retrodesk/shared";
+import type { CollectionEntityV2, DesktopWindow, PostEntityV2, ProfileEntityV2, RetroTheme, SiteDocumentV2Input } from "@retrodesk/shared";
 import { useThemeView } from "../../lib/themeView";
 import { renderModule } from "../modules/registry";
 import type { LinkAction, ModuleCtx, ProfileDirectoryEntry } from "../modules/types";
@@ -17,6 +17,7 @@ type Props = {
   onUpdate?: (id: string, recipe: (window: DesktopWindow) => DesktopWindow, historyKey?: string) => void;
   profiles?: ProfileEntityV2[];
   posts?: PostEntityV2[];
+  collections?: CollectionEntityV2[];
   profileId?: string;
   profileIdsByWindow?: Record<string, string>;
   onProfileSelect?: (id: string, windowId?: string) => void;
@@ -40,7 +41,7 @@ function openExternal(url: string) {
   }
 }
 
-export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, mobile = false, editing = false, siteId, upload, onUpdate, profiles, posts, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent }: Props) {
+export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, mobile = false, editing = false, siteId, upload, onUpdate, profiles, posts, collections, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent }: Props) {
   const tv = useThemeView(theme);
   const onLink = (action: LinkAction) => {
     if (editing) return; // links are inert while editing
@@ -52,7 +53,7 @@ export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, m
   const ctx: ModuleCtx = {
     theme, tv, editing: editing && !!onUpdate, mobile, siteId,
     windows: (allWindows ?? []).map((candidate) => ({ id: candidate.id, title: candidate.title })),
-    onLink, upload, profiles, posts, profileId: resolvedProfileId, profileThemeOverride,
+    onLink, upload, profiles, posts, collections, profileId: resolvedProfileId, profileThemeOverride,
     onProfileSelect: (id) => onProfileSelect?.(id, win.id),
     onProfileAdd: () => onProfileAdd?.(win.id),
     onProfileDuplicate: (id) => onProfileDuplicate?.(id, win.id), onProfileChange: (id, patch, key) => onProfileChange?.(id, patch, key),

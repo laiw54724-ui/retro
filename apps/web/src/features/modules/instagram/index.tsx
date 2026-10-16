@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { ModuleProps } from "../types";
 import { CanonicalHighlightEditor } from "./CanonicalHighlightEditor";
 import { CanonicalPostEditor } from "./CanonicalPostEditor";
+import { CanonicalCollectionEditor } from "./CanonicalCollectionEditor";
 import { IgEditForm } from "./IgEditForm";
 import { IgPreview } from "./IgPreview";
 import { ProfileEditor } from "./ProfileEditor";
@@ -158,6 +159,7 @@ export function IgInlineEditor(props: ModuleProps<"instagram">) {
           <IgEditForm {...props}>
             <CanonicalHighlightEditor props={props} />
             <CanonicalPostEditor props={props} />
+            <CanonicalCollectionEditor props={props} />
           </IgEditForm>
         </div>
         </div>
