@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const migration = readFileSync(resolve(process.cwd(), "../../supabase/migrations/0006_site_collaboration.sql"), "utf8");
+const acceptanceFix = readFileSync(resolve(process.cwd(), "../../supabase/migrations/0008_fix_accept_site_invite_conflict.sql"), "utf8");
 
 describe("site collaboration migration contract", () => {
   it("defines constrained membership, digest-only invite, and append-only audit tables", () => {
@@ -47,5 +48,19 @@ describe("site collaboration migration contract", () => {
     }
     expect(migration).toContain("member_role_changed");
     expect(migration).toContain("member_removed");
+  });
+
+  it("repairs invitation acceptance without ambiguous output-column conflict targets", () => {
+    expect(acceptanceFix).toContain("create or replace function public.accept_site_invite");
+    expect(acceptanceFix).toContain("returns table (site_id uuid, role text)");
+    expect(acceptanceFix).toContain("security definer");
+    expect(acceptanceFix).toContain("set search_path = public, pg_catalog");
+    expect(acceptanceFix).toContain("on conflict on constraint site_memberships_pkey do update");
+    expect(acceptanceFix).not.toContain("on conflict (site_id, user_id) do update");
+    for (const code of ["invalid_invite", "invite_expired", "invite_revoked", "invite_used", "invite_email_mismatch", "owner_cannot_join"]) {
+      expect(acceptanceFix).toContain(code);
+    }
+    expect(acceptanceFix).toContain("revoke all on function public.accept_site_invite(text, uuid, citext) from public, anon, authenticated");
+    expect(acceptanceFix).toContain("grant execute on function public.accept_site_invite(text, uuid, citext) to service_role");
   });
 });
