@@ -98,7 +98,6 @@ export function MusicView({ window, ctx }: ModuleProps<"music">) {
     </div>
   );
 }
-
 export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">) {
   const tracks = orderedTracks(window);
   const playback = useMusicPlayback();

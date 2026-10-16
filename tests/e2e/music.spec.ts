@@ -166,4 +166,3 @@ test("mobile music controls remain reachable at 320px", async ({ page }) => {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 });
-
