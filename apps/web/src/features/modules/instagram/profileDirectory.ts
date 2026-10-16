@@ -1,10 +1,11 @@
-import { CollectionEntityV2Schema, HighlightEntityV2Schema, PostEntityV2Schema, ProfileEntityV2Schema, type SiteDocumentV2Input, type ProfileEntityV2 } from "@retrodesk/shared";
+import { CollectionEntityV2Schema, HighlightEntityV2Schema, PostEntityV2Schema, ProfileEntityV2Schema, socialCounts, type SiteDocumentV2Input, type ProfileEntityV2 } from "@retrodesk/shared";
 import type { ProfileDirectoryEntry } from "../types";
 
 /** Read-only adapter from canonical entities to the IG navigation boundary. */
 export function buildProfileDirectory(document: SiteDocumentV2Input, publishedOnly = false): ProfileDirectoryEntry[] {
-  return document.entities.profiles
-    .filter((profile) => !publishedOnly || profile.visibility === "published")
+  const visibleProfiles = document.entities.profiles.filter((profile) => !publishedOnly || profile.visibility === "published");
+  const visibleProfileIds = new Set(visibleProfiles.map((profile) => profile.id));
+  return visibleProfiles
     .flatMap((profile) => {
       const parsed = ProfileEntityV2Schema.safeParse(profile);
       if (!parsed.success) return [];
@@ -23,6 +24,8 @@ export function buildProfileDirectory(document: SiteDocumentV2Input, publishedOn
           likes: legacyPost.likes ?? 0,
           comments: legacyPost.comments ?? [],
           extra: (legacyPost.extra ?? []).map((extra) => ({ ...extra, srcUrl: extra.srcUrl ?? "" })),
+          namedLikerIds: legacyPost.namedLikerIds.filter((id) => visibleProfileIds.has(id)),
+          actorComments: legacyPost.actorComments.filter((comment) => comment.authorKind === "legacy" || visibleProfileIds.has(comment.authorProfileId)),
         }];
       });
       const postIds = new Set(posts.map((post) => post.id));
@@ -36,11 +39,16 @@ export function buildProfileDirectory(document: SiteDocumentV2Input, publishedOn
         if (!parsedCollection.success || parsedCollection.data.siteId !== normalizedProfile.siteId || parsedCollection.data.ownerProfileId !== normalizedProfile.id || (publishedOnly && parsedCollection.data.visibility !== "published")) return [];
         return [{ ...parsedCollection.data, postIds: parsedCollection.data.postIds.filter((postId) => postIds.has(postId)) }];
       });
-      return [{ id: normalizedProfile.id, siteId: normalizedProfile.siteId, profile: legacyProfile, posts, highlights, collections, themeOverride: normalizedProfile.themeOverride }];
+      const counts = socialCounts(document, normalizedProfile.id);
+      const followerIds = counts.followerIds.filter((id) => visibleProfileIds.has(id));
+      const followingIds = counts.followingIds.filter((id) => visibleProfileIds.has(id));
+      const followerCount = normalizedProfile.otherFollowerCount == null ? null : followerIds.length + normalizedProfile.otherFollowerCount;
+      const followingCount = normalizedProfile.otherFollowingCount == null ? null : followingIds.length + normalizedProfile.otherFollowingCount;
+      return [{ id: normalizedProfile.id, siteId: normalizedProfile.siteId, profile: legacyProfile, posts, highlights, collections, followerIds, followingIds, followerCount, followingCount, legacyFollowerLabel: normalizedProfile.legacyFollowersLabel ?? normalizedProfile.followers, legacyFollowingLabel: normalizedProfile.legacyFollowingLabel ?? normalizedProfile.following, themeOverride: normalizedProfile.themeOverride }];
     });
 }
 
 function toLegacyProfile(profile: ProfileEntityV2): ProfileDirectoryEntry["profile"] {
-  const { kind: _kind, id: _id, siteId: _siteId, visibility: _visibility, handle: _handle, displayName: _displayName, pronouns: _pronouns, customFields: _customFields, worldTags: _worldTags, themeOverride: _themeOverride, legacyUsernameLabel: _legacyUsernameLabel, legacyFollowersLabel: _legacyFollowersLabel, legacyFollowingLabel: _legacyFollowingLabel, ...legacy } = profile;
+  const { kind: _kind, id: _id, siteId: _siteId, visibility: _visibility, handle: _handle, displayName: _displayName, pronouns: _pronouns, customFields: _customFields, worldTags: _worldTags, themeOverride: _themeOverride, legacyUsernameLabel: _legacyUsernameLabel, legacyFollowersLabel: _legacyFollowersLabel, legacyFollowingLabel: _legacyFollowingLabel, otherFollowerCount: _otherFollowerCount, otherFollowingCount: _otherFollowingCount, ...legacy } = profile;
   return { ...legacy, username: profile.handle ?? profile.username, name: profile.displayName ?? profile.name };
 }

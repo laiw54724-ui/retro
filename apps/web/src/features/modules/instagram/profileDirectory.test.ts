@@ -19,6 +19,11 @@ describe("Instagram profile directory", () => {
     hidden.visibility = "draft";
     hidden.avatarUrl = "https://example.com/private-avatar.png";
     hidden.linkUrl = "https://example.com/private-profile";
+    draft.document.entities.profiles.find((profile) => profile.id === entry.id)!.otherFollowerCount = 2;
+    (draft.document.entities.followEdges ??= []).push(
+      { kind: "follow", id: "follow:public", siteId: "site-a", fromProfileId: publicProfile.id, toProfileId: entry.id },
+      { kind: "follow", id: "follow:draft", siteId: "site-a", fromProfileId: hidden.id, toProfileId: entry.id },
+    );
     const sourcePost = draft.document.entities.posts[0];
     if (sourcePost) draft.document.entities.posts.push({ ...structuredClone(sourcePost), id: "post:draft", authorProfileId: hidden.id, visibility: "draft", caption: "private caption" });
 
@@ -27,6 +32,7 @@ describe("Instagram profile directory", () => {
 
     const publicDirectory = buildProfileDirectory(draft.document, true);
     expect(publicDirectory.map((item) => item.id)).toEqual([entry.id, "profile:published"]);
+    expect(publicDirectory[0]).toMatchObject({ followerIds: ["profile:published"], followerCount: 3 });
     expect(JSON.stringify(publicDirectory)).not.toContain("private caption");
     expect(JSON.stringify(publicDirectory)).not.toContain("private-avatar.png");
     expect(JSON.stringify(publicDirectory)).not.toContain("private-profile");

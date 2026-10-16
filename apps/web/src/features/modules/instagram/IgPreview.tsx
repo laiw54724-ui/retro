@@ -34,7 +34,6 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
     .filter((collection) => collection.postIds.length > 0);
   const pinnedPosts = posts.filter((post) => !!(post as Partial<ProfileDirectoryPost>).pinned);
   const regularPosts = posts.filter((post) => !(post as Partial<ProfileDirectoryPost>).pinned);
-  const canBrowseProfiles = profileDirectory.some((entry) => entry.id !== s.activeProfileId);
   const canonicalHighlights = directoryEntry?.highlights ?? [];
   const highlights = canonicalHighlights.length ? canonicalHighlights.map((highlight) => ({ id: highlight.id, title: highlight.title, src: highlight.coverSrc, srcUrl: highlight.coverSrcUrl })) : profile.highlights;
   const storyFrames = storyFramesFor(s.activeProfileId);
@@ -43,8 +42,8 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
   const I = igIcons(tv.text);
   const showHighlights = profile.showHighlights && highlights.length > 0;
   const ringBg = showHighlights ? `conic-gradient(${tv.titleFrom}, ${tv.accent}, ${tv.titleTo}, ${tv.titleFrom})` : "transparent";
-  const followers = Number.parseInt(profile.followers.replace(/[^0-9]/g, ""), 10) || 0;
-  const followersText = s.followed ? String(followers + 1) : profile.followers || "0";
+  const followersText = directoryEntry?.followerCount ?? directoryEntry?.legacyFollowerLabel ?? (profile.followers || "0");
+  const followingText = directoryEntry?.followingCount ?? directoryEntry?.legacyFollowingLabel ?? (profile.following || "0");
   const phStyle: CSSProperties = { ["--ph-a" as string]: tv.light, ["--ph-b" as string]: tv.face };
   const appStyle: CSSProperties = {
     background: "#fff",
@@ -74,9 +73,13 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
     const key = s.interactionKey(post.id);
     const { sources, index } = slideOf(post);
     const comments = [...post.comments, ...(s.extraComments[key] ?? [])];
+    const actorComments = (post as Partial<ProfileDirectoryPost>).actorComments ?? [];
     const all = s.showAll[key];
     const visible = all ? comments : comments.slice(-2);
-    const likes = post.likes + (s.liked[key] ? 1 : 0);
+    const socialPost = post as Partial<ProfileDirectoryPost>;
+    const namedLikerIds = socialPost.namedLikerIds ?? [];
+    const hasStructuredLikes = Array.isArray(socialPost.namedLikerIds) || socialPost.otherLikeCount !== undefined;
+    const likes = hasStructuredLikes ? namedLikerIds.length + (socialPost.otherLikeCount ?? 0) : post.likes;
     const inputOpen = profile.allowComments && (single || s.commentOpen[key]);
     const draft = s.drafts[key] ?? "";
     const current = sources[index];
@@ -116,16 +119,24 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
           <button type="button" className="ig-icbtn lg" aria-pressed={!!s.saved[key]} aria-label="收藏" onClick={() => s.toggleSave(post.id)}><Ic bg={s.saved[key] ? I.bookmarkFill : I.bookmark} /></button>
         </div>
         <div className="ig-text">
-          {profile.showLikes ? <strong>{likes.toLocaleString()} 個讚</strong> : null}
+          {profile.showLikes ? hasStructuredLikes
+            ? <button type="button" className="ig-linkbtn ig-like-count" onClick={() => s.openPeople("likers", post.id)}><strong>{likes.toLocaleString()} 個讚</strong></button>
+            : <strong className="ig-like-count">{likes.toLocaleString()} 個讚</strong>
+          : null}
           {post.caption ? <span className="ig-pre"><strong>{profile.username}</strong> {post.caption}</span> : null}
           {!all && comments.length > 2 ? <button type="button" className="ig-linkbtn" onClick={() => s.setShowAll((o) => ({ ...o, [key]: true }))}>查看全部 {comments.length} 則留言</button> : null}
           {profile.allowComments ? visible.map((c) => <span key={c.id} className="ig-wrap"><strong>{c.user}</strong> {c.text}</span>) : null}
+          {profile.allowComments ? actorComments.map((comment) => {
+            const actor = comment.authorKind === "profile" ? profileDirectory.find((entry) => entry.id === comment.authorProfileId) : undefined;
+            return <span key={comment.id} className="ig-wrap ig-actor-comment">{actor ? <button type="button" className="ig-linkbtn" onClick={() => s.navigateProfile(actor.id)}><strong>{actor.profile.name || actor.profile.username}</strong></button> : <strong>{comment.authorKind === "legacy" ? comment.legacyAuthorText : "角色"}</strong>} {comment.text}</span>;
+          }) : null}
           {post.date ? <span className="ig-date">{post.date}</span> : null}
         </div>
         {inputOpen ? (
           <div className="ig-comment-box">
             <input value={draft} placeholder="以訪客身分留言……" aria-label="留言" autoFocus={!single} onChange={(event) => s.setDrafts((o) => ({ ...o, [key]: event.target.value }))} onKeyDown={(event) => { if (event.key === "Enter") s.postComment(post.id); }} />
             <button type="button" disabled={!draft.trim()} onClick={() => s.postComment(post.id)} style={{ color: draft.trim() ? "#0095f6" : "#9aa" }}>發佈</button>
+            <small>僅本次瀏覽，不會儲存到作者網站。</small>
           </div>
         ) : null}
       </article>
@@ -194,10 +205,19 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
     const post = postById.get(postId);
     return post ? [post] : [];
   }) ?? [];
+  const peoplePost = s.peopleKind === "likers" && s.postId ? posts.find((post) => post.id === s.postId) as ProfileDirectoryPost | undefined : undefined;
+  const peopleIds = s.peopleKind === "followers" ? directoryEntry?.followerIds ?? [] : s.peopleKind === "following" ? directoryEntry?.followingIds ?? [] : peoplePost?.namedLikerIds ?? [];
+  const peopleEntries = peopleIds.flatMap((id) => { const entry = profileDirectory.find((candidate) => candidate.id === id); return entry ? [entry] : []; });
+  const peopleExtra = s.peopleKind === "followers" ? Math.max(0, (directoryEntry?.followerCount ?? peopleIds.length) - peopleIds.length) : s.peopleKind === "following" ? Math.max(0, (directoryEntry?.followingCount ?? peopleIds.length) - peopleIds.length) : peoplePost?.otherLikeCount ?? 0;
+  const legacyPeopleLabel = s.peopleKind === "followers" && directoryEntry?.followerCount === null
+    ? directoryEntry.legacyFollowerLabel
+    : s.peopleKind === "following" && directoryEntry?.followingCount === null
+      ? directoryEntry.legacyFollowingLabel
+      : "";
 
   const headTitle = s.screen === "collection"
     ? collectionFor?.title ?? "合集"
-    : { profile: profile.username || "username", feed: "Instagram", explore: "探索", saved: "已收藏", directory: "此桌面的角色", post: "貼文" }[s.screen];
+    : { profile: profile.username || "username", feed: "Instagram", explore: "探索", saved: "已收藏", directory: "此桌面的角色", post: "貼文", people: s.peopleKind === "followers" ? "粉絲" : s.peopleKind === "following" ? "追蹤中" : "喜歡者" }[s.screen];
   const nav: Array<{ id: "feed" | "explore" | "saved" | "profile"; label: string; icon?: string }> = [
     { id: "feed", label: "首頁", icon: s.screen === "feed" ? I.homeFill : I.home },
     { id: "explore", label: "探索", icon: I.search },
@@ -206,7 +226,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
   ];
   const activeNav = s.screen === "post"
     ? s.previousScreen === "collection" ? "profile" : s.previousScreen
-    : s.screen === "collection" ? "profile" : s.screen;
+    : s.screen === "collection" || s.screen === "people" ? "profile" : s.screen;
   const story = s.story >= 0 ? storyFrames[s.story] : undefined;
 
   return (
@@ -231,19 +251,20 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
                 {profile.showCounts ? (
                   <div className="ig-counts3">
                     <div><strong>{posts.length}</strong><span>貼文</span></div>
-                    {canBrowseProfiles ? <button type="button" className="ig-stat-button" onClick={s.openDirectory}><strong>{followersText}</strong><span>粉絲</span></button> : <div><strong>{followersText}</strong><span>粉絲</span></div>}
-                    {canBrowseProfiles ? <button type="button" className="ig-stat-button" onClick={s.openDirectory}><strong>{profile.following}</strong><span>追蹤中</span></button> : <div><strong>{profile.following}</strong><span>追蹤中</span></div>}
+                    {directoryEntry ? <button type="button" className="ig-stat-button" onClick={() => s.openPeople("followers")}><strong>{followersText}</strong><span>粉絲</span></button> : <div><strong>{followersText}</strong><span>粉絲</span></div>}
+                    {directoryEntry ? <button type="button" className="ig-stat-button" onClick={() => s.openPeople("following")}><strong>{followingText}</strong><span>追蹤中</span></button> : <div><strong>{followingText}</strong><span>追蹤中</span></div>}
                   </div>
                 ) : null}
               </div>
               <div className="ig-bio">
+                <span className="ig-world-label">角色世界觀內容</span>
                 <span><strong>{profile.name}</strong> <span className="ig-gray">{profile.alt}</span></span>
                 {profile.bio ? <span className="ig-pre">{profile.bio}</span> : null}
                 {profile.linkLabel ? <a href={safeHref(profile.linkUrl)} className="ig-link" onClick={(event) => { event.preventDefault(); ctx.onLink({ target: "url", url: profile.linkUrl, label: profile.linkLabel }); }}>↗ {profile.linkLabel}</a> : null}
                 {profile.showFollowedBy && profile.followedBy ? <span className="ig-followed">{profile.followedBy}</span> : null}
               </div>
               <div className="ig-btns">
-                <button type="button" aria-pressed={s.followed} className="ig-btn primary" style={s.followed ? { background: tv.face, color: tv.text, boxShadow: tv.pressed } : { background: tv.accent, color: "#fff", boxShadow: tv.bevel }} onClick={() => s.setFollowed(!s.followed)}>{s.followed ? "✓ Following" : "+ Follow"}</button>
+                <button type="button" aria-pressed={s.followed} className="ig-btn primary" title="僅本次瀏覽" style={s.followed ? { background: tv.face, color: tv.text, boxShadow: tv.pressed } : { background: tv.accent, color: "#fff", boxShadow: tv.bevel }} onClick={() => s.setFollowed(!s.followed)}>{s.followed ? "✓ Following（僅本次瀏覽）" : "+ Follow（僅本次瀏覽）"}</button>
                 {profile.dmUrl ? <button type="button" className="ig-btn" style={{ background: tv.face, color: tv.text, boxShadow: tv.bevel }} onClick={() => ctx.onLink({ target: "url", url: profile.dmUrl, label: "訊息" })}>訊息</button> : null}
                 <button type="button" className="ig-btn" style={{ background: tv.face, color: tv.text, boxShadow: tv.bevel }} onClick={() => s.showToast("已複製個人檔案連結")}>分享</button>
               </div>
@@ -287,6 +308,10 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
 
         {s.screen === "directory" ? (
           <div className="ig-directory"><h2>此桌面的角色</h2><p className="ig-note">這是創作者在此桌面公開的角色清單。</p>{(ctx.profileDirectory ?? []).map((entry) => <button type="button" className="ig-directory-row" key={entry.id} onClick={() => s.navigateProfile(entry.id)}><span className="ig-avatar ph" style={{ width: 48, height: 48, ...phStyle }}>{entry.profile.avatar ? <AvatarImage src={entry.profile.avatar} crop={entry.profile.avatarCrop} /> : null}</span><span><strong>{entry.profile.name || entry.profile.username}</strong><small>@{entry.profile.username}</small></span></button>)}</div>
+        ) : null}
+
+        {s.screen === "people" ? (
+          <section className="ig-people" aria-label={String(headTitle)}><p className="ig-note">角色世界觀內容</p>{peopleEntries.map((entry) => <button type="button" className="ig-directory-row" key={entry.id} onClick={() => s.navigateProfile(entry.id)}><span className="ig-avatar ph" style={{ width: 44, height: 44, ...phStyle }}>{entry.profile.avatar ? <AvatarImage src={entry.profile.avatar} crop={entry.profile.avatarCrop} /> : null}</span><span><strong>{entry.profile.name || entry.profile.username}</strong><small>@{entry.profile.username}</small></span></button>)}{peopleExtra > 0 ? <p>另有 {peopleExtra} 位虛構角色（未設定名單）</p> : null}{legacyPeopleLabel ? <p>舊顯示：{legacyPeopleLabel}（尚未轉為角色名單數字）</p> : null}{peopleEntries.length === 0 && peopleExtra === 0 && !legacyPeopleLabel ? <div className="ig-empty"><strong>目前沒有設定角色名單</strong></div> : null}</section>
         ) : null}
 
         {s.screen === "collection" ? (

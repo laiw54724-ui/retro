@@ -58,6 +58,20 @@ function twoWindowDocument(): SiteDocumentV2Input {
   return document;
 }
 
+function socialPublicDocument(): SiteDocumentV2Input {
+  const document = ocDocument();
+  const retro = document.entities.profiles.find((profile) => profile.id === "profile:ig")!;
+  const bei = document.entities.profiles.find((profile) => profile.id === "profile:bei")!;
+  retro.otherFollowerCount = 2;
+  retro.otherFollowingCount = 0;
+  document.entities.followEdges = [{ kind: "follow", id: "follow:bei-retro", siteId: "site-1", fromProfileId: bei.id, toProfileId: retro.id }];
+  const post = document.entities.posts.find((item) => item.authorProfileId === retro.id)!;
+  post.namedLikerIds = [bei.id];
+  post.otherLikeCount = 3;
+  post.actorComments = [{ id: "comment:bei", authorKind: "profile", authorProfileId: bei.id, text: "具名角色留言" }];
+  return document;
+}
+
 function presentationDocument(): SiteDocumentV2Input {
   const document = ocDocument();
   const profile = document.entities.profiles.find((item) => item.id === "profile:ig");
@@ -167,9 +181,17 @@ test("author configures fictional follows, named likes and actor comments with a
   const social = win.getByRole("group", { name: "角色互動" });
   await social.getByLabel("搜尋互動角色").fill("Bei");
   const following = social.locator("section").filter({ hasText: "追蹤中名單" });
-  await following.getByRole("checkbox").check();
+  const followsBei = following.getByRole("checkbox");
+  await followsBei.check();
+  await expect.poll(() => saves.at(-1)?.document.entities.followEdges?.length).toBe(1);
+  await page.getByRole("button", { name: "復原" }).click();
+  await expect(followsBei).not.toBeChecked();
+  await page.getByRole("button", { name: "重做" }).click();
+  await expect(followsBei).toBeChecked();
+  await expect.poll(() => saves.at(-1)?.document.entities.followEdges?.length).toBe(1);
   await social.getByRole("button", { name: /其他粉絲數.*舊顯示：100/ }).click();
   await social.getByRole("spinbutton", { name: "其他粉絲數" }).fill("12");
+  await expect.poll(() => saves.at(-1)?.document.entities.profiles.find((profile) => profile.id === "profile:ig")?.otherFollowerCount).toBe(12);
 
   const postToggle = win.locator(".ig-canonical-posts .ig-post-toggle").first();
   if (await postToggle.getAttribute("aria-expanded") !== "true") await postToggle.click();
@@ -179,14 +201,30 @@ test("author configures fictional follows, named likes and actor comments with a
   await post.getByRole("spinbutton", { name: "其他虛構喜歡人數" }).fill("8");
   await post.getByRole("button", { name: "＋ 角色留言" }).click();
   await post.getByRole("textbox", { name: "留言 1 內容" }).fill("世界觀留言");
+  await post.getByRole("button", { name: "＋ 純文字留言" }).click();
+  await post.getByRole("textbox", { name: "留言 2 舊作者名稱" }).fill("舊角色名");
+  await post.getByRole("textbox", { name: "留言 2 內容" }).fill("舊格式留言");
+  await post.getByRole("button", { name: "留言 2 往前" }).click();
 
-  await expect.poll(() => saves.at(-1)?.document.entities.followEdges?.length).toBe(1);
+  await expect.poll(() => {
+    const current = saves.at(-1)?.document;
+    return current ? {
+      followEdges: current.entities.followEdges?.length,
+      otherFollowerCount: current.entities.profiles.find((item) => item.id === "profile:ig")?.otherFollowerCount,
+      namedLikerIds: current.entities.posts[0]?.namedLikerIds,
+      otherLikeCount: current.entities.posts[0]?.otherLikeCount,
+      comments: current.entities.posts[0]?.actorComments?.map((comment) => comment.text),
+    } : null;
+  }).toEqual({ followEdges: 1, otherFollowerCount: 12, namedLikerIds: ["profile:bei"], otherLikeCount: 8, comments: ["舊格式留言", "世界觀留言"] });
   const saved = saves.at(-1)?.document;
   expect(saved?.entities.followEdges?.[0]).toMatchObject({ fromProfileId: "profile:ig", toProfileId: "profile:bei" });
   expect(saved?.entities.profiles.find((profile) => profile.id === "profile:ig")?.otherFollowerCount).toBe(12);
   expect(saved?.entities.posts[0].namedLikerIds).toContain("profile:bei");
   expect(saved?.entities.posts[0].otherLikeCount).toBe(8);
-  expect(saved?.entities.posts[0].actorComments[0]).toMatchObject({ authorKind: "profile", text: "世界觀留言" });
+  expect(saved?.entities.posts[0].actorComments).toEqual([
+    expect.objectContaining({ authorKind: "legacy", legacyAuthorText: "舊角色名", text: "舊格式留言" }),
+    expect.objectContaining({ authorKind: "profile", text: "世界觀留言" }),
+  ]);
 
   await page.reload();
   const reloaded = page.getByRole("dialog", { name: "Instagram.exe" });
@@ -194,6 +232,43 @@ test("author configures fictional follows, named likes and actor comments with a
   await reloadedSocial.getByLabel("搜尋互動角色").fill("Bei");
   await expect(reloadedSocial.locator("section").filter({ hasText: "追蹤中名單" }).getByRole("checkbox")).toBeChecked();
   await expect(reloadedSocial.getByRole("spinbutton", { name: "其他粉絲數" })).toHaveValue("12");
+  const reloadedPostToggle = reloaded.locator(".ig-canonical-posts .ig-post-toggle").first();
+  if (await reloadedPostToggle.getAttribute("aria-expanded") !== "true") await reloadedPostToggle.click();
+  await expect(reloaded.getByRole("textbox", { name: "留言 1 舊作者名稱" })).toHaveValue("舊角色名");
+});
+
+test("visitor browses truthful fictional people lists and nested actor navigation", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const document = socialPublicDocument();
+  await mockPublic(page, document);
+  await page.goto("/@demo");
+  const win = page.getByRole("dialog", { name: "Instagram.exe" });
+  await expect(win.getByText("角色世界觀內容")).toBeVisible();
+  const followerStat = win.getByRole("button", { name: /3\s*粉絲/ });
+  await followerStat.click();
+  await expect(win.getByRole("button", { name: /Bei Original @bei/ })).toBeVisible();
+  await expect(win.getByText("另有 2 位虛構角色（未設定名單）")).toBeVisible();
+  await win.getByRole("button", { name: /Bei Original @bei/ }).click();
+  await expect(win.getByText("Bei Original", { exact: true })).toBeVisible();
+  await win.getByRole("button", { name: "返回" }).click();
+  await win.getByRole("button", { name: "返回" }).click();
+  const follow = win.getByRole("button", { name: /Follow（僅本次瀏覽）/ });
+  await follow.click();
+  await expect(win.getByRole("button", { name: /3\s*粉絲/ })).toBeVisible();
+  const cell = win.getByRole("button", { name: /^開啟貼文：/ }).first();
+  await cell.click();
+  await expect(win.getByText("具名角色留言")).toBeVisible();
+  await win.getByRole("button", { name: "Bei Original", exact: true }).click();
+  await expect(win.getByText("Bei Original", { exact: true })).toBeVisible();
+  await win.getByRole("button", { name: "返回" }).click();
+  await win.getByRole("button", { name: "4 個讚" }).click();
+  await expect(win.getByRole("button", { name: /Bei Original @bei/ })).toBeVisible();
+  await win.getByRole("button", { name: /Bei Original @bei/ }).click();
+  await expect(win.getByText("Bei Original", { exact: true })).toBeVisible();
+  await win.getByRole("button", { name: "返回" }).click();
+  await expect(win.getByText("另有 3 位虛構角色（未設定名單）")).toBeVisible();
+  await expect(win.getByText("PRIVATE SOCIAL ACTOR")).toHaveCount(0);
+  await expect(win.getByText("PRIVATE SOCIAL COMMENT")).toHaveCount(0);
 });
 
 test("desktop OC editor switches, searches, duplicates, edits and safely retargets profiles", async ({ page }) => {
