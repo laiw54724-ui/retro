@@ -71,6 +71,7 @@ test("viewer opens a private draft reader without mounting authoring behavior", 
 
   await page.goto("/editor/site-viewer");
   await expect(page.getByText("私人草稿 · 只能查看")).toBeVisible();
+  await expect(page.getByTitle("回到我的桌面")).toHaveAttribute("href", "/auth");
   await expect(page.getByRole("button", { name: "桌面版" })).toBeVisible();
   await page.getByRole("button", { name: "手機版" }).click();
   await expect(page.locator(".draft-viewer-phone .m-screen")).toBeVisible();
@@ -106,12 +107,14 @@ test("editor exits authoring after access is removed on the next save", async ({
   await page.route("**/api/sites/site-removed", (route) => route.fulfill({ json: { site } }));
   await page.route("**/api/sites/site-removed/assets**", (route) => route.fulfill({ json: { assets: [] } }));
   await page.route("**/api/sites/site-removed/draft", (route) => route.fulfill({ status: 404, json: { error: { code: "not_found", message: "Site not found" } } }));
+  await page.route("**/api/sites", (route) => route.fulfill({ json: { sites: [] } }));
 
   await page.goto("/editor/site-removed");
   await page.getByLabel("視窗標題").fill("This will not save");
   await expect(page).toHaveURL(/\/auth\?notice=/);
   await expect(page.getByRole("status")).toContainText("你已失去這個桌面的編輯權限");
-  await expect(page.getByRole("button", { name: "前往我的桌面" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "我的桌面" })).toBeVisible();
+  await expect(page.getByText("還沒有桌面")).toBeVisible();
 });
 
 test("owner creates and revokes invitations, then updates and removes a member", async ({ page, context }) => {

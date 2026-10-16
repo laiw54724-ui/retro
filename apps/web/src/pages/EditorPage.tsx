@@ -505,7 +505,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     <AssetSourceProvider siteId={siteId}>
     <main className="editor-app">
       <header className="editor-topbar">
-        <Link to="/" className="brand" title="回到首頁"><Icon name="computer" size={22} />Retro Desktop</Link>
+        <Link to="/auth" className="brand" title="回到我的桌面"><Icon name="computer" size={22} />Retro Desktop</Link>
         <span className="w98-vsep mobile-hide" />
         <div className="topbar-meta">
           <span className="site-url">retrodesk.me/{store.username}</span>
@@ -527,6 +527,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         {actions.publish ? <RetroButton className="primary" onClick={requestPublish} disabled={publishing || (!!store.publishedDocument && !hasUnpublishedChanges)}>
           {store.publishedDocument ? "重新發布" : "發布"}
         </RetroButton> : null}
+        <Link className="retro-link mobile-hide" to="/">首頁</Link>
         <RetroButton className="mobile-hide" onClick={async () => { await signOut(); navigate("/"); }}>登出</RetroButton>
       </header>
 

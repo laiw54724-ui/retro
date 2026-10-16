@@ -47,7 +47,7 @@ function DraftViewerContent({ site, draft }: { site: SiteRecord; draft: ReturnTy
     <AssetSourceProvider siteId={site.id}>
       <main className="draft-viewer">
         <header className="draft-viewer-bar">
-          <Link to="/" className="brand"><Icon name="computer" size={22} />Retro Desktop</Link>
+          <Link to="/auth" className="brand" title="回到我的桌面"><Icon name="computer" size={22} />Retro Desktop</Link>
           <strong className="draft-viewer-badge">私人草稿 · 只能查看</strong>
           <span className="draft-viewer-name">{site.site_name}</span>
           <div className="top-spacer" />
