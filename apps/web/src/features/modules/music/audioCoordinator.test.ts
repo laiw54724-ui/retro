@@ -40,6 +40,15 @@ describe("music audio coordinator", () => {
     expect(player.getSnapshot()).toMatchObject({ status: "error" });
   });
 
+  it("turns a native media error into a stopped, actionable state", async () => {
+    const audio = new FakeAudio();
+    const player = createAudioCoordinator({ createAudio: () => audio });
+    await player.play("window-a", "track-a", "https://media.example.com/a.mp3");
+    audio.dispatchEvent(new Event("error"));
+    expect(player.getSnapshot()).toMatchObject({ status: "error", error: expect.stringContaining("無法載入") });
+    expect(audio.pause).toHaveBeenCalled();
+  });
+
   it("keeps volume in session state and only seeks seekable media", async () => {
     const audio = new FakeAudio();
     const player = createAudioCoordinator({ createAudio: () => audio });

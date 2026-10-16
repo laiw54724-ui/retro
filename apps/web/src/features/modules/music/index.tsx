@@ -86,7 +86,7 @@ export function MusicView({ window, ctx }: ModuleProps<"music">) {
           const current = selected.id === track.id;
           const playing = playback.windowId === window.id && playback.trackId === track.id && playback.status === "playing";
           return (
-            <button key={track.id} type="button" role="listitem" className={`music-track${current ? " selected" : ""}`} aria-current={current ? "true" : undefined} onClick={() => setSelectedId(track.id)}>
+            <button key={track.id} type="button" className={`music-track${current ? " selected" : ""}`} aria-label={`選擇 ${track.title || "未命名曲目"}`} aria-current={current ? "true" : undefined} onClick={() => setSelectedId(track.id)}>
               <span>{playing ? "▶" : String(trackIndex + 1).padStart(2, "0")}</span><span><strong>{track.title || "未命名曲目"}</strong><small>{track.artist || (track.source.kind === "externalLink" ? "外部平台" : "未填演出者")}</small></span><span>{track.source.kind === "externalLink" ? "↗" : "♫"}</span>
             </button>
           );
