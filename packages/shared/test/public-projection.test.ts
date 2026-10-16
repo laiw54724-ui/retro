@@ -41,6 +41,35 @@ describe("public site projection", () => {
     expect(JSON.stringify(result.document)).not.toContain(post.srcUrl);
   });
 
+  it("filters rich content references transitively", () => {
+    const draft = v2();
+    const profile = draft.entities.profiles[0];
+    const post = draft.entities.posts[0];
+    if (!profile || !post) throw new Error("fixture missing");
+    const hidden = { ...profile, id: "profile-hidden", handle: "hidden", username: "hidden", displayName: "Hidden", name: "Hidden", visibility: "draft" as const, avatarUrl: "https://private/avatar.png", linkUrl: "https://private/profile" };
+    draft.entities.profiles.push(hidden);
+    profile.highlights = [{ id: "legacy-private-highlight", title: "Private embedded", src: "https://private/embedded.png", srcUrl: "https://private/embedded-raw.png" }];
+    post.taggedProfileIds = [profile.id, hidden.id];
+    post.media = [{ id: "media-public", src: "https://public/image.png", srcUrl: "https://public/raw.png", alt: "public" }];
+    draft.entities.highlights.push({ kind: "highlight", id: "highlight-public", siteId: profile.siteId, ownerProfileId: profile.id, visibility: "draft", title: "Private", coverSrc: "https://private/cover.png", coverSrcUrl: "https://private/cover-raw.png", coverAlt: "", frames: [{ id: "frame-hidden", src: "https://private/frame.png", srcUrl: "https://private/frame-raw.png", alt: "", text: "draft frame" }] });
+    draft.entities.collections.push({ kind: "collection", id: "collection-public", siteId: profile.siteId, ownerProfileId: profile.id, visibility: "published", title: "Works", description: "", postIds: [post.id] });
+    draft.entities.collections.push({ kind: "collection", id: "collection-hidden-owner", siteId: profile.siteId, ownerProfileId: hidden.id, visibility: "published", title: "Private collection", description: "do not leak", postIds: [post.id] });
+    post.collectionIds = ["collection-public", "collection-hidden-owner"];
+    const result = projectPublicSiteDocument(draft, profile.siteId);
+    expect(result.ok).toBe(true);
+    if (!result.ok || result.version !== 2) return;
+    expect(result.document.entities.profiles.some((item) => item.id === hidden.id)).toBe(false);
+    expect(result.document.entities.posts[0]?.taggedProfileIds).toEqual([profile.id]);
+    expect(JSON.stringify(result.document)).not.toContain("private/avatar.png");
+    expect(JSON.stringify(result.document)).not.toContain("private/frame.png");
+    expect(result.document.entities.highlights).toEqual([]);
+    expect(result.document.entities.profiles[0]?.highlights).toEqual([]);
+    expect(result.document.entities.posts[0]?.collectionIds).toEqual(["collection-public"]);
+    expect(result.document.entities.collections[0]?.postIds).toEqual([post.id]);
+    expect(JSON.stringify(result.document)).not.toContain("Private collection");
+    expect(JSON.stringify(result.document)).not.toContain("private/embedded.png");
+  });
+
   it("is deterministic and rejects invalid or unsupported versions", () => {
     const draft = v2();
     expect(projectPublicSiteDocument(draft, "site-a")).toEqual(projectPublicSiteDocument(draft, "site-a"));

@@ -37,7 +37,16 @@ export function projectPublicSiteDocument(raw: unknown, currentSiteId: string): 
 function projectV2(document: SiteDocumentV2, currentSiteId: string): SiteDocumentV2 {
   const profiles = document.entities.profiles.filter((profile) => profile.siteId === currentSiteId && profile.visibility === "published");
   const profileIds = new Set(profiles.map((profile) => profile.id));
-  const posts = document.entities.posts.filter((post) => post.siteId === currentSiteId && post.visibility === "published" && profileIds.has(post.authorProfileId));
+  const collections = document.entities.collections.filter((collection) => collection.siteId === currentSiteId && collection.visibility === "published" && profileIds.has(collection.ownerProfileId));
+  const collectionIds = new Set(collections.map((collection) => collection.id));
+  const posts = document.entities.posts.filter((post) => post.siteId === currentSiteId && post.visibility === "published" && profileIds.has(post.authorProfileId)).map((post) => ({ ...post, taggedProfileIds: post.taggedProfileIds.filter((id) => profileIds.has(id)), collectionIds: post.collectionIds.filter((id) => collectionIds.has(id)) }));
+  const postIds = new Set(posts.map((post) => post.id));
+  const highlights = document.entities.highlights.filter((highlight) => highlight.siteId === currentSiteId && highlight.visibility === "published" && profileIds.has(highlight.ownerProfileId));
+  const profilesWithCanonicalHighlights = new Set(document.entities.highlights.filter((highlight) => highlight.siteId === currentSiteId).map((highlight) => highlight.ownerProfileId));
+  const publicProfiles = profiles.map((profile) => profilesWithCanonicalHighlights.has(profile.id)
+    ? { ...profile, highlights: highlights.filter((highlight) => highlight.ownerProfileId === profile.id).map((highlight) => ({ id: highlight.id, title: highlight.title, src: highlight.coverSrc, srcUrl: highlight.coverSrcUrl })) }
+    : profile);
+  const publicCollections = collections.map((collection) => ({ ...collection, postIds: collection.postIds.filter((id) => postIds.has(id)) }));
   const retainedWindows = document.windows
     .filter((window) => window.type !== "instagram" || (window.content.profileRef.siteId === currentSiteId && profileIds.has(window.content.profileRef.id)));
   const retainedWindowIds = new Set(retainedWindows.map((window) => window.id));
@@ -52,5 +61,5 @@ function projectV2(document: SiteDocumentV2, currentSiteId: string): SiteDocumen
         }
       };
     });
-  return { ...document, windows, entities: { profiles, posts } };
+  return { ...document, windows, entities: { profiles: publicProfiles, posts, highlights, collections: publicCollections } };
 }

@@ -27,7 +27,7 @@ export const ProfileHandleSchema = z.string().trim().toLowerCase().min(1, "Handl
 export type ProfileHandle = z.infer<typeof ProfileHandleSchema>;
 export const ProfileCustomFieldSchema = z.object({ key: z.string().trim().min(1).max(80), value: z.string().max(500) }).strict();
 export const ProfileThemeOverrideSchema = z.object({ accent: z.string().regex(/^#[0-9a-fA-F]{6}$/), background: z.string().regex(/^#[0-9a-fA-F]{6}$/) }).strict();
-export const EntityKindSchema = z.enum(["window", "profile", "post"]);
+export const EntityKindSchema = z.enum(["window", "profile", "post", "highlight", "collection"]);
 export type EntityKind = z.infer<typeof EntityKindSchema>;
 export const VisibilitySchema = z.enum(["published", "draft"]);
 export type Visibility = z.infer<typeof VisibilitySchema>;
@@ -71,11 +71,30 @@ const ProfileAuthoringFields = {
   legacyFollowingLabel: z.string().max(32).optional()
 };
 const StrictPostFields = { ...PostFields, comments: z.array(StrictCommentSchema).max(200).default([]), extra: z.array(StrictExtraImageSchema).max(9).default([]) };
+export const PostMediaV2Schema = z.object({
+  id: BoundedId, src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default(""), alt: z.string().max(300).default(""),
+  crop: StrictImageCropSchema.optional(), aspectRatio: z.number().finite().positive().max(20).optional()
+}).strict();
+export const HighlightFrameV2Schema = z.object({ id: BoundedId, src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default(""), alt: z.string().max(300).default(""), crop: StrictImageCropSchema.optional(), text: z.string().max(500).default("") }).strict();
+export const HighlightEntityV2Schema = z.object({
+  kind: z.literal("highlight"), id: BoundedId, siteId: BoundedId, ownerProfileId: BoundedId, visibility: VisibilitySchema,
+  title: z.string().max(40), coverSrc: ImageUrlSchema.nullable(), coverSrcUrl: z.string().max(2048).default(""), coverAlt: z.string().max(300).default(""), coverCrop: StrictImageCropSchema.optional(), frames: z.array(HighlightFrameV2Schema).max(50).default([])
+}).strict();
+export const CollectionEntityV2Schema = z.object({
+  kind: z.literal("collection"), id: BoundedId, siteId: BoundedId, ownerProfileId: BoundedId, visibility: VisibilitySchema,
+  title: z.string().max(120), description: z.string().max(1000).default(""), postIds: z.array(BoundedId).max(500).default([])
+}).strict();
+export type PostMediaV2 = z.infer<typeof PostMediaV2Schema>;
+export type HighlightFrameV2 = z.infer<typeof HighlightFrameV2Schema>;
+export type HighlightEntityV2 = z.infer<typeof HighlightEntityV2Schema>;
+export type CollectionEntityV2 = z.infer<typeof CollectionEntityV2Schema>;
 export const ProfileEntityV2Schema = z.object({
   kind: z.literal("profile"), id: BoundedId, siteId: BoundedId, visibility: VisibilitySchema, ...StrictProfileFields, ...ProfileAuthoringFields
 }).strict();
 export const PostEntityV2Schema = z.object({
-  kind: z.literal("post"), id: BoundedId, siteId: BoundedId, visibility: VisibilitySchema, authorProfileId: BoundedId, ...StrictPostFields
+  kind: z.literal("post"), id: BoundedId, siteId: BoundedId, visibility: VisibilitySchema, authorProfileId: BoundedId, ...StrictPostFields,
+  media: z.array(PostMediaV2Schema).max(10).default([]), worldDateLabel: z.string().max(120).default(""), taggedProfileIds: z.array(BoundedId).max(100).default([]), collectionIds: z.array(BoundedId).max(100).default([]), pinned: z.boolean().default(false),
+  createdAt: z.string().datetime().optional(), updatedAt: z.string().datetime().optional()
 }).strict();
 export type ProfileEntityV2 = z.infer<typeof ProfileEntityV2Schema>;
 export type PostEntityV2 = z.infer<typeof PostEntityV2Schema>;
@@ -103,7 +122,7 @@ export type DesktopWindowV2 = z.infer<typeof DesktopWindowV2Schema>;
 export const SiteDocumentV2Schema = z.object({
   schemaVersion: z.literal(2), siteName: z.string().min(1).max(120), theme: StrictThemeSchema,
   windows: z.array(DesktopWindowV2Schema).max(100), mobileColumns: z.number().int().min(3).max(4).default(4),
-  entities: z.object({ profiles: z.array(ProfileEntityV2Schema).max(100), posts: z.array(PostEntityV2Schema).max(500) }).strict()
+  entities: z.object({ profiles: z.array(ProfileEntityV2Schema).max(100), posts: z.array(PostEntityV2Schema).max(500), highlights: z.array(HighlightEntityV2Schema).max(200).default([]), collections: z.array(CollectionEntityV2Schema).max(200).default([]) }).strict()
 }).strict();
 export type SiteDocumentV2 = z.infer<typeof SiteDocumentV2Schema>;
 /** Raw v2 shape accepted by Zod; defaulted fields may be omitted intentionally. */
@@ -150,13 +169,24 @@ export function loadVersionedSiteDocument(raw: unknown, options: { siteId?: stri
 /** Converts a validated v2 document only at legacy module/render boundaries. */
 export function projectV2ToLegacyDocument(document: SiteDocumentV2Input): { ok: true; document: SiteDocument } | { ok: false; diagnostics: Diagnostic[] } {
   const profiles = new Map(document.entities.profiles.map((profile) => [profile.id, profile]));
+  const highlights = new Map<string, HighlightEntityV2[]>();
+  for (const item of (document.entities.highlights ?? [])) {
+    const parsedHighlight = HighlightEntityV2Schema.safeParse(item);
+    if (parsedHighlight.success) highlights.set(parsedHighlight.data.ownerProfileId, [...(highlights.get(parsedHighlight.data.ownerProfileId) ?? []), parsedHighlight.data]);
+  }
   const windows = document.windows.map((window) => {
     if (window.type !== "instagram") return window;
     const profile = profiles.get(window.content.profileRef.id);
     if (!profile || profile.siteId !== window.content.profileRef.siteId) return null;
     const { kind: _kind, id: _id, siteId: _siteId, visibility: _visibility, handle: _handle, displayName: _displayName, pronouns: _pronouns, customFields: _customFields, worldTags: _worldTags, themeOverride: _themeOverride, legacyUsernameLabel: _legacyUsernameLabel, legacyFollowersLabel: _legacyFollowersLabel, legacyFollowingLabel: _legacyFollowingLabel, ...legacyProfile } = profile;
-    const posts = document.entities.posts.filter((post) => post.siteId === profile.siteId && post.authorProfileId === profile.id).map(({ kind: _postKind, siteId: _postSiteId, visibility: _postVisibility, authorProfileId: _authorProfileId, ...post }) => post);
-    return { ...window, content: { skin: window.content.skin, profile: { ...legacyProfile, username: profile.handle ?? profile.username, name: profile.displayName ?? profile.name }, images: posts } };
+    const posts = document.entities.posts.filter((post) => post.siteId === profile.siteId && post.authorProfileId === profile.id).map(({ kind: _postKind, siteId: _postSiteId, visibility: _postVisibility, authorProfileId: _authorProfileId, media, worldDateLabel: _worldDateLabel, taggedProfileIds: _taggedProfileIds, collectionIds: _collectionIds, pinned: _pinned, createdAt: _createdAt, updatedAt: _updatedAt, ...post }) => {
+      if (!media?.length) return post;
+      const [first, ...rest] = media;
+      return { ...post, src: first.src, srcUrl: first.srcUrl, extra: rest.map((item) => ({ id: item.id, src: item.src, srcUrl: item.srcUrl })) };
+    });
+    const highlightEntities = highlights.get(profile.id) ?? [];
+    const embeddedHighlights = highlightEntities.length ? highlightEntities.map((item) => ({ id: item.id, title: item.title, src: item.coverSrc, srcUrl: item.coverSrcUrl })) : (profile.highlights ?? []).map((item) => ({ id: item.id, title: item.title, src: item.src, srcUrl: item.srcUrl ?? "" }));
+    return { ...window, content: { skin: window.content.skin, profile: { ...legacyProfile, username: profile.handle ?? profile.username, name: profile.displayName ?? profile.name, highlights: embeddedHighlights }, images: posts } };
   });
   if (windows.some((window) => window === null)) return { ok: false, diagnostics: [{ path: ["windows"], message: "Instagram window references a missing profile", code: "missing_ref" }] };
   const parsed = SiteDocumentSchema.safeParse({ schemaVersion: 1, siteName: document.siteName, theme: document.theme, windows, mobileColumns: document.mobileColumns });
@@ -173,6 +203,7 @@ export function mergeLegacyDocumentIntoV2(document: SiteDocumentV2Input, legacy:
   const usedProfileIds = new Set(next.entities.profiles.map((profile) => profile.id));
   const profileEdits = new Set<string>();
   const postEdits = new Set<string>();
+  const highlightEdits = new Set<string>();
   const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
   const legacyProfileOf = (profile: ProfileEntityV2) => {
     const { kind: _kind, id: _id, siteId: _siteId, visibility: _visibility, handle: _handle, displayName: _displayName, pronouns: _pronouns, customFields: _customFields, worldTags: _worldTags, themeOverride: _themeOverride, legacyUsernameLabel: _legacyUsernameLabel, legacyFollowersLabel: _legacyFollowersLabel, legacyFollowingLabel: _legacyFollowingLabel, ...legacyProfile } = profile;
@@ -219,14 +250,28 @@ export function mergeLegacyDocumentIntoV2(document: SiteDocumentV2Input, legacy:
         profileEdits.add(profile.id);
       }
     }
+    if (!highlightEdits.has(profile.id)) {
+      const currentHighlights = next.entities.highlights ?? [];
+      const legacyHighlights = legacyProfile.highlights ?? [];
+      const owned = currentHighlights.filter((highlight) => highlight.ownerProfileId === profile.id);
+      const usedHighlightIds = new Set(currentHighlights.map((item) => item.id));
+      const synced = legacyHighlights.map((highlight, index) => {
+        const existing = owned.find((item) => item.id === highlight.id) ?? owned[index];
+        const frames = existing?.frames?.length ? [{ ...existing.frames[0], src: highlight.src, srcUrl: highlight.srcUrl ?? "" }, ...existing.frames.slice(1)] : [{ id: `${highlight.id}:frame`, src: highlight.src, srcUrl: highlight.srcUrl ?? "", alt: "", text: "" }];
+        return { kind: "highlight" as const, id: existing?.id ?? boundedGeneratedId(`highlight:${profile.id}:${highlight.id}`, usedHighlightIds), siteId: profile.siteId, ownerProfileId: profile.id, visibility: existing?.visibility ?? "published" as const, title: highlight.title, coverSrc: highlight.src, coverSrcUrl: highlight.srcUrl ?? "", coverAlt: existing?.coverAlt ?? "", coverCrop: existing?.coverCrop, frames };
+      });
+      next.entities.highlights = [...currentHighlights.filter((highlight) => highlight.ownerProfileId !== profile.id), ...synced];
+      highlightEdits.add(profile.id);
+    }
     const posts = legacyWindow.content.images;
     const existing = next.entities.posts.filter((post) => post.authorProfileId === profile.id);
-    const baseline = existing.map(({ kind: _kind, siteId: _siteId, visibility: _visibility, authorProfileId: _authorProfileId, ...post }) => post);
+    const baseline = existing.map(({ kind: _kind, siteId: _siteId, visibility: _visibility, authorProfileId: _authorProfileId, media, worldDateLabel: _worldDateLabel, taggedProfileIds: _taggedProfileIds, collectionIds: _collectionIds, pinned: _pinned, createdAt: _createdAt, updatedAt: _updatedAt, ...post }) => media?.length ? { ...post, src: media[0].src, srcUrl: media[0].srcUrl, extra: media.slice(1).map((item) => ({ id: item.id, src: item.src, srcUrl: item.srcUrl })) } : post);
     const postsChanged = !same(posts, baseline);
     if (postsChanged && !postEdits.has(profile.id)) {
       const existingIds = new Set(existing.map((post) => post.id));
       next.entities.posts = next.entities.posts.filter((post) => post.authorProfileId !== profile.id);
-      next.entities.posts.push(...posts.map((post) => ({ kind: "post" as const, siteId: profile.siteId, visibility: "published" as const, authorProfileId: profile.id, ...post, id: existingIds.has(post.id) ? post.id : `post:${profile.id}:${post.id}` })));
+      const existingById = new Map(existing.map((item) => [item.id, item]));
+      next.entities.posts.push(...posts.map((post) => { const old = existingById.get(post.id); return { kind: "post" as const, siteId: profile.siteId, visibility: old?.visibility ?? "published" as const, authorProfileId: profile.id, ...post, id: existingIds.has(post.id) ? post.id : `post:${profile.id}:${post.id}`, media: [{ id: old?.media?.[0]?.id ?? `${post.id}:media`, src: post.src, srcUrl: post.srcUrl, alt: old?.media?.[0]?.alt ?? "", crop: old?.media?.[0]?.crop, aspectRatio: old?.media?.[0]?.aspectRatio }, ...post.extra.map((item, index) => ({ id: old?.media?.[index + 1]?.id ?? item.id, src: item.src, srcUrl: item.srcUrl, alt: old?.media?.[index + 1]?.alt ?? "", crop: old?.media?.[index + 1]?.crop, aspectRatio: old?.media?.[index + 1]?.aspectRatio }))], worldDateLabel: old?.worldDateLabel ?? "", taggedProfileIds: old?.taggedProfileIds ?? [], collectionIds: old?.collectionIds ?? [], pinned: old?.pinned ?? false, createdAt: old?.createdAt, updatedAt: old?.updatedAt }; }));
       postEdits.add(profile.id);
     }
     const index = next.windows.findIndex((window) => window.id === legacyWindow.id);
@@ -241,6 +286,13 @@ export function mergeLegacyDocumentIntoV2(document: SiteDocumentV2Input, legacy:
   // posts remain site-level entities so deleting one view cannot destroy a
   // profile still shared by another view.
   next.windows = next.windows.filter((window) => legacy.windows.some((candidate) => candidate.id === window.id));
+  // Legacy post deletion is authoritative for that author's post list. Prune
+  // collection edges after every window has reconciled so no deleted post or
+  // collection can leave the canonical graph invalid.
+  const retainedPostIds = new Set(next.entities.posts.map((post) => post.id));
+  next.entities.collections = (next.entities.collections ?? []).map((collection) => ({ ...collection, postIds: (collection.postIds ?? []).filter((id) => retainedPostIds.has(id)) }));
+  const retainedCollectionIds = new Set((next.entities.collections ?? []).map((collection) => collection.id));
+  next.entities.posts = next.entities.posts.map((post) => ({ ...post, collectionIds: (post.collectionIds ?? []).filter((id) => retainedCollectionIds.has(id)) }));
   return next;
 }
 
@@ -278,8 +330,10 @@ function invalid(raw: unknown, diagnostics: Diagnostic[]): InvalidResult { retur
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value); }
 
 function semanticDiagnostics(document: SiteDocumentV2): Diagnostic[] {
-  const out: Diagnostic[] = [], windowIds = new Set<string>(), profileIds = new Set<string>(), postIds = new Set<string>();
+  const out: Diagnostic[] = [], windowIds = new Set<string>(), profileIds = new Set<string>(), postIds = new Set<string>(), highlightIds = new Set<string>(), collectionIds = new Set<string>();
   const scopeSites = new Set<string>([...document.entities.profiles, ...document.entities.posts].map((e) => e.siteId));
+  for (const entity of document.entities.highlights) scopeSites.add(entity.siteId);
+  for (const entity of document.entities.collections) scopeSites.add(entity.siteId);
   for (const window of document.windows) if (window.type === "instagram") scopeSites.add(window.content.profileRef.siteId);
   const mixedSiteScope = scopeSites.size > 1;
   if (mixedSiteScope) out.push({ path: ["entities"], message: "Mixed site scope", code: "cross_site" });
@@ -305,6 +359,17 @@ function semanticDiagnostics(document: SiteDocumentV2): Diagnostic[] {
   for (const [i, post] of document.entities.posts.entries()) {
     if (postIds.has(post.id)) out.push({ path: ["entities", "posts", i, "id"], message: "Duplicate entity id", code: "duplicate_id" }); postIds.add(post.id);
     if (!document.entities.profiles.some((p) => p.id === post.authorProfileId && p.siteId === post.siteId)) out.push({ path: ["entities", "posts", i, "authorProfileId"], message: mixedSiteScope ? "Cross-site author profile" : "Missing author profile", code: mixedSiteScope ? "cross_site" : "missing_ref" });
+    for (const [j, profileId] of post.taggedProfileIds.entries()) if (!document.entities.profiles.some((p) => p.id === profileId && p.siteId === post.siteId)) out.push({ path: ["entities", "posts", i, "taggedProfileIds", j], message: "Missing tagged profile", code: "missing_ref" });
+    for (const [j, collectionId] of post.collectionIds.entries()) if (!document.entities.collections.some((collection) => collection.id === collectionId && collection.siteId === post.siteId)) out.push({ path: ["entities", "posts", i, "collectionIds", j], message: "Missing post collection", code: "missing_ref" });
+  }
+  for (const [i, highlight] of document.entities.highlights.entries()) {
+    if (highlightIds.has(highlight.id)) out.push({ path: ["entities", "highlights", i, "id"], message: "Duplicate entity id", code: "duplicate_id" }); highlightIds.add(highlight.id);
+    if (!document.entities.profiles.some((p) => p.id === highlight.ownerProfileId && p.siteId === highlight.siteId)) out.push({ path: ["entities", "highlights", i, "ownerProfileId"], message: "Missing highlight owner", code: "missing_ref" });
+  }
+  for (const [i, collection] of document.entities.collections.entries()) {
+    if (collectionIds.has(collection.id)) out.push({ path: ["entities", "collections", i, "id"], message: "Duplicate entity id", code: "duplicate_id" }); collectionIds.add(collection.id);
+    if (!document.entities.profiles.some((p) => p.id === collection.ownerProfileId && p.siteId === collection.siteId)) out.push({ path: ["entities", "collections", i, "ownerProfileId"], message: "Missing collection owner", code: "missing_ref" });
+    for (const [j, postId] of collection.postIds.entries()) if (!document.entities.posts.some((p) => p.id === postId && p.siteId === collection.siteId)) out.push({ path: ["entities", "collections", i, "postIds", j], message: "Missing collection post", code: "missing_ref" });
   }
   return out;
 }
@@ -350,7 +415,7 @@ export function migrateSiteDocumentV2(raw: unknown, options: { siteId: string })
     // caller's exact object and identity after validation succeeds.
     return { ok: true, version: 2, document: raw as SiteDocumentV2Input };
   }
-  const source = parsed.document, profiles: ProfileEntityV2[] = [], posts: PostEntityV2[] = [], profileIds = new Set<string>(), postIds = new Set<string>(), windowIds = new Set<string>(), profileHandles = new Set<string>();
+  const source = parsed.document, profiles: ProfileEntityV2[] = [], posts: PostEntityV2[] = [], highlights: HighlightEntityV2[] = [], collections: CollectionEntityV2[] = [], profileIds = new Set<string>(), postIds = new Set<string>(), highlightIds = new Set<string>(), frameIds = new Set<string>(), mediaIds = new Set<string>(), windowIds = new Set<string>(), profileHandles = new Set<string>();
   if (new Set(source.windows.map((w) => w.id)).size !== source.windows.length) return invalid(raw, [{ path: ["windows"], message: "Duplicate window id", code: "duplicate_id" }]);
   const windowIdMap = new Map<string, string>();
   for (const window of source.windows) windowIdMap.set(window.id, boundedGeneratedId(window.id, windowIds));
@@ -374,15 +439,20 @@ export function migrateSiteDocumentV2(raw: unknown, options: { siteId: string })
     const legacy = window.content.profile;
     const handle = uniqueProfileHandle(legacy.username, profileHandles);
     profiles.push({ kind: "profile", id: profileId, siteId: options.siteId, visibility: "published", ...legacy, handle, displayName: legacy.name || handle, pronouns: "", customFields: [], worldTags: [], legacyUsernameLabel: legacy.username, legacyFollowersLabel: legacy.followers, legacyFollowingLabel: legacy.following });
+    for (const highlight of legacy.highlights) {
+      const highlightId = boundedGeneratedId(`highlight:${windowId}:${highlight.id}`, highlightIds);
+      highlights.push({ kind: "highlight", id: highlightId, siteId: options.siteId, ownerProfileId: profileId, visibility: "published", title: highlight.title, coverSrc: highlight.src, coverSrcUrl: highlight.srcUrl, coverAlt: "", frames: [{ id: boundedGeneratedId(`${highlightId}:frame`, frameIds), src: highlight.src, srcUrl: highlight.srcUrl, alt: "", text: "" }] });
+    }
     for (const post of window.content.images) {
       const postId = boundedGeneratedId(`post:${windowId}:${post.id}`, postIds);
-      posts.push({ kind: "post", siteId: options.siteId, visibility: "published", authorProfileId: profileId, ...post, id: postId });
+      const media = [{ id: boundedGeneratedId(`${postId}:media`, mediaIds), src: post.src, srcUrl: post.srcUrl, alt: "" }, ...post.extra.map((item) => ({ id: boundedGeneratedId(`${postId}:media:${item.id}`, mediaIds), src: item.src, srcUrl: item.srcUrl, alt: "" }))];
+      posts.push({ kind: "post", siteId: options.siteId, visibility: "published", authorProfileId: profileId, ...post, id: postId, media, worldDateLabel: "", taggedProfileIds: [], collectionIds: [], pinned: false });
     }
     const migratedWindow = DesktopWindowV2Schema.safeParse({ ...window, id: windowId, content: { skin: window.content.skin, profileRef: { siteId: options.siteId, id: profileId, kind: "profile" } } });
     if (!migratedWindow.success) return invalid(raw, diagnosticsFrom(migratedWindow.error));
     windows.push(migratedWindow.data);
   }
-  const migrated: SiteDocumentV2 = { schemaVersion: 2, siteName: source.siteName, theme: source.theme, windows, mobileColumns: source.mobileColumns, entities: { profiles, posts } };
+  const migrated: SiteDocumentV2 = { schemaVersion: 2, siteName: source.siteName, theme: source.theme, windows, mobileColumns: source.mobileColumns, entities: { profiles, posts, highlights, collections } };
   const validated = parseSiteDocument(migrated);
   if (validated.ok && validated.version === 2) return validated;
   if (!validated.ok && validated.code === "invalid") return invalid(raw, validated.diagnostics);
@@ -390,17 +460,20 @@ export function migrateSiteDocumentV2(raw: unknown, options: { siteId: string })
 }
 
 export type ResolveResult<T> = { ok: true; value: T } | { ok: false; reason: "cross_site" | "missing" };
-export function resolveEntityRef(document: SiteDocumentV2Input, ref: EntityRef, currentSiteId: string): ResolveResult<SiteDocumentV2Input["entities"]["profiles"][number] | SiteDocumentV2Input["entities"]["posts"][number] | SiteDocumentV2Input["windows"][number]> {
+export function resolveEntityRef(document: SiteDocumentV2Input, ref: EntityRef, currentSiteId: string): ResolveResult<SiteDocumentV2Input["entities"]["profiles"][number] | SiteDocumentV2Input["entities"]["posts"][number] | NonNullable<SiteDocumentV2Input["entities"]["highlights"]>[number] | NonNullable<SiteDocumentV2Input["entities"]["collections"]>[number] | SiteDocumentV2Input["windows"][number]> {
   if (ref.siteId !== currentSiteId) return { ok: false, reason: "cross_site" };
-  const value = ref.kind === "profile" ? document.entities.profiles.find((entity) => entity.id === ref.id && entity.siteId === currentSiteId) : ref.kind === "post" ? document.entities.posts.find((entity) => entity.id === ref.id && entity.siteId === currentSiteId) : document.windows.find((window) => window.id === ref.id);
+  const value = ref.kind === "profile" ? document.entities.profiles.find((entity) => entity.id === ref.id && entity.siteId === currentSiteId) : ref.kind === "post" ? document.entities.posts.find((entity) => entity.id === ref.id && entity.siteId === currentSiteId) : ref.kind === "highlight" ? (document.entities.highlights ?? []).find((entity) => entity.id === ref.id && entity.siteId === currentSiteId) : ref.kind === "collection" ? (document.entities.collections ?? []).find((entity) => entity.id === ref.id && entity.siteId === currentSiteId) : document.windows.find((window) => window.id === ref.id);
   return value ? { ok: true, value } : { ok: false, reason: "missing" };
 }
-export type EntityReferrer = { kind: "window"; windowId: string } | { kind: "post"; postId: string; field: "authorProfileId" };
+export type EntityReferrer = { kind: "window"; windowId: string } | { kind: "post"; postId: string; field: "authorProfileId" | "taggedProfileIds" } | { kind: "highlight"; highlightId: string } | { kind: "collection"; collectionId: string };
 export function collectEntityReferrers(document: SiteDocumentV2Input, ref: EntityRef, currentSiteId: string): EntityReferrer[] {
   if (ref.siteId !== currentSiteId || ref.kind !== "profile") return [];
   const out: EntityReferrer[] = [];
   for (const window of document.windows) if (window.type === "instagram" && window.content.profileRef.siteId === ref.siteId && window.content.profileRef.id === ref.id) out.push({ kind: "window", windowId: window.id });
   for (const post of document.entities.posts) if (post.siteId === currentSiteId && post.authorProfileId === ref.id) out.push({ kind: "post", postId: post.id, field: "authorProfileId" });
+  for (const post of document.entities.posts) if (post.siteId === currentSiteId && (post.taggedProfileIds ?? []).includes(ref.id)) out.push({ kind: "post", postId: post.id, field: "taggedProfileIds" });
+  for (const highlight of document.entities.highlights ?? []) if (highlight.siteId === currentSiteId && highlight.ownerProfileId === ref.id) out.push({ kind: "highlight", highlightId: highlight.id });
+  for (const collection of document.entities.collections ?? []) if (collection.siteId === currentSiteId && collection.ownerProfileId === ref.id) out.push({ kind: "collection", collectionId: collection.id });
   return out;
 }
 
@@ -524,7 +597,12 @@ export function deleteOrRetargetProfile(document: SiteDocumentV2Input, profileId
   const next = structuredClone(document);
   if (options.retargetProfileId) {
     next.windows = next.windows.map((window) => window.type === "instagram" && window.content.profileRef.id === profileId ? { ...window, content: { ...window.content, profileRef: { ...window.content.profileRef, id: options.retargetProfileId! } } } : window);
-    next.entities.posts = next.entities.posts.map((post) => post.authorProfileId === profileId ? { ...post, authorProfileId: options.retargetProfileId! } : post);
+    next.entities.posts = next.entities.posts.map((post) => ({ ...post, authorProfileId: post.authorProfileId === profileId ? options.retargetProfileId! : post.authorProfileId, taggedProfileIds: (post.taggedProfileIds ?? []).map((id) => id === profileId ? options.retargetProfileId! : id) }));
+    next.entities.highlights = (next.entities.highlights ?? []).map((highlight) => highlight.ownerProfileId === profileId ? { ...highlight, ownerProfileId: options.retargetProfileId! } : highlight);
+    next.entities.collections = (next.entities.collections ?? []).map((collection) => collection.ownerProfileId === profileId ? { ...collection, ownerProfileId: options.retargetProfileId! } : collection);
+  } else {
+    next.entities.highlights = (next.entities.highlights ?? []).filter((highlight) => highlight.ownerProfileId !== profileId);
+    next.entities.collections = (next.entities.collections ?? []).filter((collection) => collection.ownerProfileId !== profileId);
   }
   next.entities.profiles = next.entities.profiles.filter((profile) => profile.id !== profileId);
   const outputDiagnostics = validatedOutput(next);

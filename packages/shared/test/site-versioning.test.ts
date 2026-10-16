@@ -66,7 +66,7 @@ describe("versioned site document contract", () => {
       expect(entity).toMatchObject({ handle: "alice", displayName: "Alice", legacyUsernameLabel: "alice", legacyFollowersLabel: "101", legacyFollowingLabel: "202" });
       const legacyPost = originalIg.content.images[0];
       const migratedPost = result.document.entities.posts[0];
-      const { kind: pk, id: pid, siteId: ps, visibility: pv, authorProfileId, ...postFields } = migratedPost;
+      const { kind: pk, id: pid, siteId: ps, visibility: pv, authorProfileId, media: _media, worldDateLabel: _worldDateLabel, taggedProfileIds: _taggedProfileIds, collectionIds: _collectionIds, pinned: _pinned, ...postFields } = migratedPost;
       const { id: legacyPostId, ...legacyPostFields } = legacyPost;
       expect(postFields).toEqual(legacyPostFields);
     }
@@ -82,7 +82,7 @@ describe("versioned site document contract", () => {
     expect(resolveEntityRef(result.document, { siteId: "site-a", id: "post:ig-1:p1", kind: "post" }, "site-a")).toMatchObject({ ok: true });
     expect(resolveEntityRef(result.document, { ...ref, siteId: "other" }, "site-a")).toMatchObject({ ok: false, reason: "cross_site" });
     expect(resolveEntityRef(result.document, { ...ref, id: "profile:nope" }, "site-a")).toMatchObject({ ok: false, reason: "missing" });
-    expect(collectEntityReferrers(result.document, ref, "site-a")).toEqual([{ kind: "window", windowId: "ig-1" }, { kind: "post", postId: "post:ig-1:p1", field: "authorProfileId" }]);
+    expect(collectEntityReferrers(result.document, ref, "site-a")).toEqual([{ kind: "window", windowId: "ig-1" }, { kind: "post", postId: "post:ig-1:p1", field: "authorProfileId" }, { kind: "highlight", highlightId: "highlight:ig-1:h1" }]);
     expect(collectEntityReferrers(result.document, ref, "other")).toEqual([]);
     expect(collectEntityReferrers(result.document, { ...ref, kind: "post" }, "site-a")).toEqual([]);
   });
@@ -326,6 +326,91 @@ describe("versioned site document contract", () => {
     if (instagram?.type === "instagram") instagram.content.profile.name = "Edited together";
     const merged = mergeLegacyDocumentIntoV2(loaded.document, legacyEdited, { siteId: "site-a" });
     expect(merged.entities.profiles.find((profile) => profile.id === "profile:ig-1")?.name).toBe("Edited together");
+  });
+
+  it("migrates canonical media and legacy highlights deterministically", () => {
+    const result = migrateSiteDocumentV2(fixture(), { siteId: "site-a" });
+    expect(result.ok && result.version === 2).toBe(true);
+    if (!result.ok || result.version !== 2) return;
+    expect(result.document.entities.posts[0]?.media).toHaveLength(2);
+    expect(result.document.entities.posts[0]).toMatchObject({ worldDateLabel: "", taggedProfileIds: [], collectionIds: [], pinned: false });
+    expect(result.document.entities.highlights).toHaveLength(1);
+    expect(result.document.entities.highlights[0]?.frames).toHaveLength(1);
+    const projected = projectV2ToLegacyDocument(result.document);
+    expect(projected.ok).toBe(true);
+    if (projected.ok) expect(projected.document.windows.find((window) => window.type === "instagram")?.content.images[0]?.extra).toHaveLength(1);
+  });
+
+  it("preserves rich canonical fields when the legacy editor changes supported fields", () => {
+    const result = migrateSiteDocumentV2(fixture(), { siteId: "site-a" });
+    if (!result.ok || result.version !== 2) throw new Error("fixture migration failed");
+    const post = result.document.entities.posts[0];
+    const highlight = result.document.entities.highlights[0];
+    const profile = result.document.entities.profiles[0];
+    if (!post || !highlight || !profile) throw new Error("rich fixture missing");
+    post.worldDateLabel = "雪國曆 12 月";
+    post.taggedProfileIds = [profile.id];
+    post.collectionIds = ["collection:works"];
+    post.pinned = true;
+    post.createdAt = "2026-10-16T00:00:00.000Z";
+    post.updatedAt = "2026-10-16T01:00:00.000Z";
+    post.media[0] = { ...post.media[0], alt: "portrait", crop: { x: 12, y: 8, zoom: 2 }, aspectRatio: 0.75 };
+    result.document.entities.collections.push({ kind: "collection", id: "collection:works", siteId: "site-a", ownerProfileId: profile.id, visibility: "draft", title: "Works", description: "", postIds: [post.id] });
+    highlight.visibility = "draft";
+    highlight.coverAlt = "cover alt";
+    highlight.coverCrop = { x: 1, y: 2, zoom: 1.5 };
+    highlight.frames.push({ id: "frame:two", src: "https://example.com/frame-two.jpg", srcUrl: "", alt: "second", crop: { x: 2, y: 3, zoom: 2 }, text: "second frame" });
+
+    const legacy = projectV2ToLegacyDocument(result.document);
+    if (!legacy.ok) throw new Error("legacy projection failed");
+    const window = legacy.document.windows.find((item) => item.type === "instagram");
+    if (!window || window.type !== "instagram") throw new Error("Instagram projection missing");
+    window.content.images[0].caption = "edited caption";
+    window.content.profile.bio = "edited bio";
+    const merged = mergeLegacyDocumentIntoV2(result.document, legacy.document, { siteId: "site-a" });
+    const mergedPost = merged.entities.posts.find((item) => item.id === post.id);
+    const mergedHighlight = merged.entities.highlights?.find((item) => item.id === highlight.id);
+    expect(mergedPost).toMatchObject({ caption: "edited caption", worldDateLabel: "雪國曆 12 月", taggedProfileIds: [profile.id], collectionIds: ["collection:works"], pinned: true, createdAt: post.createdAt, updatedAt: post.updatedAt });
+    expect(mergedPost?.media[0]).toMatchObject({ alt: "portrait", crop: { x: 12, y: 8, zoom: 2 }, aspectRatio: 0.75 });
+    expect(mergedHighlight).toMatchObject({ visibility: "draft", coverAlt: "cover alt", coverCrop: { x: 1, y: 2, zoom: 1.5 } });
+    expect(mergedHighlight?.frames).toHaveLength(2);
+    expect(mergedHighlight?.frames[1]).toMatchObject({ id: "frame:two", alt: "second", text: "second frame", crop: { x: 2, y: 3, zoom: 2 } });
+  });
+
+  it("prunes collection post references when the legacy editor deletes a post", () => {
+    const result = migrateSiteDocumentV2(fixture(), { siteId: "site-a" });
+    if (!result.ok || result.version !== 2) throw new Error("fixture migration failed");
+    const first = result.document.entities.posts[0];
+    const profile = result.document.entities.profiles[0];
+    if (!first || !profile) throw new Error("fixture missing");
+    const second = structuredClone(first);
+    second.id = "post:ig-1:p2";
+    second.title = "Second";
+    second.collectionIds = ["collection:works"];
+    first.collectionIds = ["collection:works"];
+    result.document.entities.posts.push(second);
+    result.document.entities.collections.push({ kind: "collection", id: "collection:works", siteId: "site-a", ownerProfileId: profile.id, visibility: "published", title: "Works", description: "", postIds: [first.id, second.id] });
+
+    const legacy = projectV2ToLegacyDocument(result.document);
+    if (!legacy.ok) throw new Error("legacy projection failed");
+    const window = legacy.document.windows.find((item) => item.type === "instagram");
+    if (!window || window.type !== "instagram") throw new Error("Instagram projection missing");
+    window.content.images = window.content.images.filter((post) => post.id !== first.id);
+    const merged = mergeLegacyDocumentIntoV2(result.document, legacy.document, { siteId: "site-a" });
+    expect(parseSiteDocument(merged)).toMatchObject({ ok: true, version: 2 });
+    expect(merged.entities.posts.some((post) => post.id === first.id)).toBe(false);
+    expect(merged.entities.collections?.find((collection) => collection.id === "collection:works")?.postIds).toEqual([second.id]);
+    expect(merged.entities.posts.find((post) => post.id === second.id)?.collectionIds).toEqual(["collection:works"]);
+  });
+
+  it("rejects missing content owners and collection/tag references", () => {
+    const result = migrateSiteDocumentV2(fixture(), { siteId: "site-a" });
+    if (!result.ok || result.version !== 2) throw new Error("fixture migration failed");
+    const post = result.document.entities.posts[0];
+    if (!post) throw new Error("post fixture missing");
+    post.taggedProfileIds = ["missing"];
+    result.document.entities.collections.push({ kind: "collection", id: "collection:missing", siteId: "site-a", ownerProfileId: "missing", visibility: "published", title: "bad", description: "", postIds: [post.id] });
+    expect(parseSiteDocument(result.document)).toMatchObject({ ok: false, code: "invalid" });
   });
 
   it("reconciles legacy window CRUD and shared Instagram edits by stable IDs", () => {
