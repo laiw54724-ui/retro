@@ -25,3 +25,13 @@ export { validateSiteDocumentScope };
 export const PublishSchema = z.object({
   expectedVersion: z.number().int().min(0)
 });
+
+export const CollaborationRoleSchema = z.enum(["editor", "viewer"]);
+
+export const CreateInviteSchema = z.object({
+  email: z.string().trim().toLowerCase().pipe(z.email()),
+  role: CollaborationRoleSchema,
+  expiryHours: z.number().min(0.25).max(168).default(24)
+}).strict();
+
+export const UpdateMemberSchema = z.object({ role: CollaborationRoleSchema }).strict();
