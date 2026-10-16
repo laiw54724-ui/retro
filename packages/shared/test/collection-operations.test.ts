@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createStarterDocument } from "../src/site";
-import { migrateSiteDocumentV2 } from "../src/site-versioning";
+import { createProfile, migrateSiteDocumentV2 } from "../src/site-versioning";
 import { createPost } from "../src/post-operations";
 import { createCollection, deleteCollection, reorderCollection, setCollectionPosts, updateCollection } from "../src/collection-operations";
 
@@ -18,6 +18,12 @@ function addPost(document: ReturnType<typeof starter>, id: string, authorProfile
 
 function addCollection(document: ReturnType<typeof starter>, id: string, ownerProfileId: string) {
   const result = createCollection(document, { id, ownerProfileId, title: id }, { siteId: "site-a" });
+  if (!result.ok) throw new Error(result.diagnostics[0]?.message);
+  return result.document;
+}
+
+function addProfile(document: ReturnType<typeof starter>, id: string, handle: string) {
+  const result = createProfile(document, { handle, displayName: handle, name: handle }, { siteId: "site-a", id });
   if (!result.ok) throw new Error(result.diagnostics[0]?.message);
   return result.document;
 }
@@ -61,19 +67,48 @@ describe("canonical collection operations", () => {
     const before = structuredClone(document);
     const missing = setCollectionPosts(document, "collection-a", ["missing"], { siteId: "site-a" });
     expect(missing.ok).toBe(false);
+    if (!missing.ok) expect(missing.diagnostics[0]?.code).toBe("missing_ref");
     const mismatch = setCollectionPosts(document, "collection-a", ["post-1"], { siteId: "site-b" });
     expect(mismatch.ok).toBe(false);
-    const foreignPost = { ...document.entities.posts[0], id: "post-foreign", siteId: "site-a", authorProfileId: otherOwner };
-    const withForeign = { ...document, entities: { ...document.entities, posts: [...document.entities.posts, foreignPost] } };
+    if (!mismatch.ok) expect(mismatch.diagnostics[0]?.code).toBe("cross_site");
+    let withForeign = addProfile(document, otherOwner, "other");
+    withForeign = addPost(withForeign, "post-foreign", otherOwner);
     const ownerMismatch = setCollectionPosts(withForeign, "collection-a", ["post-foreign"], { siteId: "site-a" });
     expect(ownerMismatch.ok).toBe(false);
+    if (!ownerMismatch.ok) expect(ownerMismatch.diagnostics[0]?.code).toBe("owner_mismatch");
     expect(document).toEqual(before);
+  });
+
+  it("rejects semantic-invalid inputs and validates create/update post membership", () => {
+    let document = starter();
+    const owner = document.entities.profiles[0].id;
+    const duplicateProfile = structuredClone(document.entities.profiles[0]);
+    const duplicate = { ...document, entities: { ...document.entities, profiles: [...document.entities.profiles, duplicateProfile] } };
+    const rejected = createCollection(duplicate, { id: "collection-a", ownerProfileId: owner, title: "A" }, { siteId: "site-a" });
+    expect(rejected.ok).toBe(false);
+    if (!rejected.ok) expect(rejected.diagnostics.some((item) => item.code === "duplicate_id")).toBe(true);
+
+    const missingOwner = { ...document, entities: { ...document.entities, collections: [{ kind: "collection" as const, id: "bad", siteId: "site-a", ownerProfileId: "missing", visibility: "draft" as const, title: "Bad", description: "", postIds: [] }] } };
+    const invalidInput = deleteCollection(missingOwner, "bad", { siteId: "site-a" });
+    expect(invalidInput.ok).toBe(false);
+    if (!invalidInput.ok) expect(invalidInput.diagnostics.some((item) => item.code === "missing_ref")).toBe(true);
+
+    const missingPostOnCreate = createCollection(document, { id: "collection-a", ownerProfileId: owner, title: "A", postIds: ["missing"] }, { siteId: "site-a" });
+    expect(missingPostOnCreate.ok).toBe(false);
+    if (!missingPostOnCreate.ok) expect(missingPostOnCreate.diagnostics[0]?.code).toBe("missing_ref");
+
+    document = addPost(document, "post-1", owner);
+    document = addCollection(document, "collection-a", owner);
+    const missingPostOnUpdate = updateCollection(document, "collection-a", { postIds: ["missing"] }, { siteId: "site-a" });
+    expect(missingPostOnUpdate.ok).toBe(false);
+    if (!missingPostOnUpdate.ok) expect(missingPostOnUpdate.diagnostics[0]?.code).toBe("missing_ref");
   });
 
   it("reorders only among collections owned by the same profile and deletes reverse refs", () => {
     let document = starter();
     const owner = document.entities.profiles[0].id;
     const otherOwner = "other-owner";
+    document = addProfile(document, otherOwner, "other");
     document = addPost(document, "post-1", owner);
     document = addCollection(document, "collection-a", owner);
     document = addCollection(document, "collection-b", owner);
