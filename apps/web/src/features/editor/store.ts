@@ -79,7 +79,7 @@ function withHistory(state: EditorState, document: SiteDocument, extra: Partial<
   const merge = !!historyKey && historyKey === lastHistoryKey && now - lastHistoryAt < 1200 && state.past.length > 0;
   lastHistoryKey = historyKey ?? null;
   lastHistoryAt = now;
-  if (merge) return { ...extra, document, versionedDocument: nextVersioned ?? state.versionedDocument, future: [], saveStatus: "dirty" as SaveStatus };
+  if (merge) return { ...extra, document, versionedDocument: nextVersioned ?? state.versionedDocument, future: [], versionedFuture: [], saveStatus: "dirty" as SaveStatus };
   return {
     ...extra,
     document,

@@ -53,7 +53,8 @@ export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, m
     onProfileSelect: (id) => onProfileSelect?.(id, win.id),
     onProfileAdd: () => onProfileAdd?.(win.id),
     onProfileDuplicate: (id) => onProfileDuplicate?.(id, win.id), onProfileChange: (id, patch, key) => onProfileChange?.(id, patch, key),
-    onProfileDelete: (id, target) => onProfileDelete?.(id, target), profileDeleteBlocked,
+    onProfileDelete: (id, target) => onProfileDelete?.(id, target),
+    profileDeleteBlocked: !!profileDeleteGuardById?.[resolvedProfileId ?? ""] && ((profileDeleteGuardById?.[resolvedProfileId ?? ""]?.windowTitles.length ?? 0) > 0 || (profileDeleteGuardById?.[resolvedProfileId ?? ""]?.postIds.length ?? 0) > 0),
     profileDeleteGuard: profileDeleteGuardById?.[resolvedProfileId ?? ""]
   };
   const update = (recipe: (current: DesktopWindow) => DesktopWindow, key?: string) => onUpdate?.(win.id, recipe, key);

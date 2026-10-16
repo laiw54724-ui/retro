@@ -17,6 +17,10 @@ async function openEditor(page: Page, profile: Record<string, unknown> = {}) {
   await page.goto("/editor/site-1");
   const win = page.getByRole("dialog", { name: "Instagram.exe" });
   await expect(win).toBeVisible();
+  // v1 fixtures trigger a one-time migration autosave. Wait for it before
+  // interacting so the editor rerender cannot detach the Instagram dialog.
+  await expect.poll(() => saves.at(-1)?.document.schemaVersion).toBe(2);
+  await expect(page.getByRole("status")).toHaveText("已儲存");
   return { win, saves };
 }
 
