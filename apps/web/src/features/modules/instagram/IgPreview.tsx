@@ -10,8 +10,8 @@ const Ic = ({ bg, size = 24 }: { bg: string; size?: number }) => <span aria-hidd
 
 /** The "real app" experience. State is per visit only. */
 export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "window" | "ctx">) {
-  const { tv } = ctx;
   const profile = window.content.profile;
+  const tv = ctx.profileThemeOverride ? { ...ctx.tv, face: ctx.profileThemeOverride.background, accent: ctx.profileThemeOverride.accent } : ctx.tv;
   const posts = window.content.images;
   const highlights = profile.highlights;
   const I = igIcons(tv.text);

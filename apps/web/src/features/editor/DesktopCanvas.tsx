@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
-import type { DesktopWindow } from "@retrodesk/shared";
+import type { DesktopWindow, ProfileEntityV2 } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { RetroWindow } from "../../components/RetroWindow";
 import { useThemeView } from "../../lib/themeView";
@@ -23,9 +23,18 @@ function setGeo(el: HTMLElement, text: string) {
 type Props = {
   siteId?: string;
   upload?: (file: File, kind?: "image" | "icon") => Promise<string | null>;
+  profiles?: ProfileEntityV2[];
+  profileId?: string;
+  profileIdsByWindow?: Record<string, string>;
+  onProfileSelect?: (id: string, windowId?: string) => void;
+  onProfileAdd?: (windowId?: string) => void;
+  onProfileDuplicate?: (id: string, windowId?: string) => void;
+  onProfileChange?: (profileId: string, patch: Record<string, unknown>, historyKey?: string) => void;
+  onProfileDelete?: (profileId: string, retargetProfileId?: string) => void;
+  profileDeleteBlocked?: boolean;
 };
 
-export function DesktopCanvas({ siteId, upload }: Props) {
+export function DesktopCanvas({ siteId, upload, profiles, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked }: Props) {
   const document = useEditorStore((s) => s.document)!;
   const selectedId = useEditorStore((s) => s.selectedId);
   const view = useEditorStore((s) => s.viewState);
@@ -241,7 +250,7 @@ export function DesktopCanvas({ siteId, upload }: Props) {
               style={{ height: "100%" }}
               bodyStyle={{ padding: 0 }}
             >
-              <WindowRenderer window={win} theme={document.theme} editing={!layoutMode} allWindows={document.windows} siteId={siteId} upload={upload} onUpdate={store().updateWindow} />
+              <WindowRenderer window={win} theme={document.theme} editing={!layoutMode} allWindows={document.windows} siteId={siteId} upload={upload} onUpdate={store().updateWindow} profiles={profiles} profileId={profileId} profileIdsByWindow={profileIdsByWindow} onProfileSelect={onProfileSelect} onProfileAdd={onProfileAdd} onProfileDuplicate={onProfileDuplicate} onProfileChange={onProfileChange} onProfileDelete={onProfileDelete} profileDeleteBlocked={profileDeleteBlocked} />
             </RetroWindow>
             {layoutMode ? <div className="layout-veil"><span className="geo-text">{layout.x}, {layout.y} · {layout.w}×{layout.h}</span></div> : null}
             {!maximized ? <span className="window-resize-handle" aria-label="調整大小" /> : null}

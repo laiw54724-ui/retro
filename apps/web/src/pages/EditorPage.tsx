@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { buildPublishChecks, hasBlockingCheck, loadVersionedSiteDocument, mergeLegacyDocumentIntoV2, normalizeDocument, parseSiteDocument, projectV2ToLegacyDocument, type DesktopWindow, type SiteDocumentV2Input } from "@retrodesk/shared";
+import { buildPublishChecks, createProfile, deleteOrRetargetProfile, duplicateProfile, hasBlockingCheck, loadVersionedSiteDocument, mergeLegacyDocumentIntoV2, normalizeDocument, parseSiteDocument, ProfileEntityV2Schema, projectV2ToLegacyDocument, updateProfile, type DesktopWindow, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { useEditorStore } from "../features/editor/store";
@@ -52,6 +52,8 @@ export function EditorPage() {
   const [pendingPublicCopyCount, setPendingPublicCopyCount] = useState(0);
   const [migratingAssets, setMigratingAssets] = useState(false);
   const [versionedDraft, setVersionedDraft] = useState<SiteDocumentV2Input | null>(null);
+  const versionedDraftRef = useRef<SiteDocumentV2Input | null>(null);
+  versionedDraftRef.current = versionedDraft;
   const publishChecks = useMemo(() => store.document ? buildPublishChecks(store.document) : [], [store.document]);
 
   function applyLoadedSite(site: Awaited<ReturnType<typeof api.getSite>>["site"]) {
@@ -70,7 +72,75 @@ export function EditorPage() {
     // Set the canonical v2 state in the same transaction as the legacy render
     // adapter, so an autosave can never observe a stale v2 document after reload.
     setVersionedDraft(loadedDraft.version === 2 ? loadedDraft.document : null);
+    store.setVersionedDocument(loadedDraft.version === 2 ? loadedDraft.document : null);
     if (loadedDraft.migrated) store.setSaveStatus("dirty");
+  }
+
+  function applyV2Document(next: SiteDocumentV2Input, historyKey?: string) {
+    const projected = projectV2ToLegacyDocument(next);
+    if (!projected.ok) { setMessage(projected.diagnostics[0]?.message ?? "角色引用無效"); return; }
+    versionedDraftRef.current = next;
+    setVersionedDraft(next);
+    store.replaceDocument(projected.document, historyKey, next);
+  }
+
+  function profileError(result: { ok: false; diagnostics: Array<{ message: string }> }) {
+    setMessage(result.diagnostics[0]?.message ?? "角色資料無效");
+  }
+
+  function selectProfile(profileId: string, windowId?: string) {
+    const current = versionedDraftRef.current;
+    if (!current || !windowId) return;
+    const next = structuredClone(current);
+    const target = next.windows.find((window) => window.id === windowId);
+    const profile = next.entities.profiles.find((item) => item.id === profileId && item.siteId === siteId);
+    if (!target || target.type !== "instagram" || !profile) return;
+    target.content.profileRef = { kind: "profile", id: profile.id, siteId: profile.siteId };
+    applyV2Document(next);
+  }
+
+  function addProfile(windowId?: string) {
+    const current = versionedDraftRef.current;
+    if (!current || !windowId) return;
+    const base = `oc-${current.entities.profiles.length + 1}`;
+    const result = createProfile(current, { handle: base, displayName: "新角色", name: "新角色", bio: "" }, { siteId, id: `profile:${crypto.randomUUID()}` });
+    if (!result.ok) return profileError(result);
+    const target = result.document.windows.find((window) => window.id === windowId);
+    if (target?.type === "instagram") target.content.profileRef = { kind: "profile", id: result.profile.id, siteId };
+    applyV2Document(result.document);
+  }
+
+  function duplicateProfileForWindow(profileId: string, windowId?: string) {
+    const current = versionedDraftRef.current;
+    if (!current) return;
+    const source = current.entities.profiles.find((profile) => profile.id === profileId);
+    if (!source) return;
+    const baseHandle = source.handle ?? source.username;
+    const used = new Set(current.entities.profiles.map((profile) => (profile.handle ?? profile.username).toLowerCase()));
+    let handle = `${baseHandle}-copy`;
+    let suffix = 2;
+    while (used.has(handle.toLowerCase())) handle = `${baseHandle}-copy-${suffix++}`;
+    const result = duplicateProfile(current, profileId, { siteId, id: `profile:${crypto.randomUUID()}`, handle });
+    if (!result.ok) return profileError(result);
+    const target = windowId ? result.document.windows.find((window) => window.id === windowId) : undefined;
+    if (target?.type === "instagram") target.content.profileRef = { kind: "profile", id: result.profile.id, siteId };
+    applyV2Document(result.document);
+  }
+
+  function changeProfile(profileId: string, patch: Record<string, unknown>, historyKey?: string) {
+    const current = versionedDraftRef.current;
+    if (!current) return;
+    const result = updateProfile(current, profileId, patch, { siteId });
+    if (!result.ok) return profileError(result);
+    applyV2Document(result.document, historyKey);
+  }
+
+  function deleteProfile(profileId: string, retargetProfileId?: string) {
+    const current = versionedDraftRef.current;
+    if (!current) return;
+    const result = deleteOrRetargetProfile(current, profileId, { siteId, retargetProfileId: retargetProfileId || undefined });
+    if (!result.ok) return profileError(result);
+    applyV2Document(result.document);
   }
 
   useEffect(() => {
@@ -94,6 +164,13 @@ export function EditorPage() {
     if (!versionedDraft || !store.document) return;
     setVersionedDraft((current) => current ? mergeLegacyDocumentIntoV2(current, store.document!, { siteId: store.siteId! }) : current);
   }, [store.document]);
+
+  useEffect(() => {
+    if (store.versionedDocument && !sameDocument(store.versionedDocument, versionedDraft)) {
+      versionedDraftRef.current = store.versionedDocument;
+      setVersionedDraft(store.versionedDocument);
+    }
+  }, [store.versionedDocument]);
 
   const refreshAssetInventory = () => api.listAssets(siteId).then(({ assets }) => {
     setLegacyAssetCount(assets.filter((asset) => asset.storageScope === "legacy_public").length);
@@ -172,6 +249,14 @@ export function EditorPage() {
   const selected = useMemo(
     () => store.document?.windows.find((window) => window.id === store.selectedId) ?? null,
     [store.document, store.selectedId]
+  );
+  const editorProfiles = versionedDraft?.entities.profiles.flatMap((profile) => { const parsed = ProfileEntityV2Schema.safeParse(profile); return parsed.success ? [parsed.data] : []; }) ?? [];
+  const selectedV2Window = selected ? versionedDraft?.windows.find((window) => window.id === selected.id) : undefined;
+  const selectedProfileId = selectedV2Window?.type === "instagram" ? selectedV2Window.content.profileRef.id : undefined;
+  const profileIdsByWindow = Object.fromEntries((versionedDraft?.windows ?? []).flatMap((window) => window.type === "instagram" ? [[window.id, window.content.profileRef.id] as const] : []));
+  const selectedProfileReferenced = !!selectedProfileId && !!versionedDraft && (
+    versionedDraft.windows.some((window) => window.type === "instagram" && window.content.profileRef.id === selectedProfileId) ||
+    versionedDraft.entities.posts.some((post) => post.authorProfileId === selectedProfileId)
   );
 
   const hasUnpublishedChanges = useMemo(() => {
@@ -370,7 +455,19 @@ export function EditorPage() {
 
         <section className="editor-stage2">
           {store.device === "desktop" ? (
-            <DesktopCanvas siteId={siteId} upload={uploadImage} />
+            <DesktopCanvas
+              siteId={siteId}
+              upload={uploadImage}
+              profiles={editorProfiles}
+              profileId={selectedProfileId}
+              profileIdsByWindow={profileIdsByWindow}
+              onProfileSelect={selectProfile}
+              onProfileAdd={addProfile}
+              onProfileDuplicate={duplicateProfileForWindow}
+              onProfileChange={changeProfile}
+              onProfileDelete={deleteProfile}
+              profileDeleteBlocked={selectedProfileReferenced}
+            />
           ) : (
             <MobileScreen document={store.document} mode="editor" framed siteId={siteId} upload={uploadImage} onPreview={() => setPreview(true)} />
           )}

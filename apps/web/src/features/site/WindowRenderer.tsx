@@ -1,4 +1,4 @@
-import type { DesktopWindow, RetroTheme } from "@retrodesk/shared";
+import type { DesktopWindow, ProfileEntityV2, RetroTheme } from "@retrodesk/shared";
 import { useThemeView } from "../../lib/themeView";
 import { renderModule } from "../modules/registry";
 import type { LinkAction, ModuleCtx } from "../modules/types";
@@ -15,6 +15,15 @@ type Props = {
   siteId?: string;
   upload?: ModuleCtx["upload"];
   onUpdate?: (id: string, recipe: (window: DesktopWindow) => DesktopWindow, historyKey?: string) => void;
+  profiles?: ProfileEntityV2[];
+  profileId?: string;
+  profileIdsByWindow?: Record<string, string>;
+  onProfileSelect?: (id: string, windowId?: string) => void;
+  onProfileAdd?: (windowId?: string) => void;
+  onProfileDuplicate?: (id: string, windowId?: string) => void;
+  onProfileChange?: (profileId: string, patch: Record<string, unknown>, historyKey?: string) => void;
+  onProfileDelete?: (profileId: string, retargetProfileId?: string) => void;
+  profileDeleteBlocked?: boolean;
 };
 
 function openExternal(url: string) {
@@ -27,17 +36,23 @@ function openExternal(url: string) {
   }
 }
 
-export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, mobile = false, editing = false, siteId, upload, onUpdate }: Props) {
+export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, mobile = false, editing = false, siteId, upload, onUpdate, profiles, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked }: Props) {
   const tv = useThemeView(theme);
   const onLink = (action: LinkAction) => {
     if (editing) return; // links are inert while editing
     if (action.target === "window") { if (action.windowId) onOpenWindow?.(action.windowId); return; }
     if (action.url) openExternal(action.url);
   };
+  const resolvedProfileId = profileIdsByWindow?.[win.id] ?? profileId;
+  const profileThemeOverride = profiles?.find((profile) => profile.id === resolvedProfileId)?.themeOverride;
   const ctx: ModuleCtx = {
     theme, tv, editing: editing && !!onUpdate, mobile, siteId,
     windows: (allWindows ?? []).map((candidate) => ({ id: candidate.id, title: candidate.title })),
-    onLink, upload
+    onLink, upload, profiles, profileId: resolvedProfileId, profileThemeOverride,
+    onProfileSelect: (id) => onProfileSelect?.(id, win.id),
+    onProfileAdd: () => onProfileAdd?.(win.id),
+    onProfileDuplicate: (id) => onProfileDuplicate?.(id, win.id), onProfileChange: (id, patch, key) => onProfileChange?.(id, patch, key),
+    onProfileDelete: (id, target) => onProfileDelete?.(id, target), profileDeleteBlocked
   };
   const update = (recipe: (current: DesktopWindow) => DesktopWindow, key?: string) => onUpdate?.(win.id, recipe, key);
 

@@ -30,6 +30,10 @@ export function ProfileEditor({ profile, onChange, upload }: Props) {
         <label className="w98-field"><span className="w98-hint">世界標籤（以逗號分隔）</span><input className="w98-input compact" value={profile.worldTags.join(", ")} onChange={(event) => set("worldTags", event.target.value.split(",").map((tag) => tag.trim()).filter(Boolean))} /></label>
         <label className="w98-field"><span className="w98-hint">狀態</span><select className="w98-input compact" value={profile.visibility} onChange={(event) => set("visibility", event.target.value)}><option value="draft">草稿</option><option value="published">可發布</option></select></label>
         <label className="check-row"><input type="checkbox" checked={!!profile.themeOverride} onChange={(event) => set("themeOverride", event.target.checked ? { accent: "#000080", background: "#ffffff" } : undefined)} />自訂內容主題（只影響 IG 內容）</label>
+        {profile.themeOverride ? <div className="color-fields">
+          <label className="w98-field"><span>內容強調色</span><input aria-label="IG 內容強調色" type="color" value={profile.themeOverride.accent} onChange={(event) => set("themeOverride", { ...profile.themeOverride, accent: event.target.value })} /></label>
+          <label className="w98-field"><span>IG 內容背景</span><input aria-label="IG 內容背景色" type="color" value={profile.themeOverride.background} onChange={(event) => set("themeOverride", { ...profile.themeOverride, background: event.target.value })} /></label>
+        </div> : null}
       </fieldset> : null}
     </div>
   );

@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import type { DesktopWindow, EntityRef, RetroTheme } from "@retrodesk/shared";
+import type { DesktopWindow, EntityRef, ProfileEntityV2, RetroTheme } from "@retrodesk/shared";
 import type { ThemeView } from "../../lib/themeView";
 
 export type LinkAction = { target: "url" | "window"; url?: string; windowId?: string; label?: string };
@@ -17,6 +17,16 @@ export type ModuleCtx = {
   upload?: (file: File, kind?: "image" | "icon") => Promise<string | null>;
   /** Optional boundary for resolving future site-level entities. v1 callers omit it. */
   resolveEntity?: (ref: EntityRef) => unknown | null;
+  /** v2 Instagram profile authoring channel; omitted for public/v1 callers. */
+  profiles?: ProfileEntityV2[];
+  profileId?: string;
+  profileThemeOverride?: { accent: string; background: string };
+  onProfileSelect?: (id: string, windowId?: string) => void;
+  onProfileAdd?: (windowId?: string) => void;
+  onProfileDuplicate?: (id: string, windowId?: string) => void;
+  onProfileChange?: (profileId: string, patch: Record<string, unknown>, historyKey?: string) => void;
+  onProfileDelete?: (profileId: string, retargetProfileId?: string) => void;
+  profileDeleteBlocked?: boolean;
 };
 
 export type WindowOf<T extends DesktopWindow["type"]> = Extract<DesktopWindow, { type: T }>;

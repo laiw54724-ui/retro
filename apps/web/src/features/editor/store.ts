@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { DesktopWindow, SiteDocument } from "@retrodesk/shared";
+import type { DesktopWindow, SiteDocument, SiteDocumentV2Input } from "@retrodesk/shared";
 import { createWindow } from "../modules/registry";
 
 export type SaveStatus = "idle" | "dirty" | "saving" | "saved" | "error";
@@ -8,6 +8,9 @@ type EditorState = {
   siteId: string | null;
   username: string;
   document: SiteDocument | null;
+  versionedDocument: SiteDocumentV2Input | null;
+  versionedPast: SiteDocumentV2Input[];
+  versionedFuture: SiteDocumentV2Input[];
   lastSavedDocument: SiteDocument | null;
   publishedDocument: SiteDocument | null;
   publishedVersion: number | null;
@@ -27,6 +30,9 @@ type EditorState = {
   ) => void;
   setSaveStatus: (status: SaveStatus) => void;
   markSaved: (version: number, savedDocument: SiteDocument) => void;
+  setVersionedDocument: (document: SiteDocumentV2Input | null) => void;
+  /** Replace the legacy render projection and canonical v2 snapshot atomically. */
+  replaceDocument: (document: SiteDocument, historyKey?: string, versionedDocument?: SiteDocumentV2Input) => void;
   retrySave: () => void;
   markPublished: (publishedVersion: number) => void;
   undo: () => void;
@@ -56,7 +62,7 @@ type EditorState = {
   autoArrangeIcons: (rows: number) => void;
 };
 
-const sameDocument = (a: SiteDocument | null, b: SiteDocument | null) => JSON.stringify(a) === JSON.stringify(b);
+const sameDocument = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
 // Coalesces rapid edits (typing) into one undo step.
 let lastHistoryKey: string | null = null;
@@ -82,6 +88,9 @@ export const useEditorStore = create<EditorState>((set) => ({
   siteId: null,
   username: "",
   document: null,
+  versionedDocument: null,
+  versionedPast: [],
+  versionedFuture: [],
   lastSavedDocument: null,
   publishedDocument: null,
   publishedVersion: null,
@@ -96,6 +105,9 @@ export const useEditorStore = create<EditorState>((set) => ({
     siteId,
     username,
     document,
+    versionedDocument: null,
+    versionedPast: [],
+    versionedFuture: [],
     lastSavedDocument: document,
     publishedDocument,
     publishedVersion,
@@ -112,36 +124,56 @@ export const useEditorStore = create<EditorState>((set) => ({
     lastSavedDocument: savedDocument,
     saveStatus: sameDocument(state.document, savedDocument) ? "saved" : "dirty"
   })),
+  setVersionedDocument: (versionedDocument) => set({ versionedDocument, versionedPast: [], versionedFuture: [] }),
+  replaceDocument: (document, historyKey, versionedDocument) => set((state) => {
+    const legacy = withHistory(state, document, {}, historyKey);
+    const canonicalChanged = !!versionedDocument && (!state.versionedDocument || !sameDocument(state.versionedDocument, versionedDocument));
+    if (!canonicalChanged || !state.versionedDocument) return { ...legacy, versionedDocument };
+    return {
+      ...legacy,
+      versionedDocument,
+      versionedPast: [...state.versionedPast, state.versionedDocument].slice(-50),
+      versionedFuture: []
+    };
+  }),
   retrySave: () => set((state) => state.document ? { saveStatus: "dirty" } : {}),
   markPublished: (publishedVersion) => set((state) => ({
     publishedVersion,
     publishedDocument: state.document,
   })),
   undo: () => set((state) => {
-    if (!state.document || state.past.length === 0) return {};
-    const previous = state.past[state.past.length - 1];
-    const future = [state.document, ...state.future].slice(0, 50);
+    if ((!state.document || state.past.length === 0) && state.versionedPast.length === 0) return {};
+    const previous = state.past[state.past.length - 1] ?? state.document!;
+    const future = state.document ? [state.document, ...state.future].slice(0, 50) : state.future;
     const selectedId = previous.windows.some((window) => window.id === state.selectedId)
       ? state.selectedId
       : previous.windows[0]?.id ?? null;
+    const previousVersioned = state.versionedPast[state.versionedPast.length - 1];
     return {
       document: previous,
-      past: state.past.slice(0, -1),
+      versionedDocument: previousVersioned ?? state.versionedDocument,
+      past: state.past.length ? state.past.slice(0, -1) : state.past,
       future,
+      versionedPast: previousVersioned ? state.versionedPast.slice(0, -1) : state.versionedPast,
+      versionedFuture: previousVersioned && state.versionedDocument ? [state.versionedDocument, ...state.versionedFuture].slice(0, 50) : state.versionedFuture,
       selectedId,
       saveStatus: "dirty"
     };
   }),
   redo: () => set((state) => {
-    if (!state.document || state.future.length === 0) return {};
-    const next = state.future[0];
+    if ((!state.document || state.future.length === 0) && state.versionedFuture.length === 0) return {};
+    const next = state.future[0] ?? state.document!;
     const selectedId = next.windows.some((window) => window.id === state.selectedId)
       ? state.selectedId
       : next.windows[0]?.id ?? null;
+    const nextVersioned = state.versionedFuture[0];
     return {
       document: next,
-      past: [...state.past, state.document].slice(-50),
-      future: state.future.slice(1),
+      versionedDocument: nextVersioned ?? state.versionedDocument,
+      past: state.document ? [...state.past, state.document].slice(-50) : state.past,
+      future: state.future.length ? state.future.slice(1) : state.future,
+      versionedPast: nextVersioned && state.versionedDocument ? [...state.versionedPast, state.versionedDocument].slice(-50) : state.versionedPast,
+      versionedFuture: nextVersioned ? state.versionedFuture.slice(1) : state.versionedFuture,
       selectedId,
       saveStatus: "dirty"
     };
