@@ -167,4 +167,3 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
     </div>
   );
 }
-

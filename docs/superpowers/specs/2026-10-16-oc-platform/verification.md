@@ -218,3 +218,21 @@
 - Cloudflare Pages staging deployment：`2c597bc1`。canonical：https://retrodesk-staging.pages.dev；immutable：https://2c597bc1.retrodesk-staging.pages.dev；bundle `index-tzrzBCWz.js`／`index-CII9sC4A.css`。Worker 無 runtime 變更，維持 #21B1 version。
 - HTTP smoke：canonical／immutable 的 `/`、`/invite` 均為 `200` 且指向相同新 bundle；API `/api/health` `200`；bundle 含協作者、唯讀私人草稿與邀請文案，不含 fallback `example.supabase.co` 或 `localhost:8787`。
 - live browser smoke：以假 token 開啟 `/invite#token=…` 後，網址立即變成無 fragment 的 `/invite`；staging 正確辨識登入帳號並只顯示「切換 Google 帳號／接受邀請」。未送出假邀請，不修改任何協作資料。
+
+## #22A Music Player direct-link milestone and collapsible editor sidebars
+
+驗證日期：2026-10-16（Asia/Singapore）。本節完成 Music Player 的 HTTPS 直連／外部作品連結第一里程碑，並依作者要求讓桌面編輯器左右側欄可獨立收合；音訊檔案上傳仍保留在 #22B，因此 #22 維持 OPEN。
+
+- 規格與計畫：`docs/superpowers/specs/2026-10-16-music-player-22-design.md`、`docs/superpowers/plans/2026-10-16-music-player-22.md`；側欄補充規格為 `docs/superpowers/specs/2026-10-16-editor-collapsible-sidebars-design.md`、`docs/superpowers/plans/2026-10-16-editor-collapsible-sidebars.md`。
+- Music Player：versioned v2 contract 支援 playlist、曲序、封面、HTTPS 音訊、外部連結、角色引用、權利說明與歌詞；public projection 會裁掉未公開角色引用，profile 刪除／轉接會同步檢查 music track。
+- 播放邊界：全站共用單一 lazy `Audio`；只在明確操作後播放，切換播放器會停止舊來源，最小化持續、關閉／離站停止。載入、播放與原生 media error 都顯示真實失敗，不偽裝為播放中；編輯試聽時改網址或來源會立即停止舊音訊。
+- 作者／訪客介面：作者可新增、排序、刪除並重載播放清單，設定封面、來源、角色、權利說明與歌詞；訪客可播放 HTTPS 直連或明確開啟外部作品頁。進度僅在來源可 seek 時啟用，音量與原生 range 都可鍵盤操作；320px 控制維持可達。
+- editor sidebars：左右側欄各有 Win98 邊界把手，可獨立收合／展開並讓桌面即時撐滿；偏好只存在 browser local storage，不進草稿、undo、autosave 或發布資料。768–1023px 維持既有右欄隱藏規則，手機維持單一 mobile editor。
+- full unit：182 passed（shared 61 + API 79 + web 42）。
+- typecheck：pass（shared、API、web）；build：pass（shared、API Wrangler dry-run、staging-env web Vite）。非阻斷訊息只有既有 Wrangler multi-environment、Zod PURE comment 與 bundle-size warning。
+- full E2E：89 passed（Chromium，35.3s），包含播放 singleton／最小化／關閉／失敗、作者清單重載、試聽來源切換、320px、左右側欄鍵盤與重載記憶，以及全部既有 auth／publish／asset／collaboration／OC／scroll／responsive regressions。
+- `git diff --check`：pass；完整 diff review 修正 MobileEditor music inspector 的不完整 type branch、visitor 不可能狀態的空畫面、試聽來源修改生命週期與舊 registry 驗收基準，最終無未解阻斷項。
+- Cloudflare Pages staging deployment：`bba5517d`。canonical：https://retrodesk-staging.pages.dev；immutable：https://bba5517d.retrodesk-staging.pages.dev；bundle `index-CsiNArXX.js`／`index-Bse8-w2m.css`。Worker 無 runtime 變更，維持 #21B1 version。
+- HTTP smoke：canonical／immutable `200` 且 ETag 一致；線上 bundle 含 Music Player 與 `retrodesk:editor-sidebars`，使用 staging API/Supabase，不含 fallback `example.supabase.co` 或 `localhost:8787`。
+- live browser smoke：以已登入 staging 帳號進入真實 editor，確認「音樂播放器」新增入口、左右兩個 `aria-expanded` 收合控制均存在；實際收合左欄後工具面板消失並出現「展開左側工具欄」，隨後還原，未修改站點草稿。
+- Issue 狀態：#22A 可獨立上線；#22 保持 OPEN，下一段 #22B 需先完成音訊 MIME／byte／quota、private storage、Range／HEAD、刪除引用與發佈投影安全設計，不能直接放寬既有圖片端點。
