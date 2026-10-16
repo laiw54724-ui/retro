@@ -236,3 +236,22 @@
 - HTTP smoke：canonical／immutable `200` 且 ETag 一致；線上 bundle 含 Music Player 與 `retrodesk:editor-sidebars`，使用 staging API/Supabase，不含 fallback `example.supabase.co` 或 `localhost:8787`。
 - live browser smoke：以已登入 staging 帳號進入真實 editor，確認「音樂播放器」新增入口、左右兩個 `aria-expanded` 收合控制均存在；實際收合左欄後工具面板消失並出現「展開左側工具欄」，隨後還原，未修改站點草稿。
 - Issue 狀態：#22A 可獨立上線；#22 保持 OPEN，下一段 #22B 需先完成音訊 MIME／byte／quota、private storage、Range／HEAD、刪除引用與發佈投影安全設計，不能直接放寬既有圖片端點。
+
+## Collaboration recovery and multi-desktop hub
+
+驗證日期：2026-10-17（Asia/Singapore）。本節修復 staging 協作邀請接受失敗，並解除一個帳號只能進入第一個桌面的流程限制。
+
+- 規格與計畫：`docs/superpowers/specs/2026-10-17-collaboration-recovery-multi-desktop-design.md`、`docs/superpowers/plans/2026-10-17-collaboration-recovery-multi-desktop.md`。
+- 實作 commits：migration `79e2753`、安全 RPC diagnostics `726995c`、多桌面 hub `44f6132`、editor／viewer 導航 `8291a1b`。
+- invite root cause：`accept_site_invite` 的 `RETURNS TABLE` 輸出欄位包含 `site_id`，原 `ON CONFLICT (site_id, user_id)` 在 PL/pgSQL runtime 會產生欄位／變數歧義；migration 0008 改為具名 primary-key constraint，保留原本 lock、email、期限、單次使用與 audit 邊界。
+- API diagnostics：未知 collaboration RPC 錯誤只寫入 operation、PostgREST code/message/details/hint；不記錄 token、email、Authorization 或 request body。已知錯誤仍回穩定 public error code。
+- 多桌面流程：登入後固定進入「我的桌面」，同時列出 owner/editor/viewer 站點、發布狀態、更新時間與角色對應動作；可新增桌面。editor 與私人 viewer 頁的品牌連結都回到 `/auth` hub。
+- focused verification：migration 5/5、collaboration API 11/11、hub E2E 4/4、collaboration + hub E2E 13/13。
+- deployment gate：typecheck 全過；full unit 197 passed（shared 62 + API 92 + web 43）；full E2E 94 passed；shared/API/web build 全過；`git diff --check` pass。非阻斷訊息只有既有 Wrangler sandbox log、multi-environment、Zod comment 與 bundle-size warning。
+- visual QA：desktop 與 mobile hub 都確認無水平 overflow、角色／狀態層級清楚、主要動作可見；Impeccable detector 依規定只執行一次，唯一輸出是既有 `global.css` Win98 border，不是本段 regression。
+- staging DB：dry-run 只列出 `0008_fix_accept_site_invite_conflict.sql`；正式 push 成功，remote migration history 顯示 0001–0008 一致。
+- GitHub Actions run `38945650647` 的 install／verify 已通過，但 deploy step 因 staging environment 的 `CLOUDFLARE_API_TOKEN` 為空而停止。改用既有本機 Wrangler OAuth 部署並以 `--keep-vars` 保留 dashboard secrets/vars；未將任何秘密寫入 repository。
+- staging Worker：`https://retrodesk-api-staging.beibeiz.workers.dev`，version `45a55ac0-629f-4a53-bc65-cce3033439a1`。
+- Cloudflare Pages staging deployment：`21e6ab83`。canonical：https://retrodesk-staging.pages.dev；immutable：https://21e6ab83.retrodesk-staging.pages.dev；bundle `index-CrMqKnua.js`／`index-BFwdSfpi.css`。
+- live HTTP smoke：API health、canonical `/`、`/auth`、`/invite` 與 immutable `/` 均為 `200`；canonical bundle 含「我的桌面／新增桌面／協作編輯／回到我的桌面」，且不含 `example.supabase.co` 或 `localhost:8787` fallback。
+- live authenticated browser：既有 owner 帳號在 `/auth` 顯示 1 個桌面、擁有者角色、未發布狀態與編輯動作；進入 editor 後品牌連結指向 `/auth`。沒有第二個可安全操作的已知 staging Google 帳號，因此未建立一次性邀請或變更成員；跨帳號接受由 migration/API/E2E 覆蓋，不宣稱真人雙帳號驗收。
