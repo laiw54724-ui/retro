@@ -160,3 +160,23 @@
 - `git diff --check`：pass；最終 code review 未發現阻斷問題，並在 review 中補回原先遺漏的 canonical crop 編輯／重載與公開 crop 呈現測試。
 - Cloudflare Pages staging deployment：`a04c35e1`。canonical：https://retrodesk-staging.pages.dev；immutable：https://a04c35e1.retrodesk-staging.pages.dev；canonical 與 immutable 均指向 `index-d_blw_Mv.js`／`index-DJFWBBc1.css`。
 - live smoke：Pages canonical／immutable `200`、API `/api/health` `200`；線上 bundle 含「新增合集」、「置頂作品」與裁切控制，使用 staging Supabase/API 且不含 fallback `example.supabase.co`。
+
+## #21A fictional OC social interactions
+
+驗證日期：2026-10-16（Asia/Singapore）。本節完成作者編排的虛構角色社群；真正多人共同編輯、邀請、membership／RLS 權限仍保留在 #21B，沒有暴露半成品邀請入口。
+
+- 實作計畫：`docs/superpowers/plans/2026-10-16-fictional-social-21a.md`。
+- 實作 commits：計畫 `222c09c`、資料契約 `d0b0c11`、validated operations `7e9428e`、作者編輯器 `6bca746`、訪客名單／導航 `4062fa5`、legacy/social compatibility review fix `881da09`。
+- shared contract：新增同站 `FollowEdge`、具名喜歡者、其他虛構人數及 profile／legacy actor comments；禁止自己追蹤與重複 edge，所有操作完整驗證 input/output、回 typed diagnostics 且不修改原文件。
+- migration：粉絲／追蹤的 `"1.2K"`、空字串等舊標籤保持 opaque，作者明確轉換前不解析；舊貼文 likes 轉為 structured extra likes 時保留原數值，避免 migration 後歸零。
+- authoring：可搜尋勾選粉絲／追蹤與具名喜歡角色、設定其他虛構人數、建立 profile 或純文字角色留言並排序／刪除；所有變更沿用 editor history/autosave，E2E 已驗證 undo／redo、存檔與重載。
+- public：粉絲／追蹤／喜歡者名單可開啟並進入 OC 頁，另有未具名人數會明確顯示；「所有角色」保留完整 OC directory。角色內容常駐標示「角色世界觀內容」。
+- privacy/truthfulness：public projection 與 web directory 都會裁掉草稿角色的 edge、具名喜歡者與 profile 留言；訪客 follow／like／comment 只限本次瀏覽，不改作者計數或 draft，留言明示不會儲存到作者網站。
+- typecheck：pass（shared、api、web）。
+- full unit：124 passed（shared 59 + API 47 + web 18）。
+- full E2E：74 passed（Chromium，最終部署閘門 33.3s），包含作者互動 undo/autosave/reload、公開名單與 nested actor navigation、desktop/mobile directory、Instagram 內窗捲動及全部既有 responsive/auth/publish regressions。
+- build：shared、web production Vite build 與 API Wrangler dry-run pass；非阻斷訊息只有既有 Wrangler sandbox log-file EPERM、multi-environment 與 bundle-size warning。
+- `git diff --check`：pass；里程碑 code review 已修正 legacy like migration、訪客暫時讚數、people-list accessible-name 衝突與 OC directory 入口，最終無未解阻斷項。
+- Cloudflare Pages staging deployment：`5ecaee3b`。canonical：https://retrodesk-staging.pages.dev；immutable：https://5ecaee3b.retrodesk-staging.pages.dev；bundle `index-BAgbviXf.js`／`index-BpHe8PS8.css`。
+- live smoke：Pages canonical／immutable `200`、API `/api/health` `200`；線上 bundle 含「角色世界觀內容」、「所有角色」、「僅本次瀏覽」，使用 staging API/Supabase，不含 fallback `example.supabase.co` 或邀請成員入口。
+- Issue 狀態：只完成 #21A milestone；#21 保持 OPEN，待 #21B 的 migration、API membership/invite、RLS 與權限矩陣另行實作及安全審查。
