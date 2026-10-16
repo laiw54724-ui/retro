@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const state = {
   user: { id: "owner-a", email: "OWNER@EXAMPLE.COM" } as { id: string; email?: string | null },
   membershipRole: null as "editor" | "viewer" | null,
-  rpcError: null as { message: string } | null,
+  rpcError: null as { code?: string; message: string; details?: string; hint?: string } | null,
   rpcCalls: [] as Array<{ name: string; args: Record<string, unknown> }>,
   selects: [] as string[]
 };
@@ -93,6 +93,31 @@ describe("collaboration lifecycle routes", () => {
     state.rpcError = { message };
     const response = await collaboration.request("/invites/accept", { method: "POST", body: JSON.stringify({ token: "B".repeat(43) }) }, {} as never);
     expect(response.status).toBe(status);
+  });
+
+  it("logs actionable database metadata without exposing invitation secrets", async () => {
+    const token = "S".repeat(43);
+    state.rpcError = { code: "42702", message: "column reference site_id is ambiguous", details: "output parameter collision", hint: "qualify the target" };
+    const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    const response = await collaboration.request("/invites/accept", {
+      method: "POST",
+      headers: { authorization: "Bearer secret-authorization" },
+      body: JSON.stringify({ token })
+    }, {} as never);
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: { code: "db_error", message: "Could not update collaboration access" } });
+    const rendered = JSON.stringify(log.mock.calls);
+    expect(rendered).toContain("accept_site_invite");
+    expect(rendered).toContain("42702");
+    expect(rendered).toContain("column reference site_id is ambiguous");
+    expect(rendered).toContain("output parameter collision");
+    expect(rendered).toContain("qualify the target");
+    expect(rendered).not.toContain(token);
+    expect(rendered).not.toContain("owner@example.com");
+    expect(rendered).not.toContain("secret-authorization");
+    log.mockRestore();
   });
 
   it("uses atomic RPCs for role changes, removal, and revocation", async () => {

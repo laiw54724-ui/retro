@@ -26,7 +26,11 @@ async function requireManager(
   }
 }
 
-function rpcFailure(c: Context<{ Bindings: Env }>, error: { message?: string } | null) {
+function rpcFailure(
+  c: Context<{ Bindings: Env }>,
+  operation: string,
+  error: { code?: string; message?: string; details?: string; hint?: string } | null
+) {
   const message = error?.message ?? "";
   if (message.includes("collaboration_forbidden")) return jsonError(c, 403, "forbidden", "Only the site owner can manage collaborators");
   if (message.includes("member_not_found")) return jsonError(c, 404, "not_found", "Member not found");
@@ -36,6 +40,13 @@ function rpcFailure(c: Context<{ Bindings: Env }>, error: { message?: string } |
   if (message.includes("invite_email_mismatch")) return jsonError(c, 403, "invite_email_mismatch", "Sign in with the email address that received this invitation");
   if (message.includes("owner_cannot_join")) return jsonError(c, 409, "owner_cannot_join", "The site owner cannot join as a member");
   if (message.includes("invalid_invite")) return jsonError(c, 404, "invalid_invite", "Invitation not found");
+  console.error("collaboration_rpc_failed", {
+    operation,
+    code: error?.code,
+    message: error?.message,
+    details: error?.details,
+    hint: error?.hint
+  });
   return jsonError(c, 500, "db_error", "Could not update collaboration access");
 }
 
@@ -80,7 +91,7 @@ collaboration.post("/sites/:siteId/invites", async (c) => {
     p_token_digest: digest,
     p_expires_at: expiresAt
   });
-  if (error) return rpcFailure(c, error);
+  if (error) return rpcFailure(c, "create_site_invite", error);
   const invite = Array.isArray(data) ? data[0] : data;
   return c.json({ invite, token }, 201);
 });
@@ -92,7 +103,7 @@ collaboration.delete("/sites/:siteId/invites/:inviteId", async (c) => {
   const access = await requireManager(c, client, user.id);
   if (access instanceof Response) return access;
   const { error } = await client.rpc("revoke_site_invite", { p_site_id: access.siteId, p_invite_id: c.req.param("inviteId"), p_actor_id: user.id });
-  if (error) return rpcFailure(c, error);
+  if (error) return rpcFailure(c, "revoke_site_invite", error);
   return c.body(null, 204);
 });
 
@@ -105,7 +116,7 @@ collaboration.put("/sites/:siteId/members/:userId", async (c) => {
   const access = await requireManager(c, client, user.id);
   if (access instanceof Response) return access;
   const { error } = await client.rpc("update_site_member_role", { p_site_id: access.siteId, p_user_id: c.req.param("userId"), p_actor_id: user.id, p_role: body.data.role });
-  if (error) return rpcFailure(c, error);
+  if (error) return rpcFailure(c, "update_site_member_role", error);
   return c.json({ ok: true });
 });
 
@@ -116,7 +127,7 @@ collaboration.delete("/sites/:siteId/members/:userId", async (c) => {
   const access = await requireManager(c, client, user.id);
   if (access instanceof Response) return access;
   const { error } = await client.rpc("remove_site_member", { p_site_id: access.siteId, p_user_id: c.req.param("userId"), p_actor_id: user.id });
-  if (error) return rpcFailure(c, error);
+  if (error) return rpcFailure(c, "remove_site_member", error);
   return c.body(null, 204);
 });
 
@@ -129,7 +140,7 @@ collaboration.post("/invites/accept", async (c) => {
   const digest = await digestInviteToken(body.data.token);
   const client = serviceClient(c.env);
   const { data, error } = await client.rpc("accept_site_invite", { p_token_digest: digest, p_user_id: user.id, p_email: user.email.trim().toLowerCase() });
-  if (error) return rpcFailure(c, error);
+  if (error) return rpcFailure(c, "accept_site_invite", error);
   const membership = Array.isArray(data) ? data[0] : data;
   return c.json({ membership });
 });
