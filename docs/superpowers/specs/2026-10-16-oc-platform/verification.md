@@ -255,3 +255,19 @@
 - Cloudflare Pages staging deployment：`21e6ab83`。canonical：https://retrodesk-staging.pages.dev；immutable：https://21e6ab83.retrodesk-staging.pages.dev；bundle `index-CrMqKnua.js`／`index-BFwdSfpi.css`。
 - live HTTP smoke：API health、canonical `/`、`/auth`、`/invite` 與 immutable `/` 均為 `200`；canonical bundle 含「我的桌面／新增桌面／協作編輯／回到我的桌面」，且不含 `example.supabase.co` 或 `localhost:8787` fallback。
 - live authenticated browser：既有 owner 帳號在 `/auth` 顯示 1 個桌面、擁有者角色、未發布狀態與編輯動作；進入 editor 後品牌連結指向 `/auth`。沒有第二個可安全操作的已知 staging Google 帳號，因此未建立一次性邀請或變更成員；跨帳號接受由 migration/API/E2E 覆蓋，不宣稱真人雙帳號驗收。
+
+## #23–#28 OC platform application batch
+
+驗證日期：2026-10-17（Asia/Singapore）。本批依序完成 Moodboard、Explorer、桌面小玩具、待審留言簿、主題預設／對比、開源發行閘門、公開分享／edge metadata 與安全 JSON 匯出匯入；不將素材授權未解誤報為正式開源可發行。
+
+- 實作 commits：`274641e`、`1bf72ab`、`10a0c41`、`be028af`、`7d9f6d6`、`0e7722f`、`7cefd0a`、`74a4d91`、`a8376f5`、`fe488c3`、`c78c066`、`702822a`、`7216cad`。
+- Moodboard／Explorer：支援可縮放畫布、鍵盤微調／分層、PNG 匯出錯誤定位、多層資料夾、重複內容捷徑、搜尋／麵包屑與 public entity deep link；100 物件、500 資料夾／捷徑及 8 層深度都有明確阻擋說明，刪目錄不刪目標並可 undo。
+- 玩具／留言簿：掃雷與角色彈窗只保留訪客 session，不寫站長草稿；留言簿 server 預設拒絕、純文字、速率／重送保護、待審公開隔離、owner 審核／刪除／檢舉處理與跨站授權測試完成。
+- 分享／metadata／transfer：OC／貼文穩定 ID 路由支援 reload、404、手動複製 fallback；Pages Worker 在首份 HTML 注入 canonical／OG／robots 並以發布版本做 ETag。JSON v1 公開匯出裁切草稿與 owner 資料，私人備份 owner-only；匯入先預覽與 SHA-256 確認、建立新桌面、重映射 site ID、阻擋 signed URL/token、ZIP、路徑穿越、超量 manifest 與超過 2 MB body。
+- review findings：完整測試先發現 registry 驗收仍寫死舊 6 App，以及 Win98 CSS 蓋掉 OC theme accent；分別改為 11 App 契約與專用 follow selector，失敗的 3 個案例已 3/3 重驗。另補 Moodboard／Explorer silent-limit、Explorer 8 層移動選項與 500 節點邊界；最終 `git diff --check` 與 lint 無未解阻斷項。
+- deployment gate：secret audit 檢查 3,252 個 worktree path、2,964 個 build artifact、2,666 個 reachable Git object；一般素材 audit 2,952 files 通過。typecheck／lint／build 全過；full unit 235 passed（shared 74 + API 106 + web 55）；full E2E 115 個案例均有通過證據（完整跑 112/115，修正後只重跑失敗案例 3/3，避免重複全套）。
+- staging DB：dry-run 只列出 `0009_moderated_guestbook.sql`；正式 push 成功。
+- staging Worker：`https://retrodesk-api-staging.beibeiz.workers.dev`，version `932c605a-ac39-4a03-b2b1-c664688e6fb8`。
+- Cloudflare Pages staging deployment：`44e0047e`。canonical：https://retrodesk-staging.pages.dev；immutable：https://44e0047e.retrodesk-staging.pages.dev；bundle `index-CcbCNO-G.js`／`index-Do4PNGk_.css`。
+- live smoke：API health `200`；未登入 import preview `401`；`/@beibei` 首份 HTML `200`、`no-store`、`published:10` ETag、正確 title／OG／robots。公開 JSON export `200`、attachment header、`scope=public`、0 missing private media、無 `retro-asset:`／owner 欄位；未啟用留言簿明確回 `guestbook_disabled`。實際瀏覽器成功載入 canonical `bei — Retro Desktop` 與公開桌面按鈕。
+- 正式開源發行阻塞：`assets:audit:release` 依設計拒絕 `pinned-windows-icon-library (needs-evidence)` 與 `legacy-win98-png-compatibility-library (replace)`；根目錄 LICENSE 也需權利人決定程式碼授權。這不阻塞 staging 測試，但在來源證據／替換與授權選擇完成前，不宣稱 #27 完成、不發布正式開源包。
