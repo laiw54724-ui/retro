@@ -1,5 +1,6 @@
 import type { SiteDocument, VersionedSiteDocument, VersionedSiteDocumentInput } from "@retrodesk/shared";
 import { supabase } from "./supabase";
+import type { CollaboratorRole, CreatedSiteInvite, SiteAccessRole, SiteInvite, SiteMember } from "./collaboration";
 
 const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8787").replace(/\/$/, "");
 
@@ -13,7 +14,10 @@ export type SiteRecord = {
   published_version: number | null;
   published_at: string | null;
   updated_at: string;
+  access_role: SiteAccessRole;
 };
+
+export type SiteListRecord = Pick<SiteRecord, "id" | "username" | "site_name" | "draft_version" | "published_version" | "published_at" | "updated_at" | "access_role">;
 
 export type AssetKind = "image" | "icon";
 export type PublishResult = { publishedVersion: number; publishedAt: string; url: string; artifactStatus: "synced" | "failed"; retryable: boolean; artifactKey?: string; warning?: string };
@@ -61,10 +65,10 @@ export const api = {
     return request<{ available: boolean; reason?: string }>("/api/usernames/" + encodeURIComponent(username) + "/availability", {}, false);
   },
   listSites() {
-    return request<{ sites: Array<Pick<SiteRecord, "id" | "username" | "site_name" | "draft_version" | "published_version" | "published_at" | "updated_at">> }>("/api/sites");
+    return request<{ sites: SiteListRecord[] }>("/api/sites");
   },
   createSite(input: { username: string; siteName: string; document: SiteDocument }) {
-    return request<{ site: SiteRecord }>("/api/sites", { method: "POST", body: JSON.stringify(input) });
+    return request<{ site: Omit<SiteRecord, "access_role"> }>("/api/sites", { method: "POST", body: JSON.stringify(input) });
   },
   getSite(siteId: string) {
     return request<{ site: SiteRecord }>("/api/sites/" + siteId);
@@ -106,5 +110,35 @@ export const api = {
   },
   deleteAsset(siteId: string, assetId: string) {
     return request<void>("/api/sites/" + siteId + "/assets/" + assetId, { method: "DELETE" });
+  },
+  listMembers(siteId: string) {
+    return request<{ members: SiteMember[] }>("/api/sites/" + siteId + "/members", { cache: "no-store" });
+  },
+  listInvites(siteId: string) {
+    return request<{ invites: SiteInvite[] }>("/api/sites/" + siteId + "/invites", { cache: "no-store" });
+  },
+  createInvite(siteId: string, input: { email: string; role: CollaboratorRole; expiryHours: 1 | 24 | 72 | 168 }) {
+    return request<{ invite: CreatedSiteInvite; token: string }>("/api/sites/" + siteId + "/invites", {
+      method: "POST",
+      body: JSON.stringify(input)
+    });
+  },
+  revokeInvite(siteId: string, inviteId: string) {
+    return request<void>("/api/sites/" + siteId + "/invites/" + inviteId, { method: "DELETE" });
+  },
+  updateMemberRole(siteId: string, userId: string, role: CollaboratorRole) {
+    return request<{ ok: true }>("/api/sites/" + siteId + "/members/" + userId, {
+      method: "PUT",
+      body: JSON.stringify({ role })
+    });
+  },
+  removeMember(siteId: string, userId: string) {
+    return request<void>("/api/sites/" + siteId + "/members/" + userId, { method: "DELETE" });
+  },
+  acceptInvite(token: string) {
+    return request<{ membership: { site_id: string; role: CollaboratorRole } }>("/api/invites/accept", {
+      method: "POST",
+      body: JSON.stringify({ token })
+    });
   }
 };
