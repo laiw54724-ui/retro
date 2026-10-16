@@ -141,3 +141,22 @@
 - staging Worker：version `3f469ce9-75c8-4de2-9dc9-bbda693175b9`。
 - Cloudflare Pages staging deployment：`7656f73c`。canonical：https://retrodesk-staging.pages.dev；immutable：https://7656f73c.retrodesk-staging.pages.dev；canonical HTML 指向 `index-CwObkPGQ.js`。
 - live smoke：API health `200`、published site `beibei` `200`、Pages canonical／immutable `200`；390×780 real Chromium 顯示 mobile visitor、2 個 icon、horizontal overflow `0`、page errors `[]`。沒有安全的 staging 測試帳密，因此 cross-site authenticated rejection 由實際 route integration test 覆蓋，未宣稱人工登入驗收。
+
+## #20 OC posts, collections, and responsive presentation
+
+驗證日期：2026-10-16（Asia/Singapore）。本節完成 canonical 貼文／合集編輯、公開作品布局、圖片裁切與大型內容響應式驗收；具名喜歡者、具名留言與真實多人協作仍由 #21 負責，本段不顯示未完成入口。
+
+- 實作計畫：`docs/superpowers/plans/2026-10-16-oc-content-presentation.md`。
+- 實作 commits：`ae6379d`、`ef5e50f`、`06538ec`、`258d34c`、`2d51f42`。
+- canonical operations：合集 create/update/delete/reorder 與貼文 membership 維持雙向一致；所有輸入／輸出先經 v2 structural、semantic 與 site-scope 驗證，失敗回 typed diagnostic 且不修改原文件。
+- authoring：Instagram 編輯器可新增、刪除、排序合集，設定標題、說明、公開狀態與有序貼文；貼文媒體支援 alt、順序、刪除、格狀縮圖水平／垂直裁切與縮放，autosave 後重新整理資料一致。
+- public presentation：置頂作品先於一般作品；合集只顯示含公開貼文的 published collection；合集內順序依作者設定。格狀與合集封面套用 crop，貼文詳情保留自然比例；草稿貼文、草稿合集與失效引用不進公開目錄。
+- legacy/highlight：既有 post/comment/單圖精選 migration 與多頁精選 round-trip 維持通過；公開多頁精選可暫停、鍵盤前後切換並在關閉後還原原捲動位置；Win98 外殼維持方角而頭像／精選內容維持圓形。
+- capacity/responsive：60 篇公開貼文、長中文、混合長寬比與三個合集 fixture 在手機 `320/375/390/430px`、桌面 IG 內窗 `360/480/720px` 全部可用；鍵盤 `End` 可捲到底，內窗與頁面水平 overflow 均不超過 1px，60 張格狀圖片皆為 lazy loading。
+- typecheck：pass（shared、api、web）。
+- full unit：119 passed（shared 54 + API 47 + web 18）。
+- full E2E：72 passed（Chromium、單 worker、1.3m）。
+- build：web production Vite build 與 deploy-env guard pass；API Worker dry-run 產生完整 bundle，只有既有 multi-environment warning 與 sandbox Wrangler log-file EPERM 訊息；web 另有非阻斷 bundle-size warning。
+- `git diff --check`：pass；最終 code review 未發現阻斷問題，並在 review 中補回原先遺漏的 canonical crop 編輯／重載與公開 crop 呈現測試。
+- Cloudflare Pages staging deployment：`a04c35e1`。canonical：https://retrodesk-staging.pages.dev；immutable：https://a04c35e1.retrodesk-staging.pages.dev；canonical 與 immutable 均指向 `index-d_blw_Mv.js`／`index-DJFWBBc1.css`。
+- live smoke：Pages canonical／immutable `200`、API `/api/health` `200`；線上 bundle 含「新增合集」、「置頂作品」與裁切控制，使用 staging Supabase/API 且不含 fallback `example.supabase.co`。
