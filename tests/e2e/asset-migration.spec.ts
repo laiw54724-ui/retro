@@ -30,6 +30,10 @@ test("legacy asset warning identifies each asset and refreshes after v2 migratio
 
   await page.goto("/editor/site-1");
   await expect(page.getByText("有 3 個舊素材仍是公開網址。")).toBeVisible();
+  const warning = page.locator(".asset-migration-message");
+  await expect(warning.getByText("星星桌布")).toBeVisible();
+  await expect(warning.getByText("角色頭像")).toBeVisible();
+  await expect(warning.getByText("未使用舊圖")).toBeVisible();
   await page.getByRole("button", { name: "查看是哪幾個" }).click();
   const dialog = page.getByRole("dialog", { name: "舊素材遷移明細" });
   await expect(dialog.getByText("星星桌布")).toBeVisible();
@@ -38,6 +42,7 @@ test("legacy asset warning identifies each asset and refreshes after v2 migratio
   await expect(dialog.getByText(/About.exe 的頭像/)).toBeVisible();
   await expect(dialog.getByText("未使用舊圖")).toBeVisible();
   await expect(dialog.getByText("草稿中沒有引用（可考慮刪除）")).toBeVisible();
+  await expect(dialog.getByText(urls[2])).toBeVisible();
 
   await dialog.getByRole("button", { name: "轉為私有（3）" }).click();
   await expect(page.getByText("3 個舊公開副本因已發布版本仍在使用，暫時保留。")).toBeVisible();

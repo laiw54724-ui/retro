@@ -471,7 +471,12 @@ export function EditorPage() {
       ) : null}
 
       {legacyAssets.length > 0 || pendingPublicCopyAssets.length > 0 ? <div className="editor-message asset-migration-message" role="status">
-        <span>{legacyAssets.length > 0 ? `有 ${legacyAssets.length} 個舊素材仍是公開網址。` : `${pendingPublicCopyAssets.length} 個舊公開副本因已發布版本仍在使用，暫時保留。`}</span>
+        <div className="asset-migration-summary">
+          <span>{legacyAssets.length > 0 ? `有 ${legacyAssets.length} 個舊素材仍是公開網址。` : `${pendingPublicCopyAssets.length} 個舊公開副本因已發布版本仍在使用，暫時保留。`}</span>
+          {legacyAssets.length > 0 ? <span className="asset-migration-names" aria-label="尚未轉為私有的素材">
+            {legacyAssets.map((asset) => <code key={asset.id} title={asset.id}>{asset.name || asset.id.slice(0, 8)}</code>)}
+          </span> : null}
+        </div>
         <button type="button" onClick={() => setAssetInventoryOpen(true)}>查看是哪幾個</button>
         {legacyAssets.length > 0 ? <button disabled={migratingAssets || store.saveStatus === "saving" || store.saveStatus === "error" || conflict} onClick={migrateLegacyAssets}>{migratingAssets ? "遷移中…" : "轉為私有素材"}</button> : null}
       </div> : null}
@@ -486,6 +491,7 @@ export function EditorPage() {
                 <div className="asset-inventory-heading"><strong>{asset.name || "未命名素材"}</strong><code>{asset.id}</code></div>
                 <span className={`asset-status ${asset.storageScope === "legacy_public" ? "needs-migration" : "pending-cleanup"}`}>{asset.storageScope === "legacy_public" ? "尚未轉為私有" : "私有預覽已完成，舊公開副本待清理"}</span>
                 <div className="asset-reference-list">{references.length ? <>使用位置：{references.map((reference) => reference.label).join("、")}</> : "草稿中沒有引用（可考慮刪除）"}</div>
+                <div className="asset-source-url"><span>目前網址：</span><code>{asset.url}</code></div>
               </li>)}
             </ul> : <p role="status">目前沒有需要遷移或清理的舊素材。</p>}
             <div className="button-row end">
