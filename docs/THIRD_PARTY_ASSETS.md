@@ -1,8 +1,13 @@
 # Third-party assets and licensing
 
-Retro's source code license covers the Retro source code only. It does not
-relicense user content or third-party assets. Each asset remains subject to
-the terms, rights, and restrictions of its owner or upstream source.
+Any future Retro source-code license can cover only original Retro source the
+granting rights holder controls. It cannot relicense user content or
+third-party assets. Each asset remains subject to the terms, rights, and
+restrictions of its owner or upstream source.
+
+No root source-code license has been granted yet. The intended separation is
+documented in [`LICENSE_SCOPE.md`](LICENSE_SCOPE.md); that document is not a
+substitute for an owner-authorized `LICENSE`.
 
 The machine-readable inventory is
 [`docs/assets/third-party-assets.manifest.json`](assets/third-party-assets.manifest.json).
