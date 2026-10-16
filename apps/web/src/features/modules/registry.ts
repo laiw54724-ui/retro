@@ -8,6 +8,7 @@ import { AboutInlineEditor, AboutView } from "./about";
 import { IgInlineEditor, IgView } from "./instagram";
 import { MusicInlineEditor, MusicView } from "./music";
 import { MoodboardInlineEditor, MoodboardView } from "./moodboard";
+import { ExplorerInlineEditor, ExplorerView } from "./explorer";
 
 type WindowType = DesktopWindow["type"];
 type Registry = { [K in WindowType]: WindowModule<K> };
@@ -27,7 +28,8 @@ export const registry: Registry = {
   about: { type: "about", schemaVersion: 1, label: "名片／關於我", description: "頭像、檔案欄位、簡介與橫幅", icon: "user", capabilities: defaultCapabilities, mobile: { mode: "window", icon: "user" }, create: (index) => factory("about", index), View: AboutView, InlineEditor: AboutInlineEditor },
   instagram: { type: "instagram", schemaVersion: 1, label: "復古 IG 個人頁", description: "帳號、追蹤數、簡介與貼文格狀", icon: "camera", capabilities: defaultCapabilities, mobile: { mode: "window", icon: "camera" }, create: (index) => factory("instagram", index), View: IgView, InlineEditor: IgInlineEditor },
   music: { type: "music", schemaVersion: 1, label: "音樂播放器", description: "角色播放清單、原生音訊與作品連結", icon: "music", capabilities: { ...defaultCapabilities, uploads: true }, mobile: { mode: "window", icon: "music" }, create: (index) => factory("music", index), View: MusicView, InlineEditor: MusicInlineEditor },
-  moodboard: { type: "moodboard", schemaVersion: 1, label: "Moodboard 畫板", description: "用圖片、文字與色塊組成角色靈感板", icon: "photo", capabilities: { ...defaultCapabilities, links: false }, mobile: { mode: "window", icon: "photo" }, create: (index) => factory("moodboard", index), View: MoodboardView, InlineEditor: MoodboardInlineEditor }
+  moodboard: { type: "moodboard", schemaVersion: 1, label: "Moodboard 畫板", description: "用圖片、文字與色塊組成角色靈感板", icon: "photo", capabilities: { ...defaultCapabilities, links: false }, mobile: { mode: "window", icon: "photo" }, create: (index) => factory("moodboard", index), View: MoodboardView, InlineEditor: MoodboardInlineEditor },
+  explorer: { type: "explorer", schemaVersion: 1, label: "世界觀資料夾", description: "用多層資料夾整理桌面視窗與角色設定", icon: "doc", capabilities: { ...defaultCapabilities, uploads: false }, mobile: { mode: "window", icon: "doc" }, create: (index) => factory("explorer", index), View: ExplorerView, InlineEditor: ExplorerInlineEditor }
 };
 
 // Object insertion order is the single source of truth for authoring surfaces.
@@ -81,6 +83,10 @@ export function renderModule({ window, ctx, editing, update }: RenderModuleOptio
     case "moodboard": {
       const props: ModuleProps<"moodboard"> = { window, ctx, update: (recipe, key) => update((current) => recipe(current as WindowOf<"moodboard">), key) };
       return createElement(editing ? registry.moodboard.InlineEditor : registry.moodboard.View, props);
+    }
+    case "explorer": {
+      const props: ModuleProps<"explorer"> = { window, ctx, update: (recipe, key) => update((current) => recipe(current as WindowOf<"explorer">), key) };
+      return createElement(editing ? registry.explorer.InlineEditor : registry.explorer.View, props);
     }
   }
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createStarterDocument } from "../src/site";
+import { createStarterDocument, makeWindow } from "../src/site";
 import { migrateSiteDocumentV2 } from "../src/site-versioning";
 import { projectPublicSiteDocument } from "../src/public-projection";
 
@@ -81,6 +81,38 @@ describe("public site projection", () => {
     expect(result.document.entities.posts[0]?.actorComments.map((comment) => comment.id)).toEqual(["comment-public", "comment-legacy"]);
     expect(result.document.entities.followEdges).toEqual([]);
     expect(JSON.stringify(result.document)).not.toContain("PRIVATE_ACTOR");
+  });
+
+  it("removes draft Explorer branches and shortcuts to unavailable windows", () => {
+    const draft = v2();
+    const target = draft.windows.find((window) => window.type !== "instagram");
+    const hiddenTarget = draft.windows.find((window) => window.type === "instagram");
+    if (!target || !hiddenTarget) throw new Error("target window missing");
+    draft.entities.profiles[0].visibility = "draft";
+    const explorer = makeWindow("explorer", draft.windows.length);
+    if (explorer.type !== "explorer") throw new Error("explorer factory mismatch");
+    explorer.id = "explorer-1";
+    explorer.title = "World.exe";
+    explorer.content = {
+        folders: [
+          { id: "public-root", parentId: null, name: "Public", order: 0, visibility: "published" },
+          { id: "draft-parent", parentId: null, name: "Draft", order: 1, visibility: "draft" },
+          { id: "orphan-child", parentId: "draft-parent", name: "Hidden child", order: 0, visibility: "published" }
+        ],
+        shortcuts: [
+          { id: "public-link", parentId: "public-root", label: "Profile", order: 0, visibility: "published", target: { siteId: "site-a", id: target.id, kind: "window" } },
+          { id: "hidden-branch-link", parentId: "orphan-child", label: "Hidden", order: 1, visibility: "published", target: { siteId: "site-a", id: target.id, kind: "window" } },
+          { id: "removed-window", parentId: null, label: "Hidden profile", order: 2, visibility: "published", target: { siteId: "site-a", id: hiddenTarget.id, kind: "window" } }
+        ]
+    };
+    draft.windows.push(explorer);
+    const result = projectPublicSiteDocument(draft, "site-a");
+    expect(result.ok).toBe(true);
+    if (!result.ok || result.version !== 2) return;
+    const projectedExplorer = result.document.windows.find((window) => window.type === "explorer");
+    if (!projectedExplorer || projectedExplorer.type !== "explorer") throw new Error("projected explorer missing");
+    expect(projectedExplorer.content.folders.map((folder) => folder.id)).toEqual(["public-root"]);
+    expect(projectedExplorer.content.shortcuts.map((shortcut) => shortcut.id)).toEqual(["public-link"]);
   });
 
   it("is deterministic and rejects invalid or unsupported versions", () => {

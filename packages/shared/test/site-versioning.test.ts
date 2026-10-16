@@ -97,6 +97,32 @@ describe("versioned site document contract", () => {
     expect(parseSiteDocument(crossSite)).toMatchObject({ ok: false, code: "invalid" });
   });
 
+  it("round-trips Explorer windows and validates shortcut references", () => {
+    const v1 = fixture();
+    const explorer = makeWindow("explorer", v1.windows.length);
+    if (explorer.type !== "explorer") throw new Error("explorer factory mismatch");
+    explorer.id = "explorer-1";
+    explorer.content.folders = [{ id: "characters", parentId: null, name: "Characters", order: 0, visibility: "published" }];
+    explorer.content.shortcuts = [{ id: "alice-link", parentId: "characters", label: "Alice", order: 0, visibility: "published", target: { siteId: "site-a", id: "about-1", kind: "window" } }];
+    v1.windows.push(explorer);
+    const migrated = migrateSiteDocumentV2(v1, { siteId: "site-a" });
+    expect(migrated).toMatchObject({ ok: true, version: 2 });
+    if (!migrated.ok || migrated.version !== 2) return;
+    expect(migrated.document.windows.find((window) => window.id === explorer.id)).toEqual(explorer);
+
+    const missing = structuredClone(migrated.document);
+    const missingExplorer = missing.windows.find((window) => window.id === explorer.id);
+    if (!missingExplorer || missingExplorer.type !== "explorer") throw new Error("missing explorer");
+    missingExplorer.content.shortcuts[0].target.id = "missing";
+    expect(parseSiteDocument(missing)).toMatchObject({ ok: false, code: "invalid" });
+
+    const crossSite = structuredClone(migrated.document);
+    const crossExplorer = crossSite.windows.find((window) => window.id === explorer.id);
+    if (!crossExplorer || crossExplorer.type !== "explorer") throw new Error("missing explorer");
+    crossExplorer.content.shortcuts[0].target.siteId = "other";
+    expect(parseSiteDocument(crossSite)).toMatchObject({ ok: false, code: "invalid" });
+  });
+
   it("resolves refs and reports referrers and semantic errors", () => {
     const result = migrateSiteDocumentV2(fixture(), { siteId: "site-a" });
     expect(result.ok).toBe(true);

@@ -371,6 +371,15 @@ export function InspectorContent({ window, allWindows, siteId, update, onMessage
     );
   }
 
+  if (window.type === "explorer") {
+    return (
+      <section className="inspector-section">
+        <div className="section-heading"><strong>世界觀資料夾</strong></div>
+        <p>直接在視窗內新增資料夾與捷徑；捷徑只會開啟原視窗，刪除資料夾不會刪除作品。</p>
+      </section>
+    );
+  }
+
   const content = window.content;
   const setContent = (next: typeof content) => update((current) => current.type === "instagram" ? { ...current, content: next } : current);
   const profile = content.profile;

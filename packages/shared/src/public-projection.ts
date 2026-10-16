@@ -65,6 +65,24 @@ function projectV2(document: SiteDocumentV2, currentSiteId: string): SiteDocumen
           tracks: window.content.tracks.map((track) => track.characterRef && (track.characterRef.siteId !== currentSiteId || !profileIds.has(track.characterRef.id)) ? { ...track, characterRef: undefined } : track)
         }
       };
+      if (window.type === "explorer") {
+        const publishedFolders = window.content.folders.filter((folder) => folder.visibility === "published");
+        const byId = new Map(publishedFolders.map((folder) => [folder.id, folder]));
+        const isReachable = (folderId: string) => {
+          let cursor = byId.get(folderId);
+          const seen = new Set<string>();
+          while (cursor) {
+            if (seen.has(cursor.id)) return false;
+            seen.add(cursor.id);
+            if (cursor.parentId === null) return true;
+            cursor = byId.get(cursor.parentId);
+          }
+          return false;
+        };
+        const folders = publishedFolders.filter((folder) => isReachable(folder.id));
+        const folderIds = new Set(folders.map((folder) => folder.id));
+        return { ...window, content: { folders, shortcuts: window.content.shortcuts.filter((shortcut) => shortcut.visibility === "published" && shortcut.target.siteId === currentSiteId && retainedWindowIds.has(shortcut.target.id) && (shortcut.parentId === null || folderIds.has(shortcut.parentId))) } };
+      }
       if (window.type !== "links") return window;
       return {
         ...window,

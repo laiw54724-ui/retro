@@ -11,6 +11,7 @@ import {
   InstagramProfileSchema,
   LinkItemSchema,
   MoodboardContentSchema,
+  ExplorerContentSchema,
   SiteDocumentSchema,
   SafeUrlSchema,
   ImageUrlSchema,
@@ -153,7 +154,8 @@ const NonInstagramWindowV2Schema = z.discriminatedUnion("type", [
     avatarUrl: z.string().max(2048).default(""), fields: z.array(StrictAboutFieldSchema).max(50), socials: z.array(StrictSocialLinkSchema).max(50)
   }).strict() }),
   BaseV2Window.extend({ type: z.literal("music"), content: StrictMusicContentSchema }),
-  BaseV2Window.extend({ type: z.literal("moodboard"), content: MoodboardContentSchema })
+  BaseV2Window.extend({ type: z.literal("moodboard"), content: MoodboardContentSchema }),
+  BaseV2Window.extend({ type: z.literal("explorer"), content: ExplorerContentSchema })
 ]);
 export const DesktopWindowV2Schema = z.union([
   NonInstagramWindowV2Schema,
@@ -380,6 +382,7 @@ function semanticDiagnostics(document: SiteDocumentV2): Diagnostic[] {
   for (const window of document.windows) {
     if (window.type === "instagram") scopeSites.add(window.content.profileRef.siteId);
     if (window.type === "music") for (const track of window.content.tracks) if (track.characterRef) scopeSites.add(track.characterRef.siteId);
+    if (window.type === "explorer") for (const shortcut of window.content.shortcuts) scopeSites.add(shortcut.target.siteId);
   }
   const mixedSiteScope = scopeSites.size > 1;
   if (mixedSiteScope) out.push({ path: ["entities"], message: "Mixed site scope", code: "cross_site" });
@@ -393,6 +396,9 @@ function semanticDiagnostics(document: SiteDocumentV2): Diagnostic[] {
     if (window.type === "music") for (const [trackIndex, track] of window.content.tracks.entries()) {
       const ref = track.characterRef;
       if (ref && !document.entities.profiles.some((profile) => profile.id === ref.id && profile.siteId === ref.siteId)) out.push({ path: ["windows", i, "content", "tracks", trackIndex, "characterRef"], message: mixedSiteScope ? "Cross-site character profile" : "Missing character profile", code: mixedSiteScope ? "cross_site" : "missing_ref" });
+    }
+    if (window.type === "explorer") for (const [shortcutIndex, shortcut] of window.content.shortcuts.entries()) {
+      if (!document.windows.some((candidate) => candidate.id === shortcut.target.id)) out.push({ path: ["windows", i, "content", "shortcuts", shortcutIndex, "target"], message: "Missing shortcut window", code: "missing_ref" });
     }
   }
   const handles = new Map<string, number>();

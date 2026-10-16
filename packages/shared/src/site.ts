@@ -208,6 +208,37 @@ export const MoodboardContentSchema = z.object({
   elements: z.array(MoodboardElementSchema).max(100)
 }).strict();
 
+export const ExplorerFolderSchema = z.object({
+  id: z.string().min(1).max(160), parentId: z.string().min(1).max(160).nullable(), name: z.string().trim().min(1).max(120),
+  order: z.number().int().min(0).max(9999), visibility: z.enum(["published", "draft"]).default("published")
+}).strict();
+export const ExplorerShortcutSchema = z.object({
+  id: z.string().min(1).max(160), parentId: z.string().min(1).max(160).nullable(), label: z.string().trim().min(1).max(160),
+  order: z.number().int().min(0).max(9999), visibility: z.enum(["published", "draft"]).default("published"),
+  target: z.object({ siteId: z.string().trim().min(1).max(160), id: z.string().trim().min(1).max(160), kind: z.literal("window") }).strict()
+}).strict();
+export const ExplorerContentSchema = z.object({ folders: z.array(ExplorerFolderSchema).max(500), shortcuts: z.array(ExplorerShortcutSchema).max(500) }).strict().superRefine((content, ctx) => {
+  const ids = new Set<string>();
+  for (const [index, item] of [...content.folders, ...content.shortcuts].entries()) {
+    if (ids.has(item.id)) ctx.addIssue({ code: "custom", path: [index < content.folders.length ? "folders" : "shortcuts", index < content.folders.length ? index : index - content.folders.length, "id"], message: "Duplicate explorer item id" });
+    ids.add(item.id);
+  }
+  const folders = new Map(content.folders.map((folder) => [folder.id, folder]));
+  for (const [index, item] of [...content.folders, ...content.shortcuts].entries()) {
+    if (item.parentId && !folders.has(item.parentId)) ctx.addIssue({ code: "custom", path: [index < content.folders.length ? "folders" : "shortcuts", index < content.folders.length ? index : index - content.folders.length, "parentId"], message: "Missing explorer parent" });
+  }
+  for (const [index, folder] of content.folders.entries()) {
+    let cursor = folder.parentId, depth = 1;
+    const seen = new Set([folder.id]);
+    while (cursor) {
+      if (seen.has(cursor)) { ctx.addIssue({ code: "custom", path: ["folders", index, "parentId"], message: "Explorer folder cycle" }); break; }
+      seen.add(cursor); depth += 1;
+      if (depth > 8) { ctx.addIssue({ code: "custom", path: ["folders", index, "parentId"], message: "Explorer folder depth exceeds 8" }); break; }
+      cursor = folders.get(cursor)?.parentId ?? null;
+    }
+  }
+});
+
 export const InstagramProfileSchema = z.object({
   username: z.string().max(64),
   avatar: ImageUrlSchema.nullable(),
@@ -286,6 +317,10 @@ export const DesktopWindowSchema = z.discriminatedUnion("type", [
   BaseWindowSchema.extend({
     type: z.literal("moodboard"),
     content: MoodboardContentSchema
+  }),
+  BaseWindowSchema.extend({
+    type: z.literal("explorer"),
+    content: ExplorerContentSchema
   })
 ]);
 
@@ -431,6 +466,11 @@ export function makeWindow(type: DesktopWindow["type"], index = 0): DesktopWindo
       return {
         id: id(), type, title: "Moodboard.exe", icon: "photo", layout: { ...layout, desktop: { ...layout.desktop, w: 560, h: 520 } }, defaultOpen: true,
         content: { width: 800, height: 600, background: "#ffffff", elements: [] }
+      };
+    case "explorer":
+      return {
+        id: id(), type, title: "Explorer.exe", icon: "folder", layout: { ...layout, desktop: { ...layout.desktop, w: 520, h: 440 } }, defaultOpen: true,
+        content: { folders: [], shortcuts: [] }
       };
     default:
       return {

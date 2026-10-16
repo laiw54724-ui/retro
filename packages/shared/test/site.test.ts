@@ -64,6 +64,31 @@ describe("site schema security boundaries", () => {
     expect(SiteDocumentSchema.safeParse(document).success).toBe(false);
   });
 
+  it("validates Explorer hierarchy, duplicate shortcuts, cycles and depth", () => {
+    const document = createStarterDocument("World", "classic98", "blank");
+    const explorer = makeWindow("explorer");
+    const target = makeWindow("document", 1);
+    if (explorer.type !== "explorer") throw new Error("explorer factory mismatch");
+    explorer.content.folders = [
+      { id: "world", parentId: null, name: "世界觀", order: 0, visibility: "published" },
+      { id: "characters", parentId: "world", name: "角色", order: 0, visibility: "published" },
+      { id: "heroes", parentId: "characters", name: "主角", order: 0, visibility: "draft" }
+    ];
+    explorer.content.shortcuts = [
+      { id: "shortcut-a", parentId: "characters", label: "角色 A", order: 0, visibility: "published", target: { siteId: "site-a", id: target.id, kind: "window" } },
+      { id: "shortcut-b", parentId: "heroes", label: "角色 A 備份捷徑", order: 0, visibility: "draft", target: { siteId: "site-a", id: target.id, kind: "window" } }
+    ];
+    document.windows = [target, explorer];
+    expect(SiteDocumentSchema.safeParse(document).success).toBe(true);
+
+    explorer.content.folders[0].parentId = "heroes";
+    expect(SiteDocumentSchema.safeParse(document).success).toBe(false);
+    explorer.content.folders[0].parentId = null;
+    explorer.content.folders = Array.from({ length: 9 }, (_, index) => ({ id: `level-${index}`, parentId: index ? `level-${index - 1}` : null, name: `Level ${index}`, order: index, visibility: "published" as const }));
+    explorer.content.shortcuts = [];
+    expect(SiteDocumentSchema.safeParse(document).success).toBe(false);
+  });
+
   it("rejects reserved usernames and normalizes safe ones", () => {
     expect(UsernameSchema.safeParse("admin").success).toBe(false);
     expect(UsernameSchema.parse("my-desk")).toBe("my-desk");
