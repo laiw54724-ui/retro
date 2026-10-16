@@ -13,7 +13,8 @@ import {
   type SiteDocumentV2Input
 } from "@retrodesk/shared";
 import type { ModuleProps } from "../types";
-import { FilePick, ImageUrlField, SafeImg } from "../ui";
+import { FilePick, ImageUrlField } from "../ui";
+import { AvatarImage, DEFAULT_CROP } from "../../../components/AvatarImage";
 
 type Props = { props: ModuleProps<"instagram"> };
 type Uploaded = { src: string; name: string };
@@ -96,7 +97,7 @@ export function CanonicalPostEditor({ props }: Props) {
       const expanded = openId === post.id;
       return <article key={post.id} className="ig-canonical-post">
         <div className="ig-post-row">
-          <span className="ig-thumb sq ph">{post.media[0]?.src ? <SafeImg src={post.media[0].src} alt={post.media[0].alt} compact style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : null}</span>
+          <span className="ig-thumb sq ph">{post.media[0]?.src ? <AvatarImage src={post.media[0].src} crop={post.media[0].crop} alt={post.media[0].alt} /> : null}</span>
           <button type="button" className="ig-post-toggle" aria-expanded={expanded} onClick={() => setOpenId(expanded ? null : post.id)}>
             <span>{expanded ? "▾" : "▸"} {post.title || "（無標題）"}</span>
             <small>{post.media.length} 張 · {post.visibility === "published" ? "公開" : "草稿"}{post.pinned ? " · 已置頂" : ""}</small>
@@ -119,10 +120,16 @@ export function CanonicalPostEditor({ props }: Props) {
           </div>
           <strong>圖片（{post.media.length}/10）</strong>
           {post.media.map((media, mediaIndex) => <div key={media.id} className="ig-media-edit-row">
-            <span className="ig-thumb sq48 ph">{media.src ? <SafeImg src={media.src} alt={media.alt} compact style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : null}</span>
+            <span className="ig-thumb sq48 ph">{media.src ? <AvatarImage src={media.src} crop={media.crop} alt={media.alt} /> : null}</span>
             <div className="ig-col grow">
               <ImageUrlField raw={media.srcUrl} placeholder="圖片網址" label={`圖片 ${mediaIndex + 1} 網址`} className="w98-input compact" onCommit={(raw, src) => mutate((document) => run(patchPostMedia(document, post.id, media.id, { src, srcUrl: raw }, { siteId }), document))} />
               <input className="w98-input compact" aria-label={`圖片 ${mediaIndex + 1} 替代文字`} value={media.alt} placeholder="替代文字（讓圖片更容易理解）" onChange={(event) => mutate((document) => run(patchPostMedia(document, post.id, media.id, { alt: event.target.value }, { siteId }), document), `media-alt-${media.id}`)} />
+              <div className="ig-media-crop-controls" role="group" aria-label={`圖片 ${mediaIndex + 1} 縮圖裁切`}>
+                <label><span>水平</span><input type="range" min={0} max={100} value={(media.crop ?? DEFAULT_CROP).x} aria-label={`圖片 ${mediaIndex + 1} 水平裁切`} onChange={(event) => mutate((document) => run(patchPostMedia(document, post.id, media.id, { crop: { ...(media.crop ?? DEFAULT_CROP), x: Number(event.target.value) } }, { siteId }), document), `media-crop-x-${media.id}`)} /></label>
+                <label><span>垂直</span><input type="range" min={0} max={100} value={(media.crop ?? DEFAULT_CROP).y} aria-label={`圖片 ${mediaIndex + 1} 垂直裁切`} onChange={(event) => mutate((document) => run(patchPostMedia(document, post.id, media.id, { crop: { ...(media.crop ?? DEFAULT_CROP), y: Number(event.target.value) } }, { siteId }), document), `media-crop-y-${media.id}`)} /></label>
+                <label><span>縮放</span><input type="range" min={1} max={4} step={0.05} value={(media.crop ?? DEFAULT_CROP).zoom} aria-label={`圖片 ${mediaIndex + 1} 縮放`} onChange={(event) => mutate((document) => run(patchPostMedia(document, post.id, media.id, { crop: { ...(media.crop ?? DEFAULT_CROP), zoom: Number(event.target.value) } }, { siteId }), document), `media-crop-zoom-${media.id}`)} /></label>
+                <button type="button" className="w98-btn small" aria-label={`重設圖片 ${mediaIndex + 1} 裁切`} onClick={() => mutate((document) => run(patchPostMedia(document, post.id, media.id, { crop: DEFAULT_CROP }, { siteId }), document))}>重設</button>
+              </div>
             </div>
             <button type="button" className="mini-btn" aria-label={`圖片 ${mediaIndex + 1} 往前`} disabled={mediaIndex === 0} onClick={() => mutate((document) => run(reorderPostMedia(document, post.id, media.id, -1, { siteId }), document))}>▲</button>
             <button type="button" className="mini-btn" aria-label={`圖片 ${mediaIndex + 1} 往後`} disabled={mediaIndex === post.media.length - 1} onClick={() => mutate((document) => run(reorderPostMedia(document, post.id, media.id, 1, { siteId }), document))}>▼</button>

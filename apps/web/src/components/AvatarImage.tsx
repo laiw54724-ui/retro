@@ -12,6 +12,8 @@ export function AvatarImage({ src, crop = DEFAULT_CROP, alt = "" }: { src: strin
       src={resolved}
       alt={alt}
       referrerPolicy="no-referrer"
+      loading="lazy"
+      decoding="async"
       draggable={false}
       style={{
         width: "100%",

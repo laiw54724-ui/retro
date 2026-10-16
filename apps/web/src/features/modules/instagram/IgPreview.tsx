@@ -136,7 +136,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
     <div className="ig-grid3">
       {list.map((post) => (
         <button key={post.id} type="button" className="ig-cell ph" style={phStyle} aria-label={`開啟貼文：${post.caption || post.title}`} onClick={() => open(post)}>
-          {post.src ? <SafeImg src={post.src} alt="" compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : null}
+          {post.src ? <AvatarImage src={post.src} crop={(post as Partial<ProfileDirectoryPost>).media?.[0]?.crop} alt="" /> : null}
           {post.extra.length ? <span className="ig-multi" style={{ background: I.multi }} /> : null}
         </button>
       ))}
@@ -171,7 +171,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
               onClick={() => s.openCollection(collection.id)}
             >
               <span className="ig-collection-cover ph" style={phStyle}>
-                {coverPost?.src ? <SafeImg src={coverPost.src} alt="" compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : <Ic bg={I.collections} size={30} />}
+                {coverPost?.src ? <AvatarImage src={coverPost.src} crop={(coverPost as Partial<ProfileDirectoryPost>).media?.[0]?.crop} alt="" /> : <Ic bg={I.collections} size={30} />}
               </span>
               <span className="ig-collection-copy">
                 <strong>{collection.title}</strong>

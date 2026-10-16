@@ -36,11 +36,12 @@ describe("canonical post operations", () => {
     expect(post.src).toBe("https://example.com/two.png");
     expect(post.extra).toEqual([{ id: "post-a-media-1", src: "https://example.com/one.png", srcUrl: "https://example.com/one.png" }]);
 
-    const patched = patchPostMedia(reordered.document, "post-a", "media-2", { alt: "cover", src: "https://example.com/cover.png" }, { siteId: "site-a" });
+    const patched = patchPostMedia(reordered.document, "post-a", "media-2", { alt: "cover", src: "https://example.com/cover.png", crop: { x: 24, y: 68, zoom: 1.75 } }, { siteId: "site-a" });
     expect(patched.ok).toBe(true);
     if (!patched.ok) return;
     post = patched.document.entities.posts.find((item) => item.id === "post-a")!;
     expect(post.media[0].alt).toBe("cover");
+    expect(post.media[0].crop).toEqual({ x: 24, y: 68, zoom: 1.75 });
     expect(post.src).toBe("https://example.com/cover.png");
 
     const deleted = deletePostMedia(patched.document, "post-a", "media-2", { siteId: "site-a" });

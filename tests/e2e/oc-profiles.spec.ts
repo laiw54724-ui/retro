@@ -69,7 +69,9 @@ function presentationDocument(): SiteDocumentV2Input {
   pinned.caption = "Pinned snow caption";
   pinned.pinned = true;
   pinned.collectionIds = ["collection:snow"];
-  pinned.media[0] = { ...pinned.media[0], alt: "Wide pinned artwork", aspectRatio: 2 };
+  pinned.src = "https://assets.test/pinned.png";
+  pinned.srcUrl = pinned.src;
+  pinned.media[0] = { ...pinned.media[0], src: pinned.src, srcUrl: pinned.src, alt: "Wide pinned artwork", aspectRatio: 2, crop: { x: 24, y: 68, zoom: 1.75 } };
   const regular = {
     ...structuredClone(pinned),
     id: "post:ig:regular",
@@ -150,6 +152,11 @@ async function mockEditor(page: Page, document = ocDocument()) {
 }
 
 async function mockPublic(page: Page, document = ocDocument()) {
+  await page.route("https://assets.test/**", (route) => route.fulfill({
+    status: 200,
+    contentType: "image/svg+xml",
+    body: "<svg xmlns='http://www.w3.org/2000/svg' width='320' height='240'><rect width='320' height='240' fill='#ccd8ef'/></svg>",
+  }));
   await page.route("**/api/public/sites/demo", (route) => route.fulfill({ json: { site: { username: "demo", site_name: "Demo Desk", published_document: document, published_version: 2, published_at: "2026-10-15T00:00:00.000Z" } } }));
 }
 
@@ -243,6 +250,9 @@ test("canonical post media edits autosave and survive reload", async ({ page }) 
   await win.getByRole("textbox", { name: "標題", exact: true }).fill("OC archive");
   await win.getByRole("textbox", { name: "世界觀日期" }).fill("霜月 12 日");
   await win.getByRole("textbox", { name: "圖片 1 替代文字" }).fill("角色站在雪地裡");
+  await win.getByRole("slider", { name: "圖片 1 水平裁切" }).fill("24");
+  await win.getByRole("slider", { name: "圖片 1 垂直裁切" }).fill("68");
+  await win.getByRole("slider", { name: "圖片 1 縮放" }).fill("1.75");
   await win.getByRole("textbox", { name: "新增輪播圖片網址" }).fill("https://example.com/four.png");
   await win.locator(".ig-canonical-posts").getByRole("button", { name: "加入", exact: true }).click();
   await expect(win.getByRole("textbox", { name: "圖片 4 替代文字" })).toBeVisible();
@@ -261,6 +271,7 @@ test("canonical post media edits autosave and survive reload", async ({ page }) 
   await expect.poll(() => saves.at(-1)?.document.entities.posts.find((post) => post.id === "post:ig:p1")?.title).toBe("OC archive");
   const saved = saves.at(-1)?.document.entities.posts.find((post) => post.id === "post:ig:p1");
   expect(saved?.worldDateLabel).toBe("霜月 12 日");
+  expect(saved?.media[0].crop).toEqual({ x: 24, y: 68, zoom: 1.75 });
   expect(saved?.media).toHaveLength(4);
   expect(saved?.media[2].src).toBe("https://example.com/four.png");
   expect(saved?.media[2].alt).toBe("第四張作品");
@@ -285,6 +296,9 @@ test("canonical post media edits autosave and survive reload", async ({ page }) 
   if (await reloadedToggle.getAttribute("aria-expanded") !== "true") await reloadedToggle.click();
   await expect(reloaded.getByRole("textbox", { name: "世界觀日期" })).toHaveValue("霜月 12 日");
   await expect(reloaded.getByRole("textbox", { name: "圖片 3 替代文字" })).toHaveValue("第四張作品");
+  await expect(reloaded.getByRole("slider", { name: "圖片 1 水平裁切" })).toHaveValue("24");
+  await expect(reloaded.getByRole("slider", { name: "圖片 1 垂直裁切" })).toHaveValue("68");
+  await expect(reloaded.getByRole("slider", { name: "圖片 1 縮放" })).toHaveValue("1.75");
   await expect(reloaded.getByRole("textbox", { name: "帳號" })).toHaveValue("retro-archive");
   await expect(reloaded.getByRole("textbox", { name: "精選標題" }).first()).toHaveValue("雪國旅程");
   await expect(reloaded.getByRole("textbox", { name: "精選第 3 頁替代文字" })).toHaveValue("旅程第三幕");
@@ -343,7 +357,10 @@ for (const width of [1280, 390]) {
     const win = page.getByRole("dialog", { name: "Instagram.exe" });
 
     await expect(win.getByRole("heading", { name: "置頂作品" })).toBeVisible();
-    await expect(win.locator(".ig-pinned").getByRole("button", { name: "開啟貼文：Pinned snow caption" })).toBeVisible();
+    const pinnedCell = win.locator(".ig-pinned").getByRole("button", { name: "開啟貼文：Pinned snow caption" });
+    await expect(pinnedCell).toBeVisible();
+    await expect(pinnedCell.locator("img")).toHaveCSS("object-position", "24% 68%");
+    await expect(pinnedCell.locator("img")).not.toHaveCSS("transform", "none");
     await expect(win.getByRole("button", { name: "開啟貼文：Private draft caption" })).toHaveCount(0);
     await expect(win.getByRole("tab", { name: "合集" })).toBeVisible();
     await win.getByRole("tab", { name: "合集" }).click();
