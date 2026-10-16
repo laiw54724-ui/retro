@@ -11,10 +11,15 @@ function readOAuthError() {
   return params.get("error_description") ?? hash.get("error_description") ?? params.get("error") ?? hash.get("error") ?? "";
 }
 
+function readNotice() {
+  return new URLSearchParams(window.location.search).get("notice") ?? "";
+}
+
 export function AuthPage() {
   const navigate = useNavigate();
   const { loading, user, signOut } = useAuth();
   const [error, setError] = useState(readOAuthError);
+  const [notice] = useState(readNotice);
   const [busy, setBusy] = useState(false);
 
   async function openDesktop() {
@@ -30,7 +35,7 @@ export function AuthPage() {
   }
 
   useEffect(() => {
-    if (user && !readOAuthError()) void openDesktop();
+    if (user && !readOAuthError() && !readNotice()) void openDesktop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
@@ -56,6 +61,7 @@ export function AuthPage() {
         ) : user ? (
           <>
             <p className="info-box">已登入：{user.email}</p>
+            {notice ? <p className="info-box" role="status">{notice}</p> : null}
             {error ? <p className="error-box">{error}</p> : null}
             <div className="button-row end">
               <RetroButton onClick={signOut}>登出</RetroButton>

@@ -21,7 +21,8 @@ const TERMINAL_COPY: Record<string, string> = {
 
 function oauthError() {
   const params = new URLSearchParams(window.location.search);
-  return params.get("error_description") ?? params.get("error") ?? "";
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  return params.get("error_description") ?? hash.get("error_description") ?? params.get("error") ?? hash.get("error") ?? "";
 }
 
 export function InvitePage() {
@@ -83,6 +84,7 @@ export function InvitePage() {
   }
 
   const canRetry = phase === "error" && !!readInviteToken(window.sessionStorage) && !!user;
+  const canRetrySignIn = phase === "error" && !!readInviteToken(window.sessionStorage) && !user;
 
   return (
     <main className="auth-shell invite-shell">
@@ -119,6 +121,7 @@ export function InvitePage() {
             <h1>無法完成邀請</h1>
             <p className="error-box" role="alert">{message}</p>
             <div className="button-row end">
+              {canRetrySignIn ? <RetroButton className="primary" onClick={signIn}>重試 Google 登入</RetroButton> : null}
               {canRetry ? <RetroButton className="primary" onClick={accept}>重試接受</RetroButton> : null}
               <RetroButton onClick={() => navigate("/", { replace: true })}>回到首頁</RetroButton>
             </div>

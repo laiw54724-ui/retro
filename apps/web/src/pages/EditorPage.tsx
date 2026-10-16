@@ -209,7 +209,9 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       } catch (error) {
         saveInFlight.current = false;
         store.setSaveStatus("error");
-        if (error instanceof ApiError && error.code === "version_conflict") {
+        if (error instanceof ApiError && (error.status === 403 || error.status === 404)) {
+          navigate(`/auth?notice=${encodeURIComponent("你已失去這個桌面的編輯權限；草稿未再送出。")}`, { replace: true });
+        } else if (error instanceof ApiError && error.code === "version_conflict") {
           setConflict(true);
           setMessage("偵測到另一個分頁或裝置有更新，已停止自動儲存以避免覆蓋。");
         } else {
@@ -351,6 +353,10 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     setLoading(true);
     try {
       const { site } = await api.getSite(siteId);
+      if (site.access_role === "viewer") {
+        navigate(`/auth?notice=${encodeURIComponent("你的權限已改為只能查看；請從桌面清單重新開啟私人草稿。")}`, { replace: true });
+        return;
+      }
       applyLoadedSite(site);
       setConflict(false);
       setMessage("已重新載入雲端最新草稿。");

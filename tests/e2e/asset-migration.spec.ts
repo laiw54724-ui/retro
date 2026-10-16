@@ -18,7 +18,7 @@ test("legacy asset warning identifies each asset and refreshes after v2 migratio
   const migrated = migrateSiteDocumentV2(draft, { siteId: "site-1" });
   if (!migrated.ok || migrated.version !== 2) throw new Error("migration fixture failed");
   const migratedDocument = JSON.parse(JSON.stringify(migrated.document).replaceAll(urls[0], `retro-asset:${ids[0]}`).replaceAll(urls[1], `retro-asset:${ids[1]}`));
-  const site = { id: "site-1", username: "demo", site_name: "D", draft_document: draft, draft_version: 2, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-16T00:00:00.000Z" };
+  const site = { id: "site-1", username: "demo", site_name: "D", draft_document: draft, draft_version: 2, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-16T00:00:00.000Z", access_role: "owner" };
 
   await page.route("**/api/sites/site-1/assets", (route) => route.fulfill({ json: { assets: inventory } }));
   await page.route("**/api/sites/site-1/assets/*", (route) => {

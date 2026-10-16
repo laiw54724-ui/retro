@@ -150,7 +150,7 @@ function noPublicCollectionPostsDocument(): SiteDocumentV2Input {
 async function mockEditor(page: Page, document = ocDocument()) {
   await page.addInitScript((value) => localStorage.setItem("sb-example-auth-token", JSON.stringify(value)), session);
   const saves: Array<{ document: SiteDocumentV2Input }> = [];
-  const site = { id: "site-1", username: "demo", site_name: "D", draft_document: document, draft_version: 2, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-15T00:00:00.000Z" };
+  const site = { id: "site-1", username: "demo", site_name: "D", draft_document: document, draft_version: 2, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-15T00:00:00.000Z", access_role: "owner" };
   await page.route("**/api/sites/site-1", (route) => route.fulfill({ json: { site } }));
   await page.route("**/api/sites/site-1/assets**", (route) => route.fulfill({ json: { assets: [] } }));
   await page.route("**/api/sites/site-1/draft", (route) => {

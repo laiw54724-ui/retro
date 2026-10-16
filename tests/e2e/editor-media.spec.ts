@@ -7,7 +7,7 @@ const DRIVE_ID = "1AbCdEfGhIjKlMnOpQrStUvWxYz012345";
 async function openEditor(page: Page) {
   const session = { access_token: "a.b.c", refresh_token: "r", expires_at: 4102444800, expires_in: 3600, token_type: "bearer", user: { id: "u", email: "x@y.z", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01" } };
   await page.addInitScript((value) => localStorage.setItem("sb-example-auth-token", JSON.stringify(value)), session);
-  const site = { id: "site-1", username: "demo", site_name: "Demo Desk", draft_document: documentFixture, draft_version: 1, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-15T00:00:00.000Z" };
+  const site = { id: "site-1", username: "demo", site_name: "Demo Desk", draft_document: documentFixture, draft_version: 1, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-15T00:00:00.000Z", access_role: "owner" };
   const saves: unknown[] = [];
   await page.route("**/api/sites/site-1", (route) => route.fulfill({ json: { site } }));
   await page.route("**/api/sites/site-1/draft", (route) => {
@@ -62,7 +62,7 @@ test("picks sourced Windows icons on desktop and mobile and preserves legacy PNG
   const saves = await openEditor(page);
   let draft = structuredClone(documentFixture);
   await page.unroute("**/api/sites/site-1");
-  await page.route("**/api/sites/site-1", (route) => route.fulfill({ json: { site: { id: "site-1", username: "demo", site_name: "Demo Desk", draft_document: draft, draft_version: 1, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-15T00:00:00.000Z" } } }));
+  await page.route("**/api/sites/site-1", (route) => route.fulfill({ json: { site: { id: "site-1", username: "demo", site_name: "Demo Desk", draft_document: draft, draft_version: 1, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-15T00:00:00.000Z", access_role: "owner" } } }));
   await page.getByRole("tab", { name: "圖示" }).click();
   await expect(page.getByText("來源：trapd00r/win95-winxp_icons")).toBeVisible();
   const search = page.getByLabel("搜尋 Windows 圖示");

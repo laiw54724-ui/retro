@@ -58,8 +58,9 @@ export function CollaborationDialog({ siteId, onClose }: { siteId: string; onClo
 
   async function recoverAfterMutation(cause: unknown) {
     const changed = cause instanceof ApiError && (cause.status === 404 || cause.status === 409);
-    setError(changed ? "協作者資料已變更，清單已重新載入。" : cause instanceof Error ? cause.message : "無法更新協作者。");
+    const nextError = changed ? "協作者資料已變更，清單已重新載入。" : cause instanceof Error ? cause.message : "無法更新協作者。";
     await refresh();
+    setError(nextError);
   }
 
   async function createInvite(event: React.FormEvent) {

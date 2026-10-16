@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { loadVersionedSiteDocument, normalizeDocument, ProfileEntityV2Schema, projectV2ToLegacyDocument } from "@retrodesk/shared";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../app/AuthProvider";
@@ -29,10 +29,17 @@ function projectDraft(site: SiteRecord) {
 }
 
 export function DraftViewer({ site }: { site: SiteRecord }) {
+  try {
+    return <DraftViewerContent site={site} draft={projectDraft(site)} />;
+  } catch (cause) {
+    return <main className="not-found"><div><h1>無法顯示私人草稿</h1><p>{cause instanceof Error ? cause.message : "私人草稿格式無效"}</p></div></main>;
+  }
+}
+
+function DraftViewerContent({ site, draft }: { site: SiteRecord; draft: ReturnType<typeof projectDraft> }) {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const [device, setDevice] = useState<"desktop" | "mobile">(() => window.matchMedia("(max-width: 767px)").matches ? "mobile" : "desktop");
-  const draft = useMemo(() => projectDraft(site), [site]);
   const tv = useThemeView(draft.document.theme);
   const imageWallpaper = draft.document.theme.pattern === "image" && !!draft.document.theme.wallImage;
 
@@ -52,9 +59,9 @@ export function DraftViewer({ site }: { site: SiteRecord }) {
         </header>
         <section className={"draft-viewer-body " + device} aria-label={`${device === "desktop" ? "桌面" : "手機"}草稿預覽`}>
           {device === "desktop" ? (
-            <main className="visitor-page draft-viewer-desktop" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: imageWallpaper ? "center" : "0 0", backgroundRepeat: imageWallpaper ? "no-repeat" : "repeat" }}>
+            <div className="visitor-page draft-viewer-desktop" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: imageWallpaper ? "center" : "0 0", backgroundRepeat: imageWallpaper ? "no-repeat" : "repeat" }}>
               <VisitorDesktop document={draft.document} profiles={draft.profiles} profileIdsByWindow={draft.profileIdsByWindow} profileDirectory={draft.profileDirectory} />
-            </main>
+            </div>
           ) : (
             <div className="draft-viewer-phone"><MobileScreen document={draft.document} mode="visitor" framed profiles={draft.profiles} profileIdsByWindow={draft.profileIdsByWindow} profileDirectory={draft.profileDirectory} /></div>
           )}

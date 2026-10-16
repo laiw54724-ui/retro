@@ -22,6 +22,7 @@ export function captureInviteToken(
   if (!location.hash) return readInviteToken(storage) ? "stored" : "missing";
 
   const params = new URLSearchParams(location.hash.replace(/^#/, ""));
+  if (!params.has("token")) return readInviteToken(storage) ? "stored" : "missing";
   const candidate = params.get("token") ?? "";
   replaceUrl(location.pathname + location.search);
 

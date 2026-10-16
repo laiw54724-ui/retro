@@ -47,6 +47,19 @@ describe("invite fragment capture", () => {
     expect(readInviteToken(storage)).toBe(token);
   });
 
+  it("leaves Supabase OAuth fragments untouched while keeping the pending invite", () => {
+    const storage = memoryStorage({ "retrodesk.pending-invite": token });
+    const replacements: string[] = [];
+    const result = captureInviteToken(
+      { hash: "#access_token=oauth-value&refresh_token=refresh-value", pathname: "/invite", search: "" },
+      storage,
+      (url) => replacements.push(url)
+    );
+    expect(result).toBe("stored");
+    expect(replacements).toEqual([]);
+    expect(readInviteToken(storage)).toBe(token);
+  });
+
   it("removes the token after success or a terminal error", () => {
     const storage = memoryStorage({ "retrodesk.pending-invite": token });
     clearInviteToken(storage);

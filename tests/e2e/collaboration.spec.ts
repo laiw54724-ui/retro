@@ -100,6 +100,20 @@ test("editor can save drafts but cannot publish, migrate, or manage collaborator
   await expect(page.getByRole("button", { name: /轉為私有/ })).toHaveCount(0);
 });
 
+test("editor exits authoring after access is removed on the next save", async ({ page }) => {
+  await signIn(page);
+  const site = { id: "site-removed", username: "removed", site_name: "Removed Desk", draft_document: documentFixture, draft_version: 1, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-16T00:00:00.000Z", access_role: "editor" };
+  await page.route("**/api/sites/site-removed", (route) => route.fulfill({ json: { site } }));
+  await page.route("**/api/sites/site-removed/assets**", (route) => route.fulfill({ json: { assets: [] } }));
+  await page.route("**/api/sites/site-removed/draft", (route) => route.fulfill({ status: 404, json: { error: { code: "not_found", message: "Site not found" } } }));
+
+  await page.goto("/editor/site-removed");
+  await page.getByLabel("視窗標題").fill("This will not save");
+  await expect(page).toHaveURL(/\/auth\?notice=/);
+  await expect(page.getByRole("status")).toContainText("你已失去這個桌面的編輯權限");
+  await expect(page.getByRole("button", { name: "前往我的桌面" })).toBeVisible();
+});
+
 test("owner creates and revokes invitations, then updates and removes a member", async ({ page, context }) => {
   await signIn(page);
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
