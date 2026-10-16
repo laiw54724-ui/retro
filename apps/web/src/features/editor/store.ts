@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { DesktopWindow, SiteDocument, SiteDocumentV2Input } from "@retrodesk/shared";
+import { mergeLegacyDocumentIntoV2, type DesktopWindow, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { createWindow } from "../modules/registry";
 
 export type SaveStatus = "idle" | "dirty" | "saving" | "saved" | "error";
@@ -68,17 +68,25 @@ const sameDocument = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stri
 let lastHistoryKey: string | null = null;
 let lastHistoryAt = 0;
 
-function withHistory(state: EditorState, document: SiteDocument, extra: Partial<EditorState> = {}, historyKey?: string) {
-  if (!state.document || sameDocument(state.document, document)) return extra;
+function withHistory(state: EditorState, document: SiteDocument, extra: Partial<EditorState> = {}, historyKey?: string, explicitVersioned?: SiteDocumentV2Input): Partial<EditorState> {
+  const nextVersioned = explicitVersioned ?? (state.versionedDocument && state.siteId
+    ? mergeLegacyDocumentIntoV2(state.versionedDocument, document, { siteId: state.siteId })
+    : undefined);
+  const legacyChanged = !!state.document && !sameDocument(state.document, document);
+  const versionedChanged = !!nextVersioned && !sameDocument(state.versionedDocument, nextVersioned);
+  if (!legacyChanged && !versionedChanged) return extra;
   const now = Date.now();
   const merge = !!historyKey && historyKey === lastHistoryKey && now - lastHistoryAt < 1200 && state.past.length > 0;
   lastHistoryKey = historyKey ?? null;
   lastHistoryAt = now;
-  if (merge) return { ...extra, document, future: [], saveStatus: "dirty" as SaveStatus };
+  if (merge) return { ...extra, document, versionedDocument: nextVersioned ?? state.versionedDocument, future: [], saveStatus: "dirty" as SaveStatus };
   return {
     ...extra,
     document,
-    past: [...state.past, state.document].slice(-50),
+    versionedDocument: nextVersioned ?? state.versionedDocument,
+    versionedPast: nextVersioned && state.versionedDocument ? [...state.versionedPast, state.versionedDocument].slice(-50) : state.versionedPast,
+    versionedFuture: nextVersioned ? [] : state.versionedFuture,
+    past: state.document ? [...state.past, state.document].slice(-50) : state.past,
     future: [],
     saveStatus: "dirty" as SaveStatus
   };
@@ -125,17 +133,7 @@ export const useEditorStore = create<EditorState>((set) => ({
     saveStatus: sameDocument(state.document, savedDocument) ? "saved" : "dirty"
   })),
   setVersionedDocument: (versionedDocument) => set({ versionedDocument, versionedPast: [], versionedFuture: [] }),
-  replaceDocument: (document, historyKey, versionedDocument) => set((state) => {
-    const legacy = withHistory(state, document, {}, historyKey);
-    const canonicalChanged = !!versionedDocument && (!state.versionedDocument || !sameDocument(state.versionedDocument, versionedDocument));
-    if (!canonicalChanged || !state.versionedDocument) return { ...legacy, versionedDocument };
-    return {
-      ...legacy,
-      versionedDocument,
-      versionedPast: [...state.versionedPast, state.versionedDocument].slice(-50),
-      versionedFuture: []
-    };
-  }),
+  replaceDocument: (document, historyKey, versionedDocument) => set((state) => withHistory(state, document, {}, historyKey, versionedDocument)),
   retrySave: () => set((state) => state.document ? { saveStatus: "dirty" } : {}),
   markPublished: (publishedVersion) => set((state) => ({
     publishedVersion,

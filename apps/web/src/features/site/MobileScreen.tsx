@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { THEME_PRESETS, type DesktopWindow, type SiteDocument } from "@retrodesk/shared";
+import { THEME_PRESETS, type DesktopWindow, type ProfileEntityV2, type SiteDocument } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { IconPicker } from "../modules/links/IconPicker";
 import { themeView, useThemeView } from "../../lib/themeView";
@@ -17,12 +17,21 @@ type Props = {
   siteId?: string;
   upload?: (file: File, kind?: "image" | "icon") => Promise<string | null>;
   onPreview?: () => void;
+  profiles?: ProfileEntityV2[];
+  profileIdsByWindow?: Record<string, string>;
+  onProfileSelect?: (id: string, windowId?: string) => void;
+  onProfileAdd?: (windowId?: string) => void;
+  onProfileDuplicate?: (id: string, windowId?: string) => void;
+  onProfileChange?: (profileId: string, patch: Record<string, unknown>, historyKey?: string) => void;
+  onProfileDelete?: (profileId: string, retargetProfileId?: string) => void;
+  profileDeleteBlocked?: boolean;
+  profileDeleteGuardById?: Record<string, { windowTitles: string[]; postIds: string[] }>;
 };
 
 const clock = () => new Date().toTimeString().slice(0, 5);
 
 /** The single-window phone experience. Used for visitors, the editor preview and the mobile editor. */
-export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview }: Props) {
+export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview, profiles, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById }: Props) {
   const editor = mode === "editor";
   const store = useEditorStore();
   const tv = useThemeView(document.theme);
@@ -80,6 +89,15 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
                 upload={upload}
                 onUpdate={store.updateWindow}
                 onOpenWindow={open}
+                profiles={profiles}
+                profileIdsByWindow={profileIdsByWindow}
+                onProfileSelect={onProfileSelect}
+                onProfileAdd={onProfileAdd}
+                onProfileDuplicate={onProfileDuplicate}
+                onProfileChange={onProfileChange}
+                onProfileDelete={onProfileDelete}
+                profileDeleteBlocked={profileDeleteBlocked}
+                profileDeleteGuardById={profileDeleteGuardById}
               />
             </div>
             {editor ? <button type="button" className="m-fab" onClick={() => setInlineEdit(!inlineEdit)}>{inlineEdit ? "完成編輯" : "編輯此視窗"}</button> : null}

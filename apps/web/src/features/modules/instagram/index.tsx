@@ -32,6 +32,7 @@ export function IgInlineEditor(props: ModuleProps<"instagram">) {
         <ProfileSwitcher profiles={props.ctx.profiles} currentId={currentProfile.id} onSelect={(id) => props.ctx.onProfileSelect?.(id)} onAdd={() => props.ctx.onProfileAdd?.()} onDuplicate={(id) => props.ctx.onProfileDuplicate?.(id)} />
         <ProfileEditor profile={currentProfile} onChange={(patch, key) => props.ctx.onProfileChange?.(currentProfile.id, patch, key)} upload={async (file) => (await props.ctx.upload?.(file, "image")) ?? null} />
         {props.ctx.onProfileDelete ? <div className="ig-profile-delete">
+          {props.ctx.profileDeleteGuard ? <div className="w98-hint">使用中的視窗：{props.ctx.profileDeleteGuard.windowTitles.join("、") || "無"}；貼文：{props.ctx.profileDeleteGuard.postIds.join("、") || "無"}</div> : null}
           <button type="button" className="w98-btn small danger" onClick={() => props.ctx.onProfileDelete?.(currentProfile.id, retargetId || undefined)}>刪除角色</button>
           {props.ctx.profileDeleteBlocked ? <label className="w98-field"><span>此角色仍被視窗／貼文使用，改指派給</span><select className="w98-input compact" value={retargetId} onChange={(event) => setRetargetId(event.target.value)}><option value="">請選擇角色</option>{props.ctx.profiles.filter((profile) => profile.id !== currentProfile.id).map((profile) => <option key={profile.id} value={profile.id}>{profile.displayName ?? profile.name}</option>)}</select></label> : null}
         </div> : null}

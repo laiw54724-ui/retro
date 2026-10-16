@@ -27,6 +27,7 @@ export type ModuleCtx = {
   onProfileChange?: (profileId: string, patch: Record<string, unknown>, historyKey?: string) => void;
   onProfileDelete?: (profileId: string, retargetProfileId?: string) => void;
   profileDeleteBlocked?: boolean;
+  profileDeleteGuard?: { windowTitles: string[]; postIds: string[] };
 };
 
 export type WindowOf<T extends DesktopWindow["type"]> = Extract<DesktopWindow, { type: T }>;

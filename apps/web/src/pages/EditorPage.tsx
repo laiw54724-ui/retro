@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { buildPublishChecks, createProfile, deleteOrRetargetProfile, duplicateProfile, hasBlockingCheck, loadVersionedSiteDocument, mergeLegacyDocumentIntoV2, normalizeDocument, parseSiteDocument, ProfileEntityV2Schema, projectV2ToLegacyDocument, updateProfile, type DesktopWindow, type SiteDocumentV2Input } from "@retrodesk/shared";
+import { buildPublishChecks, createProfile, deleteOrRetargetProfile, duplicateProfile, hasBlockingCheck, loadVersionedSiteDocument, normalizeDocument, parseSiteDocument, ProfileEntityV2Schema, projectV2ToLegacyDocument, updateProfile, type DesktopWindow, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { useEditorStore } from "../features/editor/store";
@@ -158,13 +158,6 @@ export function EditorPage() {
     return () => { alive = false; };
   }, [siteId]);
 
-  // Keep the persisted v2 entity document in sync with the existing legacy-shaped
-  // module editor until the full v2 module UI cutover lands.
-  useEffect(() => {
-    if (!versionedDraft || !store.document) return;
-    setVersionedDraft((current) => current ? mergeLegacyDocumentIntoV2(current, store.document!, { siteId: store.siteId! }) : current);
-  }, [store.document]);
-
   useEffect(() => {
     if (store.versionedDocument && !sameDocument(store.versionedDocument, versionedDraft)) {
       versionedDraftRef.current = store.versionedDocument;
@@ -183,7 +176,7 @@ export function EditorPage() {
 
     const timer = window.setTimeout(async () => {
       const legacyDocumentToSave = store.document!;
-      const documentToSave = versionedDraft ?? store.document!;
+      const documentToSave = store.versionedDocument ?? versionedDraft ?? store.document!;
       const versionToSave = store.version;
       const invalid = validationMessage(documentToSave);
       if (invalid) {
@@ -215,7 +208,7 @@ export function EditorPage() {
     }, 650);
 
     return () => window.clearTimeout(timer);
-  }, [store.document, versionedDraft, store.saveStatus, store.siteId, store.version, conflict]);
+  }, [store.document, store.versionedDocument, versionedDraft, store.saveStatus, store.siteId, store.version, conflict]);
 
   useEffect(() => {
     function keydown(event: KeyboardEvent) {
@@ -258,6 +251,10 @@ export function EditorPage() {
     versionedDraft.windows.some((window) => window.type === "instagram" && window.content.profileRef.id === selectedProfileId) ||
     versionedDraft.entities.posts.some((post) => post.authorProfileId === selectedProfileId)
   );
+  const profileDeleteGuardById = Object.fromEntries(editorProfiles.map((profile) => [profile.id, {
+    windowTitles: (versionedDraft?.windows ?? []).filter((window) => window.type === "instagram" && window.content.profileRef.id === profile.id).map((window) => store.document?.windows.find((legacy) => legacy.id === window.id)?.title ?? window.id),
+    postIds: (versionedDraft?.entities.posts ?? []).filter((post) => post.authorProfileId === profile.id).map((post) => post.id)
+  }]));
 
   const hasUnpublishedChanges = useMemo(() => {
     if (!store.document) return false;
@@ -467,9 +464,10 @@ export function EditorPage() {
               onProfileChange={changeProfile}
               onProfileDelete={deleteProfile}
               profileDeleteBlocked={selectedProfileReferenced}
+              profileDeleteGuardById={profileDeleteGuardById}
             />
           ) : (
-            <MobileScreen document={store.document} mode="editor" framed siteId={siteId} upload={uploadImage} onPreview={() => setPreview(true)} />
+            <MobileScreen document={store.document} mode="editor" framed siteId={siteId} upload={uploadImage} onPreview={() => setPreview(true)} profiles={editorProfiles} profileIdsByWindow={profileIdsByWindow} onProfileSelect={selectProfile} onProfileAdd={addProfile} onProfileDuplicate={duplicateProfileForWindow} onProfileChange={changeProfile} onProfileDelete={deleteProfile} profileDeleteBlocked={selectedProfileReferenced} profileDeleteGuardById={profileDeleteGuardById} />
           )}
         </section>
 

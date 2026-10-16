@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { loadVersionedSiteDocument, normalizeDocument, projectV2ToLegacyDocument, type SiteDocument } from "@retrodesk/shared";
+import { loadVersionedSiteDocument, normalizeDocument, projectV2ToLegacyDocument, ProfileEntityV2Schema, type ProfileEntityV2, type SiteDocument } from "@retrodesk/shared";
 import { Navigate, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useThemeView } from "../lib/themeView";
@@ -10,6 +10,8 @@ export function PublicSitePage() {
   const { handle = "" } = useParams();
   const username = handle.startsWith("@") ? handle.slice(1) : "";
   const [document, setDocument] = useState<SiteDocument | null>(null);
+  const [profiles, setProfiles] = useState<ProfileEntityV2[]>([]);
+  const [profileIdsByWindow, setProfileIdsByWindow] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -21,6 +23,10 @@ export function PublicSitePage() {
         const legacy = loaded.version === 1 ? { ok: true as const, document: normalizeDocument(loaded.document) } : projectV2ToLegacyDocument(loaded.document);
         if (!legacy.ok) throw new Error(legacy.diagnostics[0]?.message ?? "公開角色引用無效");
         setDocument(legacy.document);
+        if (loaded.version === 2) {
+          setProfiles(loaded.document.entities.profiles.flatMap((profile) => { const parsed = ProfileEntityV2Schema.safeParse(profile); return parsed.success ? [parsed.data] : []; }));
+          setProfileIdsByWindow(Object.fromEntries(loaded.document.windows.flatMap((window) => window.type === "instagram" ? [[window.id, window.content.profileRef.id] as const] : [])));
+        }
         window.document.title = site.site_name + " — Retro Desktop";
       })
       .catch((reason) => setError(reason instanceof Error ? reason.message : "找不到網站"));
@@ -30,10 +36,10 @@ export function PublicSitePage() {
   if (error) return <main className="not-found"><div><h1>找不到這個桌面</h1><p>{error}</p></div></main>;
   if (!document) return <div className="boot-screen">Loading desktop...</div>;
 
-  return <PublishedDesktop document={document} />;
+  return <PublishedDesktop document={document} profiles={profiles} profileIdsByWindow={profileIdsByWindow} />;
 }
 
-function PublishedDesktop({ document }: { document: SiteDocument }) {
+function PublishedDesktop({ document, profiles, profileIdsByWindow }: { document: SiteDocument; profiles: ProfileEntityV2[]; profileIdsByWindow: Record<string, string> }) {
   const theme = document.theme;
   const tv = useThemeView(theme);
   const imageWallpaper = theme.pattern === "image" && !!theme.wallImage;
@@ -48,9 +54,9 @@ function PublishedDesktop({ document }: { document: SiteDocument }) {
         backgroundRepeat: imageWallpaper ? "no-repeat" : "repeat"
       }}
     >
-      <VisitorDesktop document={document} />
+      <VisitorDesktop document={document} profiles={profiles} profileIdsByWindow={profileIdsByWindow} />
 
-      <MobileScreen document={document} mode="visitor" />
+      <MobileScreen document={document} mode="visitor" profiles={profiles} profileIdsByWindow={profileIdsByWindow} />
     </main>
   );
 }
