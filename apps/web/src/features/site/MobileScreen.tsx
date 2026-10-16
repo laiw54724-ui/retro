@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { THEME_PRESETS, type CollectionEntityV2, type DesktopWindow, type PostEntityV2, type ProfileEntityV2, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { IconPicker } from "../modules/links/IconPicker";
@@ -7,6 +7,7 @@ import { moduleDefinitions } from "../modules/registry";
 import { useEditorStore } from "../editor/store";
 import { WindowRenderer } from "./WindowRenderer";
 import type { ProfileDirectoryEntry } from "../modules/types";
+import { musicPlayback, useMusicPlayback } from "../modules/music/audioCoordinator";
 
 type Sheet = "add" | "edit" | "theme" | null;
 
@@ -44,12 +45,14 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const [openId, setOpenId] = useState<string | null>(null);
   const [sheet, setSheet] = useState<Sheet>(null);
   const [inlineEdit, setInlineEdit] = useState(false);
+  const music = useMusicPlayback();
   const ordered = useMemo(() => [...document.windows].sort((a, b) => a.layout.mobile.order - b.layout.mobile.order), [document.windows]);
   const openWindow = ordered.find((window) => window.id === openId) ?? null;
   const selected = document.windows.find((window) => window.id === store.selectedId) ?? null;
 
-  const open = (id: string) => { setOpenId(id); setInlineEdit(false); if (editor) store.select(id); };
-  const back = () => { setOpenId(null); setInlineEdit(false); };
+  useEffect(() => () => musicPlayback.stopAll(), []);
+  const open = (id: string) => { if (openId && openId !== id) musicPlayback.stopWindow(openId); setOpenId(id); setInlineEdit(false); if (editor) store.select(id); };
+  const back = () => { if (openId) musicPlayback.stopWindow(openId); setOpenId(null); setInlineEdit(false); };
   const btn = { background: tv.face, color: tv.text, boxShadow: tv.bevel };
 
   const body = (
@@ -119,7 +122,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
       {!editor ? (
         <div className="m-taskbar" style={{ background: tv.taskbar, boxShadow: `inset 0 1px ${tv.light}, inset 0 2px #fff` }}>
           <button type="button" className="m-btn" style={btn} onClick={back}><Icon name="computer" size={18} />桌面</button>
-          {openWindow ? <span className="m-current" style={{ background: tv.light, color: tv.text, boxShadow: tv.pressed }}><Icon name={openWindow.icon} size={16} />{openWindow.title}</span> : null}
+          {openWindow ? <span className="m-current" style={{ background: tv.light, color: tv.text, boxShadow: tv.pressed }}><Icon name={openWindow.icon} size={16} />{openWindow.title}{music.windowId === openWindow.id && music.status === "playing" ? " · 播放中" : ""}</span> : null}
         </div>
       ) : (
         <div className="m-toolbar" role="toolbar" aria-label="手機編輯工具">

@@ -7,6 +7,7 @@ import { WindowRenderer } from "../site/WindowRenderer";
 import { DesktopTaskbar } from "../site/DesktopTaskbar";
 import { useEditorStore } from "./store";
 import type { ProfileDirectoryEntry } from "../modules/types";
+import { musicPlayback, useMusicPlayback } from "../modules/music/audioCoordinator";
 
 const TASKBAR_H = 36;
 const GRID = 8;
@@ -52,6 +53,7 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
   const suppressClick = useRef(false);
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const tv = useThemeView(document.theme);
+  const music = useMusicPlayback();
   const snapping = layoutMode && snap;
 
   const round = (value: number) => (snapping ? Math.round(value / GRID) * GRID : Math.round(value));
@@ -80,6 +82,8 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
     globalThis.addEventListener("keydown", onKey);
     return () => globalThis.removeEventListener("keydown", onKey);
   }, [store]);
+
+  useEffect(() => () => musicPlayback.stopAll(), []);
 
   // ----- window gestures -----
   function windowPointerDown(event: PointerEvent<HTMLDivElement>, win: DesktopWindow) {
@@ -252,7 +256,7 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
               maximized={maximized}
               onMinimize={() => store().setViewState(win.id, "min")}
               onMaximize={() => store().setViewState(win.id, maximized ? null : "max")}
-              onClose={() => store().setViewState(win.id, "closed")}
+              onClose={() => { musicPlayback.stopWindow(win.id); store().setViewState(win.id, "closed"); }}
               titleBarProps={{ onDoubleClick: () => store().setViewState(win.id, maximized ? null : "max"), style: { cursor: layoutMode ? "move" : "default", touchAction: "none" } }}
               style={{ height: "100%" }}
               bodyStyle={{ padding: 0 }}
@@ -286,7 +290,8 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
         tasks={document.windows.map((win) => ({
           window: win,
           visible: view[win.id] !== "closed",
-          active: selectedId === win.id && view[win.id] !== "min"
+          active: selectedId === win.id && view[win.id] !== "min",
+          statusLabel: music.windowId === win.id && music.status === "playing" ? "播放中" : undefined
         }))}
         onOpen={openWindow}
         onToggle={(id) => {

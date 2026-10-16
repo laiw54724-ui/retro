@@ -7,6 +7,7 @@ export type DesktopTask = {
   window: DesktopWindow;
   visible: boolean;
   active: boolean;
+  statusLabel?: string;
 };
 
 type Props = {
@@ -119,7 +120,7 @@ export function DesktopTaskbar({ document, tasks, onOpen, onToggle, visitor = fa
               onClick={() => onToggle(task.window.id)}
             >
               <Icon name={task.window.icon} size={16} />
-              <span>{task.window.title}</span>
+              <span>{task.window.title}{task.statusLabel ? ` · ${task.statusLabel}` : ""}</span>
             </button>
           ))}
         </div>

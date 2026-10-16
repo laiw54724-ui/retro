@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type PointerEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import type { DesktopWindow, ProfileEntityV2, SiteDocument } from "@retrodesk/shared";
 import type { ProfileDirectoryEntry } from "../modules/types";
 import { Icon } from "../../components/Icon";
@@ -6,6 +6,7 @@ import { RetroWindow } from "../../components/RetroWindow";
 import { useThemeView } from "../../lib/themeView";
 import { DesktopTaskbar } from "./DesktopTaskbar";
 import { WindowRenderer } from "./WindowRenderer";
+import { musicPlayback, useMusicPlayback } from "../modules/music/audioCoordinator";
 
 type WindowStatus = "open" | "minimized" | "closed";
 
@@ -45,6 +46,9 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
   const desktopRef = useRef<HTMLDivElement | null>(null);
   const gesture = useRef<Gesture | null>(null);
   const tv = useThemeView(document.theme);
+  const music = useMusicPlayback();
+
+  useEffect(() => () => musicPlayback.stopAll(), []);
 
   const topZ = useMemo(
     () => Math.max(0, ...Object.values(runtime).filter((item) => item.status === "open").map((item) => item.z)),
@@ -77,6 +81,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
   }
 
   function close(id: string) {
+    musicPlayback.stopWindow(id);
     setRuntime((current) => current[id] ? { ...current, [id]: { ...current[id], status: "closed", maximized: false } } : current);
   }
 
@@ -244,7 +249,8 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
         tasks={document.windows.map((desktopWindow) => ({
           window: desktopWindow,
           visible: runtime[desktopWindow.id]?.status !== "closed",
-          active: runtime[desktopWindow.id]?.status === "open" && runtime[desktopWindow.id]?.z === topZ
+          active: runtime[desktopWindow.id]?.status === "open" && runtime[desktopWindow.id]?.z === topZ,
+          statusLabel: music.windowId === desktopWindow.id && music.status === "playing" ? "播放中" : undefined
         }))}
         onOpen={openWindow}
         onToggle={taskbarToggle}
