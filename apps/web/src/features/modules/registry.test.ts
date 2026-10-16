@@ -5,8 +5,8 @@ import { createWindow, getModule, moduleDefinitions, registry, renderModule, WIN
 
 describe("module registry contract", () => {
   it("keeps one stable ordered definition for all registered v1 modules", () => {
-    expect(WINDOW_TYPES).toEqual(["document", "gallery", "links", "about", "instagram", "music", "moodboard", "explorer"]);
-    expect(new Set(moduleDefinitions.map((module) => module.type)).size).toBe(8);
+    expect(WINDOW_TYPES).toEqual(["document", "gallery", "links", "about", "instagram", "music", "moodboard", "explorer", "minesweeper", "character-dialog"]);
+    expect(new Set(moduleDefinitions.map((module) => module.type)).size).toBe(10);
     expect(moduleDefinitions.map((module) => module.type)).toEqual(Object.keys(registry));
   });
 
@@ -33,6 +33,8 @@ describe("module registry contract", () => {
     expect(createWindow("instagram", 0).content.skin).toBe("win98");
     expect(createWindow("moodboard", 0).content).toMatchObject({ width: 800, height: 600, elements: [] });
     expect(createWindow("explorer", 0).content).toEqual({ folders: [], shortcuts: [] });
+    expect(createWindow("minesweeper", 0).content).toEqual({ rows: 8, columns: 8, mines: 10 });
+    expect(createWindow("character-dialog", 0).content.autoShow).toBe(false);
   });
 
   it("rejects missing registrations instead of returning an undefined renderer", () => {

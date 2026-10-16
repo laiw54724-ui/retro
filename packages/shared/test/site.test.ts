@@ -89,6 +89,23 @@ describe("site schema security boundaries", () => {
     expect(SiteDocumentSchema.safeParse(document).success).toBe(false);
   });
 
+  it("bounds serverless desktop toys and keeps their links safe", () => {
+    const document = createStarterDocument("Toys", "classic98", "blank");
+    const minesweeper = makeWindow("minesweeper");
+    const character = makeWindow("character-dialog", 1);
+    if (minesweeper.type !== "minesweeper" || character.type !== "character-dialog") throw new Error("toy factory mismatch");
+    document.windows = [minesweeper, character];
+    expect(minesweeper.content).toEqual({ rows: 8, columns: 8, mines: 10 });
+    expect(character.content.autoShow).toBe(false);
+    expect(SiteDocumentSchema.safeParse(document).success).toBe(true);
+
+    minesweeper.content.mines = minesweeper.content.rows * minesweeper.content.columns;
+    expect(SiteDocumentSchema.safeParse(document).success).toBe(false);
+    minesweeper.content.mines = 10;
+    character.content.linkUrl = "javascript:alert(1)";
+    expect(SiteDocumentSchema.safeParse(document).success).toBe(false);
+  });
+
   it("rejects reserved usernames and normalizes safe ones", () => {
     expect(UsernameSchema.safeParse("admin").success).toBe(false);
     expect(UsernameSchema.parse("my-desk")).toBe("my-desk");

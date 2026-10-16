@@ -45,7 +45,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const editor = mode === "editor";
   const store = useEditorStore();
   const tv = useThemeView(document.theme);
-  const [openId, setOpenId] = useState<string | null>(initialOpenId ?? null);
+  const [openId, setOpenId] = useState<string | null>(() => initialOpenId ?? (mode === "visitor" ? document.windows.find((window) => window.type === "character-dialog" && window.content.autoShow)?.id ?? null : null));
   const [sheet, setSheet] = useState<Sheet>(null);
   const [inlineEdit, setInlineEdit] = useState(false);
   const music = useMusicPlayback();

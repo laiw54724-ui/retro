@@ -243,6 +243,14 @@ export const ExplorerContentSchema = z.object({ folders: z.array(ExplorerFolderS
   }
 });
 
+export const MinesweeperContentSchema = z.object({ rows: z.number().int().min(5).max(12), columns: z.number().int().min(5).max(12), mines: z.number().int().min(1).max(40) }).strict().superRefine((content, ctx) => {
+  if (content.mines >= content.rows * content.columns) ctx.addIssue({ code: "custom", path: ["mines"], message: "Mines must leave at least one safe cell" });
+});
+export const CharacterDialogContentSchema = z.object({
+  characterName: z.string().max(120), image: ImageUrlSchema.nullable(), imageUrl: z.string().max(2048).default(""), message: z.string().max(2000),
+  linkLabel: z.string().max(120).default(""), linkUrl: SafeUrlSchema.default(""), autoShow: z.boolean().default(false)
+}).strict();
+
 export const InstagramProfileSchema = z.object({
   username: z.string().max(64),
   avatar: ImageUrlSchema.nullable(),
@@ -325,6 +333,14 @@ export const DesktopWindowSchema = z.discriminatedUnion("type", [
   BaseWindowSchema.extend({
     type: z.literal("explorer"),
     content: ExplorerContentSchema
+  }),
+  BaseWindowSchema.extend({
+    type: z.literal("minesweeper"),
+    content: MinesweeperContentSchema
+  }),
+  BaseWindowSchema.extend({
+    type: z.literal("character-dialog"),
+    content: CharacterDialogContentSchema
   })
 ]);
 
@@ -475,6 +491,16 @@ export function makeWindow(type: DesktopWindow["type"], index = 0): DesktopWindo
       return {
         id: id(), type, title: "Explorer.exe", icon: "folder", layout: { ...layout, desktop: { ...layout.desktop, w: 520, h: 440 } }, defaultOpen: true,
         content: { folders: [], shortcuts: [] }
+      };
+    case "minesweeper":
+      return {
+        id: id(), type, title: "Minesweeper.exe", icon: "star", layout: { ...layout, desktop: { ...layout.desktop, w: 390, h: 470 } }, defaultOpen: false,
+        content: { rows: 8, columns: 8, mines: 10 }
+      };
+    case "character-dialog":
+      return {
+        id: id(), type, title: "Character.exe", icon: "user", layout: { ...layout, desktop: { ...layout.desktop, w: 360, h: 360 } }, defaultOpen: false,
+        content: { characterName: "我的角色", image: null, imageUrl: "", message: "嗨！歡迎來到我的桌面。", linkLabel: "", linkUrl: "", autoShow: false }
       };
     default:
       return {

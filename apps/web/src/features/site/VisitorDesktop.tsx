@@ -30,7 +30,7 @@ function initialRuntime(document: SiteDocument, initialOpenId?: string): Runtime
   return Object.fromEntries(document.windows.map((window) => [
     window.id,
     {
-      status: window.id === initialOpenId || (!initialOpenId && window.defaultOpen) ? "open" : "closed",
+      status: window.id === initialOpenId || (!initialOpenId && (window.defaultOpen || (window.type === "character-dialog" && window.content.autoShow))) ? "open" : "closed",
       maximized: false,
       x: window.layout.desktop.x,
       y: window.layout.desktop.y,

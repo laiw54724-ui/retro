@@ -9,6 +9,8 @@ import { IgInlineEditor, IgView } from "./instagram";
 import { MusicInlineEditor, MusicView } from "./music";
 import { MoodboardInlineEditor, MoodboardView } from "./moodboard";
 import { ExplorerInlineEditor, ExplorerView } from "./explorer";
+import { MinesweeperInlineEditor, MinesweeperView } from "./minesweeper";
+import { CharacterDialogInlineEditor, CharacterDialogView } from "./character-dialog";
 
 type WindowType = DesktopWindow["type"];
 type Registry = { [K in WindowType]: WindowModule<K> };
@@ -29,7 +31,9 @@ export const registry: Registry = {
   instagram: { type: "instagram", schemaVersion: 1, label: "復古 IG 個人頁", description: "帳號、追蹤數、簡介與貼文格狀", icon: "camera", capabilities: defaultCapabilities, mobile: { mode: "window", icon: "camera" }, create: (index) => factory("instagram", index), View: IgView, InlineEditor: IgInlineEditor },
   music: { type: "music", schemaVersion: 1, label: "音樂播放器", description: "角色播放清單、原生音訊與作品連結", icon: "music", capabilities: { ...defaultCapabilities, uploads: true }, mobile: { mode: "window", icon: "music" }, create: (index) => factory("music", index), View: MusicView, InlineEditor: MusicInlineEditor },
   moodboard: { type: "moodboard", schemaVersion: 1, label: "Moodboard 畫板", description: "用圖片、文字與色塊組成角色靈感板", icon: "photo", capabilities: { ...defaultCapabilities, links: false }, mobile: { mode: "window", icon: "photo" }, create: (index) => factory("moodboard", index), View: MoodboardView, InlineEditor: MoodboardInlineEditor },
-  explorer: { type: "explorer", schemaVersion: 1, label: "世界觀資料夾", description: "用多層資料夾整理桌面視窗與角色設定", icon: "doc", capabilities: { ...defaultCapabilities, uploads: false }, mobile: { mode: "window", icon: "doc" }, create: (index) => factory("explorer", index), View: ExplorerView, InlineEditor: ExplorerInlineEditor }
+  explorer: { type: "explorer", schemaVersion: 1, label: "世界觀資料夾", description: "用多層資料夾整理桌面視窗與角色設定", icon: "doc", capabilities: { ...defaultCapabilities, uploads: false }, mobile: { mode: "window", icon: "doc" }, create: (index) => factory("explorer", index), View: ExplorerView, InlineEditor: ExplorerInlineEditor },
+  minesweeper: { type: "minesweeper", schemaVersion: 1, label: "掃雷", description: "不記分、不上傳的訪客小遊戲", icon: "star", capabilities: { ...defaultCapabilities, links: false, uploads: false }, mobile: { mode: "window", icon: "star" }, create: (index) => factory("minesweeper", index), View: MinesweeperView, InlineEditor: MinesweeperInlineEditor },
+  "character-dialog": { type: "character-dialog", schemaVersion: 1, label: "角色彈窗", description: "可關閉的角色歡迎訊息", icon: "user", capabilities: defaultCapabilities, mobile: { mode: "window", icon: "user" }, create: (index) => factory("character-dialog", index), View: CharacterDialogView, InlineEditor: CharacterDialogInlineEditor }
 };
 
 // Object insertion order is the single source of truth for authoring surfaces.
@@ -87,6 +91,14 @@ export function renderModule({ window, ctx, editing, update }: RenderModuleOptio
     case "explorer": {
       const props: ModuleProps<"explorer"> = { window, ctx, update: (recipe, key) => update((current) => recipe(current as WindowOf<"explorer">), key) };
       return createElement(editing ? registry.explorer.InlineEditor : registry.explorer.View, props);
+    }
+    case "minesweeper": {
+      const props: ModuleProps<"minesweeper"> = { window, ctx, update: (recipe, key) => update((current) => recipe(current as WindowOf<"minesweeper">), key) };
+      return createElement(editing ? registry.minesweeper.InlineEditor : registry.minesweeper.View, props);
+    }
+    case "character-dialog": {
+      const props: ModuleProps<"character-dialog"> = { window, ctx, update: (recipe, key) => update((current) => recipe(current as WindowOf<"character-dialog">), key) };
+      return createElement(editing ? registry["character-dialog"].InlineEditor : registry["character-dialog"].View, props);
     }
   }
 }

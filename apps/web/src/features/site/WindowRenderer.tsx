@@ -67,7 +67,7 @@ export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, m
   const update = (recipe: (current: DesktopWindow) => DesktopWindow, key?: string) => onUpdate?.(win.id, recipe, key);
 
   return (
-    <div className={`module-host module-${win.type}`} style={{ fontFamily: tv.fontFamily, color: tv.text, background: win.type === "about" || win.type === "instagram" || win.type === "music" || win.type === "moodboard" || win.type === "explorer" ? tv.face : "#fff" }}>
+    <div className={`module-host module-${win.type}`} style={{ fontFamily: tv.fontFamily, color: tv.text, background: win.type === "document" || win.type === "gallery" || win.type === "links" ? "#fff" : tv.face }}>
       {renderModule({ window: win, ctx, editing: ctx.editing, update })}
     </div>
   );

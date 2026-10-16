@@ -380,6 +380,15 @@ export function InspectorContent({ window, allWindows, siteId, update, onMessage
     );
   }
 
+  if (window.type === "minesweeper" || window.type === "character-dialog") {
+    return (
+      <section className="inspector-section">
+        <div className="section-heading"><strong>{window.type === "minesweeper" ? "掃雷" : "角色彈窗"}</strong></div>
+        <p>直接在視窗內容中調整設定並預覽；訪客操作只保留在本次瀏覽。</p>
+      </section>
+    );
+  }
+
   const content = window.content;
   const setContent = (next: typeof content) => update((current) => current.type === "instagram" ? { ...current, content: next } : current);
   const profile = content.profile;
