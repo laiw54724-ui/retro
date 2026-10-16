@@ -99,3 +99,76 @@ test("editor can save drafts but cannot publish, migrate, or manage collaborator
   await expect(page.getByRole("button", { name: "協作者" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: /轉為私有/ })).toHaveCount(0);
 });
+
+test("owner creates and revokes invitations, then updates and removes a member", async ({ page, context }) => {
+  await signIn(page);
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  const site = { id: "site-owner", username: "owned", site_name: "Owned Desk", draft_document: documentFixture, draft_version: 1, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-16T00:00:00.000Z", access_role: "owner" };
+  let members = [{ user_id: "user-2", email: "friend@example.com", role: "editor", created_at: "2026-10-16T00:00:00.000Z", updated_at: "2026-10-16T00:00:00.000Z" }];
+  let invites = [{ id: "invite-1", email: "pending@example.com", role: "viewer", expires_at: "2099-10-17T00:00:00.000Z", accepted_at: null, revoked_at: null, created_at: "2026-10-16T00:00:00.000Z" }];
+  const createdToken = "b".repeat(43);
+  await page.route("**/api/sites/site-owner", (route) => route.fulfill({ json: { site } }));
+  await page.route("**/api/sites/site-owner/assets**", (route) => route.fulfill({ json: { assets: [] } }));
+  await page.route("**/api/sites/site-owner/draft", (route) => route.fulfill({ json: { version: 2, updatedAt: "2026-10-16T00:01:00.000Z" } }));
+  await page.route("**/api/sites/site-owner/members/**", (route) => {
+    if (route.request().method() === "PUT") members = members.map((member) => ({ ...member, role: route.request().postDataJSON().role }));
+    if (route.request().method() === "DELETE") members = [];
+    return route.fulfill({ status: route.request().method() === "DELETE" ? 204 : 200, body: route.request().method() === "DELETE" ? "" : JSON.stringify({ ok: true }), contentType: "application/json" });
+  });
+  await page.route("**/api/sites/site-owner/members", (route) => route.fulfill({ json: { members } }));
+  await page.route("**/api/sites/site-owner/invites/invite-1", (route) => {
+    invites = invites.map((invite) => invite.id === "invite-1" ? { ...invite, revoked_at: "2026-10-16T01:00:00.000Z" } : invite);
+    return route.fulfill({ status: 204, body: "" });
+  });
+  await page.route("**/api/sites/site-owner/invites", (route) => {
+    if (route.request().method() === "POST") {
+      const input = route.request().postDataJSON();
+      const invite = { id: "invite-2", site_id: "site-owner", email: input.email, role: input.role, expires_at: "2099-10-18T00:00:00.000Z", created_at: "2026-10-16T01:00:00.000Z" };
+      invites = [{ ...invite, accepted_at: null, revoked_at: null }, ...invites];
+      return route.fulfill({ status: 201, json: { invite, token: createdToken } });
+    }
+    return route.fulfill({ json: { invites } });
+  });
+
+  await page.goto("/editor/site-owner");
+  const opener = page.getByRole("button", { name: "協作者" });
+  await opener.click();
+  const dialog = page.getByRole("dialog", { name: "協作者" });
+  await expect(dialog.getByText("friend@example.com", { exact: true })).toBeVisible();
+  await expect(dialog.getByText("pending@example.com", { exact: true })).toBeVisible();
+
+  await dialog.getByLabel("邀請電子郵件").fill("new@example.com");
+  await dialog.getByRole("button", { name: "建立邀請" }).click();
+  const link = dialog.getByLabel("一次性邀請連結");
+  await expect(link).toHaveValue(new RegExp(`/invite#token=${createdToken}$`));
+  await dialog.getByRole("button", { name: "複製邀請連結" }).click();
+  await expect(dialog.getByRole("status")).toContainText("已複製");
+
+  await dialog.getByRole("button", { name: "撤銷 pending@example.com 的邀請" }).click();
+  await expect(dialog.locator(".invite-list li").filter({ hasText: "pending@example.com" }).getByText("已撤銷", { exact: true })).toBeVisible();
+  await dialog.getByLabel("friend@example.com 的權限").selectOption("viewer");
+  await expect(dialog.getByLabel("friend@example.com 的權限")).toHaveValue("viewer");
+  await dialog.getByRole("button", { name: "移除 friend@example.com" }).click();
+  const confirmation = page.getByRole("alertdialog", { name: "移除協作者" });
+  await confirmation.getByRole("button", { name: "確認移除" }).click();
+  await expect(dialog.getByText("目前只有你可以存取這個桌面")).toBeVisible();
+
+  await dialog.getByRole("button", { name: "關閉協作者" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(opener).toBeFocused();
+});
+
+test("collaboration manager remains usable at 320px", async ({ page }) => {
+  await signIn(page);
+  await page.setViewportSize({ width: 320, height: 640 });
+  const site = { id: "site-mobile-owner", username: "owned", site_name: "Owned Desk", draft_document: documentFixture, draft_version: 1, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-16T00:00:00.000Z", access_role: "owner" };
+  await page.route("**/api/sites/site-mobile-owner", (route) => route.fulfill({ json: { site } }));
+  await page.route("**/api/sites/site-mobile-owner/assets**", (route) => route.fulfill({ json: { assets: [] } }));
+  await page.route("**/api/sites/site-mobile-owner/draft", (route) => route.fulfill({ json: { version: 2, updatedAt: "2026-10-16T00:01:00.000Z" } }));
+  await page.route("**/api/sites/site-mobile-owner/members", (route) => route.fulfill({ json: { members: [] } }));
+  await page.route("**/api/sites/site-mobile-owner/invites", (route) => route.fulfill({ json: { invites: [] } }));
+  await page.goto("/editor/site-mobile-owner");
+  await page.getByRole("button", { name: "協作者" }).click();
+  await expect(page.getByRole("dialog", { name: "協作者" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+});

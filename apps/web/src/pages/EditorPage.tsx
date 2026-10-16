@@ -15,6 +15,7 @@ import { AssetSourceProvider } from "../lib/assetSource";
 import { buildProfileDirectory } from "../features/modules/instagram/profileDirectory";
 import { auditAssetReferences } from "../lib/asset-reference-audit";
 import { collaborationActions } from "../lib/collaboration";
+import { CollaborationDialog } from "../features/collaboration/CollaborationDialog";
 
 
 
@@ -56,6 +57,8 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   const [assetInventoryOpen, setAssetInventoryOpen] = useState(false);
   const [migratingAssets, setMigratingAssets] = useState(false);
   const [deletingAssetId, setDeletingAssetId] = useState<string | null>(null);
+  const [collaborationOpen, setCollaborationOpen] = useState(false);
+  const collaborationButtonRef = useRef<HTMLButtonElement | null>(null);
   const [versionedDraft, setVersionedDraft] = useState<SiteDocumentV2Input | null>(null);
   const versionedDraftRef = useRef<SiteDocumentV2Input | null>(null);
   versionedDraftRef.current = versionedDraft;
@@ -454,6 +457,10 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
   const layoutMode = store.layoutMode && store.device === "desktop";
   const actions = collaborationActions(store.accessRole);
+  function closeCollaboration() {
+    setCollaborationOpen(false);
+    window.requestAnimationFrame(() => collaborationButtonRef.current?.focus());
+  }
 
   return (
     <AssetSourceProvider siteId={siteId}>
@@ -476,6 +483,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
           <button type="button" aria-pressed={store.device === "mobile"} className={"w98-btn" + (store.device === "mobile" ? " on" : "")} onClick={() => { store.setLayoutMode(false); store.setDevice("mobile"); }}>手機版</button>
         </div>
         <RetroButton onClick={() => setPreview(true)}>▶ 訪客預覽</RetroButton>
+        {actions.manageMembers ? <RetroButton ref={collaborationButtonRef} onClick={() => setCollaborationOpen(true)}>協作者</RetroButton> : null}
         {store.publishedDocument ? <a className="w98-btn mobile-hide" href={"/@" + store.username} target="_blank" rel="noreferrer">開啟已發布網站</a> : null}
         {actions.publish ? <RetroButton className="primary" onClick={requestPublish} disabled={publishing || (!!store.publishedDocument && !hasUnpublishedChanges)}>
           {store.publishedDocument ? "重新發布" : "發布"}
@@ -595,6 +603,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       </footer>
 
       {preview ? <VisitorPreview document={store.document} username={store.username} published={!!store.publishedDocument && !hasUnpublishedChanges} onClose={() => setPreview(false)} /> : null}
+      {collaborationOpen ? <CollaborationDialog siteId={siteId} onClose={closeCollaboration} /> : null}
 
       {conflict ? (
         <div className="modal-backdrop" role="presentation">
