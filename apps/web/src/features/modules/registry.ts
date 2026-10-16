@@ -6,6 +6,7 @@ import { GalleryInlineEditor, GalleryView } from "./gallery";
 import { LinksInlineEditor, LinksView } from "./links";
 import { AboutInlineEditor, AboutView } from "./about";
 import { IgInlineEditor, IgView } from "./instagram";
+import { MusicInlineEditor, MusicView } from "./music";
 
 type WindowType = DesktopWindow["type"];
 type Registry = { [K in WindowType]: WindowModule<K> };
@@ -23,13 +24,14 @@ export const registry: Registry = {
   gallery: { type: "gallery", schemaVersion: 1, label: "相簿視窗", description: "多張圖片網格，點擊放大", icon: "photo", capabilities: defaultCapabilities, mobile: { mode: "window", icon: "photo" }, create: (index) => factory("gallery", index), View: GalleryView, InlineEditor: GalleryInlineEditor },
   links: { type: "links", schemaVersion: 1, label: "連結視窗", description: "社群與外部連結按鈕", icon: "link", capabilities: defaultCapabilities, mobile: { mode: "window", icon: "link" }, create: (index) => factory("links", index), View: LinksView, InlineEditor: LinksInlineEditor },
   about: { type: "about", schemaVersion: 1, label: "名片／關於我", description: "頭像、檔案欄位、簡介與橫幅", icon: "user", capabilities: defaultCapabilities, mobile: { mode: "window", icon: "user" }, create: (index) => factory("about", index), View: AboutView, InlineEditor: AboutInlineEditor },
-  instagram: { type: "instagram", schemaVersion: 1, label: "復古 IG 個人頁", description: "帳號、追蹤數、簡介與貼文格狀", icon: "camera", capabilities: defaultCapabilities, mobile: { mode: "window", icon: "camera" }, create: (index) => factory("instagram", index), View: IgView, InlineEditor: IgInlineEditor }
+  instagram: { type: "instagram", schemaVersion: 1, label: "復古 IG 個人頁", description: "帳號、追蹤數、簡介與貼文格狀", icon: "camera", capabilities: defaultCapabilities, mobile: { mode: "window", icon: "camera" }, create: (index) => factory("instagram", index), View: IgView, InlineEditor: IgInlineEditor },
+  music: { type: "music", schemaVersion: 1, label: "音樂播放器", description: "角色播放清單、原生音訊與作品連結", icon: "music", capabilities: { ...defaultCapabilities, uploads: true }, mobile: { mode: "window", icon: "music" }, create: (index) => factory("music", index), View: MusicView, InlineEditor: MusicInlineEditor }
 };
 
 // Object insertion order is the single source of truth for authoring surfaces.
 export const moduleDefinitions = Object.freeze(Object.values(registry));
 export const WINDOW_TYPES = moduleDefinitions.map((module) => module.type) as WindowType[];
-export const COMING_SOON = ["日記", "留言板", "音樂播放器", "角色檔案", "視覺小說"];
+export const COMING_SOON = ["日記", "留言板", "角色檔案", "視覺小說"];
 
 export function getModule<T extends WindowType>(type: T): WindowModule<T> {
   const module = registry[type];
@@ -69,6 +71,10 @@ export function renderModule({ window, ctx, editing, update }: RenderModuleOptio
     case "instagram": {
       const props: ModuleProps<"instagram"> = { window, ctx, update: (recipe, key) => update((current) => recipe(current as WindowOf<"instagram">), key) };
       return createElement(editing ? registry.instagram.InlineEditor : registry.instagram.View, props);
+    }
+    case "music": {
+      const props: ModuleProps<"music"> = { window, ctx, update: (recipe, key) => update((current) => recipe(current as WindowOf<"music">), key) };
+      return createElement(editing ? registry.music.InlineEditor : registry.music.View, props);
     }
   }
 }

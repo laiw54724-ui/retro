@@ -264,11 +264,11 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   const profileIdsByWindow = Object.fromEntries((versionedDraft?.windows ?? []).flatMap((window) => window.type === "instagram" ? [[window.id, window.content.profileRef.id] as const] : []));
   const profileDirectory = versionedDraft ? buildProfileDirectory(versionedDraft, false) : [];
   const selectedProfileReferenced = !!selectedProfileId && !!versionedDraft && (
-    versionedDraft.windows.some((window) => window.type === "instagram" && window.content.profileRef.id === selectedProfileId) ||
+    versionedDraft.windows.some((window) => window.type === "instagram" ? window.content.profileRef.id === selectedProfileId : window.type === "music" ? window.content.tracks.some((track) => track.characterRef?.id === selectedProfileId) : false) ||
     versionedDraft.entities.posts.some((post) => post.authorProfileId === selectedProfileId)
   );
   const profileDeleteGuardById = Object.fromEntries(editorProfiles.map((profile) => [profile.id, {
-    windowTitles: (versionedDraft?.windows ?? []).filter((window) => window.type === "instagram" && window.content.profileRef.id === profile.id).map((window) => store.document?.windows.find((legacy) => legacy.id === window.id)?.title ?? window.id),
+    windowTitles: (versionedDraft?.windows ?? []).filter((window) => window.type === "instagram" ? window.content.profileRef.id === profile.id : window.type === "music" ? window.content.tracks.some((track) => track.characterRef?.id === profile.id) : false).map((window) => store.document?.windows.find((legacy) => legacy.id === window.id)?.title ?? window.id),
     postIds: (versionedDraft?.entities.posts ?? []).filter((post) => post.authorProfileId === profile.id).map((post) => post.id)
   }]));
 

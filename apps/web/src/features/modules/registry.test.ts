@@ -4,9 +4,9 @@ import { themeView } from "../../lib/themeView";
 import { createWindow, getModule, moduleDefinitions, registry, renderModule, WINDOW_TYPES } from "./registry";
 
 describe("module registry contract", () => {
-  it("keeps one stable ordered definition for all five v1 modules", () => {
-    expect(WINDOW_TYPES).toEqual(["document", "gallery", "links", "about", "instagram"]);
-    expect(new Set(moduleDefinitions.map((module) => module.type)).size).toBe(5);
+  it("keeps one stable ordered definition for all registered v1 modules", () => {
+    expect(WINDOW_TYPES).toEqual(["document", "gallery", "links", "about", "instagram", "music"]);
+    expect(new Set(moduleDefinitions.map((module) => module.type)).size).toBe(6);
     expect(moduleDefinitions.map((module) => module.type)).toEqual(Object.keys(registry));
   });
 
