@@ -131,6 +131,7 @@ export type HighlightEntityV2 = z.infer<typeof HighlightEntityV2Schema>;
 export type CollectionEntityV2 = z.infer<typeof CollectionEntityV2Schema>;
 export type ActorCommentV2 = z.infer<typeof ActorCommentV2Schema>;
 export type FollowEdgeV2 = z.infer<typeof FollowEdgeV2Schema>;
+export const SiteSeoSchema = z.object({ indexing: z.boolean().default(true) }).strict();
 export const ProfileEntityV2Schema = z.object({
   kind: z.literal("profile"), id: BoundedId, siteId: BoundedId, visibility: VisibilitySchema, ...StrictProfileFields, ...ProfileAuthoringFields
 }).strict();
@@ -172,6 +173,7 @@ export type DesktopWindowV2 = z.infer<typeof DesktopWindowV2Schema>;
 export const SiteDocumentV2Schema = z.object({
   schemaVersion: z.literal(2), siteName: z.string().min(1).max(120), theme: StrictThemeSchema,
   windows: z.array(DesktopWindowV2Schema).max(100), mobileColumns: z.number().int().min(3).max(4).default(4),
+  seo: SiteSeoSchema.default({ indexing: true }),
   entities: z.object({ profiles: z.array(ProfileEntityV2Schema).max(100), posts: z.array(PostEntityV2Schema).max(500), highlights: z.array(HighlightEntityV2Schema).max(200).default([]), collections: z.array(CollectionEntityV2Schema).max(200).default([]), followEdges: z.array(FollowEdgeV2Schema).max(10_000).default([]) }).strict()
 }).strict();
 export type SiteDocumentV2 = z.infer<typeof SiteDocumentV2Schema>;
@@ -529,7 +531,7 @@ export function migrateSiteDocumentV2(raw: unknown, options: { siteId: string })
     if (!migratedWindow.success) return invalid(raw, diagnosticsFrom(migratedWindow.error));
     windows.push(migratedWindow.data);
   }
-  const migrated: SiteDocumentV2 = { schemaVersion: 2, siteName: source.siteName, theme: source.theme, windows, mobileColumns: source.mobileColumns, entities: { profiles, posts, highlights, collections, followEdges: [] } };
+  const migrated: SiteDocumentV2 = { schemaVersion: 2, siteName: source.siteName, theme: source.theme, windows, mobileColumns: source.mobileColumns, seo: { indexing: true }, entities: { profiles, posts, highlights, collections, followEdges: [] } };
   const validated = parseSiteDocument(migrated);
   if (validated.ok && validated.version === 2) return validated;
   if (!validated.ok && validated.code === "invalid") return invalid(raw, validated.diagnostics);

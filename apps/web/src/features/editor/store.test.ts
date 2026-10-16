@@ -64,4 +64,15 @@ describe("editor canonical history", () => {
     store.setSite("site-b", "bob", legacy, 2, null, null, "owner");
     expect(useEditorStore.getState().accessRole).toBe("owner");
   });
+
+  it("stores indexing in canonical v2 history without changing the legacy renderer", () => {
+    const { legacy, versioned } = profileFixture();
+    const store = useEditorStore.getState();
+    store.setSite("site-a", "alice", legacy, 1, null, null, "owner");
+    store.setVersionedDocument(versioned);
+    store.setSeoIndexing(false);
+    expect(useEditorStore.getState().versionedDocument?.seo).toEqual({ indexing: false });
+    expect(useEditorStore.getState().document).toEqual(legacy);
+    expect(useEditorStore.getState().saveStatus).toBe("dirty");
+  });
 });

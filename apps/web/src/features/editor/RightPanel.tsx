@@ -16,12 +16,14 @@ type Props = {
   onBringToFront: () => void;
   onEnterLayout: () => void;
   onSiteName: (name: string) => void;
+  indexing: boolean;
+  onIndexing: (indexing: boolean) => void;
   onColumns: (columns: 3 | 4) => void;
 };
 
 const clamp = (value: number, min: number, max: number) => Math.round(Math.min(max, Math.max(min, Number.isFinite(value) ? value : min)));
 
-export function RightPanel({ document, selected, siteId, upload, onUpdate, onDelete, onDuplicate, onBringToFront, onEnterLayout, onSiteName, onColumns }: Props) {
+export function RightPanel({ document, selected, siteId, upload, onUpdate, onDelete, onDuplicate, onBringToFront, onEnterLayout, onSiteName, indexing, onIndexing, onColumns }: Props) {
   const [tab, setTab] = useState<Tab>("general");
 
   if (!selected) {
@@ -30,6 +32,8 @@ export function RightPanel({ document, selected, siteId, upload, onUpdate, onDel
         <div className="w98-tabpanel w98-scroll panel-scroll">
           <div className="inspector-head"><Icon name="computer" size={22} /><strong>網站設定</strong></div>
           <label className="w98-field"><span>桌面名稱</span><input className="w98-input" value={document.siteName} onChange={(event) => onSiteName(event.target.value)} /></label>
+          <label className="check-row"><input type="checkbox" checked={indexing} onChange={(event) => onIndexing(event.target.checked)} />允許搜尋引擎收錄公開頁面</label>
+          <p className="w98-hint">關閉後公開網址仍可瀏覽，但會輸出 noindex。這不是隱私設定。</p>
           <div className="w98-field"><span>手機版圖示欄數</span>
             <div className="seg">
               {([3, 4] as const).map((count) => <button key={count} type="button" className={"mini-btn grow" + (document.mobileColumns === count ? " on" : "")} onClick={() => onColumns(count)}>{count} 欄</button>)}

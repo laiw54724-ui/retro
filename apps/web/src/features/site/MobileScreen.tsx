@@ -182,9 +182,13 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
                 selected ? <MobileEdit window={selected} count={ordered.length} siteId={siteId} upload={upload} /> : <span className="m-note">先點一下桌面上的圖示，選取要編輯的視窗。</span>
               ) : null}
               {sheet === "edit" ? (
-                <div className="w98-field"><span className="w98-hint">圖示欄數</span>
-                  <div className="seg">{([3, 4] as const).map((count) => <button key={count} type="button" className={"w98-btn grow" + (document.mobileColumns === count ? " on" : "")} onClick={() => store.setMobileColumns(count)}>{count} 欄</button>)}</div>
-                </div>
+                <>
+                  <div className="w98-field"><span className="w98-hint">圖示欄數</span>
+                    <div className="seg">{([3, 4] as const).map((count) => <button key={count} type="button" className={"w98-btn grow" + (document.mobileColumns === count ? " on" : "")} onClick={() => store.setMobileColumns(count)}>{count} 欄</button>)}</div>
+                  </div>
+                  <label className="check-row m-check"><input type="checkbox" checked={store.versionedDocument?.seo?.indexing ?? true} onChange={(event) => store.setSeoIndexing(event.target.checked)} />允許搜尋引擎收錄公開頁面</label>
+                  <span className="w98-hint">關閉只會輸出 noindex，不會把公開網站變成私密。</span>
+                </>
               ) : null}
             </div>
           </div>

@@ -632,6 +632,8 @@ export function EditorPage({ site }: { site: SiteRecord }) {
             onBringToFront={() => selected && store.bringToFront(selected.id)}
             onEnterLayout={() => store.setLayoutMode(true)}
             onSiteName={store.setSiteName}
+            indexing={versionedDraft?.seo?.indexing ?? true}
+            onIndexing={store.setSeoIndexing}
             onColumns={store.setMobileColumns}
           />
         ) : null}

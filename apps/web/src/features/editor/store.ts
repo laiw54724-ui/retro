@@ -46,6 +46,7 @@ type EditorState = {
   reorderMobile: (id: string, direction: -1 | 1) => void;
   setMobileColumns: (columns: 3 | 4) => void;
   setSiteName: (name: string) => void;
+  setSeoIndexing: (indexing: boolean) => void;
   setTheme: (theme: SiteDocument["theme"]) => void;
   addWindow: (type: DesktopWindow["type"]) => void;
   /** `historyKey`: edits with the same key within 1200ms collapse into one undo step. */
@@ -238,6 +239,9 @@ export const useEditorStore = create<EditorState>((set) => ({
     : {}),
   setSiteName: (siteName) => set((state) => state.document
     ? withHistory(state, { ...state.document, siteName })
+    : {}),
+  setSeoIndexing: (indexing) => set((state) => state.document && state.versionedDocument
+    ? withHistory(state, state.document, {}, undefined, { ...state.versionedDocument, seo: { indexing } })
     : {}),
   setTheme: (theme) => set((state) => state.document
     ? withHistory(state, { ...state.document, theme })

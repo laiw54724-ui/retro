@@ -1,5 +1,5 @@
 import { Hono, type Context } from "hono";
-import { projectPublicSiteDocument, UsernameSchema, validateSiteDocumentScope } from "@retrodesk/shared";
+import { buildPublicMetadata, projectPublicSiteDocument, UsernameSchema, validateSiteDocumentScope } from "@retrodesk/shared";
 import type { Env } from "../env";
 import { jsonError } from "../lib/http";
 import { requireUser, serviceClient } from "../lib/supabase";
@@ -278,4 +278,33 @@ sites.get("/public/sites/:username", async (c) => {
   if (!data?.published_document) return jsonError(c, 404, "not_found", "Site not found");
   c.header("Cache-Control", "no-store");
   return c.json({ site: data });
+});
+
+sites.get("/public/sites/:username/metadata", async (c) => {
+  const parsed = UsernameSchema.safeParse(c.req.param("username"));
+  if (!parsed.success) return jsonError(c, 404, "not_found", "Public page not found");
+  const kind = c.req.query("kind");
+  const id = c.req.query("id");
+  if ((kind || id) && (!id || !["oc", "post"].includes(kind ?? "") || id.length > 160)) return jsonError(c, 404, "not_found", "Public page not found");
+  const supabase = serviceClient(c.env);
+  const { data, error } = await supabase
+    .from("sites")
+    .select("id,username,site_name,published_document,published_version")
+    .eq("username", parsed.data)
+    .not("published_document", "is", null)
+    .maybeSingle();
+  if (error) return jsonError(c, 500, "db_error", "Could not load public metadata");
+  if (!data?.published_document || !data.published_version) return jsonError(c, 404, "not_found", "Public page not found");
+  const result = buildPublicMetadata({
+    siteId: data.id,
+    username: data.username,
+    siteName: data.site_name,
+    publishedVersion: data.published_version,
+    document: data.published_document,
+    target: kind && id ? { kind: kind as "oc" | "post", id } : undefined,
+  });
+  if (!result.ok) return jsonError(c, result.code === "not_found" ? 404 : 500, result.code, result.code === "not_found" ? "Public page not found" : "Published metadata is invalid");
+  c.header("Cache-Control", "no-store");
+  c.header("ETag", `W/\"${result.metadata.cacheKey}\"`);
+  return c.json({ metadata: result.metadata });
 });
