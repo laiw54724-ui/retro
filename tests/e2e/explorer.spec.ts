@@ -12,9 +12,9 @@ function explorerDocument() {
   return { ...structuredClone(documentFixture), windows: [target, explorer] } as SiteDocument;
 }
 
-async function openEditor(page: Page) {
+async function openEditor(page: Page, draftDocument = explorerDocument()) {
   await page.addInitScript((value) => localStorage.setItem("sb-example-auth-token", JSON.stringify(value)), session);
-  const site = { id: "site-1", username: "demo", site_name: "Demo Desk", draft_document: explorerDocument(), draft_version: 1, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-17T00:00:00.000Z", access_role: "owner" };
+  const site = { id: "site-1", username: "demo", site_name: "Demo Desk", draft_document: draftDocument, draft_version: 1, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-17T00:00:00.000Z", access_role: "owner" };
   const saves: Array<{ document: SiteDocument }> = [];
   await page.route("**/api/sites/site-1/assets**", (route) => route.fulfill({ json: { assets: [] } }));
   await page.route("**/api/sites/site-1/draft", (route) => {
@@ -63,4 +63,25 @@ test("visitor searches and opens a shortcut without horizontal overflow on mobil
   await dialog.getByRole("button", { name: /主角完整設定/ }).click();
   await expect(page.locator(".visitor-mobile").getByRole("dialog", { name: "角色設定.txt" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
+});
+
+test("folder deletion is confirmed, keeps target content, and can be undone", async ({ page }) => {
+  const document = explorerDocument();
+  const explorer = document.windows.find((window) => window.type === "explorer");
+  if (!explorer || explorer.type !== "explorer") throw new Error("explorer fixture mismatch");
+  explorer.content.folders = [{ id: "characters", parentId: null, name: "角色設定", order: 0, visibility: "published" }];
+  explorer.content.shortcuts = [{ id: "lore-link", parentId: "characters", label: "主角設定", order: 0, visibility: "published", target: { siteId: "site-1", id: "lore", kind: "window" } }];
+  const { dialog, saves } = await openEditor(page, document);
+  page.once("dialog", (confirmation) => confirmation.accept());
+  await dialog.getByRole("button", { name: "刪除", exact: true }).click();
+  await expect.poll(() => {
+    const current = saves.at(-1)?.document.windows.find((window) => window.type === "explorer");
+    return current?.type === "explorer" ? current.content.folders.length : -1;
+  }).toBe(0);
+  expect(saves.at(-1)?.document.windows.some((window) => window.id === "lore")).toBe(true);
+  await page.getByRole("button", { name: "復原" }).click();
+  await expect.poll(() => {
+    const current = saves.at(-1)?.document.windows.find((window) => window.type === "explorer");
+    return current?.type === "explorer" ? [current.content.folders.length, current.content.shortcuts.length] : [];
+  }).toEqual([1, 1]);
 });

@@ -17,9 +17,22 @@ function descendants(folders: Folder[], id: string): Set<string> {
   return result;
 }
 
+function folderDepth(folders: Folder[], id: string): number {
+  const byId = new Map(folders.map((folder) => [folder.id, folder]));
+  let depth = 0, cursor = byId.get(id), remaining = 9;
+  while (cursor && remaining-- > 0) { depth += 1; cursor = cursor.parentId ? byId.get(cursor.parentId) : undefined; }
+  return depth;
+}
+
+function subtreeHeight(folders: Folder[], id: string): number {
+  const children = folders.filter((folder) => folder.parentId === id);
+  return children.length ? 1 + Math.max(...children.map((folder) => subtreeHeight(folders, folder.id))) : 1;
+}
+
 function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer"> & { editing: boolean }) {
   const [folderId, setFolderId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [status, setStatus] = useState("");
   const content = window.content;
   const foldersById = new Map(content.folders.map((folder) => [folder.id, folder]));
   const active = folderId ? foldersById.get(folderId) ?? null : null;
@@ -43,6 +56,9 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
   ];
 
   function addFolder() {
+    if (content.folders.length >= 500) { setStatus("Explorer 已達 500 個資料夾上限；請先刪除資料夾再新增。"); return; }
+    if (folderId && folderDepth(content.folders, folderId) >= 8) { setStatus("資料夾最多 8 層；請回到上一層再新增。"); return; }
+    setStatus("");
     const folder: Folder = { id: newId(), parentId: folderId, name: "新資料夾", order: folders.length, visibility: "published" };
     setContent({ ...content, folders: [...content.folders, folder] });
   }
@@ -51,6 +67,8 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
     const targetId = idParts.join("|");
     const target = availableTargets.find((candidate) => candidate.kind === kind && candidate.id === targetId);
     if (!target || !ctx.siteId) return;
+    if (content.shortcuts.length >= 500) { setStatus("Explorer 已達 500 個捷徑上限；請先刪除捷徑再新增。"); return; }
+    setStatus("");
     setContent({ ...content, shortcuts: [...content.shortcuts, { id: newId(), parentId: folderId, label: target.label, order: shortcuts.length, visibility: "published", target: { siteId: ctx.siteId, id: target.id, kind: target.kind } }] });
   }
   function openShortcut(shortcut: Shortcut) {
@@ -67,6 +85,7 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
     const removed = descendants(content.folders, folder.id);
     const shortcutCount = content.shortcuts.filter((shortcut) => shortcut.parentId && removed.has(shortcut.parentId)).length;
     if (!globalThis.confirm(`刪除「${folder.name}」和 ${removed.size - 1} 個子資料夾、${shortcutCount} 個捷徑？原視窗與圖片不會被刪除。`)) return;
+    setStatus("");
     setContent({ folders: content.folders.filter((item) => !removed.has(item.id)), shortcuts: content.shortcuts.filter((item) => !item.parentId || !removed.has(item.parentId)) });
   }
   function folderPath(parentId: string | null) {
@@ -84,8 +103,9 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
       </div>
       <label className="explorer-search">搜尋捷徑<input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="輸入名稱…" /></label>
       {editing ? <div className="explorer-authoring"><button type="button" className="w98-btn" onClick={addFolder}>＋資料夾</button><label>＋捷徑<select aria-label="新增內容捷徑" defaultValue="" onChange={(event) => { addShortcut(event.target.value); event.target.value = ""; }}><option value="">選擇視窗、OC 或貼文…</option>{availableTargets.map((candidate) => <option key={`${candidate.kind}:${candidate.id}`} value={`${candidate.kind}|${candidate.id}`}>{candidate.label}</option>)}</select></label></div> : null}
+      {editing && status ? <p className="explorer-status" role="status">{status}</p> : null}
       {search ? <ul className="explorer-results" aria-label="搜尋結果">{searchResults.map((shortcut) => <li key={shortcut.id}><button type="button" onClick={() => openShortcut(shortcut)}>▣ {shortcut.label}</button><small>{folderPath(shortcut.parentId)}</small></li>)}</ul> : <div className="explorer-grid" role="list" aria-label={active?.name ?? "桌面"}>
-        {folders.map((folder) => <div key={folder.id} role="listitem" className="explorer-item"><button type="button" className="explorer-open" onClick={() => setFolderId(folder.id)}><span aria-hidden="true">📁</span><strong>{folder.name}</strong>{editing && folder.visibility === "draft" ? <small>草稿</small> : null}</button>{editing ? <div className="explorer-edit"><input aria-label={`${folder.name} 名稱`} value={folder.name} onChange={(event) => setContent({ ...content, folders: content.folders.map((item) => item.id === folder.id ? { ...item, name: event.target.value } : item) })} /><select aria-label={`${folder.name} 發布狀態`} value={folder.visibility} onChange={(event) => setContent({ ...content, folders: content.folders.map((item) => item.id === folder.id ? { ...item, visibility: event.target.value as "published" | "draft" } : item) })}><option value="published">公開</option><option value="draft">草稿</option></select><select aria-label={`移動 ${folder.name} 到`} value={folder.parentId ?? ""} onChange={(event) => setContent({ ...content, folders: content.folders.map((item) => item.id === folder.id ? { ...item, parentId: event.target.value || null } : item) })}><option value="">桌面</option>{content.folders.filter((candidate) => candidate.id !== folder.id && !descendants(content.folders, folder.id).has(candidate.id)).map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.name}</option>)}</select><button type="button" className="w98-btn danger" onClick={() => removeFolder(folder)}>刪除</button></div> : null}</div>)}
+        {folders.map((folder) => <div key={folder.id} role="listitem" className="explorer-item"><button type="button" className="explorer-open" onClick={() => setFolderId(folder.id)}><span aria-hidden="true">📁</span><strong>{folder.name}</strong>{editing && folder.visibility === "draft" ? <small>草稿</small> : null}</button>{editing ? <div className="explorer-edit"><input aria-label={`${folder.name} 名稱`} value={folder.name} onChange={(event) => setContent({ ...content, folders: content.folders.map((item) => item.id === folder.id ? { ...item, name: event.target.value } : item) })} /><select aria-label={`${folder.name} 發布狀態`} value={folder.visibility} onChange={(event) => setContent({ ...content, folders: content.folders.map((item) => item.id === folder.id ? { ...item, visibility: event.target.value as "published" | "draft" } : item) })}><option value="published">公開</option><option value="draft">草稿</option></select><select aria-label={`移動 ${folder.name} 到`} value={folder.parentId ?? ""} onChange={(event) => setContent({ ...content, folders: content.folders.map((item) => item.id === folder.id ? { ...item, parentId: event.target.value || null } : item) })}><option value="">桌面</option>{content.folders.filter((candidate) => candidate.id !== folder.id && !descendants(content.folders, folder.id).has(candidate.id) && folderDepth(content.folders, candidate.id) + subtreeHeight(content.folders, folder.id) <= 8).map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.name}</option>)}</select><button type="button" className="w98-btn danger" onClick={() => removeFolder(folder)}>刪除</button></div> : null}</div>)}
         {shortcuts.map((shortcut) => <div key={shortcut.id} role="listitem" className="explorer-item"><button type="button" className="explorer-open" onClick={() => openShortcut(shortcut)}><span aria-hidden="true">{shortcut.target.kind === "window" ? "↗" : shortcut.target.kind === "profile" ? "☺" : "▧"}</span><strong>{shortcut.label}</strong>{editing ? <small>{shortcut.visibility === "draft" ? "草稿 · " : ""}{shortcut.target.kind === "window" ? "視窗" : shortcut.target.kind === "profile" ? "OC" : "貼文"}</small> : null}</button>{editing ? <div className="explorer-edit"><input aria-label={`${shortcut.label} 名稱`} value={shortcut.label} onChange={(event) => setContent({ ...content, shortcuts: content.shortcuts.map((item) => item.id === shortcut.id ? { ...item, label: event.target.value } : item) })} /><select aria-label={`${shortcut.label} 發布狀態`} value={shortcut.visibility} onChange={(event) => setContent({ ...content, shortcuts: content.shortcuts.map((item) => item.id === shortcut.id ? { ...item, visibility: event.target.value as "published" | "draft" } : item) })}><option value="published">公開</option><option value="draft">草稿</option></select><select aria-label={`移動 ${shortcut.label} 到`} value={shortcut.parentId ?? ""} onChange={(event) => setContent({ ...content, shortcuts: content.shortcuts.map((item) => item.id === shortcut.id ? { ...item, parentId: event.target.value || null } : item) })}><option value="">桌面</option>{content.folders.map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.name}</option>)}</select><button type="button" className="w98-btn danger" onClick={() => setContent({ ...content, shortcuts: content.shortcuts.filter((item) => item.id !== shortcut.id) })}>刪除捷徑</button></div> : null}</div>)}
         {!folders.length && !shortcuts.length ? <p className="explorer-empty">這個資料夾是空的。</p> : null}
       </div>}

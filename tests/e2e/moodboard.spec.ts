@@ -95,3 +95,15 @@ test("PNG export identifies a cross-origin image that cannot be safely drawn", a
   await expect(dialog.getByRole("status")).toContainText("外站角色圖");
   await expect(dialog.getByRole("status")).toContainText("改用已上傳且允許匯出的圖片");
 });
+
+test("author receives an explanation at the 100 element limit", async ({ page }) => {
+  const document = boardDocument();
+  const board = document.windows[0];
+  if (board.type !== "moodboard") throw new Error("moodboard fixture mismatch");
+  board.content.elements = Array.from({ length: 100 }, (_, index) => ({ id: `color-${index}`, kind: "color" as const, x: index % 20 * 24, y: Math.floor(index / 20) * 24, width: 24, height: 24, zOrder: index, locked: false, color: "#f5b7d2" }));
+  await openEditor(page, document);
+  const dialog = page.getByRole("dialog", { name: "Moodboard.exe" });
+  await dialog.getByRole("button", { name: "文字", exact: true }).click();
+  await expect(dialog.getByRole("status")).toContainText("已達 100 個物件上限");
+  await expect(dialog.getByText("100/100", { exact: true })).toBeVisible();
+});

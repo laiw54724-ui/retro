@@ -39,6 +39,7 @@ export function MoodboardInlineEditor({ window, ctx, update }: ModuleProps<"mood
   const drag = useRef<{ id: string; startX: number; startY: number; x: number; y: number } | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const [exportStatus, setExportStatus] = useState("");
+  const [limitStatus, setLimitStatus] = useState("");
   const content = window.content;
   const selected = content.elements.find((element) => element.id === selectedId) ?? null;
   const setElements = (recipe: (elements: MoodboardElement[]) => MoodboardElement[], historyKey?: string) => update((current) => ({ ...current, content: { ...current.content, elements: recipe(current.content.elements) } }), historyKey);
@@ -46,7 +47,8 @@ export function MoodboardInlineEditor({ window, ctx, update }: ModuleProps<"mood
   const topZ = Math.max(0, ...content.elements.map((element) => element.zOrder));
 
   function add(kind: MoodboardElement["kind"]) {
-    if (content.elements.length >= 100) return;
+    if (content.elements.length >= 100) { setLimitStatus("Moodboard 已達 100 個物件上限；請先刪除物件再新增。"); return; }
+    setLimitStatus("");
     const base = { id: newId(), x: 80, y: 70, width: 240, height: 150, zOrder: topZ + 1, locked: false };
     const element: MoodboardElement = kind === "text"
       ? { ...base, kind, content: "輸入文字", color: "#111111", fontSize: 32, align: "left" }
@@ -55,8 +57,10 @@ export function MoodboardInlineEditor({ window, ctx, update }: ModuleProps<"mood
     setElements((elements) => [...elements, element]); setSelectedId(element.id);
   }
   async function addImage(file: File) {
+    if (content.elements.length >= 100) { setLimitStatus("Moodboard 已達 100 個物件上限；請先刪除物件再新增。"); return; }
+    setLimitStatus("");
     const stored = await ctx.upload?.(file, "image");
-    if (!stored || content.elements.length >= 100) return;
+    if (!stored) return;
     const element: MoodboardElement = { id: newId(), kind: "image", x: 80, y: 70, width: 280, height: 210, zOrder: topZ + 1, locked: false, src: stored, srcUrl: "", alt: file.name.replace(/\.[^.]+$/, "") };
     setElements((elements) => [...elements, element]); setSelectedId(element.id);
   }
@@ -77,7 +81,8 @@ export function MoodboardInlineEditor({ window, ctx, update }: ModuleProps<"mood
     patch(active.id, { x: Math.round(x), y: Math.round(y) }, `moodboard-drag-${active.id}`);
   }
   function duplicate(element: MoodboardElement) {
-    if (content.elements.length >= 100) return;
+    if (content.elements.length >= 100) { setLimitStatus("Moodboard 已達 100 個物件上限；請先刪除物件再複製。"); return; }
+    setLimitStatus("");
     const next = { ...element, id: newId(), x: clamp(element.x + 24, 0, content.width - element.width), y: clamp(element.y + 24, 0, content.height - element.height), zOrder: topZ + 1 };
     setElements((elements) => [...elements, next]); setSelectedId(next.id);
   }
@@ -107,6 +112,7 @@ export function MoodboardInlineEditor({ window, ctx, update }: ModuleProps<"mood
         <label>背景 <input aria-label="畫布背景色" type="color" value={content.background} onChange={(event) => update((current) => ({ ...current, content: { ...current.content, background: event.target.value } }))} /></label>
         <button type="button" className="w98-btn" onClick={() => void exportPng()}>匯出 PNG</button>
         <span>{content.elements.length}/100</span>
+        {limitStatus ? <span role="status" className="moodboard-limit-status">{limitStatus}</span> : null}
         {exportStatus ? <span role="status" className="moodboard-export-status">{exportStatus}</span> : null}
       </div>
       <div className="moodboard-workspace">

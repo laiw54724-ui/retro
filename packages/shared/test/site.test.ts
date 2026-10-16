@@ -89,6 +89,17 @@ describe("site schema security boundaries", () => {
     expect(SiteDocumentSchema.safeParse(document).success).toBe(false);
   });
 
+  it("accepts the documented Explorer boundary and rejects the 501st folder", () => {
+    const document = createStarterDocument("Large World", "classic98", "blank");
+    const explorer = makeWindow("explorer");
+    if (explorer.type !== "explorer") throw new Error("explorer factory mismatch");
+    explorer.content.folders = Array.from({ length: 500 }, (_, index) => ({ id: `folder-${index}`, parentId: null, name: `Folder ${index}`, order: index, visibility: "published" as const }));
+    document.windows = [explorer];
+    expect(SiteDocumentSchema.safeParse(document).success).toBe(true);
+    explorer.content.folders.push({ id: "folder-500", parentId: null, name: "One too many", order: 500, visibility: "published" });
+    expect(SiteDocumentSchema.safeParse(document).success).toBe(false);
+  });
+
   it("bounds serverless desktop toys and keeps their links safe", () => {
     const document = createStarterDocument("Toys", "classic98", "blank");
     const minesweeper = makeWindow("minesweeper");

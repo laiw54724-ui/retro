@@ -178,3 +178,7 @@
 /* Theme draft preview: presets never mutate the saved site until Apply. */
 select{font:inherit}
 .theme-draft-preview{display:grid;gap:5px;min-height:118px;margin:8px 0;padding:9px;border:2px solid;border-color:#808080 #fff #fff #808080;background-repeat:repeat;overflow:hidden}.theme-draft-preview span,.theme-draft-preview i,.theme-draft-preview b{display:block;min-width:0;padding:5px;font-style:normal;overflow-wrap:anywhere}.theme-draft-preview i{max-width:85%}.theme-draft-preview b{max-width:72%;font-weight:400}.theme-draft-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}.theme-draft-actions .w98-btn{min-height:40px}@media(max-width:520px){.theme-draft-actions{grid-template-columns:1fr}.theme-draft-actions .w98-btn{min-height:44px}}
+
+/* Bounded authoring feedback */
+.moodboard-limit-status,.explorer-status{padding:5px;background:#fff7cc;border:1px solid #9c7c00;overflow-wrap:anywhere}
+.moodboard-limit-status{flex-basis:100%}.explorer-status{margin:0}
