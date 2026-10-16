@@ -10,7 +10,9 @@
     "test:unit": "pnpm -r --if-present test:unit",
     "test:e2e": "playwright test",
     "icons:import": "node scripts/import-windows-icons.mjs",
-    "icons:audit": "node scripts/import-windows-icons.mjs --check"
+    "icons:audit": "node scripts/import-windows-icons.mjs --check",
+    "assets:audit": "node scripts/audit-third-party-assets.mjs",
+    "assets:audit:release": "node scripts/audit-third-party-assets.mjs --release"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
