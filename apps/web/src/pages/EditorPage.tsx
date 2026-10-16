@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { buildPublishChecks, CollectionEntityV2Schema, createProfile, deleteOrRetargetProfile, duplicateProfile, hasBlockingCheck, loadVersionedSiteDocument, normalizeDocument, parseSiteDocument, PostEntityV2Schema, ProfileEntityV2Schema, projectV2ToLegacyDocument, updateProfile, type DesktopWindow, type SiteDocumentV2Input } from "@retrodesk/shared";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { api, ApiError, type AssetRecord } from "../lib/api";
+import { Link, useNavigate } from "react-router-dom";
+import { api, ApiError, type AssetRecord, type SiteRecord } from "../lib/api";
 import { useEditorStore } from "../features/editor/store";
 import { DesktopCanvas } from "../features/editor/DesktopCanvas";
 import { MobileScreen } from "../features/site/MobileScreen";
@@ -35,13 +35,14 @@ function loadedLegacyDocument(loaded: ReturnType<typeof loadVersionedSiteDocumen
   return legacy.document;
 }
 
-export function EditorPage() {
-  const { siteId = "" } = useParams();
+export function EditorPage({ site }: { site: SiteRecord }) {
+  const siteId = site.id;
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const store = useEditorStore();
   const saveInFlight = useRef(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [message, setMessage] = useState("");
   const [conflict, setConflict] = useState(false);
   // Transient invalid drafts (e.g. a field cleared mid-edit) pause autosave quietly instead of raising a popup.
@@ -153,19 +154,15 @@ export function EditorPage() {
   }
 
   useEffect(() => {
-    let alive = true;
-    api.getSite(siteId)
-      .then(({ site }) => {
-        if (!alive) return;
-        applyLoadedSite(site);
-        setLoading(false);
-      })
-      .catch((error) => {
-        setMessage(error instanceof Error ? error.message : "載入失敗");
-        setLoading(false);
-      });
-    return () => { alive = false; };
-  }, [siteId]);
+    try {
+      applyLoadedSite(site);
+      setLoadError("");
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : "載入失敗");
+    } finally {
+      setLoading(false);
+    }
+  }, [site]);
 
   useEffect(() => {
     if (store.versionedDocument && !sameDocument(store.versionedDocument, versionedDraft)) {
@@ -282,6 +279,7 @@ export function EditorPage() {
   );
   const migrationAudits = assetAudits.filter((entry) => entry.asset.storageScope === "legacy_public" || entry.asset.publicCopyRemaining);
 
+  if (loadError) return <main className="not-found"><div><h1>無法開啟編輯器</h1><p>{loadError}</p></div></main>;
   if (loading || !store.document) return <div className="boot-screen">Loading desktop...</div>;
 
   async function uploadImage(file: File, kind: "image" | "icon" = "image"): Promise<string | null> {

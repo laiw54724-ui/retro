@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { documentFixture } from "./fixture";
 
 const token = "a".repeat(43);
 const session = { access_token: "a.b.c", refresh_token: "r", expires_at: 4102444800, expires_in: 3600, token_type: "bearer", user: { id: "member-1", email: "member@example.com", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01" } };
@@ -58,4 +59,23 @@ test("invite states fit a 320px viewport", async ({ page }) => {
   await page.goto(`/invite#token=${token}`);
   await expect(page.getByRole("button", { name: "使用 Google 登入並繼續" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+});
+
+test("viewer opens a private draft reader without mounting authoring behavior", async ({ page }) => {
+  await signIn(page);
+  let draftWrites = 0;
+  const site = { id: "site-viewer", username: "private", site_name: "Private Desk", draft_document: documentFixture, draft_version: 4, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-16T00:00:00.000Z", access_role: "viewer" };
+  await page.route("**/api/sites/site-viewer", (route) => route.fulfill({ json: { site } }));
+  await page.route("**/api/sites/site-viewer/assets**", (route) => route.fulfill({ json: { assets: [] } }));
+  await page.route("**/api/sites/site-viewer/draft", (route) => { draftWrites += 1; return route.fulfill({ status: 403, json: { error: { code: "forbidden", message: "forbidden" } } }); });
+
+  await page.goto("/editor/site-viewer");
+  await expect(page.getByText("私人草稿 · 只能查看")).toBeVisible();
+  await expect(page.getByRole("button", { name: "桌面版" })).toBeVisible();
+  await page.getByRole("button", { name: "手機版" }).click();
+  await expect(page.locator(".draft-viewer-phone .m-screen")).toBeVisible();
+  await expect(page.getByRole("button", { name: "發布", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "協作者" })).toHaveCount(0);
+  await expect(page.getByRole("tab", { name: "主題" })).toHaveCount(0);
+  expect(draftWrites).toBe(0);
 });

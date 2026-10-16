@@ -4,7 +4,7 @@ import { useAuth } from "./AuthProvider";
 import { LandingPage } from "../pages/LandingPage";
 import { AuthPage } from "../pages/AuthPage";
 import { OnboardingPage } from "../pages/OnboardingPage";
-import { EditorPage } from "../pages/EditorPage";
+import { CollaborativeSitePage } from "../pages/CollaborativeSitePage";
 import { PublicSitePage } from "../pages/PublicSitePage";
 import { InvitePage } from "../pages/InvitePage";
 
@@ -23,7 +23,7 @@ export function App() {
       <Route path="/auth" element={<AuthPage />} />
       <Route path="/invite" element={<InvitePage />} />
       <Route path="/onboarding" element={<RequireAuth><OnboardingPage /></RequireAuth>} />
-      <Route path="/editor/:siteId" element={<RequireAuth><EditorPage /></RequireAuth>} />
+      <Route path="/editor/:siteId" element={<RequireAuth><CollaborativeSitePage /></RequireAuth>} />
       <Route path="/:handle" element={<PublicSitePage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
