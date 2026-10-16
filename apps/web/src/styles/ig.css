@@ -88,6 +88,8 @@
 .ig-story-title { flex: 1; min-width: 0; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ig-story-head button { width: 32px; height: 32px; padding: 0; border: 0; background: none; color: #fff; font-size: 22px; cursor: pointer; }
 .ig-story-body { flex: 1; min-height: 0; position: relative; display: grid; place-items: center; padding: 0 8px 12px; }
+.ig-story-text { position: absolute; z-index: 2; left: 12%; right: 12%; bottom: 8%; padding: 8px 10px; background: rgba(0,0,0,.68); color: #fff; text-align: center; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ig-highlight-frame-row { display: flex; align-items: flex-start; gap: 6px; padding: 7px 0; border-top: 1px solid #aaa; }
 .ig-story-l, .ig-story-r { position: absolute; top: 0; bottom: 0; background: none; border: 0; cursor: pointer; }
 .ig-story-l { left: 0; width: 35%; } .ig-story-r { right: 0; width: 65%; }
 .ig-toast { position: absolute; left: 50%; bottom: 58px; transform: translateX(-50%); z-index: 30; padding: 6px 12px; background: #ffffe1; color: #000; border: 1px solid #000; font-size: 12px; white-space: nowrap; }

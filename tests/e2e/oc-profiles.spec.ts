@@ -155,6 +155,7 @@ test("canonical post media edits autosave and survive reload", async ({ page }) 
   );
   if (!canonicalHighlight) throw new Error("fixture highlight missing");
   canonicalHighlight.coverAlt = "雪地旅程封面";
+  canonicalHighlight.frames[0].alt = "雪地旅程封面";
   canonicalHighlight.frames.push({
     id: `${canonicalHighlight.id}:frame:2`,
     src: "https://example.com/highlight-2.png",
@@ -170,7 +171,7 @@ test("canonical post media edits autosave and survive reload", async ({ page }) 
   await win.getByRole("textbox", { name: "世界觀日期" }).fill("霜月 12 日");
   await win.getByRole("textbox", { name: "圖片 1 替代文字" }).fill("角色站在雪地裡");
   await win.getByRole("textbox", { name: "新增輪播圖片網址" }).fill("https://example.com/four.png");
-  await win.getByRole("button", { name: "加入", exact: true }).click();
+  await win.locator(".ig-canonical-posts").getByRole("button", { name: "加入", exact: true }).click();
   await expect(win.getByRole("textbox", { name: "圖片 4 替代文字" })).toBeVisible();
   await win.getByRole("textbox", { name: "圖片 4 替代文字" }).fill("第四張作品");
   await win.getByRole("button", { name: "圖片 4 往前" }).click();
@@ -179,6 +180,10 @@ test("canonical post media edits autosave and survive reload", async ({ page }) 
   // Reconciliation must preserve fields which that form cannot represent.
   await win.getByRole("textbox", { name: "帳號" }).fill("retro_archive");
   await win.getByRole("textbox", { name: "精選標題" }).first().fill("雪國旅程");
+  const highlightEditor = win.locator(".ig-canonical-highlights");
+  await highlightEditor.getByRole("textbox", { name: "新增精選頁圖片網址" }).fill("https://example.com/highlight-3.png");
+  await highlightEditor.getByRole("button", { name: "加入", exact: true }).click();
+  await highlightEditor.getByRole("textbox", { name: "精選第 3 頁替代文字" }).fill("旅程第三幕");
 
   await expect.poll(() => saves.at(-1)?.document.entities.posts.find((post) => post.id === "post:ig:p1")?.title).toBe("OC archive");
   const saved = saves.at(-1)?.document.entities.posts.find((post) => post.id === "post:ig:p1");
@@ -193,12 +198,13 @@ test("canonical post media edits autosave and survive reload", async ({ page }) 
   );
   expect(savedHighlight?.title).toBe("雪國旅程");
   expect(savedHighlight?.coverAlt).toBe("雪地旅程封面");
-  expect(savedHighlight?.frames).toHaveLength(2);
+  expect(savedHighlight?.frames).toHaveLength(3);
   expect(savedHighlight?.frames[1]).toMatchObject({
     src: "https://example.com/highlight-2.png",
     alt: "旅程第二幕",
     text: "抵達雪國",
   });
+  expect(savedHighlight?.frames[2]).toMatchObject({ src: "https://example.com/highlight-3.png", alt: "旅程第三幕" });
 
   await page.reload();
   const reloaded = page.getByRole("dialog", { name: "Instagram.exe" });
@@ -208,6 +214,7 @@ test("canonical post media edits autosave and survive reload", async ({ page }) 
   await expect(reloaded.getByRole("textbox", { name: "圖片 3 替代文字" })).toHaveValue("第四張作品");
   await expect(reloaded.getByRole("textbox", { name: "帳號" })).toHaveValue("retro-archive");
   await expect(reloaded.getByRole("textbox", { name: "精選標題" }).first()).toHaveValue("雪國旅程");
+  await expect(reloaded.getByRole("textbox", { name: "精選第 3 頁替代文字" })).toHaveValue("旅程第三幕");
 });
 
 for (const width of [1280, 390]) {
@@ -224,6 +231,33 @@ for (const width of [1280, 390]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
   });
 }
+
+test("published multi-page highlight pauses, supports keyboard navigation and restores scroll", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  const document = navigationDocument();
+  const highlight = document.entities.highlights.find((item) => item.ownerProfileId === "profile:ig");
+  if (!highlight) throw new Error("fixture highlight missing");
+  highlight.visibility = "published";
+  highlight.frames[0].alt = "第一頁雪景";
+  highlight.frames[0].text = "旅程開始";
+  highlight.frames.push({ id: `${highlight.id}:frame:2`, src: "https://example.com/highlight-2.png", srcUrl: "https://example.com/highlight-2.png", alt: "第二頁夜景", text: "抵達雪國" });
+  await mockPublic(page, document);
+  await page.goto("/@demo");
+  const win = page.getByRole("dialog", { name: "Instagram.exe" });
+  const scroll = win.locator(".ig-scroll");
+  await expect.poll(() => scroll.evaluate((node) => { node.scrollTop = 120; return node.scrollTop; })).toBeGreaterThan(0);
+  await win.getByRole("button", { name: highlight.title }).evaluate((button) => (button as HTMLButtonElement).click());
+  const viewer = win.getByRole("dialog", { name: "精選動態" });
+  await expect(viewer.getByText(`${highlight.title} · 1/2`)).toBeVisible();
+  await viewer.getByRole("button", { name: "暫停播放" }).click();
+  await expect(viewer.getByRole("button", { name: "繼續播放" })).toBeVisible();
+  await viewer.press("ArrowRight");
+  await expect(viewer.getByText("抵達雪國")).toBeVisible();
+  await expect(viewer.getByText(`${highlight.title} · 2/2`)).toBeVisible();
+  await viewer.press("Escape");
+  await expect(viewer).toHaveCount(0);
+  await expect.poll(() => scroll.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
+});
 
 test("desktop visitor navigates OC directory and posts with layered back and scroll restore", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });

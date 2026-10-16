@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { ModuleProps } from "../types";
+import { CanonicalHighlightEditor } from "./CanonicalHighlightEditor";
 import { CanonicalPostEditor } from "./CanonicalPostEditor";
 import { IgEditForm } from "./IgEditForm";
 import { IgPreview } from "./IgPreview";
@@ -160,6 +161,7 @@ export function IgInlineEditor(props: ModuleProps<"instagram">) {
       <div className="ig-frame-inner">
         {tab === "edit" ? (
           <IgEditForm {...props}>
+            <CanonicalHighlightEditor props={props} />
             <CanonicalPostEditor props={props} />
           </IgEditForm>
         ) : (

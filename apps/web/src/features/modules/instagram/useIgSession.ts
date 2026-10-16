@@ -26,6 +26,7 @@ export function useIgSession(highlightCount: (profileId: string) => number, entr
   const [toast, setToast] = useState<string | null>(null);
   const [story, setStory] = useState(-1);
   const [storyProgress, setStoryProgress] = useState(0);
+  const [storyPaused, setStoryPaused] = useState(false);
   const timers = useRef<{ toast?: ReturnType<typeof setTimeout>; burst?: ReturnType<typeof setTimeout>; story?: ReturnType<typeof setInterval> }>({});
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -33,6 +34,7 @@ export function useIgSession(highlightCount: (profileId: string) => number, entr
     clearInterval(timers.current.story);
     setStory(-1);
     setStoryProgress(0);
+    setStoryPaused(false);
   }, []);
 
   useEffect(() => () => {
@@ -51,14 +53,22 @@ export function useIgSession(highlightCount: (profileId: string) => number, entr
 
   useEffect(() => {
     const top = pendingScroll.current ?? 0;
-    let innerFrame = 0;
-    const frame = requestAnimationFrame(() => {
-      innerFrame = requestAnimationFrame(() => {
-        if (scrollRef.current) scrollRef.current.scrollTop = top;
-        if (pendingScroll.current === top) pendingScroll.current = null;
-      });
-    });
-    return () => { cancelAnimationFrame(frame); cancelAnimationFrame(innerFrame); };
+    let frame = 0;
+    let attempts = 0;
+    const restore = () => {
+      const node = scrollRef.current;
+      if (node) {
+        node.scrollTop = top;
+        if (top === 0 || node.scrollTop > 0 || attempts >= 10) {
+          if (pendingScroll.current === top) pendingScroll.current = null;
+          return;
+        }
+      }
+      attempts += 1;
+      frame = requestAnimationFrame(restore);
+    };
+    frame = requestAnimationFrame(restore);
+    return () => cancelAnimationFrame(frame);
   }, [route.screen, route.postId, route.profileId]);
 
   const showToast = useCallback((message: string) => {
@@ -123,8 +133,7 @@ export function useIgSession(highlightCount: (profileId: string) => number, entr
     if (!highlightCount(route.profileId)) return;
     setStory(index);
     setStoryProgress(0);
-    clearInterval(timers.current.story);
-    timers.current.story = setInterval(() => setStoryProgress((progress) => (progress + 2.5 < 100 ? progress + 2.5 : 100)), 100);
+    setStoryPaused(false);
   };
   const stepStory = (delta: -1 | 1) => {
     const total = highlightCount(route.profileId);
@@ -133,7 +142,13 @@ export function useIgSession(highlightCount: (profileId: string) => number, entr
     if (next >= total) { closeStory(); return; }
     setStory(next);
     setStoryProgress(0);
+    setStoryPaused(false);
   };
+  useEffect(() => {
+    clearInterval(timers.current.story);
+    if (story >= 0 && !storyPaused) timers.current.story = setInterval(() => setStoryProgress((progress) => (progress + 2.5 < 100 ? progress + 2.5 : 100)), 100);
+    return () => clearInterval(timers.current.story);
+  }, [story, storyPaused]);
   useEffect(() => {
     if (story >= 0 && storyProgress >= 100) {
       if (story + 1 >= highlightCount(route.profileId)) closeStory();
@@ -146,12 +161,12 @@ export function useIgSession(highlightCount: (profileId: string) => number, entr
     screen: route.screen, postId: route.postId, activeProfileId,
     previousScreen: history.current.at(-1)?.route.screen ?? "profile", historyDepth: history.current.length,
     interactionKey, gridTab: gridTabs[profileKey] ?? "grid", followed: !!followedProfiles[profileKey],
-    liked, saved, extraComments, drafts, showAll, commentOpen, slide, query: queries[profileKey] ?? "", sheetId, burst, toast, story, storyProgress, scrollRef,
+    liked, saved, extraComments, drafts, showAll, commentOpen, slide, query: queries[profileKey] ?? "", sheetId, burst, toast, story, storyProgress, storyPaused, scrollRef,
     setGridTab: (value: "grid" | "list") => setGridTabs((state) => ({ ...state, [profileKey]: value })),
     setFollowed: (value: boolean) => setFollowedProfiles((state) => ({ ...state, [profileKey]: value })),
     setDrafts, setShowAll, setCommentOpen, setSlide,
     setQuery: (value: string) => setQueries((state) => ({ ...state, [profileKey]: value })),
     setSheetId, showToast, go, openDirectory, openPost, navigateProfile, back,
-    toggleLike, doubleLike, toggleSave, postComment, openStory, closeStory, stepStory
+    toggleLike, doubleLike, toggleSave, postComment, openStory, closeStory, stepStory, toggleStoryPause: () => setStoryPaused((value) => !value)
   };
 }

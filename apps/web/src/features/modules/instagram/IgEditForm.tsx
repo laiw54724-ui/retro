@@ -94,7 +94,7 @@ export function IgEditForm({ window, ctx, update, children }: ModuleProps<"insta
         </div>
       </fieldset>
 
-      <fieldset className="w98-fieldset"><legend>精選動態</legend>
+      {!ctx.updateContent ? <fieldset className="w98-fieldset"><legend>精選動態</legend>
         {profile.highlights.map((highlight) => (
           <div key={highlight.id} className="ig-hl-edit">
             <span className="ig-thumb round ph">{highlight.src ? <SafeImg src={highlight.src} alt="" compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : null}</span>
@@ -109,7 +109,7 @@ export function IgEditForm({ window, ctx, update, children }: ModuleProps<"insta
           </div>
         ))}
         <button type="button" className="w98-btn small" onClick={() => setProfile({ highlights: [...profile.highlights, makeIgHighlight()] })}>＋ 新增精選</button>
-      </fieldset>
+      </fieldset> : null}
 
       {!ctx.updateContent ? <fieldset className="w98-fieldset"><legend>貼文（{posts.length}）</legend>
         <div className="ie-row">

@@ -1,9 +1,9 @@
 import type { ReactElement } from "react";
-import type { DesktopWindow, EntityRef, IgPost, PostEntityV2, ProfileEntityV2, RetroTheme, SiteDocumentV2Input } from "@retrodesk/shared";
+import type { DesktopWindow, EntityRef, HighlightEntityV2, IgPost, PostEntityV2, ProfileEntityV2, RetroTheme, SiteDocumentV2Input } from "@retrodesk/shared";
 import type { ThemeView } from "../../lib/themeView";
 
 export type LinkAction = { target: "url" | "window"; url?: string; windowId?: string; label?: string };
-export type ProfileDirectoryEntry = { id: string; siteId: string; profile: Extract<DesktopWindow, { type: "instagram" }>["content"]["profile"]; posts: IgPost[]; themeOverride?: { accent: string; background: string } };
+export type ProfileDirectoryEntry = { id: string; siteId: string; profile: Extract<DesktopWindow, { type: "instagram" }>["content"]["profile"]; posts: IgPost[]; highlights: HighlightEntityV2[]; themeOverride?: { accent: string; background: string } };
 
 export type ModuleCtx = {
   theme: RetroTheme;

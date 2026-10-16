@@ -1,4 +1,4 @@
-import { ProfileEntityV2Schema, type SiteDocumentV2Input, type ProfileEntityV2 } from "@retrodesk/shared";
+import { HighlightEntityV2Schema, ProfileEntityV2Schema, type SiteDocumentV2Input, type ProfileEntityV2 } from "@retrodesk/shared";
 import type { ProfileDirectoryEntry } from "../types";
 
 /** Read-only adapter from canonical entities to the IG navigation boundary. */
@@ -15,7 +15,12 @@ export function buildProfileDirectory(document: SiteDocumentV2Input, publishedOn
         .map(({ kind: _kind, siteId: _siteId, visibility: _visibility, authorProfileId: _authorProfileId, ...post }) => ({
           ...post, srcUrl: post.srcUrl ?? "", href: post.href ?? "", location: post.location ?? "", date: post.date ?? "", likes: post.likes ?? 0, comments: post.comments ?? [], extra: (post.extra ?? []).map((extra) => ({ ...extra, srcUrl: extra.srcUrl ?? "" }))
         }));
-      return [{ id: normalizedProfile.id, siteId: normalizedProfile.siteId, profile: legacyProfile, posts, themeOverride: normalizedProfile.themeOverride }];
+      const highlights = (document.entities.highlights ?? []).flatMap((highlight) => {
+        const parsedHighlight = HighlightEntityV2Schema.safeParse(highlight);
+        if (!parsedHighlight.success || parsedHighlight.data.siteId !== normalizedProfile.siteId || parsedHighlight.data.ownerProfileId !== normalizedProfile.id || (publishedOnly && parsedHighlight.data.visibility !== "published")) return [];
+        return [parsedHighlight.data];
+      });
+      return [{ id: normalizedProfile.id, siteId: normalizedProfile.siteId, profile: legacyProfile, posts, highlights, themeOverride: normalizedProfile.themeOverride }];
     });
 }
 

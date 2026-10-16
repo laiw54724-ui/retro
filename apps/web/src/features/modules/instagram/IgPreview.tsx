@@ -13,13 +13,24 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
   const entryProfileId = ctx.profileId ?? "entry";
   const profileDirectory = ctx.profileDirectory ?? [];
   const entrySiteId = profileDirectory.find((entry) => entry.id === entryProfileId)?.siteId ?? ctx.siteId ?? "public";
-  const session = useIgSession((profileId) => profileDirectory.find((entry) => entry.id === profileId)?.profile.highlights.length ?? window.content.profile.highlights.length, entryProfileId, `${entrySiteId}:${window.id}`);
+  const storyFramesFor = (profileId: string) => {
+    const entry = profileDirectory.find((item) => item.id === profileId);
+    if (entry?.highlights.length) return entry.highlights.flatMap((highlight) => {
+      const frames = highlight.frames.length ? highlight.frames : [{ id: `${highlight.id}:cover`, src: highlight.coverSrc, srcUrl: highlight.coverSrcUrl, alt: highlight.coverAlt, text: "" }];
+      return frames.map((frame, frameIndex) => ({ ...frame, highlightId: highlight.id, highlightTitle: highlight.title, frameIndex, frameCount: frames.length }));
+    });
+    const legacy = entry?.profile.highlights ?? (profileId === entryProfileId ? window.content.profile.highlights : []);
+    return legacy.map((highlight) => ({ id: highlight.id, src: highlight.src, srcUrl: highlight.srcUrl, alt: highlight.title, text: "", highlightId: highlight.id, highlightTitle: highlight.title, frameIndex: 0, frameCount: 1 }));
+  };
+  const session = useIgSession((profileId) => storyFramesFor(profileId).length, entryProfileId, `${entrySiteId}:${window.id}`);
   const s = session;
   const directoryEntry = ctx.profileDirectory?.find((entry) => entry.id === s.activeProfileId);
   const profile = directoryEntry?.profile ?? window.content.profile;
   const posts = directoryEntry?.posts ?? window.content.images;
   const canBrowseProfiles = profileDirectory.some((entry) => entry.id !== s.activeProfileId);
-  const highlights = profile.highlights;
+  const canonicalHighlights = directoryEntry?.highlights ?? [];
+  const highlights = canonicalHighlights.length ? canonicalHighlights.map((highlight) => ({ id: highlight.id, title: highlight.title, src: highlight.coverSrc, srcUrl: highlight.coverSrcUrl })) : profile.highlights;
+  const storyFrames = storyFramesFor(s.activeProfileId);
   const profileThemeOverride = directoryEntry?.themeOverride ?? (s.activeProfileId === entryProfileId ? ctx.profileThemeOverride : undefined);
   const tv = profileThemeOverride ? { ...ctx.tv, face: profileThemeOverride.background, accent: profileThemeOverride.accent } : ctx.tv;
   const I = igIcons(tv.text);
@@ -118,14 +129,16 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
 
   const renderHighlights = (ring: boolean) => (
     <div className="ig-hls">
-      {highlights.map((h, i) => (
-        <button key={h.id} type="button" className="ig-hl" onClick={() => s.openStory(i)}>
+      {highlights.map((h, i) => {
+        const storyIndex = canonicalHighlights.length ? canonicalHighlights.slice(0, i).reduce((total, item) => total + Math.max(1, item.frames.length), 0) : i;
+        return (
+        <button key={h.id} type="button" className="ig-hl" onClick={() => s.openStory(storyIndex)}>
           <span className="ig-hl-ring" style={ring ? { background: ringBg } : { border: "2px solid #c7c7c7", background: "#fff" }}>
             <span className="ig-hl-in ph" style={phStyle}>{h.src ? <SafeImg src={h.src} alt="" compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : null}</span>
           </span>
           <span className="ig-hl-title">{h.title}</span>
         </button>
-      ))}
+      )})}
     </div>
   );
 
@@ -142,7 +155,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
     { id: "profile", label: "個人" }
   ];
   const activeNav = s.screen === "post" ? s.previousScreen : s.screen;
-  const story = s.story >= 0 ? highlights[s.story] : undefined;
+  const story = s.story >= 0 ? storyFrames[s.story] : undefined;
 
   return (
     <div className={`ig-app ig-skin-${window.content.skin}`} style={appStyle}>
@@ -245,11 +258,17 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
       ) : null}
 
       {story ? (
-        <div role="dialog" aria-label="精選動態" className="ig-story">
-          <div className="ig-bars">{highlights.map((_, i) => <span key={i}><span style={{ width: i < s.story ? "100%" : i === s.story ? `${s.storyProgress}%` : "0%" }} /></span>)}</div>
-          <div className="ig-story-head">{avatar(28)}<strong>{profile.username}</strong><span className="ig-story-title">{story.title}</span><button type="button" aria-label="關閉" onClick={s.closeStory}>×</button></div>
+        <div role="dialog" aria-label="精選動態" className="ig-story" tabIndex={-1} autoFocus onKeyDown={(event) => {
+          if (event.key === "ArrowLeft") s.stepStory(-1);
+          if (event.key === "ArrowRight") s.stepStory(1);
+          if (event.key === " " || event.key === "Spacebar") { event.preventDefault(); s.toggleStoryPause(); }
+          if (event.key === "Escape") s.closeStory();
+        }}>
+          <div className="ig-bars">{storyFrames.map((frame, i) => <span key={frame.id}><span style={{ width: i < s.story ? "100%" : i === s.story ? `${s.storyProgress}%` : "0%" }} /></span>)}</div>
+          <div className="ig-story-head">{avatar(28)}<strong>{profile.username}</strong><span className="ig-story-title">{story.highlightTitle}{story.frameCount > 1 ? ` · ${story.frameIndex + 1}/${story.frameCount}` : ""}</span><button type="button" aria-label={s.storyPaused ? "繼續播放" : "暫停播放"} onClick={s.toggleStoryPause}>{s.storyPaused ? "▶" : "Ⅱ"}</button><button type="button" aria-label="關閉" onClick={s.closeStory}>×</button></div>
           <div className="ig-story-body">
-            {story.src ? <SafeImg src={story.src} alt={story.title} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }} /> : <div className="ph" style={{ height: "100%", aspectRatio: "9 / 16", ...phStyle }} />}
+            {story.src ? <SafeImg src={story.src} alt={story.alt || story.highlightTitle} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }} /> : <div className="ph" style={{ height: "100%", aspectRatio: "9 / 16", ...phStyle }} />}
+            {story.text ? <div className="ig-story-text">{story.text}</div> : null}
             <button type="button" aria-label="上一則" className="ig-story-l" onClick={() => s.stepStory(-1)} />
             <button type="button" aria-label="下一則" className="ig-story-r" onClick={() => s.stepStory(1)} />
           </div>
