@@ -33,7 +33,7 @@ export function MusicView({ window, ctx }: ModuleProps<"music">) {
   }, [activeForWindow, playback.trackId, tracks, window.id]);
 
   if (!tracks.length) return <div className="music-empty"><span aria-hidden="true">♫</span><strong>播放清單是空的</strong><small>作者還沒有加入曲目。</small></div>;
-  if (!selected) return null;
+  if (!selected) return <div className="music-empty"><strong>找不到可播放曲目</strong></div>;
 
   const index = tracks.findIndex((track) => track.id === selected.id);
   const isPlaying = activeForWindow && playback.trackId === selected.id && playback.status === "playing";
@@ -107,12 +107,19 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
     return { ...current, content: { ...current.content, tracks: next, playlist: { ...current.content.playlist, trackIds: next.map((track) => track.id) } } };
   }, key);
   const patchTrack = (id: string, patch: Partial<MusicTrack>, key?: string) => setTracks((list) => list.map((track) => track.id === id ? { ...track, ...patch } : track), key);
+  const stopPreviewForTrack = (id: string) => {
+    if (playback.windowId === window.id && playback.trackId === id) musicPlayback.stopWindow(window.id);
+  };
+  const patchTrackSource = (id: string, source: MusicTrack["source"], key?: string) => {
+    stopPreviewForTrack(id);
+    patchTrack(id, { source }, key);
+  };
   const addTrack = () => setTracks((list) => {
     const track: MusicTrack = { id: newId(), title: "新曲目", artist: "", cover: null, coverUrl: "", source: { kind: "audioUrl", url: "https://" }, lyrics: "", rightsNote: "" };
     return [...list, track];
   });
   const removeTrack = (id: string) => {
-    musicPlayback.stopWindow(window.id);
+    stopPreviewForTrack(id);
     setTracks((list) => list.filter((track) => track.id !== id));
   };
   const uploadCover = async (trackId: string, file: File) => {
@@ -147,10 +154,10 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
               <div><FilePick className="w98-btn small" onFiles={(files) => void uploadCover(track.id, files[0])}>上傳封面…</FilePick><ImageUrlField raw={track.coverUrl} label="封面圖片網址" placeholder="https://…" onCommit={(raw, cover) => patchTrack(track.id, { coverUrl: raw, cover })} /></div>
             </div>
             <div className="seg music-source-tabs" role="group" aria-label="來源類型">
-              <button type="button" className={`w98-btn grow${track.source.kind === "audioUrl" ? " on" : ""}`} aria-pressed={track.source.kind === "audioUrl"} onClick={() => patchTrack(track.id, { source: { kind: "audioUrl", url: "https://" } })}>HTTPS 音訊</button>
-              <button type="button" className={`w98-btn grow${track.source.kind === "externalLink" ? " on" : ""}`} aria-pressed={track.source.kind === "externalLink"} onClick={() => patchTrack(track.id, { source: { kind: "externalLink", url: "https://" } })}>外部連結</button>
+              <button type="button" className={`w98-btn grow${track.source.kind === "audioUrl" ? " on" : ""}`} aria-pressed={track.source.kind === "audioUrl"} onClick={() => patchTrackSource(track.id, { kind: "audioUrl", url: "https://" })}>HTTPS 音訊</button>
+              <button type="button" className={`w98-btn grow${track.source.kind === "externalLink" ? " on" : ""}`} aria-pressed={track.source.kind === "externalLink"} onClick={() => patchTrackSource(track.id, { kind: "externalLink", url: "https://" })}>外部連結</button>
             </div>
-            <label><span>{track.source.kind === "audioUrl" ? "音訊直連（HTTPS）" : "平台／作品頁連結"}</span><input className="w98-input" value={track.source.url} onChange={(event) => patchTrack(track.id, { source: { ...track.source, url: event.target.value } }, `music-source-${track.id}`)} /></label>
+            <label><span>{track.source.kind === "audioUrl" ? "音訊直連（HTTPS）" : "平台／作品頁連結"}</span><input className="w98-input" value={track.source.url} onChange={(event) => patchTrackSource(track.id, { ...track.source, url: event.target.value }, `music-source-${track.id}`)} /></label>
             {track.source.kind === "audioUrl" ? <button type="button" className="w98-btn music-preview" disabled={!playable(track) || playback.status === "loading" && playback.trackId === track.id} onClick={() => previewing ? musicPlayback.pause(window.id) : void musicPlayback.play(window.id, track.id, track.source.url)}>{previewing ? "Ⅱ 停止試聽" : "▶ 試聽"}</button> : <span className="w98-hint">訪客會看到「開啟原連結」，不會假裝能在站內播放。</span>}
             <label><span>角色主題曲（選填）</span><select className="w98-input" value={track.characterRef?.id ?? ""} onChange={(event) => patchTrack(track.id, { characterRef: event.target.value && ctx.siteId ? { kind: "profile", siteId: ctx.siteId, id: event.target.value } : undefined })}><option value="">不指定角色</option>{ctx.profiles?.map((profile) => <option key={profile.id} value={profile.id}>{profile.displayName ?? profile.name ?? profile.handle ?? profile.username}</option>)}</select></label>
             <label><span>權利說明</span><input className="w98-input" value={track.rightsNote} placeholder="例：原創曲／已獲授權" onChange={(event) => patchTrack(track.id, { rightsNote: event.target.value }, `music-rights-${track.id}`)} /></label>

@@ -100,6 +100,21 @@ test("author adds, reorders, deletes and reloads a music playlist", async ({ pag
   await expect(reloaded.getByLabel("曲名")).toHaveValue("Second Theme");
 });
 
+test("editing an active preview source stops the old audio", async ({ page }) => {
+  await installFakeMedia(page);
+  await openEditor(page);
+  await page.getByRole("button", { name: /音樂播放器/ }).click();
+  const player = page.getByRole("dialog", { name: "Music Player.exe" });
+  await player.getByRole("button", { name: "新增第一首" }).click();
+  const source = player.getByLabel("音訊直連（HTTPS）");
+  await source.fill("https://media.example.com/first.mp3");
+  await player.getByRole("button", { name: "試聽" }).click();
+  await expect(player.getByRole("button", { name: "停止試聽" })).toBeVisible();
+
+  await source.fill("https://media.example.com/replacement.mp3");
+  await expect(player.getByRole("button", { name: "試聽" })).toBeVisible();
+});
+
 test("one explicit audio source survives minimize, switches globally and stops on close", async ({ page }) => {
   await installFakeMedia(page);
   const first = musicWindow("music-a", "Player A", 0, ["https://media.example.com/a.mp3", "https://example.com/work"]);

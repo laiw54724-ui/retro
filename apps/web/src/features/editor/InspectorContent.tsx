@@ -353,6 +353,15 @@ export function InspectorContent({ window, allWindows, siteId, update, onMessage
     );
   }
 
+  if (window.type === "music") {
+    return (
+      <section className="inspector-section">
+        <div className="section-heading"><strong>音樂播放器</strong></div>
+        <p>回到視窗內容，使用「編輯此視窗」新增、排序與設定曲目。</p>
+      </section>
+    );
+  }
+
   const content = window.content;
   const setContent = (next: typeof content) => update((current) => current.type === "instagram" ? { ...current, content: next } : current);
   const profile = content.profile;
