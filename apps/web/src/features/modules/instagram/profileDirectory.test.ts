@@ -17,6 +17,8 @@ describe("Instagram profile directory", () => {
     const hidden = draft.document.entities.profiles.find((profile) => profile.id === "profile:draft");
     if (!hidden) throw new Error("draft profile missing");
     hidden.visibility = "draft";
+    hidden.avatarUrl = "https://example.com/private-avatar.png";
+    hidden.linkUrl = "https://example.com/private-profile";
     const sourcePost = draft.document.entities.posts[0];
     if (sourcePost) draft.document.entities.posts.push({ ...structuredClone(sourcePost), id: "post:draft", authorProfileId: hidden.id, visibility: "draft", caption: "private caption" });
 
@@ -26,5 +28,7 @@ describe("Instagram profile directory", () => {
     const publicDirectory = buildProfileDirectory(draft.document, true);
     expect(publicDirectory.map((item) => item.id)).toEqual([entry.id, "profile:published"]);
     expect(JSON.stringify(publicDirectory)).not.toContain("private caption");
+    expect(JSON.stringify(publicDirectory)).not.toContain("private-avatar.png");
+    expect(JSON.stringify(publicDirectory)).not.toContain("private-profile");
   });
 });
