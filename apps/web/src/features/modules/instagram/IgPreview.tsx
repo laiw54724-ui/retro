@@ -276,7 +276,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
                 {profile.showFollowedBy && profile.followedBy ? <span className="ig-followed">{profile.followedBy}</span> : null}
               </div>
               <div className="ig-btns">
-                <button type="button" aria-pressed={s.followed} className="ig-btn primary" title="僅本次瀏覽" style={s.followed ? { background: tv.face, color: tv.text, boxShadow: tv.pressed } : { background: tv.accent, color: "#fff", boxShadow: tv.bevel }} onClick={() => s.setFollowed(!s.followed)}>{s.followed ? "✓ Following（僅本次瀏覽）" : "+ Follow（僅本次瀏覽）"}</button>
+                <button type="button" aria-pressed={s.followed} className="ig-btn" title="僅本次瀏覽" style={s.followed ? { background: tv.face, color: tv.text, boxShadow: tv.pressed } : { background: tv.accent, color: tv.accentText, boxShadow: tv.bevel }} onClick={() => s.setFollowed(!s.followed)}>{s.followed ? "✓ Following（僅本次瀏覽）" : "+ Follow（僅本次瀏覽）"}</button>
                 {profile.dmUrl ? <button type="button" className="ig-btn" style={{ background: tv.face, color: tv.text, boxShadow: tv.bevel }} onClick={() => ctx.onLink({ target: "url", url: profile.dmUrl, label: "訊息" })}>訊息</button> : null}
                 {profileDirectory.length > 1 ? <button type="button" className="ig-btn" style={{ background: tv.face, color: tv.text, boxShadow: tv.bevel }} onClick={s.openDirectory}>所有角色</button> : null}
                 <button type="button" className="ig-btn" style={{ background: tv.face, color: tv.text, boxShadow: tv.bevel }} onClick={() => void shareEntity("oc", s.activeProfileId, profile.name || profile.username)}>分享</button>

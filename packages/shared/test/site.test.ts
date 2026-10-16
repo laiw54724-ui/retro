@@ -200,7 +200,7 @@ describe("v2 schema extensions", () => {
   });
 
   it("offers the v2 theme presets and starter templates", () => {
-    for (const id of ["classic98", "indigo", "whiteweb", "pink98", "lavender", "mint", "midnight"]) expect(THEME_PRESETS[id]).toBeDefined();
+    for (const id of ["classic98", "y2k", "pixel", "indigo", "whiteweb", "pink98", "lavender", "mint", "midnight"]) expect(THEME_PRESETS[id]).toBeDefined();
     expect(createStarterDocument("x", "indigo", "blank").windows).toHaveLength(0);
     expect(SiteDocumentSchema.safeParse(createStarterDocument("x", "midnight", "portfolio")).success).toBe(true);
     expect(SiteDocumentSchema.safeParse(createStarterDocument("x", "whiteweb", "oc")).success).toBe(true);

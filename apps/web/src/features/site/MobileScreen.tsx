@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { THEME_PRESETS, type CollectionEntityV2, type DesktopWindow, type PostEntityV2, type ProfileEntityV2, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { IconPicker } from "../modules/links/IconPicker";
@@ -49,6 +49,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const [openId, setOpenId] = useState<string | null>(() => initialOpenId ?? (mode === "visitor" ? document.windows.find((window) => window.type === "character-dialog" && window.content.autoShow)?.id ?? null : null));
   const [sheet, setSheet] = useState<Sheet>(null);
   const [inlineEdit, setInlineEdit] = useState(false);
+  const iconRefs = useRef(new Map<string, HTMLButtonElement>());
   const music = useMusicPlayback();
   const ordered = useMemo(() => [...document.windows].sort((a, b) => a.layout.mobile.order - b.layout.mobile.order), [document.windows]);
   const openWindow = ordered.find((window) => window.id === openId) ?? null;
@@ -56,13 +57,19 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
 
   useEffect(() => () => musicPlayback.stopAll(), []);
   const open = (id: string) => { if (openId && openId !== id) musicPlayback.stopWindow(openId); setOpenId(id); setInlineEdit(false); if (editor) store.select(id); };
-  const back = () => { if (openId) musicPlayback.stopWindow(openId); setOpenId(null); setInlineEdit(false); };
+  const back = () => { const closingId = openId; if (closingId) musicPlayback.stopWindow(closingId); setOpenId(null); setInlineEdit(false); if (closingId) requestAnimationFrame(() => iconRefs.current.get(closingId)?.focus()); };
+  useEffect(() => {
+    if (!openId) return;
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") back(); };
+    globalThis.document.addEventListener("keydown", escape);
+    return () => globalThis.document.removeEventListener("keydown", escape);
+  }, [openId]);
   const btn = { background: tv.face, color: tv.text, boxShadow: tv.bevel };
 
   const body = (
     <div className="m-screen" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: "center", fontFamily: tv.fontFamily, color: tv.text }}>
       {framed ? <div className="m-status" style={{ background: tv.face, color: tv.text }}><span>{clock()}</span><span>5G ▮▮▮</span></div> : null}
-      <div className="m-titlebar" style={{ background: tv.titleBg }}>
+      <div className="m-titlebar" style={{ background: tv.titleBg, color: tv.titleText }}>
         <Icon name="computer" size={20} />
         <span className="m-site">{document.siteName}</span>
         {editor ? <span className="m-badge">編輯中</span> : null}
@@ -72,7 +79,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
         <div className="m-scroll">
           <div className="mobile-icons m-grid" style={{ gridTemplateColumns: `repeat(${document.mobileColumns}, minmax(0, 1fr))` }}>
             {ordered.map((window) => (
-              <button key={window.id} type="button" className="m-icon" aria-label={window.title} style={{ outline: editor && store.selectedId === window.id ? `2px dotted ${tv.text}` : "none" }} onClick={() => open(window.id)}>
+              <button key={window.id} ref={(node) => { if (node) iconRefs.current.set(window.id, node); else iconRefs.current.delete(window.id); }} type="button" className="m-icon" aria-label={window.title} style={{ outline: editor && store.selectedId === window.id ? `2px dotted ${tv.text}` : "none" }} onClick={() => open(window.id)}>
                 <span className="m-tile" style={{ background: tv.tileBg, boxShadow: tv.tileShadow }}><Icon name={window.icon} size={40} /></span>
                 <span className="m-label" style={{ background: tv.labelBg, color: tv.labelColor, border: tv.labelBorder, borderRadius: tv.labelRadius }}>{window.title}</span>
               </button>
@@ -85,7 +92,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
 
         {openWindow ? (
           <div role="dialog" aria-label={openWindow.title} className="m-window" style={{ background: tv.face, boxShadow: tv.bevel }}>
-            <div className="m-win-title" style={{ background: tv.titleBg }}>
+            <div className="m-win-title" style={{ background: tv.titleBg, color: tv.titleText }}>
               <button type="button" className="m-btn m-back" style={btn} onClick={back}>‹ 桌面</button>
               <Icon name={openWindow.icon} size={18} />
               <span className="m-win-name">{openWindow.title}</span>

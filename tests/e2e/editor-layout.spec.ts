@@ -69,12 +69,18 @@ test("layers tab hides a window and shows it again", async ({ page }) => {
   await expect(dialog).toBeVisible();
 });
 
-test("theme tab applies a preset and the right panel edits title and default-open", async ({ page }) => {
+test("theme tab previews, cancels, and explicitly applies a preset before autosave", async ({ page }) => {
   const saves = await openEditor(page);
   await page.getByRole("tab", { name: "主題" }).click();
-  await page.getByRole("button", { name: /午夜星空/ }).click();
+  await page.getByRole("button", { name: /Y2K 銀藍/ }).click();
+  await expect(page.getByRole("button", { name: "套用主題" })).toBeEnabled();
+  await page.getByRole("button", { name: "取消預覽" }).click();
+  await expect(page.getByRole("button", { name: "套用主題" })).toBeDisabled();
+  expect(saves.some((save) => save.document.theme.id === "y2k")).toBe(false);
+  await page.getByRole("button", { name: /像素夜光/ }).click();
+  await page.getByRole("button", { name: "套用主題" }).click();
   await page.getByLabel("視窗標題").fill("關於我");
-  await expect.poll(() => saves.at(-1)?.document.theme.id).toBe("midnight");
+  await expect.poll(() => saves.at(-1)?.document.theme.id).toBe("pixel");
   expect(saves.at(-1)!.document.windows.find((w) => w.id === "about")!.title).toBe("關於我");
 });
 

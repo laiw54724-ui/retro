@@ -17,7 +17,22 @@ export function luminance(hex: string): number {
   const r = n >> 16, g = (n >> 8) & 255, b = n & 255;
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 }
-export const readableOn = (bg: string) => (luminance(bg) > 0.6 ? "#000000" : "#ffffff");
+function relativeLuminance(hex: string): number {
+  const value = parseInt((hex || "#ffffff").slice(1), 16);
+  const channels = [value >> 16, (value >> 8) & 255, value & 255].map((channel) => {
+    const normalized = channel / 255;
+    return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+}
+export function contrastRatio(a: string, b: string): number {
+  const [light, dark] = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x);
+  return (light + 0.05) / (dark + 0.05);
+}
+export function readableOn(...backgrounds: string[]) {
+  const candidates = ["#000000", "#ffffff"];
+  return candidates.sort((a, b) => Math.min(...backgrounds.map((bg) => contrastRatio(b, bg))) - Math.min(...backgrounds.map((bg) => contrastRatio(a, bg))))[0];
+}
 
 export type ThemeView = RetroTheme & {
   wallImageCss: string;
@@ -28,6 +43,8 @@ export type ThemeView = RetroTheme & {
   pressed: string;
   titleBg: string;
   titleBgV: string;
+  titleText: string;
+  accentText: string;
   inactiveTitle: string;
   taskbarText: string;
   labelBg: string;
@@ -67,6 +84,8 @@ export function themeView(t: RetroTheme): ThemeView {
     pressed: `inset -1px -1px #ffffff, inset 1px 1px ${t.dark}, inset -2px -2px ${t.light}, inset 2px 2px ${t.shadow}`,
     titleBg: `linear-gradient(90deg, ${t.titleFrom}, ${t.titleTo})`,
     titleBgV: `linear-gradient(0deg, ${t.titleFrom}, ${t.titleTo})`,
+    titleText: readableOn(t.titleFrom, t.titleTo),
+    accentText: readableOn(t.accent),
     inactiveTitle: `linear-gradient(90deg, ${t.shadow}, ${t.light})`,
     taskbarText: isDark(t.taskbar) ? "#ffffff" : t.text,
     labelBg: sticker ? "#ffffff" : "transparent",

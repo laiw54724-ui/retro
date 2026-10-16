@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { THEME_PRESETS, type DesktopWindow, type RetroTheme, type SiteDocument } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { isDark, mixHex, themeView, useThemeView } from "../../lib/themeView";
@@ -91,24 +91,30 @@ function LayersTab({ document, selectedId, view, onSelect, onToggleVisible, onMo
 }
 
 function ThemeTab({ theme, onTheme, upload }: { theme: RetroTheme; onTheme: Props["onTheme"]; upload?: Props["upload"] }) {
-  const patch = (change: Partial<RetroTheme>) => onTheme({ ...theme, ...change });
-  const setWall = (wall: string) => patch({ wall, pattern: theme.pattern === "image" ? "none" : theme.pattern, wallImage: null, patternColor: mixHex(wall, isDark(wall) ? "#ffffff" : "#ffffff", isDark(wall) ? 0.22 : 0.45) });
+  const [draft, setDraft] = useState(theme);
+  useEffect(() => setDraft(theme), [theme]);
+  const patch = (change: Partial<RetroTheme>) => setDraft((current) => ({ ...current, ...change }));
+  const changed = JSON.stringify(draft) !== JSON.stringify(theme);
+  const setWall = (wall: string) => patch({ wall, pattern: draft.pattern === "image" ? "none" : draft.pattern, wallImage: null, patternColor: mixHex(wall, "#ffffff", isDark(wall) ? 0.22 : 0.45) });
   async function uploadWall(file: File) {
     const url = await upload?.(file, "image");
     if (url) patch({ wallImage: url, pattern: "image" });
   }
-  const reset = () => onTheme(THEME_PRESETS[theme.id] ?? THEME_PRESETS.classic98);
-  const patterns = theme.wallImage ? [...PATTERNS, ["image", "圖片"] as [RetroTheme["pattern"], string]] : PATTERNS;
+  const reset = () => setDraft(THEME_PRESETS[theme.id] ?? THEME_PRESETS.classic98);
+  const patterns = draft.wallImage ? [...PATTERNS, ["image", "圖片"] as [RetroTheme["pattern"], string]] : PATTERNS;
+  const preview = themeView(draft);
 
   return (
     <>
-      <div className="theme-head"><strong>主題</strong><button type="button" className="w98-btn small" onClick={reset}>重設</button></div>
+      <div className="theme-head"><strong>主題</strong><button type="button" className="w98-btn small" onClick={reset}>預覽重設</button></div>
+      <div className="theme-draft-preview" aria-label="主題預覽" style={{ backgroundColor: draft.wall, backgroundImage: preview.wallImageCss, backgroundSize: preview.wallSize, color: preview.text }}><span style={{ background: preview.titleBg, color: preview.titleText }}>Active window</span><i style={{ background: preview.inactiveTitle, color: preview.text }}>Inactive window</i><b style={{ background: draft.face, boxShadow: preview.bevel }}>Aa 中英文</b></div>
+      <div className="theme-draft-actions"><button type="button" className="w98-btn primary" disabled={!changed} onClick={() => onTheme(draft)}>套用主題</button><button type="button" className="w98-btn" disabled={!changed} onClick={() => setDraft(theme)}>取消預覽</button></div>
       <fieldset className="w98-fieldset"><legend>預設主題</legend>
         <div className="preset-grid">
           {Object.values(THEME_PRESETS).map((preset) => {
             const tv = themeView(preset);
             return (
-              <button key={preset.id} type="button" className={"preset" + (theme.id === preset.id ? " on" : "")} aria-pressed={theme.id === preset.id} onClick={() => onTheme(preset)}>
+              <button key={preset.id} type="button" className={"preset" + (draft.id === preset.id ? " on" : "")} aria-pressed={draft.id === preset.id} onClick={() => setDraft(preset)}>
                 <span className="preset-thumb" style={{ backgroundColor: preset.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize }}><i style={{ background: tv.titleBg }} /></span>
                 <span>{preset.name}</span>
               </button>
@@ -117,19 +123,19 @@ function ThemeTab({ theme, onTheme, upload }: { theme: RetroTheme; onTheme: Prop
         </div>
       </fieldset>
       <fieldset className="w98-fieldset"><legend>桌布</legend>
-        <div className="swatches">{WALLS.map((color) => <button key={color} type="button" aria-label={`桌布顏色 ${color}`} aria-pressed={theme.wall === color} className="swatch sq26" style={{ background: color, outline: theme.wall === color ? "2px solid #000080" : "none" }} onClick={() => setWall(color)} />)}</div>
+        <div className="swatches">{WALLS.map((color) => <button key={color} type="button" aria-label={`桌布顏色 ${color}`} aria-pressed={draft.wall === color} className="swatch sq26" style={{ background: color, outline: draft.wall === color ? "2px solid #000080" : "none" }} onClick={() => setWall(color)} />)}</div>
         <span className="w98-hint">圖樣</span>
-        <div className="swatches">{patterns.map(([id, label]) => <button key={id} type="button" className={"mini-btn wide" + (theme.pattern === id ? " on" : "")} onClick={() => patch({ pattern: id })}>{label}</button>)}</div>
+        <div className="swatches">{patterns.map(([id, label]) => <button key={id} type="button" className={"mini-btn wide" + (draft.pattern === id ? " on" : "")} onClick={() => patch({ pattern: id })}>{label}</button>)}</div>
         <FilePick className="w98-btn small block" onFiles={(files) => void uploadWall(files[0])}>上傳桌布圖片…</FilePick>
       </fieldset>
       <fieldset className="w98-fieldset"><legend>視窗標題列</legend>
-        <div className="title-swatches">{TITLES.map(([from, to]) => <button key={from + to} type="button" aria-label="標題列配色" aria-pressed={theme.titleFrom === from && theme.titleTo === to} className="swatch h20" style={{ background: `linear-gradient(90deg, ${from}, ${to})`, outline: theme.titleFrom === from && theme.titleTo === to ? "2px solid #000080" : "none" }} onClick={() => patch({ titleFrom: from, titleTo: to, accent: from })} />)}</div>
+        <div className="title-swatches">{TITLES.map(([from, to]) => <button key={from + to} type="button" aria-label="標題列配色" aria-pressed={draft.titleFrom === from && draft.titleTo === to} className="swatch h20" style={{ background: `linear-gradient(90deg, ${from}, ${to})`, outline: draft.titleFrom === from && draft.titleTo === to ? "2px solid #000080" : "none" }} onClick={() => patch({ titleFrom: from, titleTo: to, accent: from })} />)}</div>
       </fieldset>
       <fieldset className="w98-fieldset"><legend>工作列</legend>
-        <div className="swatches">{TASKBARS.map((color) => <button key={color} type="button" aria-label={`工作列顏色 ${color}`} aria-pressed={theme.taskbar === color} className="swatch sq26" style={{ background: color, outline: theme.taskbar === color ? "2px solid #000080" : "none" }} onClick={() => patch({ taskbar: color })} />)}</div>
+        <div className="swatches">{TASKBARS.map((color) => <button key={color} type="button" aria-label={`工作列顏色 ${color}`} aria-pressed={draft.taskbar === color} className="swatch sq26" style={{ background: color, outline: draft.taskbar === color ? "2px solid #000080" : "none" }} onClick={() => patch({ taskbar: color })} />)}</div>
       </fieldset>
       <fieldset className="w98-fieldset"><legend>圖示樣式與字型</legend>
-        <div className="swatches">{ICON_STYLES.map(([id, label]) => <button key={id} type="button" className={"mini-btn grow" + (theme.iconStyle === id ? " on" : "")} onClick={() => patch({ iconStyle: id })}>{label}</button>)}</div>
+        <div className="swatches">{ICON_STYLES.map(([id, label]) => <button key={id} type="button" className={"mini-btn grow" + (draft.iconStyle === id ? " on" : "")} onClick={() => patch({ iconStyle: id })}>{label}</button>)}</div>
         <span className="w98-hint">全站字型：Cubic 11（中英文）</span>
       </fieldset>
     </>

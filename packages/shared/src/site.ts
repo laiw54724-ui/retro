@@ -381,11 +381,21 @@ export const THEME_PRESETS: Record<string, RetroTheme> = {
     dark: "#0a0a0a",
     text: "#111111",
     titleFrom: "#000080",
-    titleTo: "#1084d0",
+    titleTo: "#0067b1",
     taskbar: "#c0c0c0",
     accent: "#000080",
     font: "noto",
     iconStyle: "classic"
+  },
+  y2k: {
+    id: "y2k", name: "Y2K 銀藍", wall: "#b7d9ee", pattern: "checker", patternColor: "#d8edf8",
+    face: "#d7dbe2", light: "#f7fbff", shadow: "#8292a8", dark: "#17233d", text: "#10182a",
+    titleFrom: "#263d9a", titleTo: "#3769b0", taskbar: "#c5ceda", accent: "#263d9a", font: "pixel", iconStyle: "tile"
+  },
+  pixel: {
+    id: "pixel", name: "像素夜光", wall: "#17152d", pattern: "dots", patternColor: "#5e5aa8",
+    face: "#d7d1ea", light: "#f0ecfa", shadow: "#827aa3", dark: "#100d20", text: "#17132b",
+    titleFrom: "#261f72", titleTo: "#c63f91", taskbar: "#2d2850", accent: "#7138b6", font: "pixel", iconStyle: "sticker"
   },
   pink98: {
     id: "pink98",

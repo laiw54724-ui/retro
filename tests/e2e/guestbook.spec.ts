@@ -56,11 +56,15 @@ test("guestbook remains usable without horizontal overflow on mobile", async ({ 
   await mockPublic(page);
   await page.setViewportSize({ width: 320, height: 720 });
   await page.goto("/@demo");
-  await page.locator(".visitor-mobile").getByRole("button", { name: "Guestbook.exe" }).click();
+  const icon = page.locator(".visitor-mobile").getByRole("button", { name: "Guestbook.exe" });
+  await icon.click();
   const dialog = page.locator(".visitor-mobile").getByRole("dialog", { name: "Guestbook.exe" });
   await expect(dialog.getByText("Alice", { exact: true })).toBeVisible();
   await expect(dialog.getByRole("button", { name: "送出審核" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(icon).toBeFocused();
 });
 
 test("owner can enable submissions and operate the moderation queue", async ({ page }) => {

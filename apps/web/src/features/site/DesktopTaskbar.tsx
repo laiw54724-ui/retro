@@ -76,7 +76,7 @@ export function DesktopTaskbar({ document, tasks, onOpen, onToggle, visitor = fa
     <div ref={rootRef} className="desktop-chrome">
       {startOpen ? (
         <div id={menuId} className="start-menu" role="menu" aria-label="開始功能表" style={{ background: tv.face, boxShadow: tv.bevel }}>
-          <div className="start-brand" aria-hidden="true" style={{ background: tv.titleBgV }}>{document.siteName}</div>
+          <div className="start-brand" aria-hidden="true" style={{ background: tv.titleBgV, color: tv.titleText }}>{document.siteName}</div>
           <div className="start-items">
             {document.windows.length ? document.windows.map((desktopWindow) => (
               <button

@@ -49,7 +49,7 @@ export function RetroWindow({
       ? `linear-gradient(90deg, ${appearance.titleFrom}, ${appearance.titleTo})`
       : appearance.titleFrom
     : tv.titleBg;
-  const activeTitleText = appearance ? readableOn(appearance.titleFrom) : "#fff";
+  const activeTitleText = appearance ? readableOn(appearance.titleFrom, appearance.titleGradient ? appearance.titleTo : appearance.titleFrom) : tv.titleText;
 
   return (
     <section
