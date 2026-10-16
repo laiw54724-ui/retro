@@ -24,6 +24,8 @@ export type ModuleCtx = {
   posts?: PostEntityV2[];
   collections?: CollectionEntityV2[];
   profileId?: string;
+  initialPostId?: string;
+  publicShareBaseUrl?: string;
   profileThemeOverride?: { accent: string; background: string };
   onProfileSelect?: (id: string, windowId?: string) => void;
   onProfileAdd?: (windowId?: string) => void;

@@ -24,6 +24,8 @@ export function App() {
       <Route path="/invite" element={<InvitePage />} />
       <Route path="/onboarding" element={<RequireAuth><OnboardingPage /></RequireAuth>} />
       <Route path="/editor/:siteId" element={<RequireAuth><CollaborativeSitePage /></RequireAuth>} />
+      <Route path="/:handle/oc/:profileId" element={<PublicSitePage />} />
+      <Route path="/:handle/post/:postId" element={<PublicSitePage />} />
       <Route path="/:handle" element={<PublicSitePage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

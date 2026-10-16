@@ -26,11 +26,11 @@ type Gesture =
   | { kind: "move"; id: string; startX: number; startY: number; x: number; y: number; w: number; h: number }
   | { kind: "resize"; id: string; startX: number; startY: number; x: number; y: number; w: number; h: number };
 
-function initialRuntime(document: SiteDocument): RuntimeMap {
+function initialRuntime(document: SiteDocument, initialOpenId?: string): RuntimeMap {
   return Object.fromEntries(document.windows.map((window) => [
     window.id,
     {
-      status: window.defaultOpen ? "open" : "closed",
+      status: window.id === initialOpenId || (!initialOpenId && window.defaultOpen) ? "open" : "closed",
       maximized: false,
       x: window.layout.desktop.x,
       y: window.layout.desktop.y,
@@ -41,8 +41,8 @@ function initialRuntime(document: SiteDocument): RuntimeMap {
   ]));
 }
 
-export function VisitorDesktop({ document, profiles, profileIdsByWindow, profileDirectory }: { document: SiteDocument; profiles?: ProfileEntityV2[]; profileIdsByWindow?: Record<string, string>; profileDirectory?: ProfileDirectoryEntry[] }) {
-  const [runtime, setRuntime] = useState<RuntimeMap>(() => initialRuntime(document));
+export function VisitorDesktop({ document, profiles, profileIdsByWindow, profileDirectory, initialOpenId, initialPostId, publicShareBaseUrl }: { document: SiteDocument; profiles?: ProfileEntityV2[]; profileIdsByWindow?: Record<string, string>; profileDirectory?: ProfileDirectoryEntry[]; initialOpenId?: string; initialPostId?: string; publicShareBaseUrl?: string }) {
+  const [runtime, setRuntime] = useState<RuntimeMap>(() => initialRuntime(document, initialOpenId));
   const desktopRef = useRef<HTMLDivElement | null>(null);
   const gesture = useRef<Gesture | null>(null);
   const tv = useThemeView(document.theme);
@@ -236,7 +236,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
               onClose={() => close(window.id)}
               style={{ height: "100%" }}
             >
-              <WindowRenderer window={window} theme={document.theme} onOpenWindow={openWindow} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} />
+              <WindowRenderer window={window} theme={document.theme} onOpenWindow={openWindow} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialPostId={window.id === initialOpenId ? initialPostId : undefined} publicShareBaseUrl={publicShareBaseUrl} />
             </RetroWindow>
             {!state.maximized ? <span className="window-resize-handle" aria-hidden="true" /> : null}
           </div>

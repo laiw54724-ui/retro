@@ -201,6 +201,9 @@
 .ig-add-extra { width: 48px; height: 48px; display: grid; place-items: center; border: 2px dashed #808080; font-size: 18px; color: #000080; cursor: pointer; }
 .w98-input.compact { min-height: 28px; padding: 3px 6px; font-size: 12px; }
 .w98-input.grow { flex: 1; width: auto; }
+.ig-share-fallback { position: absolute; z-index: 25; inset: 50% auto auto 50%; transform: translate(-50%, -50%); display: grid; gap: 8px; width: min(360px, calc(100% - 24px)); padding: 12px; box-sizing: border-box; color: #111; background: #c0c0c0; border: 2px solid; border-color: #fff #000 #000 #fff; box-shadow: 2px 2px 0 rgba(0,0,0,.45); }
+.ig-share-fallback input { width: 100%; min-width: 0; min-height: 36px; box-sizing: border-box; }
+.ig-share-fallback .w98-btn { min-height: 40px; }
 @media (max-width: 520px) {
   .ig-fields, .ig-trio, .color-fields { grid-template-columns: 1fr; }
   .ig-profile-delete { align-items: stretch; flex-direction: column; }

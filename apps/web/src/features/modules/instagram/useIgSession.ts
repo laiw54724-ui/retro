@@ -7,8 +7,9 @@ type Route = { screen: IgScreen; profileId: string; postId: string | null; colle
 type HistoryFrame = { route: Route; scrollTop: number };
 
 /** Visitor-only Instagram state. Lives in memory; never writes the document or API. */
-export function useIgSession(highlightCount: (profileId: string) => number, entryProfileId = "entry", sessionScope = "ig") {
-  const [route, setRoute] = useState<Route>({ screen: "profile", profileId: entryProfileId, postId: null, collectionId: null, peopleKind: null });
+export function useIgSession(highlightCount: (profileId: string) => number, entryProfileId = "entry", sessionScope = "ig", initialPostId: string | null = null) {
+  const initialRoute = (): Route => ({ screen: initialPostId ? "post" : "profile", profileId: entryProfileId, postId: initialPostId, collectionId: null, peopleKind: null });
+  const [route, setRoute] = useState<Route>(initialRoute);
   const history = useRef<HistoryFrame[]>([]);
   const pendingScroll = useRef<number | null>(null);
   const [, setHistoryVersion] = useState(0);
@@ -47,10 +48,10 @@ export function useIgSession(highlightCount: (profileId: string) => number, entr
   useEffect(() => {
     history.current = [];
     pendingScroll.current = 0;
-    setRoute({ screen: "profile", profileId: entryProfileId, postId: null, collectionId: null, peopleKind: null });
+    setRoute(initialRoute());
     setHistoryVersion((value) => value + 1);
     closeStory();
-  }, [entryProfileId, sessionScope, closeStory]);
+  }, [entryProfileId, initialPostId, sessionScope, closeStory]);
 
   useEffect(() => {
     const top = pendingScroll.current ?? 0;

@@ -1,10 +1,11 @@
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import type { IgPost } from "@retrodesk/shared";
 import { AvatarImage } from "../../../components/AvatarImage";
 import { SafeImg } from "../ui";
 import { safeHref, type ModuleProps, type ProfileDirectoryPost } from "../types";
 import { igIcons } from "./igIcons";
 import { useIgSession } from "./useIgSession";
+import { buildPublicEntityUrl, sharePublicUrl } from "../../../lib/publicShare";
 
 const Ic = ({ bg, size = 24 }: { bg: string; size?: number }) => <span aria-hidden="true" className="ig-ic" style={{ width: size, height: size, background: bg }} />;
 
@@ -22,8 +23,18 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
     const legacy = entry?.profile.highlights ?? (profileId === entryProfileId ? window.content.profile.highlights : []);
     return legacy.map((highlight) => ({ id: highlight.id, src: highlight.src, srcUrl: highlight.srcUrl, alt: highlight.title, text: "", highlightId: highlight.id, highlightTitle: highlight.title, frameIndex: 0, frameCount: 1 }));
   };
-  const session = useIgSession((profileId) => storyFramesFor(profileId).length, entryProfileId, `${entrySiteId}:${window.id}`);
+  const session = useIgSession((profileId) => storyFramesFor(profileId).length, entryProfileId, `${entrySiteId}:${window.id}`, ctx.initialPostId ?? null);
   const s = session;
+  const [shareFallback, setShareFallback] = useState<string | null>(null);
+  const shareEntity = async (kind: "oc" | "post", id: string, title: string) => {
+    if (!ctx.publicShareBaseUrl) { s.showToast("發布後才能分享"); return; }
+    const base = new URL(ctx.publicShareBaseUrl, globalThis.location?.origin ?? "https://retro.invalid");
+    const handle = decodeURIComponent(base.pathname.replace(/^\/@/, "").split("/")[0] ?? "");
+    const url = buildPublicEntityUrl(base.origin, handle, kind, id);
+    const result = await sharePublicUrl(url, title, navigator);
+    if (result === "manual") setShareFallback(url);
+    else s.showToast(result === "shared" ? "已開啟分享" : "已複製連結");
+  };
   const directoryEntry = ctx.profileDirectory?.find((entry) => entry.id === s.activeProfileId);
   const profile = directoryEntry?.profile ?? window.content.profile;
   const posts = directoryEntry?.posts ?? window.content.images;
@@ -115,7 +126,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
         <div className="ig-actions">
           {profile.allowLikes ? <button type="button" className="ig-icbtn lg" aria-pressed={!!s.liked[key]} aria-label="讚" onClick={() => s.toggleLike(post.id)}><Ic bg={s.liked[key] ? I.heartFill : I.heart} /></button> : null}
           {profile.allowComments ? <button type="button" className="ig-icbtn lg" aria-label="留言" onClick={() => (single ? undefined : s.setCommentOpen((o) => ({ ...o, [key]: !o[key] })))}><Ic bg={I.comment} /></button> : null}
-          <button type="button" className="ig-icbtn lg" aria-label="分享" onClick={() => s.showToast("已複製貼文連結")}><Ic bg={I.send} /></button>
+          <button type="button" className="ig-icbtn lg" aria-label="分享" onClick={() => void shareEntity("post", post.id, post.title || "OC 貼文")}><Ic bg={I.send} /></button>
           <span style={{ flex: 1 }} />
           <button type="button" className="ig-icbtn lg" aria-pressed={!!s.saved[key]} aria-label="收藏" onClick={() => s.toggleSave(post.id)}><Ic bg={s.saved[key] ? I.bookmarkFill : I.bookmark} /></button>
         </div>
@@ -238,7 +249,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
           <strong style={{ fontSize: s.screen === "feed" ? 20 : 15 }}>{headTitle}</strong>
           {s.screen === "profile" && profile.verified ? <span role="img" aria-label="已認證" className="ig-verified">✓</span> : null}
         </span>
-        {s.screen === "profile" ? <button type="button" className="ig-icbtn lg" aria-label="分享個人檔案" onClick={() => s.showToast("已複製個人檔案連結")}><Ic bg={I.send} size={22} /></button> : null}
+        {s.screen === "profile" ? <button type="button" className="ig-icbtn lg" aria-label="分享個人檔案" onClick={() => void shareEntity("oc", s.activeProfileId, profile.name || profile.username)}><Ic bg={I.send} size={22} /></button> : null}
       </div>
 
       <div className="ig-scroll w98-scroll" ref={s.scrollRef} tabIndex={0} aria-label="Instagram 內容">
@@ -268,7 +279,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
                 <button type="button" aria-pressed={s.followed} className="ig-btn primary" title="僅本次瀏覽" style={s.followed ? { background: tv.face, color: tv.text, boxShadow: tv.pressed } : { background: tv.accent, color: "#fff", boxShadow: tv.bevel }} onClick={() => s.setFollowed(!s.followed)}>{s.followed ? "✓ Following（僅本次瀏覽）" : "+ Follow（僅本次瀏覽）"}</button>
                 {profile.dmUrl ? <button type="button" className="ig-btn" style={{ background: tv.face, color: tv.text, boxShadow: tv.bevel }} onClick={() => ctx.onLink({ target: "url", url: profile.dmUrl, label: "訊息" })}>訊息</button> : null}
                 {profileDirectory.length > 1 ? <button type="button" className="ig-btn" style={{ background: tv.face, color: tv.text, boxShadow: tv.bevel }} onClick={s.openDirectory}>所有角色</button> : null}
-                <button type="button" className="ig-btn" style={{ background: tv.face, color: tv.text, boxShadow: tv.bevel }} onClick={() => s.showToast("已複製個人檔案連結")}>分享</button>
+                <button type="button" className="ig-btn" style={{ background: tv.face, color: tv.text, boxShadow: tv.bevel }} onClick={() => void shareEntity("oc", s.activeProfileId, profile.name || profile.username)}>分享</button>
               </div>
               {showHighlights ? renderHighlights(false) : null}
             </div>
@@ -339,7 +350,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
           <div className="ig-scrim" onClick={() => s.setSheetId(null)} />
           <div role="menu" className="ig-sheet" style={{ background: tv.face, boxShadow: tv.bevel }}>
           <button role="menuitem" type="button" style={{ color: tv.text }} onClick={() => { s.toggleSave(sheetPost.id); s.setSheetId(null); }}>{s.saved[s.interactionKey(sheetPost.id)] ? "取消收藏" : "收藏"}</button>
-            <button role="menuitem" type="button" style={{ color: tv.text }} onClick={() => { s.showToast("已複製貼文連結"); s.setSheetId(null); }}>複製連結</button>
+            <button role="menuitem" type="button" style={{ color: tv.text }} onClick={() => { const post = posts.find((item) => item.id === s.sheetId); if (post) void shareEntity("post", post.id, post.title || "OC 貼文"); s.setSheetId(null); }}>複製連結</button>
             {s.screen !== "post" ? <button role="menuitem" type="button" style={{ color: tv.text }} onClick={() => open(sheetPost)}>前往貼文</button> : null}
             <button role="menuitem" type="button" style={{ color: tv.text, fontWeight: 700 }} onClick={() => s.setSheetId(null)}>取消</button>
           </div>
@@ -364,6 +375,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
         </div>
       ) : null}
 
+      {shareFallback ? <div role="dialog" aria-label="手動複製分享連結" className="ig-share-fallback"><strong>無法自動複製</strong><span>請選取下方網址手動複製。</span><input aria-label="分享網址" readOnly value={shareFallback} onFocus={(event) => event.currentTarget.select()} /><button type="button" className="w98-btn" onClick={() => setShareFallback(null)}>關閉</button></div> : null}
       {s.toast ? <div role="status" className="ig-toast">{s.toast}</div> : null}
     </div>
   );
