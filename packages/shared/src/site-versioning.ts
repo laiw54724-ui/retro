@@ -13,6 +13,8 @@ import {
   SiteDocumentSchema,
   SafeUrlSchema,
   ImageUrlSchema,
+  HttpsAudioUrlSchema,
+  WebUrlSchema,
   SocialLinkSchema,
   ThemeSchema,
   WindowAppearanceSchema,
@@ -56,6 +58,29 @@ const StrictMobileLayoutSchema = z.object(WindowLayoutSchema.shape.mobile.shape)
 const StrictWindowLayoutSchema = z.object({ desktop: StrictDesktopLayoutSchema, mobile: StrictMobileLayoutSchema }).strict();
 const StrictAppearanceSchema = z.object(WindowAppearanceSchema.shape).strict();
 const StrictThemeSchema = z.object(ThemeSchema.shape).strict();
+const StrictMusicCharacterRefSchema = z.object({ siteId: BoundedId, id: BoundedId, kind: z.literal("profile") }).strict();
+const StrictMusicSourceSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("audioUrl"), url: HttpsAudioUrlSchema }).strict(),
+  z.object({ kind: z.literal("externalLink"), url: WebUrlSchema }).strict()
+]);
+const StrictMusicTrackSchema = z.object({
+  id: BoundedId, title: z.string().max(200), artist: z.string().max(200), cover: ImageUrlSchema.nullable(), coverUrl: z.string().max(2048).default(""),
+  source: StrictMusicSourceSchema, characterRef: StrictMusicCharacterRefSchema.optional(), lyrics: z.string().max(20_000).default(""), rightsNote: z.string().max(1000).default("")
+}).strict();
+const StrictMusicPlaylistSchema = z.object({ id: BoundedId, title: z.string().max(200), trackIds: z.array(BoundedId).max(100) }).strict();
+const StrictMusicContentSchema = z.object({ tracks: z.array(StrictMusicTrackSchema).max(100), playlist: StrictMusicPlaylistSchema }).strict().superRefine((content, ctx) => {
+  const trackIds = new Set<string>();
+  for (const [index, track] of content.tracks.entries()) {
+    if (trackIds.has(track.id)) ctx.addIssue({ code: "custom", path: ["tracks", index, "id"], message: "Duplicate music track id" });
+    trackIds.add(track.id);
+  }
+  const playlistIds = new Set<string>();
+  for (const [index, trackId] of content.playlist.trackIds.entries()) {
+    if (playlistIds.has(trackId)) ctx.addIssue({ code: "custom", path: ["playlist", "trackIds", index], message: "Duplicate playlist track id" });
+    else if (!trackIds.has(trackId)) ctx.addIssue({ code: "custom", path: ["playlist", "trackIds", index], message: "Playlist references a missing track" });
+    playlistIds.add(trackId);
+  }
+});
 const { highlights: _legacyHighlights, ...ProfileFields } = InstagramProfileSchema.shape;
 const { id: _legacyPostId, comments: _legacyComments, extra: _legacyExtra, ...PostFields } = IgPostSchema.shape;
 const StrictProfileFields = { ...ProfileFields, avatarCrop: StrictImageCropSchema.optional(), highlights: z.array(StrictHighlightSchema).max(20).default([]) };
@@ -123,7 +148,8 @@ const NonInstagramWindowV2Schema = z.discriminatedUnion("type", [
     avatar: ImageUrlSchema.nullable(), avatarCrop: StrictImageCropSchema.optional(), nickname: z.string().max(160), bio: z.string().max(5000),
     banner: z.string().max(500).default(""), quote: z.string().max(500).default(""), detailsTitle: z.string().max(100).default("File Details"),
     avatarUrl: z.string().max(2048).default(""), fields: z.array(StrictAboutFieldSchema).max(50), socials: z.array(StrictSocialLinkSchema).max(50)
-  }).strict() })
+  }).strict() }),
+  BaseV2Window.extend({ type: z.literal("music"), content: StrictMusicContentSchema })
 ]);
 export const DesktopWindowV2Schema = z.union([
   NonInstagramWindowV2Schema,
@@ -347,7 +373,10 @@ function semanticDiagnostics(document: SiteDocumentV2): Diagnostic[] {
   for (const entity of document.entities.highlights) scopeSites.add(entity.siteId);
   for (const entity of document.entities.collections) scopeSites.add(entity.siteId);
   for (const entity of document.entities.followEdges) scopeSites.add(entity.siteId);
-  for (const window of document.windows) if (window.type === "instagram") scopeSites.add(window.content.profileRef.siteId);
+  for (const window of document.windows) {
+    if (window.type === "instagram") scopeSites.add(window.content.profileRef.siteId);
+    if (window.type === "music") for (const track of window.content.tracks) if (track.characterRef) scopeSites.add(track.characterRef.siteId);
+  }
   const mixedSiteScope = scopeSites.size > 1;
   if (mixedSiteScope) out.push({ path: ["entities"], message: "Mixed site scope", code: "cross_site" });
   for (const [i, window] of document.windows.entries()) {
@@ -356,6 +385,10 @@ function semanticDiagnostics(document: SiteDocumentV2): Diagnostic[] {
     if (window.type === "instagram") {
       const ref = window.content.profileRef;
       if (!document.entities.profiles.some((p) => p.id === ref.id && p.siteId === ref.siteId)) out.push({ path: ["windows", i, "content", "profileRef"], message: "Missing profile", code: "missing_ref" });
+    }
+    if (window.type === "music") for (const [trackIndex, track] of window.content.tracks.entries()) {
+      const ref = track.characterRef;
+      if (ref && !document.entities.profiles.some((profile) => profile.id === ref.id && profile.siteId === ref.siteId)) out.push({ path: ["windows", i, "content", "tracks", trackIndex, "characterRef"], message: mixedSiteScope ? "Cross-site character profile" : "Missing character profile", code: mixedSiteScope ? "cross_site" : "missing_ref" });
     }
   }
   const handles = new Map<string, number>();
@@ -488,11 +521,12 @@ export function resolveEntityRef(document: SiteDocumentV2Input, ref: EntityRef, 
   const value = ref.kind === "profile" ? document.entities.profiles.find((entity) => entity.id === ref.id && entity.siteId === currentSiteId) : ref.kind === "post" ? document.entities.posts.find((entity) => entity.id === ref.id && entity.siteId === currentSiteId) : ref.kind === "highlight" ? (document.entities.highlights ?? []).find((entity) => entity.id === ref.id && entity.siteId === currentSiteId) : ref.kind === "collection" ? (document.entities.collections ?? []).find((entity) => entity.id === ref.id && entity.siteId === currentSiteId) : document.windows.find((window) => window.id === ref.id);
   return value ? { ok: true, value } : { ok: false, reason: "missing" };
 }
-export type EntityReferrer = { kind: "window"; windowId: string } | { kind: "post"; postId: string; field: "authorProfileId" | "taggedProfileIds" } | { kind: "highlight"; highlightId: string } | { kind: "collection"; collectionId: string };
+export type EntityReferrer = { kind: "window"; windowId: string } | { kind: "musicTrack"; windowId: string; trackId: string } | { kind: "post"; postId: string; field: "authorProfileId" | "taggedProfileIds" } | { kind: "highlight"; highlightId: string } | { kind: "collection"; collectionId: string };
 export function collectEntityReferrers(document: SiteDocumentV2Input, ref: EntityRef, currentSiteId: string): EntityReferrer[] {
   if (ref.siteId !== currentSiteId || ref.kind !== "profile") return [];
   const out: EntityReferrer[] = [];
   for (const window of document.windows) if (window.type === "instagram" && window.content.profileRef.siteId === ref.siteId && window.content.profileRef.id === ref.id) out.push({ kind: "window", windowId: window.id });
+  for (const window of document.windows) if (window.type === "music") for (const track of window.content.tracks) if (track.characterRef?.siteId === ref.siteId && track.characterRef.id === ref.id) out.push({ kind: "musicTrack", windowId: window.id, trackId: track.id });
   for (const post of document.entities.posts) if (post.siteId === currentSiteId && post.authorProfileId === ref.id) out.push({ kind: "post", postId: post.id, field: "authorProfileId" });
   for (const post of document.entities.posts) if (post.siteId === currentSiteId && (post.taggedProfileIds ?? []).includes(ref.id)) out.push({ kind: "post", postId: post.id, field: "taggedProfileIds" });
   for (const highlight of document.entities.highlights ?? []) if (highlight.siteId === currentSiteId && highlight.ownerProfileId === ref.id) out.push({ kind: "highlight", highlightId: highlight.id });
@@ -529,7 +563,10 @@ function validatedOutput(document: SiteDocumentV2Input): ProfileDiagnostic[] {
 function documentSiteScope(document: SiteDocumentV2Input): Set<string> {
   const sites = new Set<string>([...document.entities.profiles, ...document.entities.posts].map((entity) => entity.siteId));
   for (const edge of document.entities.followEdges ?? []) sites.add(edge.siteId);
-  for (const window of document.windows) if (window.type === "instagram") sites.add(window.content.profileRef.siteId);
+  for (const window of document.windows) {
+    if (window.type === "instagram") sites.add(window.content.profileRef.siteId);
+    if (window.type === "music") for (const track of window.content.tracks) if (track.characterRef) sites.add(track.characterRef.siteId);
+  }
   return sites;
 }
 
@@ -620,7 +657,11 @@ export function deleteOrRetargetProfile(document: SiteDocumentV2Input, profileId
   }
   const next = structuredClone(document);
   if (options.retargetProfileId) {
-    next.windows = next.windows.map((window) => window.type === "instagram" && window.content.profileRef.id === profileId ? { ...window, content: { ...window.content, profileRef: { ...window.content.profileRef, id: options.retargetProfileId! } } } : window);
+    next.windows = next.windows.map((window) => {
+      if (window.type === "instagram" && window.content.profileRef.id === profileId) return { ...window, content: { ...window.content, profileRef: { ...window.content.profileRef, id: options.retargetProfileId! } } };
+      if (window.type === "music") return { ...window, content: { ...window.content, tracks: window.content.tracks.map((track) => track.characterRef?.id === profileId ? { ...track, characterRef: { ...track.characterRef, id: options.retargetProfileId! } } : track) } };
+      return window;
+    });
     next.entities.posts = next.entities.posts.map((post) => ({ ...post, authorProfileId: post.authorProfileId === profileId ? options.retargetProfileId! : post.authorProfileId, taggedProfileIds: (post.taggedProfileIds ?? []).map((id) => id === profileId ? options.retargetProfileId! : id), namedLikerIds: (post.namedLikerIds ?? []).map((id) => id === profileId ? options.retargetProfileId! : id).filter((id, index, list) => list.indexOf(id) === index), actorComments: (post.actorComments ?? []).map((comment) => comment.authorKind === "profile" && comment.authorProfileId === profileId ? { ...comment, authorProfileId: options.retargetProfileId! } : comment) }));
     next.entities.highlights = (next.entities.highlights ?? []).map((highlight) => highlight.ownerProfileId === profileId ? { ...highlight, ownerProfileId: options.retargetProfileId! } : highlight);
     next.entities.collections = (next.entities.collections ?? []).map((collection) => collection.ownerProfileId === profileId ? { ...collection, ownerProfileId: options.retargetProfileId! } : collection);

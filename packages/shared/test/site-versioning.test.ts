@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createStarterDocument } from "../src/site";
+import { createStarterDocument, makeWindow } from "../src/site";
 import {
   collectEntityReferrers,
   createProfile,
@@ -72,6 +72,29 @@ describe("versioned site document contract", () => {
       const { id: legacyPostId, ...legacyPostFields } = legacyPost;
       expect(postFields).toEqual(legacyPostFields);
     }
+  });
+
+  it("round-trips music windows and validates same-site character references", () => {
+    const v1 = fixture();
+    const music = makeWindow("music", v1.windows.length);
+    if (music.type !== "music") throw new Error("music factory mismatch");
+    music.id = "music-1";
+    music.content.tracks = [{ id: "theme-1", title: "Alice Theme", artist: "Alice", cover: null, coverUrl: "", source: { kind: "audioUrl", url: "https://media.example.com/alice.mp3" }, characterRef: { siteId: "site-a", id: "profile:ig-1", kind: "profile" }, lyrics: "hello", rightsNote: "Original" }];
+    music.content.playlist.trackIds = ["theme-1"];
+    v1.windows.push(music);
+    const migrated = migrateSiteDocumentV2(v1, { siteId: "site-a" });
+    expect(migrated).toMatchObject({ ok: true, version: 2 });
+    if (!migrated.ok || migrated.version !== 2) return;
+    expect(migrated.document.windows.find((window) => window.id === "music-1")).toEqual(music);
+    const projected = projectV2ToLegacyDocument(migrated.document);
+    expect(projected).toMatchObject({ ok: true });
+    if (projected.ok) expect(projected.document.windows.find((window) => window.id === "music-1")).toEqual(music);
+
+    const crossSite = structuredClone(migrated.document);
+    const musicV2 = crossSite.windows.find((window) => window.id === "music-1");
+    if (!musicV2 || musicV2.type !== "music") throw new Error("missing migrated music window");
+    musicV2.content.tracks[0].characterRef = { siteId: "other", id: "profile:ig-1", kind: "profile" };
+    expect(parseSiteDocument(crossSite)).toMatchObject({ ok: false, code: "invalid" });
   });
 
   it("resolves refs and reports referrers and semantic errors", () => {

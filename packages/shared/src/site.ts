@@ -84,6 +84,24 @@ export const SafeUrlSchema = z.string().max(2048).refine((value) => {
   }
 }, "Unsupported URL protocol");
 
+export const WebUrlSchema = z.string().max(2048).refine((value) => {
+  if (value === "" || value === "https://" || value === "http://") return true;
+  try {
+    return ["http:", "https:"].includes(new URL(value).protocol);
+  } catch {
+    return false;
+  }
+}, "Use an HTTP(S) web address");
+
+export const HttpsAudioUrlSchema = z.string().max(2048).refine((value) => {
+  if (value === "" || value === "https://") return true;
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}, "Audio URL must use HTTPS");
+
 export const ImageCropSchema = z.object({
   x: z.number().min(0).max(100),
   y: z.number().min(0).max(100),
@@ -136,6 +154,37 @@ export const IgPostSchema = GalleryImageSchema.extend({
   extra: z.array(IgExtraImageSchema).max(9).default([])
 });
 export const IgHighlightSchema = z.object({ id: z.string().min(1), title: z.string().max(40), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default("") });
+
+export const MusicCharacterRefSchema = z.object({ siteId: z.string().trim().min(1).max(160), id: z.string().trim().min(1).max(160), kind: z.literal("profile") });
+export const MusicSourceSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("audioUrl"), url: HttpsAudioUrlSchema }),
+  z.object({ kind: z.literal("externalLink"), url: WebUrlSchema })
+]);
+export const MusicTrackSchema = z.object({
+  id: z.string().min(1).max(160),
+  title: z.string().max(200),
+  artist: z.string().max(200),
+  cover: ImageUrlSchema.nullable(),
+  coverUrl: z.string().max(2048).default(""),
+  source: MusicSourceSchema,
+  characterRef: MusicCharacterRefSchema.optional(),
+  lyrics: z.string().max(20_000).default(""),
+  rightsNote: z.string().max(1000).default("")
+});
+export const MusicPlaylistSchema = z.object({ id: z.string().min(1).max(160), title: z.string().max(200), trackIds: z.array(z.string().min(1).max(160)).max(100) });
+export const MusicContentSchema = z.object({ tracks: z.array(MusicTrackSchema).max(100), playlist: MusicPlaylistSchema }).superRefine((content, ctx) => {
+  const trackIds = new Set<string>();
+  for (const [index, track] of content.tracks.entries()) {
+    if (trackIds.has(track.id)) ctx.addIssue({ code: "custom", path: ["tracks", index, "id"], message: "Duplicate music track id" });
+    trackIds.add(track.id);
+  }
+  const playlistIds = new Set<string>();
+  for (const [index, trackId] of content.playlist.trackIds.entries()) {
+    if (playlistIds.has(trackId)) ctx.addIssue({ code: "custom", path: ["playlist", "trackIds", index], message: "Duplicate playlist track id" });
+    else if (!trackIds.has(trackId)) ctx.addIssue({ code: "custom", path: ["playlist", "trackIds", index], message: "Playlist references a missing track" });
+    playlistIds.add(trackId);
+  }
+});
 
 export const InstagramProfileSchema = z.object({
   username: z.string().max(64),
@@ -207,6 +256,10 @@ export const DesktopWindowSchema = z.discriminatedUnion("type", [
   BaseWindowSchema.extend({
     type: z.literal("instagram"),
     content: z.object({ skin: z.enum(["win98", "modern"]).default("win98"), profile: InstagramProfileSchema, images: z.array(IgPostSchema).max(60) })
+  }),
+  BaseWindowSchema.extend({
+    type: z.literal("music"),
+    content: MusicContentSchema
   })
 ]);
 
@@ -341,6 +394,13 @@ export function makeWindow(type: DesktopWindow["type"], index = 0): DesktopWindo
         id: id(), type, title: "Instagram.exe", icon: "camera", layout: { ...layout, desktop: { ...layout.desktop, w: 420, h: 560 } }, defaultOpen: true,
         content: { skin: "win98", profile: { username: "retro", avatar: null, name: "Retro User", alt: "", bio: "", followers: "0", following: "0", followedBy: "", avatarUrl: "", linkLabel: "", linkUrl: "", dmUrl: "", verified: false, showCounts: true, showHighlights: true, showFollowedBy: true, showLikes: true, allowLikes: true, allowComments: true, highlights: [] }, images: [] }
       };
+    case "music": {
+      const playlistId = id();
+      return {
+        id: id(), type, title: "Music Player.exe", icon: "music", layout: { ...layout, desktop: { ...layout.desktop, w: 390, h: 430 } }, defaultOpen: true,
+        content: { tracks: [], playlist: { id: playlistId, title: "我的播放清單", trackIds: [] } }
+      };
+    }
     default:
       return {
         id: id(), type: "document", title: "新文件.txt", icon: "doc", layout, defaultOpen: true,
@@ -408,6 +468,8 @@ export type LinkItem = Extract<DesktopWindow, { type: "links" }>["content"]["lin
 export type IgPost = Extract<DesktopWindow, { type: "instagram" }>["content"]["images"][number];
 export type IgComment = IgPost["comments"][number];
 export type IgHighlight = Extract<DesktopWindow, { type: "instagram" }>["content"]["profile"]["highlights"][number];
+export type MusicTrack = z.infer<typeof MusicTrackSchema>;
+export type MusicPlaylist = z.infer<typeof MusicPlaylistSchema>;
 
 export function makeGalleryImage(init: Partial<GalleryImage> = {}): GalleryImage {
   return { id: newId(), src: null, title: "", caption: "", srcUrl: "", href: "", ...init };

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { normalizeImageUrl } from "../src/image-url";
-import { createStarterDocument, SiteDocumentSchema, THEME_PRESETS, UsernameSchema } from "../src/site";
+import { createStarterDocument, makeWindow, SiteDocumentSchema, THEME_PRESETS, UsernameSchema } from "../src/site";
 
 describe("site schema security boundaries", () => {
   it("rejects script URLs in user-created links", () => {
@@ -20,6 +20,26 @@ describe("site schema security boundaries", () => {
     expect(SiteDocumentSchema.safeParse(document).success).toBe(true);
     links.content.links[0].url = "https://example.com";
     expect(SiteDocumentSchema.safeParse(document).success).toBe(true);
+  });
+
+  it("accepts ordered HTTPS music tracks and rejects unsafe or inconsistent sources", () => {
+    const document = createStarterDocument("Music", "classic98", "blank");
+    const music = makeWindow("music");
+    if (music.type !== "music") throw new Error("music factory mismatch");
+    music.content.tracks = [{ id: "track-1", title: "Theme", artist: "OC", cover: null, coverUrl: "", source: { kind: "audioUrl", url: "https://media.example.com/theme.mp3" }, lyrics: "", rightsNote: "Original work" }];
+    music.content.playlist.trackIds = ["track-1"];
+    document.windows = [music];
+    expect(SiteDocumentSchema.safeParse(document).success).toBe(true);
+
+    music.content.tracks[0].source = { kind: "audioUrl", url: "http://media.example.com/theme.mp3" };
+    expect(SiteDocumentSchema.safeParse(document).success).toBe(false);
+    music.content.tracks[0].source = { kind: "externalLink", url: "mailto:music@example.com" };
+    expect(SiteDocumentSchema.safeParse(document).success).toBe(false);
+    music.content.tracks[0].source = { kind: "externalLink", url: "https://example.com/track" };
+    music.content.playlist.trackIds = ["missing"];
+    expect(SiteDocumentSchema.safeParse(document).success).toBe(false);
+    music.content.playlist.trackIds = ["track-1", "track-1"];
+    expect(SiteDocumentSchema.safeParse(document).success).toBe(false);
   });
 
   it("rejects reserved usernames and normalizes safe ones", () => {

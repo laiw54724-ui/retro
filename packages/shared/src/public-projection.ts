@@ -58,6 +58,13 @@ function projectV2(document: SiteDocumentV2, currentSiteId: string): SiteDocumen
   const retainedWindowIds = new Set(retainedWindows.map((window) => window.id));
   const windows = retainedWindows
     .map((window) => {
+      if (window.type === "music") return {
+        ...window,
+        content: {
+          ...window.content,
+          tracks: window.content.tracks.map((track) => track.characterRef && (track.characterRef.siteId !== currentSiteId || !profileIds.has(track.characterRef.id)) ? { ...track, characterRef: undefined } : track)
+        }
+      };
       if (window.type !== "links") return window;
       return {
         ...window,
