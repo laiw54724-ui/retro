@@ -7,11 +7,11 @@ const remove = vi.fn(async () => undefined);
 vi.mock("../src/lib/supabase", () => ({
   requireUser: vi.fn(async () => ({ id: "user-a" })),
   serviceClient: vi.fn(() => ({
-    from: vi.fn(() => {
+    from: vi.fn((table: string) => {
       const query: any = {
         select: () => query,
         eq: () => query,
-        maybeSingle: async () => ({ data: { id: "site-a" }, error: null }),
+        maybeSingle: async () => ({ data: table === "sites" ? { id: "site-a", owner_id: "user-a" } : null, error: null }),
         insert
       };
       return query;

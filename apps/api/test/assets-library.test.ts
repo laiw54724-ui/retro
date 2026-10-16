@@ -4,7 +4,7 @@ const filters: Array<[string, unknown]> = [];
 const deletedKeys: string[] = [];
 const assetRow = { id: "asset-1", object_key: "users/user-a/sites/site-a/asset-1.png", migration_status: "not_required", legacy_object_key: null as string | null };
 
-function fakeQuery() {
+function fakeQuery(table: string) {
   const query: Record<string, unknown> = {
     select: () => query,
     eq: (field: string, value: unknown) => {
@@ -15,6 +15,11 @@ function fakeQuery() {
     limit: async () => ({ data: [], error: null }),
     delete: () => query,
     maybeSingle: async () => {
+      if (table === "sites") {
+        const id = filters.findLast(([field]) => field === "id")?.[1];
+        return { data: id === "site-a" ? { id: "site-a", owner_id: "user-a" } : null, error: null };
+      }
+      if (table === "site_memberships") return { data: null, error: null };
       const owner = filters.findLast(([field]) => field === "owner_id")?.[1];
       const site = filters.findLast(([field]) => field === "site_id")?.[1];
       return { data: owner === "user-a" && site === "site-a" ? assetRow : null, error: null };
@@ -26,7 +31,7 @@ function fakeQuery() {
 
 vi.mock("../src/lib/supabase", () => ({
   requireUser: vi.fn(async () => ({ id: "user-a", email: "a@example.com" })),
-  serviceClient: vi.fn(() => ({ from: vi.fn(() => fakeQuery()) }))
+  serviceClient: vi.fn(() => ({ from: vi.fn((table: string) => fakeQuery(table)) }))
 }));
 
 const { assets } = await import("../src/routes/assets");

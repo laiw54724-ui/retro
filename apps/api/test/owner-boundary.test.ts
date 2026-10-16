@@ -61,6 +61,6 @@ describe("owner-scoped API boundaries", () => {
     const response = await assets.request("/sites/site-b/assets", { method: "POST" }, {} as never);
     expect(response.status).toBe(404);
     expect(filters).toContainEqual(["id", "site-b"]);
-    expect(filters).toContainEqual(["owner_id", "user-a"]);
+    expect(filters).not.toContainEqual(["owner_id", "user-a"]);
   });
 });
