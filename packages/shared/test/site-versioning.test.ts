@@ -103,7 +103,11 @@ describe("versioned site document contract", () => {
     if (explorer.type !== "explorer") throw new Error("explorer factory mismatch");
     explorer.id = "explorer-1";
     explorer.content.folders = [{ id: "characters", parentId: null, name: "Characters", order: 0, visibility: "published" }];
-    explorer.content.shortcuts = [{ id: "alice-link", parentId: "characters", label: "Alice", order: 0, visibility: "published", target: { siteId: "site-a", id: "about-1", kind: "window" } }];
+    explorer.content.shortcuts = [
+      { id: "about-link", parentId: "characters", label: "About", order: 0, visibility: "published", target: { siteId: "site-a", id: "about-1", kind: "window" } },
+      { id: "alice-link", parentId: "characters", label: "Alice", order: 1, visibility: "published", target: { siteId: "site-a", id: "profile:ig-1", kind: "profile" } },
+      { id: "post-link", parentId: "characters", label: "Post", order: 2, visibility: "published", target: { siteId: "site-a", id: "post:ig-1:p1", kind: "post" } }
+    ];
     v1.windows.push(explorer);
     const migrated = migrateSiteDocumentV2(v1, { siteId: "site-a" });
     expect(migrated).toMatchObject({ ok: true, version: 2 });
@@ -113,13 +117,13 @@ describe("versioned site document contract", () => {
     const missing = structuredClone(migrated.document);
     const missingExplorer = missing.windows.find((window) => window.id === explorer.id);
     if (!missingExplorer || missingExplorer.type !== "explorer") throw new Error("missing explorer");
-    missingExplorer.content.shortcuts[0].target.id = "missing";
+    missingExplorer.content.shortcuts[1].target.id = "missing";
     expect(parseSiteDocument(missing)).toMatchObject({ ok: false, code: "invalid" });
 
     const crossSite = structuredClone(migrated.document);
     const crossExplorer = crossSite.windows.find((window) => window.id === explorer.id);
     if (!crossExplorer || crossExplorer.type !== "explorer") throw new Error("missing explorer");
-    crossExplorer.content.shortcuts[0].target.siteId = "other";
+    crossExplorer.content.shortcuts[2].target.siteId = "other";
     expect(parseSiteDocument(crossSite)).toMatchObject({ ok: false, code: "invalid" });
   });
 

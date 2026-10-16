@@ -37,9 +37,9 @@ test("author builds nested folders, creates duplicate target shortcuts and reloa
   await dialog.getByRole("button", { name: /角色設定/ }).click();
   await dialog.getByRole("button", { name: "＋資料夾" }).click();
   await dialog.getByRole("textbox", { name: "新資料夾 名稱" }).fill("主角組");
-  await dialog.getByRole("combobox", { name: "新增視窗捷徑" }).selectOption("lore");
+  await dialog.getByRole("combobox", { name: "新增內容捷徑" }).selectOption("window|lore");
   await dialog.getByRole("button", { name: "← 返回" }).click();
-  await dialog.getByRole("combobox", { name: "新增視窗捷徑" }).selectOption("lore");
+  await dialog.getByRole("combobox", { name: "新增內容捷徑" }).selectOption("window|lore");
   await expect.poll(() => {
     const explorer = saves.at(-1)?.document.windows.find((window) => window.type === "explorer");
     return explorer?.type === "explorer" ? { folders: explorer.content.folders.length, shortcuts: explorer.content.shortcuts.length } : null;

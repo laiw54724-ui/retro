@@ -215,7 +215,11 @@ export const ExplorerFolderSchema = z.object({
 export const ExplorerShortcutSchema = z.object({
   id: z.string().min(1).max(160), parentId: z.string().min(1).max(160).nullable(), label: z.string().trim().min(1).max(160),
   order: z.number().int().min(0).max(9999), visibility: z.enum(["published", "draft"]).default("published"),
-  target: z.object({ siteId: z.string().trim().min(1).max(160), id: z.string().trim().min(1).max(160), kind: z.literal("window") }).strict()
+  target: z.discriminatedUnion("kind", [
+    z.object({ siteId: z.string().trim().min(1).max(160), id: z.string().trim().min(1).max(160), kind: z.literal("window") }).strict(),
+    z.object({ siteId: z.string().trim().min(1).max(160), id: z.string().trim().min(1).max(160), kind: z.literal("profile") }).strict(),
+    z.object({ siteId: z.string().trim().min(1).max(160), id: z.string().trim().min(1).max(160), kind: z.literal("post") }).strict()
+  ])
 }).strict();
 export const ExplorerContentSchema = z.object({ folders: z.array(ExplorerFolderSchema).max(500), shortcuts: z.array(ExplorerShortcutSchema).max(500) }).strict().superRefine((content, ctx) => {
   const ids = new Set<string>();

@@ -81,7 +81,12 @@ function projectV2(document: SiteDocumentV2, currentSiteId: string): SiteDocumen
         };
         const folders = publishedFolders.filter((folder) => isReachable(folder.id));
         const folderIds = new Set(folders.map((folder) => folder.id));
-        return { ...window, content: { folders, shortcuts: window.content.shortcuts.filter((shortcut) => shortcut.visibility === "published" && shortcut.target.siteId === currentSiteId && retainedWindowIds.has(shortcut.target.id) && (shortcut.parentId === null || folderIds.has(shortcut.parentId))) } };
+        const targetIsPublic = (shortcut: typeof window.content.shortcuts[number]) => shortcut.target.kind === "window"
+          ? retainedWindowIds.has(shortcut.target.id)
+          : shortcut.target.kind === "profile"
+            ? profileIds.has(shortcut.target.id)
+            : postIds.has(shortcut.target.id);
+        return { ...window, content: { folders, shortcuts: window.content.shortcuts.filter((shortcut) => shortcut.visibility === "published" && shortcut.target.siteId === currentSiteId && targetIsPublic(shortcut) && (shortcut.parentId === null || folderIds.has(shortcut.parentId))) } };
       }
       if (window.type !== "links") return window;
       return {

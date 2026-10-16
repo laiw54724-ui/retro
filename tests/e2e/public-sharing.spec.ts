@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { migrateSiteDocumentV2 } from "@retrodesk/shared";
+import { makeWindow, migrateSiteDocumentV2 } from "@retrodesk/shared";
 import { igDocument } from "./ig-fixture";
 
 function publicV2() {
@@ -63,4 +63,20 @@ test("clipboard rejection shows the real URL for manual copy instead of fake suc
   await expect(fallback).toBeVisible();
   await expect(fallback.getByRole("textbox", { name: "分享網址" })).toHaveValue("http://127.0.0.1:5173/@demo/oc/profile%3Aig");
   await expect(dialog.getByRole("status")).toHaveCount(0);
+});
+
+test("published Explorer OC shortcut resolves through the canonical deep link", async ({ page }) => {
+  const document = publicV2();
+  const explorer = makeWindow("explorer", document.windows.length);
+  if (explorer.type !== "explorer") throw new Error("explorer fixture mismatch");
+  explorer.id = "world"; explorer.title = "World.exe"; explorer.defaultOpen = true;
+  explorer.content.shortcuts = [{ id: "retro-oc", parentId: null, label: "Retro User", order: 0, visibility: "published", target: { siteId: "site-1", id: "profile:ig", kind: "profile" } }];
+  document.windows.forEach((window) => { window.defaultOpen = false; });
+  document.windows.push(explorer);
+  await page.route("**/api/public/sites/demo", (route) => route.fulfill({ json: { site: { username: "demo", site_name: "Demo Desk", published_document: document, published_version: 2, published_at: "2026-10-17T00:00:00.000Z" } } }));
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/@demo");
+  await page.locator(".visitor-desktop").getByRole("dialog", { name: "World.exe" }).getByRole("button", { name: /Retro User/ }).click();
+  await expect(page).toHaveURL(/\/@demo\/oc\/profile%3Aig$/);
+  await expect(page.locator(".visitor-desktop").getByRole("dialog", { name: "Instagram.exe" }).locator(".ig-title strong")).toHaveText("retro");
 });

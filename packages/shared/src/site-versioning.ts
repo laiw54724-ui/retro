@@ -398,7 +398,12 @@ function semanticDiagnostics(document: SiteDocumentV2): Diagnostic[] {
       if (ref && !document.entities.profiles.some((profile) => profile.id === ref.id && profile.siteId === ref.siteId)) out.push({ path: ["windows", i, "content", "tracks", trackIndex, "characterRef"], message: mixedSiteScope ? "Cross-site character profile" : "Missing character profile", code: mixedSiteScope ? "cross_site" : "missing_ref" });
     }
     if (window.type === "explorer") for (const [shortcutIndex, shortcut] of window.content.shortcuts.entries()) {
-      if (!document.windows.some((candidate) => candidate.id === shortcut.target.id)) out.push({ path: ["windows", i, "content", "shortcuts", shortcutIndex, "target"], message: "Missing shortcut window", code: "missing_ref" });
+      const exists = shortcut.target.kind === "window"
+        ? document.windows.some((candidate) => candidate.id === shortcut.target.id)
+        : shortcut.target.kind === "profile"
+          ? document.entities.profiles.some((candidate) => candidate.id === shortcut.target.id && candidate.siteId === shortcut.target.siteId)
+          : document.entities.posts.some((candidate) => candidate.id === shortcut.target.id && candidate.siteId === shortcut.target.siteId);
+      if (!exists) out.push({ path: ["windows", i, "content", "shortcuts", shortcutIndex, "target"], message: `Missing shortcut ${shortcut.target.kind}`, code: "missing_ref" });
     }
   }
   const handles = new Map<string, number>();

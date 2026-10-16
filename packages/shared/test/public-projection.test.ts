@@ -102,7 +102,9 @@ describe("public site projection", () => {
         shortcuts: [
           { id: "public-link", parentId: "public-root", label: "Profile", order: 0, visibility: "published", target: { siteId: "site-a", id: target.id, kind: "window" } },
           { id: "hidden-branch-link", parentId: "orphan-child", label: "Hidden", order: 1, visibility: "published", target: { siteId: "site-a", id: target.id, kind: "window" } },
-          { id: "removed-window", parentId: null, label: "Hidden profile", order: 2, visibility: "published", target: { siteId: "site-a", id: hiddenTarget.id, kind: "window" } }
+          { id: "removed-window", parentId: null, label: "Hidden profile window", order: 2, visibility: "published", target: { siteId: "site-a", id: hiddenTarget.id, kind: "window" } },
+          { id: "removed-profile", parentId: null, label: "Hidden profile", order: 3, visibility: "published", target: { siteId: "site-a", id: draft.entities.profiles[0].id, kind: "profile" } },
+          { id: "removed-post", parentId: null, label: "Hidden post", order: 4, visibility: "published", target: { siteId: "site-a", id: draft.entities.posts[0].id, kind: "post" } }
         ]
     };
     draft.windows.push(explorer);

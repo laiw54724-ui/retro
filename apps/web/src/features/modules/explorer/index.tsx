@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
 import type { ModuleProps, WindowOf } from "../types";
+import { buildPublicEntityUrl } from "../../../lib/publicShare";
 
 type Content = WindowOf<"explorer">["content"];
 type Folder = Content["folders"][number];
+type Shortcut = Content["shortcuts"][number];
 const newId = () => globalThis.crypto?.randomUUID?.() ?? `explorer-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 function descendants(folders: Folder[], id: string): Set<string> {
@@ -32,15 +34,34 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
   const search = query.trim().toLowerCase();
   const searchResults = search ? content.shortcuts.filter((shortcut) => shortcut.label.toLowerCase().includes(search)) : [];
   const availableWindows = ctx.windows.filter((candidate) => candidate.id !== window.id);
+  const availableTargets = [
+    ...availableWindows.map((candidate) => ({ kind: "window" as const, id: candidate.id, label: candidate.title })),
+    ...(ctx.profileDirectory ?? []).flatMap((entry) => [
+      { kind: "profile" as const, id: entry.id, label: `OC：${entry.profile.name || entry.profile.username}` },
+      ...entry.posts.map((post) => ({ kind: "post" as const, id: post.id, label: `貼文：${post.title || post.caption || post.id}` }))
+    ])
+  ];
 
   function addFolder() {
     const folder: Folder = { id: newId(), parentId: folderId, name: "新資料夾", order: folders.length, visibility: "published" };
     setContent({ ...content, folders: [...content.folders, folder] });
   }
-  function addShortcut(targetId: string) {
-    const target = availableWindows.find((candidate) => candidate.id === targetId);
+  function addShortcut(value: string) {
+    const [kind, ...idParts] = value.split("|");
+    const targetId = idParts.join("|");
+    const target = availableTargets.find((candidate) => candidate.kind === kind && candidate.id === targetId);
     if (!target || !ctx.siteId) return;
-    setContent({ ...content, shortcuts: [...content.shortcuts, { id: newId(), parentId: folderId, label: target.title, order: shortcuts.length, visibility: "published", target: { siteId: ctx.siteId, id: target.id, kind: "window" } }] });
+    setContent({ ...content, shortcuts: [...content.shortcuts, { id: newId(), parentId: folderId, label: target.label, order: shortcuts.length, visibility: "published", target: { siteId: ctx.siteId, id: target.id, kind: target.kind } }] });
+  }
+  function openShortcut(shortcut: Shortcut) {
+    if (shortcut.target.kind === "window") { ctx.onLink({ target: "window", windowId: shortcut.target.id, label: shortcut.label }); return; }
+    if (ctx.publicShareBaseUrl) {
+      const base = new URL(ctx.publicShareBaseUrl, globalThis.location.origin);
+      const handle = decodeURIComponent(base.pathname.replace(/^\/@/, "").split("/")[0] ?? "");
+      globalThis.location.assign(buildPublicEntityUrl(base.origin, handle, shortcut.target.kind === "profile" ? "oc" : "post", shortcut.target.id));
+      return;
+    }
+    if (shortcut.target.kind === "profile") ctx.onProfileSelect?.(shortcut.target.id);
   }
   function removeFolder(folder: Folder) {
     const removed = descendants(content.folders, folder.id);
@@ -62,10 +83,10 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
         <nav aria-label="資料夾路徑"><button type="button" onClick={() => setFolderId(null)}>桌面</button>{breadcrumbs.map((folder) => <span key={folder.id}> / <button type="button" onClick={() => setFolderId(folder.id)}>{folder.name}</button></span>)}</nav>
       </div>
       <label className="explorer-search">搜尋捷徑<input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="輸入名稱…" /></label>
-      {editing ? <div className="explorer-authoring"><button type="button" className="w98-btn" onClick={addFolder}>＋資料夾</button><label>＋捷徑<select aria-label="新增視窗捷徑" defaultValue="" onChange={(event) => { addShortcut(event.target.value); event.target.value = ""; }}><option value="">選擇視窗…</option>{availableWindows.map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.title}</option>)}</select></label></div> : null}
-      {search ? <ul className="explorer-results" aria-label="搜尋結果">{searchResults.map((shortcut) => <li key={shortcut.id}><button type="button" onClick={() => ctx.onLink({ target: "window", windowId: shortcut.target.id, label: shortcut.label })}>▣ {shortcut.label}</button><small>{folderPath(shortcut.parentId)}</small></li>)}</ul> : <div className="explorer-grid" role="list" aria-label={active?.name ?? "桌面"}>
+      {editing ? <div className="explorer-authoring"><button type="button" className="w98-btn" onClick={addFolder}>＋資料夾</button><label>＋捷徑<select aria-label="新增內容捷徑" defaultValue="" onChange={(event) => { addShortcut(event.target.value); event.target.value = ""; }}><option value="">選擇視窗、OC 或貼文…</option>{availableTargets.map((candidate) => <option key={`${candidate.kind}:${candidate.id}`} value={`${candidate.kind}|${candidate.id}`}>{candidate.label}</option>)}</select></label></div> : null}
+      {search ? <ul className="explorer-results" aria-label="搜尋結果">{searchResults.map((shortcut) => <li key={shortcut.id}><button type="button" onClick={() => openShortcut(shortcut)}>▣ {shortcut.label}</button><small>{folderPath(shortcut.parentId)}</small></li>)}</ul> : <div className="explorer-grid" role="list" aria-label={active?.name ?? "桌面"}>
         {folders.map((folder) => <div key={folder.id} role="listitem" className="explorer-item"><button type="button" className="explorer-open" onClick={() => setFolderId(folder.id)}><span aria-hidden="true">📁</span><strong>{folder.name}</strong>{editing && folder.visibility === "draft" ? <small>草稿</small> : null}</button>{editing ? <div className="explorer-edit"><input aria-label={`${folder.name} 名稱`} value={folder.name} onChange={(event) => setContent({ ...content, folders: content.folders.map((item) => item.id === folder.id ? { ...item, name: event.target.value } : item) })} /><select aria-label={`${folder.name} 發布狀態`} value={folder.visibility} onChange={(event) => setContent({ ...content, folders: content.folders.map((item) => item.id === folder.id ? { ...item, visibility: event.target.value as "published" | "draft" } : item) })}><option value="published">公開</option><option value="draft">草稿</option></select><select aria-label={`移動 ${folder.name} 到`} value={folder.parentId ?? ""} onChange={(event) => setContent({ ...content, folders: content.folders.map((item) => item.id === folder.id ? { ...item, parentId: event.target.value || null } : item) })}><option value="">桌面</option>{content.folders.filter((candidate) => candidate.id !== folder.id && !descendants(content.folders, folder.id).has(candidate.id)).map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.name}</option>)}</select><button type="button" className="w98-btn danger" onClick={() => removeFolder(folder)}>刪除</button></div> : null}</div>)}
-        {shortcuts.map((shortcut) => <div key={shortcut.id} role="listitem" className="explorer-item"><button type="button" className="explorer-open" onClick={() => ctx.onLink({ target: "window", windowId: shortcut.target.id, label: shortcut.label })}><span aria-hidden="true">↗</span><strong>{shortcut.label}</strong>{editing && shortcut.visibility === "draft" ? <small>草稿</small> : null}</button>{editing ? <div className="explorer-edit"><input aria-label={`${shortcut.label} 名稱`} value={shortcut.label} onChange={(event) => setContent({ ...content, shortcuts: content.shortcuts.map((item) => item.id === shortcut.id ? { ...item, label: event.target.value } : item) })} /><select aria-label={`${shortcut.label} 發布狀態`} value={shortcut.visibility} onChange={(event) => setContent({ ...content, shortcuts: content.shortcuts.map((item) => item.id === shortcut.id ? { ...item, visibility: event.target.value as "published" | "draft" } : item) })}><option value="published">公開</option><option value="draft">草稿</option></select><select aria-label={`移動 ${shortcut.label} 到`} value={shortcut.parentId ?? ""} onChange={(event) => setContent({ ...content, shortcuts: content.shortcuts.map((item) => item.id === shortcut.id ? { ...item, parentId: event.target.value || null } : item) })}><option value="">桌面</option>{content.folders.map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.name}</option>)}</select><button type="button" className="w98-btn danger" onClick={() => setContent({ ...content, shortcuts: content.shortcuts.filter((item) => item.id !== shortcut.id) })}>刪除捷徑</button></div> : null}</div>)}
+        {shortcuts.map((shortcut) => <div key={shortcut.id} role="listitem" className="explorer-item"><button type="button" className="explorer-open" onClick={() => openShortcut(shortcut)}><span aria-hidden="true">{shortcut.target.kind === "window" ? "↗" : shortcut.target.kind === "profile" ? "☺" : "▧"}</span><strong>{shortcut.label}</strong>{editing ? <small>{shortcut.visibility === "draft" ? "草稿 · " : ""}{shortcut.target.kind === "window" ? "視窗" : shortcut.target.kind === "profile" ? "OC" : "貼文"}</small> : null}</button>{editing ? <div className="explorer-edit"><input aria-label={`${shortcut.label} 名稱`} value={shortcut.label} onChange={(event) => setContent({ ...content, shortcuts: content.shortcuts.map((item) => item.id === shortcut.id ? { ...item, label: event.target.value } : item) })} /><select aria-label={`${shortcut.label} 發布狀態`} value={shortcut.visibility} onChange={(event) => setContent({ ...content, shortcuts: content.shortcuts.map((item) => item.id === shortcut.id ? { ...item, visibility: event.target.value as "published" | "draft" } : item) })}><option value="published">公開</option><option value="draft">草稿</option></select><select aria-label={`移動 ${shortcut.label} 到`} value={shortcut.parentId ?? ""} onChange={(event) => setContent({ ...content, shortcuts: content.shortcuts.map((item) => item.id === shortcut.id ? { ...item, parentId: event.target.value || null } : item) })}><option value="">桌面</option>{content.folders.map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.name}</option>)}</select><button type="button" className="w98-btn danger" onClick={() => setContent({ ...content, shortcuts: content.shortcuts.filter((item) => item.id !== shortcut.id) })}>刪除捷徑</button></div> : null}</div>)}
         {!folders.length && !shortcuts.length ? <p className="explorer-empty">這個資料夾是空的。</p> : null}
       </div>}
     </div>
