@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState, type PointerEvent } from "react";
 import type { DesktopWindow, ProfileEntityV2, SiteDocument } from "@retrodesk/shared";
+import type { ProfileDirectoryEntry } from "../modules/types";
 import { Icon } from "../../components/Icon";
 import { RetroWindow } from "../../components/RetroWindow";
 import { useThemeView } from "../../lib/themeView";
@@ -39,7 +40,7 @@ function initialRuntime(document: SiteDocument): RuntimeMap {
   ]));
 }
 
-export function VisitorDesktop({ document, profiles, profileIdsByWindow }: { document: SiteDocument; profiles?: ProfileEntityV2[]; profileIdsByWindow?: Record<string, string> }) {
+export function VisitorDesktop({ document, profiles, profileIdsByWindow, profileDirectory }: { document: SiteDocument; profiles?: ProfileEntityV2[]; profileIdsByWindow?: Record<string, string>; profileDirectory?: ProfileDirectoryEntry[] }) {
   const [runtime, setRuntime] = useState<RuntimeMap>(() => initialRuntime(document));
   const desktopRef = useRef<HTMLDivElement | null>(null);
   const gesture = useRef<Gesture | null>(null);
@@ -230,7 +231,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow }: { doc
               onClose={() => close(window.id)}
               style={{ height: "100%" }}
             >
-              <WindowRenderer window={window} theme={document.theme} onOpenWindow={openWindow} profiles={profiles} profileIdsByWindow={profileIdsByWindow} />
+              <WindowRenderer window={window} theme={document.theme} onOpenWindow={openWindow} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} />
             </RetroWindow>
             {!state.maximized ? <span className="window-resize-handle" aria-hidden="true" /> : null}
           </div>

@@ -1,7 +1,7 @@
 import type { DesktopWindow, ProfileEntityV2, RetroTheme } from "@retrodesk/shared";
 import { useThemeView } from "../../lib/themeView";
 import { renderModule } from "../modules/registry";
-import type { LinkAction, ModuleCtx } from "../modules/types";
+import type { LinkAction, ModuleCtx, ProfileDirectoryEntry } from "../modules/types";
 
 type Props = {
   window: DesktopWindow;
@@ -25,6 +25,7 @@ type Props = {
   onProfileDelete?: (profileId: string, retargetProfileId?: string) => void;
   profileDeleteBlocked?: boolean;
   profileDeleteGuardById?: Record<string, { windowTitles: string[]; postIds: string[] }>;
+  profileDirectory?: ProfileDirectoryEntry[];
 };
 
 function openExternal(url: string) {
@@ -37,7 +38,7 @@ function openExternal(url: string) {
   }
 }
 
-export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, mobile = false, editing = false, siteId, upload, onUpdate, profiles, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById }: Props) {
+export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, mobile = false, editing = false, siteId, upload, onUpdate, profiles, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory }: Props) {
   const tv = useThemeView(theme);
   const onLink = (action: LinkAction) => {
     if (editing) return; // links are inert while editing
@@ -55,7 +56,7 @@ export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, m
     onProfileDuplicate: (id) => onProfileDuplicate?.(id, win.id), onProfileChange: (id, patch, key) => onProfileChange?.(id, patch, key),
     onProfileDelete: (id, target) => onProfileDelete?.(id, target),
     profileDeleteBlocked: !!profileDeleteGuardById?.[resolvedProfileId ?? ""] && ((profileDeleteGuardById?.[resolvedProfileId ?? ""]?.windowTitles.length ?? 0) > 0 || (profileDeleteGuardById?.[resolvedProfileId ?? ""]?.postIds.length ?? 0) > 0),
-    profileDeleteGuard: profileDeleteGuardById?.[resolvedProfileId ?? ""]
+    profileDeleteGuard: profileDeleteGuardById?.[resolvedProfileId ?? ""], profileDirectory
   };
   const update = (recipe: (current: DesktopWindow) => DesktopWindow, key?: string) => onUpdate?.(win.id, recipe, key);
 

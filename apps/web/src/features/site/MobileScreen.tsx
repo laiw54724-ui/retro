@@ -6,6 +6,7 @@ import { themeView, useThemeView } from "../../lib/themeView";
 import { moduleDefinitions } from "../modules/registry";
 import { useEditorStore } from "../editor/store";
 import { WindowRenderer } from "./WindowRenderer";
+import type { ProfileDirectoryEntry } from "../modules/types";
 
 type Sheet = "add" | "edit" | "theme" | null;
 
@@ -26,12 +27,13 @@ type Props = {
   onProfileDelete?: (profileId: string, retargetProfileId?: string) => void;
   profileDeleteBlocked?: boolean;
   profileDeleteGuardById?: Record<string, { windowTitles: string[]; postIds: string[] }>;
+  profileDirectory?: ProfileDirectoryEntry[];
 };
 
 const clock = () => new Date().toTimeString().slice(0, 5);
 
 /** The single-window phone experience. Used for visitors, the editor preview and the mobile editor. */
-export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview, profiles, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById }: Props) {
+export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview, profiles, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory }: Props) {
   const editor = mode === "editor";
   const store = useEditorStore();
   const tv = useThemeView(document.theme);
@@ -98,6 +100,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
                 onProfileDelete={onProfileDelete}
                 profileDeleteBlocked={profileDeleteBlocked}
                 profileDeleteGuardById={profileDeleteGuardById}
+                profileDirectory={profileDirectory}
               />
             </div>
             {editor ? <button type="button" className="m-fab" onClick={() => setInlineEdit(!inlineEdit)}>{inlineEdit ? "完成編輯" : "編輯此視窗"}</button> : null}

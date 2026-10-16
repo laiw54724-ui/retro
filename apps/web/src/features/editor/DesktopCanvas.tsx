@@ -6,6 +6,7 @@ import { useThemeView } from "../../lib/themeView";
 import { WindowRenderer } from "../site/WindowRenderer";
 import { DesktopTaskbar } from "../site/DesktopTaskbar";
 import { useEditorStore } from "./store";
+import type { ProfileDirectoryEntry } from "../modules/types";
 
 const TASKBAR_H = 36;
 const GRID = 8;
@@ -33,9 +34,10 @@ type Props = {
   onProfileDelete?: (profileId: string, retargetProfileId?: string) => void;
   profileDeleteBlocked?: boolean;
   profileDeleteGuardById?: Record<string, { windowTitles: string[]; postIds: string[] }>;
+  profileDirectory?: ProfileDirectoryEntry[];
 };
 
-export function DesktopCanvas({ siteId, upload, profiles, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById }: Props) {
+export function DesktopCanvas({ siteId, upload, profiles, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory }: Props) {
   const document = useEditorStore((s) => s.document)!;
   const selectedId = useEditorStore((s) => s.selectedId);
   const view = useEditorStore((s) => s.viewState);
@@ -251,7 +253,7 @@ export function DesktopCanvas({ siteId, upload, profiles, profileId, profileIdsB
               style={{ height: "100%" }}
               bodyStyle={{ padding: 0 }}
             >
-              <WindowRenderer window={win} theme={document.theme} editing={!layoutMode} allWindows={document.windows} siteId={siteId} upload={upload} onUpdate={store().updateWindow} profiles={profiles} profileId={profileId} profileIdsByWindow={profileIdsByWindow} onProfileSelect={onProfileSelect} onProfileAdd={onProfileAdd} onProfileDuplicate={onProfileDuplicate} onProfileChange={onProfileChange} onProfileDelete={onProfileDelete} profileDeleteBlocked={profileDeleteBlocked} profileDeleteGuardById={profileDeleteGuardById} />
+              <WindowRenderer window={win} theme={document.theme} editing={!layoutMode} allWindows={document.windows} siteId={siteId} upload={upload} onUpdate={store().updateWindow} profiles={profiles} profileId={profileId} profileIdsByWindow={profileIdsByWindow} onProfileSelect={onProfileSelect} onProfileAdd={onProfileAdd} onProfileDuplicate={onProfileDuplicate} onProfileChange={onProfileChange} onProfileDelete={onProfileDelete} profileDeleteBlocked={profileDeleteBlocked} profileDeleteGuardById={profileDeleteGuardById} profileDirectory={profileDirectory} />
             </RetroWindow>
             {layoutMode ? <div className="layout-veil"><span className="geo-text">{layout.x}, {layout.y} · {layout.w}×{layout.h}</span></div> : null}
             {!maximized ? <span className="window-resize-handle" aria-label="調整大小" /> : null}

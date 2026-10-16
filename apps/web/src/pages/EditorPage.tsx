@@ -12,6 +12,7 @@ import { Icon } from "../components/Icon";
 import { RetroButton } from "../components/RetroButton";
 import { useAuth } from "../app/AuthProvider";
 import { AssetSourceProvider } from "../lib/assetSource";
+import { buildProfileDirectory } from "../features/modules/instagram/profileDirectory";
 
 
 
@@ -247,6 +248,7 @@ export function EditorPage() {
   const selectedV2Window = selected ? versionedDraft?.windows.find((window) => window.id === selected.id) : undefined;
   const selectedProfileId = selectedV2Window?.type === "instagram" ? selectedV2Window.content.profileRef.id : undefined;
   const profileIdsByWindow = Object.fromEntries((versionedDraft?.windows ?? []).flatMap((window) => window.type === "instagram" ? [[window.id, window.content.profileRef.id] as const] : []));
+  const profileDirectory = versionedDraft ? buildProfileDirectory(versionedDraft, false) : [];
   const selectedProfileReferenced = !!selectedProfileId && !!versionedDraft && (
     versionedDraft.windows.some((window) => window.type === "instagram" && window.content.profileRef.id === selectedProfileId) ||
     versionedDraft.entities.posts.some((post) => post.authorProfileId === selectedProfileId)
@@ -465,9 +467,10 @@ export function EditorPage() {
               onProfileDelete={deleteProfile}
               profileDeleteBlocked={selectedProfileReferenced}
               profileDeleteGuardById={profileDeleteGuardById}
+              profileDirectory={profileDirectory}
             />
           ) : (
-            <MobileScreen document={store.document} mode="editor" framed siteId={siteId} upload={uploadImage} onPreview={() => setPreview(true)} profiles={editorProfiles} profileIdsByWindow={profileIdsByWindow} onProfileSelect={selectProfile} onProfileAdd={addProfile} onProfileDuplicate={duplicateProfileForWindow} onProfileChange={changeProfile} onProfileDelete={deleteProfile} profileDeleteBlocked={selectedProfileReferenced} profileDeleteGuardById={profileDeleteGuardById} />
+            <MobileScreen document={store.document} mode="editor" framed siteId={siteId} upload={uploadImage} onPreview={() => setPreview(true)} profiles={editorProfiles} profileIdsByWindow={profileIdsByWindow} onProfileSelect={selectProfile} onProfileAdd={addProfile} onProfileDuplicate={duplicateProfileForWindow} onProfileChange={changeProfile} onProfileDelete={deleteProfile} profileDeleteBlocked={selectedProfileReferenced} profileDeleteGuardById={profileDeleteGuardById} profileDirectory={profileDirectory} />
           )}
         </section>
 

@@ -1,15 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export type IgScreen = "profile" | "feed" | "explore" | "saved" | "post";
+export type IgScreen = "profile" | "feed" | "explore" | "saved" | "directory" | "post";
 export type IgComment = { id: string; user: string; text: string };
+type Route = { screen: IgScreen; profileId: string; postId: string | null };
+type HistoryFrame = { route: Route; scrollTop: number };
 
-/** Visitor-only Instagram state. Lives in memory; never written to the document or the server. */
-export function useIgSession(highlightCount: () => number) {
-  const [screen, setScreen] = useState<IgScreen>("profile");
-  const [postId, setPostId] = useState<string | null>(null);
-  const [back, setBack] = useState<IgScreen>("profile");
-  const [gridTab, setGridTab] = useState<"grid" | "list">("grid");
-  const [followed, setFollowed] = useState(false);
+/** Visitor-only Instagram state. Lives in memory; never writes the document or API. */
+export function useIgSession(highlightCount: (profileId: string) => number, entryProfileId = "entry") {
+  const [route, setRoute] = useState<Route>({ screen: "profile", profileId: entryProfileId, postId: null });
+  const history = useRef<HistoryFrame[]>([]);
+  const pendingScroll = useRef<number | null>(null);
+  const [historyVersion, setHistoryVersion] = useState(0);
+  const [gridTabs, setGridTabs] = useState<Record<string, "grid" | "list">>({});
+  const [followedProfiles, setFollowedProfiles] = useState<Record<string, boolean>>({});
   const [liked, setLiked] = useState<Record<string, boolean>>({});
   const [saved, setSaved] = useState<Record<string, boolean>>({});
   const [extraComments, setExtraComments] = useState<Record<string, IgComment[]>>({});
@@ -17,7 +20,7 @@ export function useIgSession(highlightCount: () => number) {
   const [showAll, setShowAll] = useState<Record<string, boolean>>({});
   const [commentOpen, setCommentOpen] = useState<Record<string, boolean>>({});
   const [slide, setSlide] = useState<Record<string, number>>({});
-  const [query, setQuery] = useState("");
+  const [queries, setQueries] = useState<Record<string, string>>({});
   const [sheetId, setSheetId] = useState<string | null>(null);
   const [burst, setBurst] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -26,6 +29,12 @@ export function useIgSession(highlightCount: () => number) {
   const timers = useRef<{ toast?: ReturnType<typeof setTimeout>; burst?: ReturnType<typeof setTimeout>; story?: ReturnType<typeof setInterval> }>({});
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
+  const closeStory = useCallback(() => {
+    clearInterval(timers.current.story);
+    setStory(-1);
+    setStoryProgress(0);
+  }, []);
+
   useEffect(() => () => {
     clearTimeout(timers.current.toast);
     clearTimeout(timers.current.burst);
@@ -33,8 +42,19 @@ export function useIgSession(highlightCount: () => number) {
   }, []);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: 0 });
-  }, [screen, postId]);
+    history.current = [];
+    pendingScroll.current = 0;
+    setRoute({ screen: "profile", profileId: entryProfileId, postId: null });
+    setHistoryVersion((value) => value + 1);
+    closeStory();
+  }, [entryProfileId, closeStory]);
+
+  useEffect(() => {
+    const top = pendingScroll.current;
+    pendingScroll.current = null;
+    const frame = requestAnimationFrame(() => requestAnimationFrame(() => scrollRef.current?.scrollTo({ top: top ?? 0 })));
+    return () => cancelAnimationFrame(frame);
+  }, [route.screen, route.postId, route.profileId, historyVersion]);
 
   const showToast = useCallback((message: string) => {
     clearTimeout(timers.current.toast);
@@ -42,55 +62,90 @@ export function useIgSession(highlightCount: () => number) {
     timers.current.toast = setTimeout(() => setToast(null), 1800);
   }, []);
 
-  const go = (next: IgScreen) => { setScreen(next); setPostId(null); setSheetId(null); };
-  const openPost = (id: string) => { setBack(screen === "post" ? back : screen); setScreen("post"); setPostId(id); setSheetId(null); };
-  const toggleLike = (id: string) => setLiked((s) => ({ ...s, [id]: !s[id] }));
+  const interactionKey = (id: string) => `${route.profileId}:${id}`;
+  const push = (next: Route) => {
+    history.current.push({ route, scrollTop: scrollRef.current?.scrollTop ?? 0 });
+    pendingScroll.current = 0;
+    setRoute(next);
+    setHistoryVersion((value) => value + 1);
+    setSheetId(null);
+    closeStory();
+  };
+  const go = (screen: Exclude<IgScreen, "post" | "directory">) => {
+    history.current = [];
+    pendingScroll.current = 0;
+    setRoute({ screen, profileId: route.profileId, postId: null });
+    setHistoryVersion((value) => value + 1);
+    setSheetId(null);
+    closeStory();
+  };
+  const openDirectory = () => push({ screen: "directory", profileId: route.profileId, postId: null });
+  const navigateProfile = (profileId: string) => push({ screen: "profile", profileId, postId: null });
+  const openPost = (postId: string) => push({ screen: "post", profileId: route.profileId, postId });
+  const back = () => {
+    const previous = history.current.pop();
+    if (!previous) return;
+    pendingScroll.current = previous.scrollTop;
+    setRoute(previous.route);
+    setHistoryVersion((value) => value + 1);
+    setSheetId(null);
+    closeStory();
+  };
+
+  const toggleLike = (id: string) => { const key = interactionKey(id); setLiked((state) => ({ ...state, [key]: !state[key] })); };
   const doubleLike = (id: string) => {
-    setLiked((s) => ({ ...s, [id]: true }));
-    setBurst(id);
+    const key = interactionKey(id);
+    setLiked((state) => ({ ...state, [key]: true }));
+    setBurst(key);
     clearTimeout(timers.current.burst);
     timers.current.burst = setTimeout(() => setBurst(null), 700);
   };
   const toggleSave = (id: string) => {
-    setSaved((s) => { const next = !s[id]; showToast(next ? "已加入收藏" : "已從收藏移除"); return { ...s, [id]: next }; });
+    const key = interactionKey(id);
+    setSaved((state) => { const next = !state[key]; showToast(next ? "已加入收藏" : "已從收藏移除"); return { ...state, [key]: next }; });
   };
   const postComment = (id: string) => {
-    const text = (drafts[id] ?? "").trim();
+    const key = interactionKey(id);
+    const text = (drafts[key] ?? "").trim();
     if (!text) return;
-    setExtraComments((s) => ({ ...s, [id]: [...(s[id] ?? []), { id: crypto.randomUUID(), user: "你（訪客）", text }] }));
-    setDrafts((s) => ({ ...s, [id]: "" }));
-    setShowAll((s) => ({ ...s, [id]: true }));
+    setExtraComments((state) => ({ ...state, [key]: [...(state[key] ?? []), { id: crypto.randomUUID(), user: "你（訪客）", text }] }));
+    setDrafts((state) => ({ ...state, [key]: "" }));
+    setShowAll((state) => ({ ...state, [key]: true }));
   };
 
-  const closeStory = () => { clearInterval(timers.current.story); setStory(-1); setStoryProgress(0); };
   const openStory = (index: number) => {
-    if (!highlightCount()) return;
+    if (!highlightCount(route.profileId)) return;
     setStory(index);
     setStoryProgress(0);
     clearInterval(timers.current.story);
-    // 2.5% every 100ms = 4 seconds per story.
-    timers.current.story = setInterval(() => {
-      setStoryProgress((p) => (p + 2.5 < 100 ? p + 2.5 : 100));
-    }, 100);
+    timers.current.story = setInterval(() => setStoryProgress((progress) => (progress + 2.5 < 100 ? progress + 2.5 : 100)), 100);
   };
   const stepStory = (delta: -1 | 1) => {
-    const total = highlightCount();
+    const total = highlightCount(route.profileId);
     const next = story + delta;
     if (next < 0) { setStoryProgress(0); return; }
     if (next >= total) { closeStory(); return; }
     setStory(next);
     setStoryProgress(0);
   };
-  // Auto-advance when a story's bar fills.
   useEffect(() => {
     if (story >= 0 && storyProgress >= 100) {
-      if (story + 1 >= highlightCount()) closeStory(); else { setStory(story + 1); setStoryProgress(0); }
+      if (story + 1 >= highlightCount(route.profileId)) closeStory();
+      else { setStory(story + 1); setStoryProgress(0); }
     }
-  });
+  }, [story, storyProgress, route.profileId, highlightCount, closeStory]);
 
+  const activeProfileId = route.profileId;
   return {
-    screen, postId, back, gridTab, followed, liked, saved, extraComments, drafts, showAll, commentOpen, slide, query, sheetId, burst, toast, story, storyProgress, scrollRef,
-    setGridTab, setFollowed, setDrafts, setShowAll, setCommentOpen, setSlide, setQuery, setSheetId, showToast,
-    go, openPost, toggleLike, doubleLike, toggleSave, postComment, openStory, closeStory, stepStory
+    screen: route.screen, postId: route.postId, activeProfileId,
+    previousScreen: history.current.at(-1)?.route.screen ?? "profile", historyDepth: history.current.length,
+    interactionKey, gridTab: gridTabs[activeProfileId] ?? "grid", followed: !!followedProfiles[activeProfileId],
+    liked, saved, extraComments, drafts, showAll, commentOpen, slide, query: queries[activeProfileId] ?? "", sheetId, burst, toast, story, storyProgress, scrollRef,
+    setGridTab: (value: "grid" | "list") => setGridTabs((state) => ({ ...state, [activeProfileId]: value })),
+    setFollowed: (value: boolean) => setFollowedProfiles((state) => ({ ...state, [activeProfileId]: value })),
+    setDrafts, setShowAll, setCommentOpen, setSlide,
+    setQuery: (value: string) => setQueries((state) => ({ ...state, [activeProfileId]: value })),
+    setSheetId, showToast, go, openDirectory, openPost, navigateProfile, back,
+    toggleLike, doubleLike, toggleSave, postComment, openStory, closeStory, stepStory
   };
 }

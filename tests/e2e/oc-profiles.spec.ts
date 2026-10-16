@@ -23,6 +23,27 @@ function ocDocument(): SiteDocumentV2Input {
   return duplicated.document;
 }
 
+function navigationDocument(): SiteDocumentV2Input {
+  const document = ocDocument();
+  const firstPost = document.entities.posts[0];
+  if (!firstPost) throw new Error("fixture post missing");
+  const publicPosts = Array.from({ length: 18 }, (_, index) => ({
+    ...structuredClone(firstPost), id: `post:retro:${index}`, authorProfileId: "profile:ig", caption: `Retro archive ${index}`
+  }));
+  publicPosts.push({ ...structuredClone(firstPost), id: "post:bei:timeline", authorProfileId: "profile:bei", caption: "Bei timeline" });
+  document.entities.posts = publicPosts;
+  const hidden = duplicateProfile(document, "profile:bei", { siteId: "site-1", id: "profile:secret", handle: "secret" });
+  if (!hidden.ok) throw new Error("hidden fixture duplication failed");
+  const secret = hidden.document.entities.profiles.find((profile) => profile.id === "profile:secret");
+  if (!secret) throw new Error("hidden fixture profile missing");
+  secret.displayName = "Secret Draft Character";
+  secret.name = "Secret Draft Character";
+  secret.avatarUrl = "https://example.com/secret-avatar.png";
+  secret.visibility = "draft";
+  hidden.document.entities.posts.push({ ...structuredClone(firstPost), id: "post:secret:hidden", authorProfileId: secret.id, caption: "Secret draft post", visibility: "draft" });
+  return hidden.document;
+}
+
 async function mockEditor(page: Page, document = ocDocument()) {
   await page.addInitScript((value) => localStorage.setItem("sb-example-auth-token", JSON.stringify(value)), session);
   const saves: Array<{ document: SiteDocumentV2Input }> = [];
@@ -120,3 +141,57 @@ for (const width of [1280, 390]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
   });
 }
+
+test("desktop visitor navigates OC directory and posts with layered back and scroll restore", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await mockPublic(page, navigationDocument());
+  await page.goto("/@demo");
+  const win = page.getByRole("dialog", { name: "Instagram.exe" });
+  const scroll = win.locator(".ig-scroll");
+  await expect(win.locator(".ig-title strong")).toHaveText("retro");
+  await win.getByRole("button", { name: "+ Follow" }).click();
+  await expect(win.getByRole("button", { name: "✓ Following" })).toBeVisible();
+  await expect.poll(() => scroll.evaluate((node) => { node.scrollTop = 180; return node.scrollTop; })).toBeGreaterThan(100);
+
+  // Invoke the already-visible profile control without Playwright auto-scrolling
+  // it back to the top, so the navigation frame must preserve this offset.
+  await win.getByRole("button", { name: /粉絲/ }).evaluate((button) => (button as HTMLButtonElement).click());
+  await expect(win.getByRole("heading", { name: "此桌面的角色" })).toBeVisible();
+  await expect(win.getByText("Secret Draft Character")).toHaveCount(0);
+  await win.getByRole("button", { name: "Bei Original @bei" }).click();
+  await expect(win.locator(".ig-title strong")).toHaveText("bei");
+  await expect(win.getByRole("button", { name: "+ Follow" })).toBeVisible();
+  await win.getByRole("button", { name: "開啟貼文：Bei timeline" }).click();
+  await expect(win.locator(".ig-title strong")).toHaveText("貼文");
+
+  await win.getByRole("button", { name: "返回" }).click();
+  await expect(win.locator(".ig-title strong")).toHaveText("bei");
+  await win.getByRole("button", { name: "返回" }).click();
+  await expect(win.getByRole("heading", { name: "此桌面的角色" })).toBeVisible();
+  await win.getByRole("button", { name: "返回" }).click();
+  await expect(win.locator(".ig-title strong")).toHaveText("retro");
+  await expect(win.getByRole("button", { name: "✓ Following" })).toBeVisible();
+  await expect.poll(() => scroll.evaluate((node) => node.scrollTop)).toBeGreaterThan(100);
+
+  await win.getByRole("button", { name: /追蹤中/ }).click();
+  await win.getByRole("button", { name: "Bei Original @bei" }).click();
+  await win.getByRole("button", { name: "關閉" }).click();
+  await page.locator(".visitor-icon").filter({ hasText: "Instagram.exe" }).click();
+  await expect(page.getByRole("dialog", { name: "Instagram.exe" }).locator(".ig-title strong")).toHaveText("retro");
+});
+
+test("mobile visitor can browse the published OC directory without draft leakage or overflow", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await mockPublic(page, navigationDocument());
+  await page.goto("/@demo");
+  await page.getByRole("button", { name: "Instagram.exe" }).click();
+  const win = page.getByRole("dialog", { name: "Instagram.exe" });
+  await win.getByRole("button", { name: /粉絲/ }).click();
+  await expect(win.getByText("Secret Draft Character")).toHaveCount(0);
+  await win.getByRole("button", { name: "Bei Original @bei" }).click();
+  await win.getByRole("button", { name: "開啟貼文：Bei timeline" }).click();
+  await expect(win.locator(".ig-title strong")).toHaveText("貼文");
+  await win.getByRole("button", { name: "返回" }).click();
+  await expect(win.locator(".ig-title strong")).toHaveText("bei");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
+});

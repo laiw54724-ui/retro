@@ -10,13 +10,17 @@ const Ic = ({ bg, size = 24 }: { bg: string; size?: number }) => <span aria-hidd
 
 /** The "real app" experience. State is per visit only. */
 export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "window" | "ctx">) {
-  const profile = window.content.profile;
-  const tv = ctx.profileThemeOverride ? { ...ctx.tv, face: ctx.profileThemeOverride.background, accent: ctx.profileThemeOverride.accent } : ctx.tv;
-  const posts = window.content.images;
-  const highlights = profile.highlights;
-  const I = igIcons(tv.text);
-  const session = useIgSession(() => highlights.length);
+  const entryProfileId = ctx.profileId ?? "entry";
+  const profileDirectory = ctx.profileDirectory ?? [];
+  const session = useIgSession((profileId) => profileDirectory.find((entry) => entry.id === profileId)?.profile.highlights.length ?? window.content.profile.highlights.length, entryProfileId);
   const s = session;
+  const directoryEntry = ctx.profileDirectory?.find((entry) => entry.id === s.activeProfileId);
+  const profile = directoryEntry?.profile ?? window.content.profile;
+  const posts = directoryEntry?.posts ?? window.content.images;
+  const highlights = profile.highlights;
+  const profileThemeOverride = directoryEntry?.themeOverride ?? (s.activeProfileId === entryProfileId ? ctx.profileThemeOverride : undefined);
+  const tv = profileThemeOverride ? { ...ctx.tv, face: profileThemeOverride.background, accent: profileThemeOverride.accent } : ctx.tv;
+  const I = igIcons(tv.text);
   const showHighlights = profile.showHighlights && highlights.length > 0;
   const ringBg = showHighlights ? `conic-gradient(${tv.titleFrom}, ${tv.accent}, ${tv.titleTo}, ${tv.titleFrom})` : "transparent";
   const followers = Number.parseInt(profile.followers.replace(/[^0-9]/g, ""), 10) || 0;
@@ -25,8 +29,8 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
   const appStyle: CSSProperties = {
     background: "#fff",
     boxShadow: tv.sunken,
-    ...(ctx.profileThemeOverride ? {
-      ["--ig-profile-accent" as string]: ctx.profileThemeOverride.accent,
+    ...(profileThemeOverride ? {
+      ["--ig-profile-accent" as string]: profileThemeOverride.accent,
       ["--ig-profile-accent-text" as string]: "#fff"
     } : {})
   };
@@ -39,7 +43,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
 
   const slideOf = (post: IgPost) => {
     const sources = [post.src, ...post.extra.map((extra) => extra.src)];
-    const index = Math.min(s.slide[post.id] ?? 0, sources.length - 1);
+    const index = Math.min(s.slide[s.interactionKey(post.id)] ?? 0, sources.length - 1);
     return { sources, index };
   };
 
@@ -47,13 +51,14 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
   const open = (post: IgPost) => s.openPost(post.id);
 
   const renderCard = (post: IgPost, single = false) => {
+    const key = s.interactionKey(post.id);
     const { sources, index } = slideOf(post);
-    const comments = [...post.comments, ...(s.extraComments[post.id] ?? [])];
-    const all = s.showAll[post.id];
+    const comments = [...post.comments, ...(s.extraComments[key] ?? [])];
+    const all = s.showAll[key];
     const visible = all ? comments : comments.slice(-2);
-    const likes = post.likes + (s.liked[post.id] ? 1 : 0);
-    const inputOpen = profile.allowComments && (single || s.commentOpen[post.id]);
-    const draft = s.drafts[post.id] ?? "";
+    const likes = post.likes + (s.liked[key] ? 1 : 0);
+    const inputOpen = profile.allowComments && (single || s.commentOpen[key]);
+    const draft = s.drafts[key] ?? "";
     const current = sources[index];
     return (
       <article key={post.id} className="ig-card">
@@ -67,30 +72,30 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
           {sources.length > 1 ? (
             <>
               <span className="ig-count">{index + 1}/{sources.length}</span>
-              {index > 0 ? <button type="button" className="ig-nav l" aria-label="上一張" onClick={() => s.setSlide((o) => ({ ...o, [post.id]: index - 1 }))}>‹</button> : null}
-              {index < sources.length - 1 ? <button type="button" className="ig-nav r" aria-label="下一張" onClick={() => s.setSlide((o) => ({ ...o, [post.id]: index + 1 }))}>›</button> : null}
+              {index > 0 ? <button type="button" className="ig-nav l" aria-label="上一張" onClick={() => s.setSlide((o) => ({ ...o, [key]: index - 1 }))}>‹</button> : null}
+              {index < sources.length - 1 ? <button type="button" className="ig-nav r" aria-label="下一張" onClick={() => s.setSlide((o) => ({ ...o, [key]: index + 1 }))}>›</button> : null}
             </>
           ) : null}
-          {s.burst === post.id ? <span aria-hidden="true" className="ig-burst" style={{ background: I.heartWhite }} /> : null}
+          {s.burst === key ? <span aria-hidden="true" className="ig-burst" style={{ background: I.heartWhite }} /> : null}
         </div>
         {sources.length > 1 ? <div className="ig-dots">{sources.map((_, i) => <span key={i} style={{ background: i === index ? "#0095f6" : "#c7c7c7" }} />)}</div> : null}
         <div className="ig-actions">
-          {profile.allowLikes ? <button type="button" className="ig-icbtn lg" aria-pressed={!!s.liked[post.id]} aria-label="讚" onClick={() => s.toggleLike(post.id)}><Ic bg={s.liked[post.id] ? I.heartFill : I.heart} /></button> : null}
-          {profile.allowComments ? <button type="button" className="ig-icbtn lg" aria-label="留言" onClick={() => (single ? undefined : s.setCommentOpen((o) => ({ ...o, [post.id]: !o[post.id] })))}><Ic bg={I.comment} /></button> : null}
+          {profile.allowLikes ? <button type="button" className="ig-icbtn lg" aria-pressed={!!s.liked[key]} aria-label="讚" onClick={() => s.toggleLike(post.id)}><Ic bg={s.liked[key] ? I.heartFill : I.heart} /></button> : null}
+          {profile.allowComments ? <button type="button" className="ig-icbtn lg" aria-label="留言" onClick={() => (single ? undefined : s.setCommentOpen((o) => ({ ...o, [key]: !o[key] })))}><Ic bg={I.comment} /></button> : null}
           <button type="button" className="ig-icbtn lg" aria-label="分享" onClick={() => s.showToast("已複製貼文連結")}><Ic bg={I.send} /></button>
           <span style={{ flex: 1 }} />
-          <button type="button" className="ig-icbtn lg" aria-pressed={!!s.saved[post.id]} aria-label="收藏" onClick={() => s.toggleSave(post.id)}><Ic bg={s.saved[post.id] ? I.bookmarkFill : I.bookmark} /></button>
+          <button type="button" className="ig-icbtn lg" aria-pressed={!!s.saved[key]} aria-label="收藏" onClick={() => s.toggleSave(post.id)}><Ic bg={s.saved[key] ? I.bookmarkFill : I.bookmark} /></button>
         </div>
         <div className="ig-text">
           {profile.showLikes ? <strong>{likes.toLocaleString()} 個讚</strong> : null}
           {post.caption ? <span className="ig-pre"><strong>{profile.username}</strong> {post.caption}</span> : null}
-          {!all && comments.length > 2 ? <button type="button" className="ig-linkbtn" onClick={() => s.setShowAll((o) => ({ ...o, [post.id]: true }))}>查看全部 {comments.length} 則留言</button> : null}
+          {!all && comments.length > 2 ? <button type="button" className="ig-linkbtn" onClick={() => s.setShowAll((o) => ({ ...o, [key]: true }))}>查看全部 {comments.length} 則留言</button> : null}
           {profile.allowComments ? visible.map((c) => <span key={c.id} className="ig-wrap"><strong>{c.user}</strong> {c.text}</span>) : null}
           {post.date ? <span className="ig-date">{post.date}</span> : null}
         </div>
         {inputOpen ? (
           <div className="ig-comment-box">
-            <input value={draft} placeholder="以訪客身分留言……" aria-label="留言" autoFocus={!single} onChange={(event) => s.setDrafts((o) => ({ ...o, [post.id]: event.target.value }))} onKeyDown={(event) => { if (event.key === "Enter") s.postComment(post.id); }} />
+            <input value={draft} placeholder="以訪客身分留言……" aria-label="留言" autoFocus={!single} onChange={(event) => s.setDrafts((o) => ({ ...o, [key]: event.target.value }))} onKeyDown={(event) => { if (event.key === "Enter") s.postComment(post.id); }} />
             <button type="button" disabled={!draft.trim()} onClick={() => s.postComment(post.id)} style={{ color: draft.trim() ? "#0095f6" : "#9aa" }}>發佈</button>
           </div>
         ) : null}
@@ -124,23 +129,23 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
 
   const q = s.query.trim().toLowerCase();
   const explored = q ? posts.filter((post) => `${post.caption} ${post.location} ${post.title}`.toLowerCase().includes(q)) : posts;
-  const savedPosts = posts.filter((post) => s.saved[post.id]);
+  const savedPosts = posts.filter((post) => s.saved[s.interactionKey(post.id)]);
   const postFor = s.postId ? posts.find((post) => post.id === s.postId) : undefined;
 
-  const headTitle = { profile: profile.username || "username", feed: "Instagram", explore: "探索", saved: "已收藏", post: "貼文" }[s.screen];
+  const headTitle = { profile: profile.username || "username", feed: "Instagram", explore: "探索", saved: "已收藏", directory: "此桌面的角色", post: "貼文" }[s.screen];
   const nav: Array<{ id: "feed" | "explore" | "saved" | "profile"; label: string; icon?: string }> = [
     { id: "feed", label: "首頁", icon: s.screen === "feed" ? I.homeFill : I.home },
     { id: "explore", label: "探索", icon: I.search },
     { id: "saved", label: "已收藏", icon: s.screen === "saved" ? I.bookmarkFill : I.bookmark },
     { id: "profile", label: "個人" }
   ];
-  const activeNav = s.screen === "post" ? s.back : s.screen;
+  const activeNav = s.screen === "post" ? s.previousScreen : s.screen;
   const story = s.story >= 0 ? highlights[s.story] : undefined;
 
   return (
     <div className={`ig-app ig-skin-${window.content.skin}`} style={appStyle}>
       <div className="ig-top">
-        {s.screen === "post" ? <button type="button" className="ig-icbtn lg" aria-label="返回" onClick={() => s.go(s.back)}><Ic bg={I.back} size={22} /></button> : null}
+        {s.historyDepth > 0 ? <button type="button" className="ig-icbtn lg" aria-label="返回" onClick={s.back}><Ic bg={I.back} size={22} /></button> : null}
         <span className="ig-title">
           <strong style={{ fontSize: s.screen === "feed" ? 20 : 15 }}>{headTitle}</strong>
           {s.screen === "profile" && profile.verified ? <span role="img" aria-label="已認證" className="ig-verified">✓</span> : null}
@@ -159,8 +164,8 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
                 {profile.showCounts ? (
                   <div className="ig-counts3">
                     <div><strong>{posts.length}</strong><span>貼文</span></div>
-                    <div><strong>{followersText}</strong><span>粉絲</span></div>
-                    <div><strong>{profile.following}</strong><span>追蹤中</span></div>
+                    <button type="button" className="ig-stat-button" onClick={s.openDirectory}><strong>{followersText}</strong><span>粉絲</span></button>
+                    <button type="button" className="ig-stat-button" onClick={s.openDirectory}><strong>{profile.following}</strong><span>追蹤中</span></button>
                   </div>
                 ) : null}
               </div>
@@ -210,6 +215,10 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
           </>
         ) : null}
 
+        {s.screen === "directory" ? (
+          <div className="ig-directory"><h2>此桌面的角色</h2><p className="ig-note">這是創作者在此桌面公開的角色清單。</p>{(ctx.profileDirectory ?? []).map((entry) => <button type="button" className="ig-directory-row" key={entry.id} onClick={() => s.navigateProfile(entry.id)}><span className="ig-avatar ph" style={{ width: 48, height: 48, ...phStyle }}>{entry.profile.avatar ? <AvatarImage src={entry.profile.avatar} crop={entry.profile.avatarCrop} /> : null}</span><span><strong>{entry.profile.name || entry.profile.username}</strong><small>@{entry.profile.username}</small></span></button>)}</div>
+        ) : null}
+
         {s.screen === "post" ? (postFor ? renderCard(postFor, true) : <div className="ig-empty"><strong>找不到這篇貼文</strong></div>) : null}
       </div>
 
@@ -225,7 +234,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
         <>
           <div className="ig-scrim" onClick={() => s.setSheetId(null)} />
           <div role="menu" className="ig-sheet" style={{ background: tv.face, boxShadow: tv.bevel }}>
-            <button role="menuitem" type="button" style={{ color: tv.text }} onClick={() => { s.toggleSave(sheetPost.id); s.setSheetId(null); }}>{s.saved[sheetPost.id] ? "取消收藏" : "收藏"}</button>
+          <button role="menuitem" type="button" style={{ color: tv.text }} onClick={() => { s.toggleSave(sheetPost.id); s.setSheetId(null); }}>{s.saved[s.interactionKey(sheetPost.id)] ? "取消收藏" : "收藏"}</button>
             <button role="menuitem" type="button" style={{ color: tv.text }} onClick={() => { s.showToast("已複製貼文連結"); s.setSheetId(null); }}>複製連結</button>
             {s.screen !== "post" ? <button role="menuitem" type="button" style={{ color: tv.text }} onClick={() => open(sheetPost)}>前往貼文</button> : null}
             <button role="menuitem" type="button" style={{ color: tv.text, fontWeight: 700 }} onClick={() => s.setSheetId(null)}>取消</button>

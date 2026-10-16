@@ -21,7 +21,13 @@
 .ig-profile2 { padding: 14px 12px 10px; display: flex; flex-direction: column; gap: 10px; }
 .ig-row { display: flex; align-items: center; gap: 16px; }
 .ig-counts3 { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); text-align: center; }
-.ig-counts3 div { display: flex; flex-direction: column; }
+.ig-counts3 div, .ig-counts3 .ig-stat-button { display: flex; flex-direction: column; }
+.ig-stat-button { border: 0; background: transparent; color: inherit; align-items: center; font: inherit; cursor: pointer; padding: 2px; }
+.ig-directory { padding: 18px; }
+.ig-directory h2 { margin: 0 0 8px; }
+.ig-directory-row { width: 100%; display: flex; gap: 12px; align-items: center; text-align: left; border: 0; background: transparent; color: inherit; padding: 10px 0; cursor: pointer; font: inherit; }
+.ig-directory-row span:last-child { display: flex; flex-direction: column; gap: 3px; }
+.ig-directory-row small { opacity: .7; }
 .ig-counts3 strong { font-size: 17px; }
 .ig-counts3 span { font-size: 12px; }
 .ig-bio { display: flex; flex-direction: column; gap: 2px; line-height: 1.5; }

@@ -1,8 +1,9 @@
 import type { ReactElement } from "react";
-import type { DesktopWindow, EntityRef, ProfileEntityV2, RetroTheme } from "@retrodesk/shared";
+import type { DesktopWindow, EntityRef, IgPost, ProfileEntityV2, RetroTheme } from "@retrodesk/shared";
 import type { ThemeView } from "../../lib/themeView";
 
 export type LinkAction = { target: "url" | "window"; url?: string; windowId?: string; label?: string };
+export type ProfileDirectoryEntry = { id: string; profile: Extract<DesktopWindow, { type: "instagram" }>["content"]["profile"]; posts: IgPost[]; themeOverride?: { accent: string; background: string } };
 
 export type ModuleCtx = {
   theme: RetroTheme;
@@ -28,6 +29,8 @@ export type ModuleCtx = {
   onProfileDelete?: (profileId: string, retargetProfileId?: string) => void;
   profileDeleteBlocked?: boolean;
   profileDeleteGuard?: { windowTitles: string[]; postIds: string[] };
+  /** Read-only OC directory; public callers receive published entries only. */
+  profileDirectory?: ProfileDirectoryEntry[];
 };
 
 export type WindowOf<T extends DesktopWindow["type"]> = Extract<DesktopWindow, { type: T }>;
