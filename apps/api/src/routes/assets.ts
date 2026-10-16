@@ -67,6 +67,7 @@ assets.get("/sites/:siteId/assets", async (c) => {
   if (kind) query = query.eq("kind", kind);
   const { data, error } = await query.order("created_at", { ascending: false }).limit(200);
   if (error) return jsonError(c, 500, "db_error", "Could not list assets");
+  c.header("Cache-Control", "private, no-store");
   return c.json({
     assets: (data ?? []).map((row) => ({ id: row.id, url: row.public_url, mimeType: row.mime_type, size: row.size_bytes, kind: row.kind, name: row.name, createdAt: row.created_at, storageScope: row.storage_scope, migrationStatus: row.migration_status, migrationRequired: row.storage_scope === "legacy_public" || row.migration_status === "pending", publicCopyRemaining: row.migration_status === "pending" }))
   });

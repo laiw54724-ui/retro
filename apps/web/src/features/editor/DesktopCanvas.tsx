@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
-import type { DesktopWindow, ProfileEntityV2 } from "@retrodesk/shared";
+import type { DesktopWindow, PostEntityV2, ProfileEntityV2, SiteDocumentV2Input } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { RetroWindow } from "../../components/RetroWindow";
 import { useThemeView } from "../../lib/themeView";
@@ -25,6 +25,7 @@ type Props = {
   siteId?: string;
   upload?: (file: File, kind?: "image" | "icon") => Promise<string | null>;
   profiles?: ProfileEntityV2[];
+  posts?: PostEntityV2[];
   profileId?: string;
   profileIdsByWindow?: Record<string, string>;
   onProfileSelect?: (id: string, windowId?: string) => void;
@@ -35,9 +36,10 @@ type Props = {
   profileDeleteBlocked?: boolean;
   profileDeleteGuardById?: Record<string, { windowTitles: string[]; postIds: string[] }>;
   profileDirectory?: ProfileDirectoryEntry[];
+  updateContent?: (recipe: (document: SiteDocumentV2Input) => SiteDocumentV2Input, historyKey?: string) => void;
 };
 
-export function DesktopCanvas({ siteId, upload, profiles, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory }: Props) {
+export function DesktopCanvas({ siteId, upload, profiles, posts, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent }: Props) {
   const document = useEditorStore((s) => s.document)!;
   const selectedId = useEditorStore((s) => s.selectedId);
   const view = useEditorStore((s) => s.viewState);
@@ -253,7 +255,7 @@ export function DesktopCanvas({ siteId, upload, profiles, profileId, profileIdsB
               style={{ height: "100%" }}
               bodyStyle={{ padding: 0 }}
             >
-              <WindowRenderer window={win} theme={document.theme} editing={!layoutMode} allWindows={document.windows} siteId={siteId} upload={upload} onUpdate={store().updateWindow} profiles={profiles} profileId={profileId} profileIdsByWindow={profileIdsByWindow} onProfileSelect={onProfileSelect} onProfileAdd={onProfileAdd} onProfileDuplicate={onProfileDuplicate} onProfileChange={onProfileChange} onProfileDelete={onProfileDelete} profileDeleteBlocked={profileDeleteBlocked} profileDeleteGuardById={profileDeleteGuardById} profileDirectory={profileDirectory} />
+              <WindowRenderer window={win} theme={document.theme} editing={!layoutMode} allWindows={document.windows} siteId={siteId} upload={upload} onUpdate={store().updateWindow} profiles={profiles} posts={posts} profileId={profileId} profileIdsByWindow={profileIdsByWindow} onProfileSelect={onProfileSelect} onProfileAdd={onProfileAdd} onProfileDuplicate={onProfileDuplicate} onProfileChange={onProfileChange} onProfileDelete={onProfileDelete} profileDeleteBlocked={profileDeleteBlocked} profileDeleteGuardById={profileDeleteGuardById} profileDirectory={profileDirectory} updateContent={updateContent} />
             </RetroWindow>
             {layoutMode ? <div className="layout-veil"><span className="geo-text">{layout.x}, {layout.y} · {layout.w}×{layout.h}</span></div> : null}
             {!maximized ? <span className="window-resize-handle" aria-label="調整大小" /> : null}

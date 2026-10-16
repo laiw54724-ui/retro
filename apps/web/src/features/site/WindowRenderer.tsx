@@ -1,4 +1,4 @@
-import type { DesktopWindow, ProfileEntityV2, RetroTheme } from "@retrodesk/shared";
+import type { DesktopWindow, PostEntityV2, ProfileEntityV2, RetroTheme, SiteDocumentV2Input } from "@retrodesk/shared";
 import { useThemeView } from "../../lib/themeView";
 import { renderModule } from "../modules/registry";
 import type { LinkAction, ModuleCtx, ProfileDirectoryEntry } from "../modules/types";
@@ -16,6 +16,7 @@ type Props = {
   upload?: ModuleCtx["upload"];
   onUpdate?: (id: string, recipe: (window: DesktopWindow) => DesktopWindow, historyKey?: string) => void;
   profiles?: ProfileEntityV2[];
+  posts?: PostEntityV2[];
   profileId?: string;
   profileIdsByWindow?: Record<string, string>;
   onProfileSelect?: (id: string, windowId?: string) => void;
@@ -26,6 +27,7 @@ type Props = {
   profileDeleteBlocked?: boolean;
   profileDeleteGuardById?: Record<string, { windowTitles: string[]; postIds: string[] }>;
   profileDirectory?: ProfileDirectoryEntry[];
+  updateContent?: (recipe: (document: SiteDocumentV2Input) => SiteDocumentV2Input, historyKey?: string) => void;
 };
 
 function openExternal(url: string) {
@@ -38,7 +40,7 @@ function openExternal(url: string) {
   }
 }
 
-export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, mobile = false, editing = false, siteId, upload, onUpdate, profiles, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory }: Props) {
+export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, mobile = false, editing = false, siteId, upload, onUpdate, profiles, posts, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent }: Props) {
   const tv = useThemeView(theme);
   const onLink = (action: LinkAction) => {
     if (editing) return; // links are inert while editing
@@ -50,13 +52,13 @@ export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, m
   const ctx: ModuleCtx = {
     theme, tv, editing: editing && !!onUpdate, mobile, siteId,
     windows: (allWindows ?? []).map((candidate) => ({ id: candidate.id, title: candidate.title })),
-    onLink, upload, profiles, profileId: resolvedProfileId, profileThemeOverride,
+    onLink, upload, profiles, posts, profileId: resolvedProfileId, profileThemeOverride,
     onProfileSelect: (id) => onProfileSelect?.(id, win.id),
     onProfileAdd: () => onProfileAdd?.(win.id),
     onProfileDuplicate: (id) => onProfileDuplicate?.(id, win.id), onProfileChange: (id, patch, key) => onProfileChange?.(id, patch, key),
     onProfileDelete: (id, target) => onProfileDelete?.(id, target),
     profileDeleteBlocked: !!profileDeleteGuardById?.[resolvedProfileId ?? ""] && ((profileDeleteGuardById?.[resolvedProfileId ?? ""]?.windowTitles.length ?? 0) > 0 || (profileDeleteGuardById?.[resolvedProfileId ?? ""]?.postIds.length ?? 0) > 0),
-    profileDeleteGuard: profileDeleteGuardById?.[resolvedProfileId ?? ""], profileDirectory
+    profileDeleteGuard: profileDeleteGuardById?.[resolvedProfileId ?? ""], profileDirectory, updateContent
   };
   const update = (recipe: (current: DesktopWindow) => DesktopWindow, key?: string) => onUpdate?.(win.id, recipe, key);
 

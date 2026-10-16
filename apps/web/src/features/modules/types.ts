@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import type { DesktopWindow, EntityRef, IgPost, ProfileEntityV2, RetroTheme } from "@retrodesk/shared";
+import type { DesktopWindow, EntityRef, IgPost, PostEntityV2, ProfileEntityV2, RetroTheme, SiteDocumentV2Input } from "@retrodesk/shared";
 import type { ThemeView } from "../../lib/themeView";
 
 export type LinkAction = { target: "url" | "window"; url?: string; windowId?: string; label?: string };
@@ -20,6 +20,7 @@ export type ModuleCtx = {
   resolveEntity?: (ref: EntityRef) => unknown | null;
   /** v2 Instagram profile authoring channel; omitted for public/v1 callers. */
   profiles?: ProfileEntityV2[];
+  posts?: PostEntityV2[];
   profileId?: string;
   profileThemeOverride?: { accent: string; background: string };
   onProfileSelect?: (id: string, windowId?: string) => void;
@@ -31,6 +32,8 @@ export type ModuleCtx = {
   profileDeleteGuard?: { windowTitles: string[]; postIds: string[] };
   /** Read-only OC directory; public callers receive published entries only. */
   profileDirectory?: ProfileDirectoryEntry[];
+  /** Editor-only canonical content mutation. The recipe is committed as one v2 history step. */
+  updateContent?: (recipe: (document: SiteDocumentV2Input) => SiteDocumentV2Input, historyKey?: string) => void;
 };
 
 export type WindowOf<T extends DesktopWindow["type"]> = Extract<DesktopWindow, { type: T }>;

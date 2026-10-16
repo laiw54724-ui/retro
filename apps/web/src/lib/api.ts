@@ -99,10 +99,10 @@ export const api = {
     return request<{ asset: { id: string; url: string; mimeType: string; size: number; kind: AssetKind; name: string } }>("/api/sites/" + siteId + "/assets", { method: "POST", body: form });
   },
   listAssets(siteId: string, kind?: AssetKind) {
-    return request<{ assets: AssetRecord[] }>("/api/sites/" + siteId + "/assets" + (kind ? "?kind=" + kind : ""));
+    return request<{ assets: AssetRecord[] }>("/api/sites/" + siteId + "/assets" + (kind ? "?kind=" + kind : ""), { cache: "no-store" });
   },
   migrateLegacyAssets(siteId: string, expectedVersion: number) {
-    return request<{ version: number; document: SiteDocument; migratedCount: number; cleanupWarnings: string[] }>("/api/sites/" + siteId + "/assets/migrate", { method: "POST", body: JSON.stringify({ expectedVersion }) });
+    return request<{ version: number; document: VersionedSiteDocument; migratedCount: number; cleanupWarnings: string[] }>("/api/sites/" + siteId + "/assets/migrate", { method: "POST", body: JSON.stringify({ expectedVersion }) });
   },
   deleteAsset(siteId: string, assetId: string) {
     return request<void>("/api/sites/" + siteId + "/assets/" + assetId, { method: "DELETE" });

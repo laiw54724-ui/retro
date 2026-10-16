@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { buildPublishChecks, createProfile, deleteOrRetargetProfile, duplicateProfile, hasBlockingCheck, loadVersionedSiteDocument, normalizeDocument, parseSiteDocument, ProfileEntityV2Schema, projectV2ToLegacyDocument, updateProfile, type DesktopWindow, type SiteDocumentV2Input } from "@retrodesk/shared";
+import { buildPublishChecks, createProfile, deleteOrRetargetProfile, duplicateProfile, hasBlockingCheck, loadVersionedSiteDocument, normalizeDocument, parseSiteDocument, PostEntityV2Schema, ProfileEntityV2Schema, projectV2ToLegacyDocument, updateProfile, type DesktopWindow, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { api, ApiError } from "../lib/api";
+import { api, ApiError, type AssetRecord } from "../lib/api";
 import { useEditorStore } from "../features/editor/store";
 import { DesktopCanvas } from "../features/editor/DesktopCanvas";
 import { MobileScreen } from "../features/site/MobileScreen";
@@ -13,6 +13,7 @@ import { RetroButton } from "../components/RetroButton";
 import { useAuth } from "../app/AuthProvider";
 import { AssetSourceProvider } from "../lib/assetSource";
 import { buildProfileDirectory } from "../features/modules/instagram/profileDirectory";
+import { auditAssetReferences } from "../lib/asset-reference-audit";
 
 
 
@@ -49,8 +50,8 @@ export function EditorPage() {
   const [preview, setPreview] = useState(false);
   const [publishSuccess, setPublishSuccess] = useState<{ version: number; url: string; artifactStatus: "synced" | "failed"; retryable: boolean } | null>(null);
   const [publishing, setPublishing] = useState(false);
-  const [legacyAssetCount, setLegacyAssetCount] = useState(0);
-  const [pendingPublicCopyCount, setPendingPublicCopyCount] = useState(0);
+  const [assetInventory, setAssetInventory] = useState<AssetRecord[]>([]);
+  const [assetInventoryOpen, setAssetInventoryOpen] = useState(false);
   const [migratingAssets, setMigratingAssets] = useState(false);
   const [versionedDraft, setVersionedDraft] = useState<SiteDocumentV2Input | null>(null);
   const versionedDraftRef = useRef<SiteDocumentV2Input | null>(null);
@@ -83,6 +84,12 @@ export function EditorPage() {
     versionedDraftRef.current = next;
     setVersionedDraft(next);
     store.replaceDocument(projected.document, historyKey, next);
+  }
+
+  function updateContent(recipe: (document: SiteDocumentV2Input) => SiteDocumentV2Input, historyKey?: string) {
+    const current = versionedDraftRef.current;
+    if (!current) return;
+    applyV2Document(recipe(structuredClone(current)), historyKey);
   }
 
   function profileError(result: { ok: false; diagnostics: Array<{ message: string }> }) {
@@ -167,10 +174,10 @@ export function EditorPage() {
   }, [store.versionedDocument]);
 
   const refreshAssetInventory = () => api.listAssets(siteId).then(({ assets }) => {
-    setLegacyAssetCount(assets.filter((asset) => asset.storageScope === "legacy_public").length);
-    setPendingPublicCopyCount(assets.filter((asset) => asset.publicCopyRemaining).length);
-  }).catch(() => undefined);
-  useEffect(() => { refreshAssetInventory(); }, [siteId]);
+    setAssetInventory(assets);
+    return assets;
+  });
+  useEffect(() => { void refreshAssetInventory().catch(() => undefined); }, [siteId]);
 
   useEffect(() => {
     if (!store.document || store.saveStatus !== "dirty" || !store.siteId || saveInFlight.current || conflict) return;
@@ -245,6 +252,7 @@ export function EditorPage() {
     [store.document, store.selectedId]
   );
   const editorProfiles = versionedDraft?.entities.profiles.flatMap((profile) => { const parsed = ProfileEntityV2Schema.safeParse(profile); return parsed.success ? [parsed.data] : []; }) ?? [];
+  const editorPosts = versionedDraft?.entities.posts.flatMap((post) => { const parsed = PostEntityV2Schema.safeParse(post); return parsed.success ? [parsed.data] : []; }) ?? [];
   const selectedV2Window = selected ? versionedDraft?.windows.find((window) => window.id === selected.id) : undefined;
   const selectedProfileId = selectedV2Window?.type === "instagram" ? selectedV2Window.content.profileRef.id : undefined;
   const profileIdsByWindow = Object.fromEntries((versionedDraft?.windows ?? []).flatMap((window) => window.type === "instagram" ? [[window.id, window.content.profileRef.id] as const] : []));
@@ -263,6 +271,14 @@ export function EditorPage() {
     if (!store.publishedDocument) return true;
     return !sameDocument(store.document, store.publishedDocument);
   }, [store.document, store.publishedDocument]);
+
+  const legacyAssets = assetInventory.filter((asset) => asset.storageScope === "legacy_public");
+  const pendingPublicCopyAssets = assetInventory.filter((asset) => asset.publicCopyRemaining);
+  const assetAudits = useMemo(
+    () => versionedDraft || store.document ? auditAssetReferences((versionedDraft ?? store.document)!, assetInventory) : [],
+    [assetInventory, versionedDraft, store.document]
+  );
+  const migrationAudits = assetAudits.filter((entry) => entry.asset.storageScope === "legacy_public" || entry.asset.publicCopyRemaining);
 
   if (loading || !store.document) return <div className="boot-screen">Loading desktop...</div>;
 
@@ -365,15 +381,34 @@ export function EditorPage() {
     try {
       let version = store.version;
       if (store.saveStatus === "dirty") {
-        const saved = await api.saveDraft(siteId, version, store.document);
+        const documentToSave = store.versionedDocument ?? versionedDraftRef.current ?? store.document;
+        const saved = await api.saveDraft(siteId, version, documentToSave);
         store.markSaved(saved.version, store.document);
         version = saved.version;
       }
       const result = await api.migrateLegacyAssets(siteId, version);
-      store.setSite(store.siteId!, store.username, result.document, result.version, store.publishedDocument, store.publishedVersion);
-      await refreshAssetInventory();
-      setMessage(result.cleanupWarnings.length ? `素材已轉為私有預覽；${result.cleanupWarnings.length} 個舊公開副本仍需保留或清理。` : "舊素材已轉為私有預覽。");
-    } catch (error) { setMessage(error instanceof Error ? error.message : "素材遷移失敗"); }
+      const loaded = loadVersionedSiteDocument(result.document, { siteId, migrateV1: true });
+      if (!loaded.ok) throw new Error(loaded.diagnostics[0]?.message ?? "遷移後的草稿格式無效");
+      const legacy = loadedLegacyDocument(loaded);
+      const canonical = loaded.version === 2 ? loaded.document : null;
+      store.setSite(store.siteId!, store.username, legacy, result.version, store.publishedDocument, store.publishedVersion);
+      versionedDraftRef.current = canonical;
+      setVersionedDraft(canonical);
+      store.setVersionedDocument(canonical);
+      const refreshed = await refreshAssetInventory();
+      const stillLegacy = refreshed.filter((asset) => asset.storageScope === "legacy_public");
+      setMessage(stillLegacy.length
+        ? `已遷移 ${result.migratedCount} 個，但仍有 ${stillLegacy.length} 個舊素材未完成；請開啟明細查看。`
+        : result.cleanupWarnings.length
+          ? `素材已轉為私有預覽；${result.cleanupWarnings.length} 個舊公開副本仍因已發布版本引用而暫時保留。`
+          : `已將 ${result.migratedCount} 個舊素材轉為私有。`);
+      if (stillLegacy.length || result.cleanupWarnings.length) setAssetInventoryOpen(true);
+    } catch (error) {
+      const assetId = error instanceof ApiError && error.details && typeof error.details === "object" && "assetId" in error.details ? String((error.details as { assetId: unknown }).assetId) : "";
+      const asset = assetInventory.find((item) => item.id === assetId);
+      setMessage(`${error instanceof Error ? error.message : "素材遷移失敗"}${asset ? `（${asset.name || asset.id}）` : ""}`);
+      setAssetInventoryOpen(true);
+    }
     finally { setMigratingAssets(false); }
   }
 
@@ -435,7 +470,32 @@ export function EditorPage() {
         </div>
       ) : null}
 
-      {legacyAssetCount > 0 || pendingPublicCopyCount > 0 ? <div className="editor-message" role="status"><span>{legacyAssetCount > 0 ? `有 ${legacyAssetCount} 個舊素材仍是公開網址，尚未轉為私有。` : `有 ${pendingPublicCopyCount} 個舊公開副本因目前發布版本仍在使用，暫時保留。`}</span>{legacyAssetCount > 0 ? <button disabled={migratingAssets || store.saveStatus === "saving" || store.saveStatus === "error" || conflict} onClick={migrateLegacyAssets}>{migratingAssets ? "遷移中…" : "轉為私有素材"}</button> : null}</div> : null}
+      {legacyAssets.length > 0 || pendingPublicCopyAssets.length > 0 ? <div className="editor-message asset-migration-message" role="status">
+        <span>{legacyAssets.length > 0 ? `有 ${legacyAssets.length} 個舊素材仍是公開網址。` : `${pendingPublicCopyAssets.length} 個舊公開副本因已發布版本仍在使用，暫時保留。`}</span>
+        <button type="button" onClick={() => setAssetInventoryOpen(true)}>查看是哪幾個</button>
+        {legacyAssets.length > 0 ? <button disabled={migratingAssets || store.saveStatus === "saving" || store.saveStatus === "error" || conflict} onClick={migrateLegacyAssets}>{migratingAssets ? "遷移中…" : "轉為私有素材"}</button> : null}
+      </div> : null}
+
+      {assetInventoryOpen ? <div className="modal-backdrop" role="presentation">
+        <section className="retro-panel editor-dialog asset-inventory-dialog" role="dialog" aria-modal="true" aria-labelledby="asset-inventory-title">
+          <header className="landing-titlebar" id="asset-inventory-title">舊素材遷移明細</header>
+          <div className="dialog-body">
+            <p>這裡會列出素材名稱、目前狀態，以及草稿中正在使用它的位置。未被草稿引用的素材也會明確標示。</p>
+            {migrationAudits.length ? <ul className="asset-inventory-list">
+              {migrationAudits.map(({ asset, references }) => <li key={asset.id}>
+                <div className="asset-inventory-heading"><strong>{asset.name || "未命名素材"}</strong><code>{asset.id}</code></div>
+                <span className={`asset-status ${asset.storageScope === "legacy_public" ? "needs-migration" : "pending-cleanup"}`}>{asset.storageScope === "legacy_public" ? "尚未轉為私有" : "私有預覽已完成，舊公開副本待清理"}</span>
+                <div className="asset-reference-list">{references.length ? <>使用位置：{references.map((reference) => reference.label).join("、")}</> : "草稿中沒有引用（可考慮刪除）"}</div>
+              </li>)}
+            </ul> : <p role="status">目前沒有需要遷移或清理的舊素材。</p>}
+            <div className="button-row end">
+              <RetroButton onClick={() => void refreshAssetInventory().catch((error) => setMessage(error instanceof Error ? error.message : "無法重新盤點素材"))}>重新盤點</RetroButton>
+              {legacyAssets.length ? <RetroButton className="primary" disabled={migratingAssets || store.saveStatus === "saving" || store.saveStatus === "error" || conflict} onClick={migrateLegacyAssets}>{migratingAssets ? "遷移中…" : `轉為私有（${legacyAssets.length}）`}</RetroButton> : null}
+              <RetroButton onClick={() => setAssetInventoryOpen(false)}>關閉</RetroButton>
+            </div>
+          </div>
+        </section>
+      </div> : null}
 
       <div className="editor-grid2">
         {!layoutMode ? (
@@ -458,6 +518,7 @@ export function EditorPage() {
               siteId={siteId}
               upload={uploadImage}
               profiles={editorProfiles}
+              posts={editorPosts}
               profileId={selectedProfileId}
               profileIdsByWindow={profileIdsByWindow}
               onProfileSelect={selectProfile}
@@ -468,9 +529,10 @@ export function EditorPage() {
               profileDeleteBlocked={selectedProfileReferenced}
               profileDeleteGuardById={profileDeleteGuardById}
               profileDirectory={profileDirectory}
+              updateContent={updateContent}
             />
           ) : (
-            <MobileScreen document={store.document} mode="editor" framed siteId={siteId} upload={uploadImage} onPreview={() => setPreview(true)} profiles={editorProfiles} profileIdsByWindow={profileIdsByWindow} onProfileSelect={selectProfile} onProfileAdd={addProfile} onProfileDuplicate={duplicateProfileForWindow} onProfileChange={changeProfile} onProfileDelete={deleteProfile} profileDeleteBlocked={selectedProfileReferenced} profileDeleteGuardById={profileDeleteGuardById} profileDirectory={profileDirectory} />
+            <MobileScreen document={store.document} mode="editor" framed siteId={siteId} upload={uploadImage} onPreview={() => setPreview(true)} profiles={editorProfiles} posts={editorPosts} profileIdsByWindow={profileIdsByWindow} onProfileSelect={selectProfile} onProfileAdd={addProfile} onProfileDuplicate={duplicateProfileForWindow} onProfileChange={changeProfile} onProfileDelete={deleteProfile} profileDeleteBlocked={selectedProfileReferenced} profileDeleteGuardById={profileDeleteGuardById} profileDirectory={profileDirectory} updateContent={updateContent} />
           )}
         </section>
 

@@ -10,7 +10,7 @@ export function useIgSession(highlightCount: (profileId: string) => number, entr
   const [route, setRoute] = useState<Route>({ screen: "profile", profileId: entryProfileId, postId: null });
   const history = useRef<HistoryFrame[]>([]);
   const pendingScroll = useRef<number | null>(null);
-  const [historyVersion, setHistoryVersion] = useState(0);
+  const [, setHistoryVersion] = useState(0);
   const [gridTabs, setGridTabs] = useState<Record<string, "grid" | "list">>({});
   const [followedProfiles, setFollowedProfiles] = useState<Record<string, boolean>>({});
   const [liked, setLiked] = useState<Record<string, boolean>>({});
@@ -50,11 +50,16 @@ export function useIgSession(highlightCount: (profileId: string) => number, entr
   }, [entryProfileId, sessionScope, closeStory]);
 
   useEffect(() => {
-    const top = pendingScroll.current;
-    pendingScroll.current = null;
-    const frame = requestAnimationFrame(() => requestAnimationFrame(() => scrollRef.current?.scrollTo({ top: top ?? 0 })));
-    return () => cancelAnimationFrame(frame);
-  }, [route.screen, route.postId, route.profileId, historyVersion]);
+    const top = pendingScroll.current ?? 0;
+    let innerFrame = 0;
+    const frame = requestAnimationFrame(() => {
+      innerFrame = requestAnimationFrame(() => {
+        if (scrollRef.current) scrollRef.current.scrollTop = top;
+        if (pendingScroll.current === top) pendingScroll.current = null;
+      });
+    });
+    return () => { cancelAnimationFrame(frame); cancelAnimationFrame(innerFrame); };
+  }, [route.screen, route.postId, route.profileId]);
 
   const showToast = useCallback((message: string) => {
     clearTimeout(timers.current.toast);

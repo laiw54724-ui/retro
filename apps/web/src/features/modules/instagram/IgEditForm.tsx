@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { makeIgComment, makeIgHighlight, makeIgPost, normalizeImageUrl, type IgPost } from "@retrodesk/shared";
 import { FilePick, ImageUrlField, MiniBtn, SafeImg } from "../ui";
 import { moveById, patchById, type ModuleProps } from "../types";
@@ -24,7 +24,7 @@ const TOGGLES: Array<[keyof Profile, string]> = [
 
 const today = () => { const d = new Date(); return `${d.getMonth() + 1}月${d.getDate()}日`; };
 
-export function IgEditForm({ window, ctx, update }: ModuleProps<"instagram">) {
+export function IgEditForm({ window, ctx, update, children }: ModuleProps<"instagram"> & { children?: ReactNode }) {
   const { profile, images: posts } = window.content;
   const [open, setOpen] = useState<string | null>(null);
   const [newUrl, setNewUrl] = useState("");
@@ -111,7 +111,7 @@ export function IgEditForm({ window, ctx, update }: ModuleProps<"instagram">) {
         <button type="button" className="w98-btn small" onClick={() => setProfile({ highlights: [...profile.highlights, makeIgHighlight()] })}>＋ 新增精選</button>
       </fieldset>
 
-      <fieldset className="w98-fieldset"><legend>貼文（{posts.length}）</legend>
+      {!ctx.updateContent ? <fieldset className="w98-fieldset"><legend>貼文（{posts.length}）</legend>
         <div className="ie-row">
           <FilePick multiple className="w98-btn small" onFiles={(files) => void addPosts(files)}><b>上傳照片（可多選）</b></FilePick>
           <input className="w98-input compact grow" value={newUrl} placeholder="或貼上圖片網址" aria-label="新貼文圖片網址" onChange={(event) => { setNewUrl(event.target.value); setNewUrlError(""); }} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addPostUrl(); } }} />
@@ -175,7 +175,8 @@ export function IgEditForm({ window, ctx, update }: ModuleProps<"instagram">) {
             </div>
           );
         })}
-      </fieldset>
+      </fieldset> : null}
+      {children}
     </div>
   );
 }

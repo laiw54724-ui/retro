@@ -64,7 +64,13 @@ async function mockEditor(page: Page, document = ocDocument()) {
   const site = { id: "site-1", username: "demo", site_name: "D", draft_document: document, draft_version: 2, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-15T00:00:00.000Z" };
   await page.route("**/api/sites/site-1", (route) => route.fulfill({ json: { site } }));
   await page.route("**/api/sites/site-1/assets**", (route) => route.fulfill({ json: { assets: [] } }));
-  await page.route("**/api/sites/site-1/draft", (route) => { saves.push(route.request().postDataJSON()); return route.fulfill({ json: { version: 3, updatedAt: "2026-10-15T00:01:00.000Z" } }); });
+  await page.route("**/api/sites/site-1/draft", (route) => {
+    const body = route.request().postDataJSON() as { document: SiteDocumentV2Input };
+    saves.push(body);
+    site.draft_document = body.document;
+    site.draft_version += 1;
+    return route.fulfill({ json: { version: site.draft_version, updatedAt: "2026-10-15T00:01:00.000Z" } });
+  });
   await page.goto("/editor/site-1");
   await expect(page.getByRole("dialog", { name: "Instagram.exe" })).toBeVisible();
   return saves;
@@ -139,6 +145,69 @@ test("mobile OC editor exposes the same profile tools without horizontal overflo
   await expect.poll(() => saves.at(-1)?.document.entities.profiles.some((profile) => profile.handle === "oc-3")).toBe(false);
   await expect.poll(() => saves.at(-1)?.document.windows.find((window) => window.type === "instagram")?.content.profileRef.id).toBe("profile:bei");
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
+});
+
+test("canonical post media edits autosave and survive reload", async ({ page }) => {
+  await page.setViewportSize({ width: 1400, height: 1000 });
+  const document = ocDocument();
+  const canonicalHighlight = document.entities.highlights.find(
+    (highlight) => highlight.ownerProfileId === "profile:ig",
+  );
+  if (!canonicalHighlight) throw new Error("fixture highlight missing");
+  canonicalHighlight.coverAlt = "雪地旅程封面";
+  canonicalHighlight.frames.push({
+    id: `${canonicalHighlight.id}:frame:2`,
+    src: "https://example.com/highlight-2.png",
+    srcUrl: "https://example.com/highlight-2.png",
+    alt: "旅程第二幕",
+    text: "抵達雪國",
+  });
+  const saves = await mockEditor(page, document);
+  const win = page.getByRole("dialog", { name: "Instagram.exe" });
+  const postToggle = win.getByRole("button", { name: /p1/ });
+  if (await postToggle.getAttribute("aria-expanded") !== "true") await postToggle.click();
+  await win.getByRole("textbox", { name: "標題", exact: true }).fill("OC archive");
+  await win.getByRole("textbox", { name: "世界觀日期" }).fill("霜月 12 日");
+  await win.getByRole("textbox", { name: "圖片 1 替代文字" }).fill("角色站在雪地裡");
+  await win.getByRole("textbox", { name: "新增輪播圖片網址" }).fill("https://example.com/four.png");
+  await win.getByRole("button", { name: "加入", exact: true }).click();
+  await expect(win.getByRole("textbox", { name: "圖片 4 替代文字" })).toBeVisible();
+  await win.getByRole("textbox", { name: "圖片 4 替代文字" }).fill("第四張作品");
+  await win.getByRole("button", { name: "圖片 4 往前" }).click();
+
+  // Exercise the legacy projection editor after canonical post/media edits.
+  // Reconciliation must preserve fields which that form cannot represent.
+  await win.getByRole("textbox", { name: "帳號" }).fill("retro_archive");
+  await win.getByRole("textbox", { name: "精選標題" }).first().fill("雪國旅程");
+
+  await expect.poll(() => saves.at(-1)?.document.entities.posts.find((post) => post.id === "post:ig:p1")?.title).toBe("OC archive");
+  const saved = saves.at(-1)?.document.entities.posts.find((post) => post.id === "post:ig:p1");
+  expect(saved?.worldDateLabel).toBe("霜月 12 日");
+  expect(saved?.media).toHaveLength(4);
+  expect(saved?.media[2].src).toBe("https://example.com/four.png");
+  expect(saved?.media[2].alt).toBe("第四張作品");
+  expect(saved?.src).toBe(saved?.media[0].src);
+  expect(saved?.extra.map((item) => item.id)).toEqual(saved?.media.slice(1).map((item) => item.id));
+  const savedHighlight = saves.at(-1)?.document.entities.highlights.find(
+    (highlight) => highlight.id === canonicalHighlight.id,
+  );
+  expect(savedHighlight?.title).toBe("雪國旅程");
+  expect(savedHighlight?.coverAlt).toBe("雪地旅程封面");
+  expect(savedHighlight?.frames).toHaveLength(2);
+  expect(savedHighlight?.frames[1]).toMatchObject({
+    src: "https://example.com/highlight-2.png",
+    alt: "旅程第二幕",
+    text: "抵達雪國",
+  });
+
+  await page.reload();
+  const reloaded = page.getByRole("dialog", { name: "Instagram.exe" });
+  const reloadedToggle = reloaded.getByRole("button", { name: /OC archive/ });
+  if (await reloadedToggle.getAttribute("aria-expanded") !== "true") await reloadedToggle.click();
+  await expect(reloaded.getByRole("textbox", { name: "世界觀日期" })).toHaveValue("霜月 12 日");
+  await expect(reloaded.getByRole("textbox", { name: "圖片 3 替代文字" })).toHaveValue("第四張作品");
+  await expect(reloaded.getByRole("textbox", { name: "帳號" })).toHaveValue("retro-archive");
+  await expect(reloaded.getByRole("textbox", { name: "精選標題" }).first()).toHaveValue("雪國旅程");
 });
 
 for (const width of [1280, 390]) {

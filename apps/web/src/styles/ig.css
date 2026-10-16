@@ -144,6 +144,9 @@
 .ig-post-toggle span, .ig-post-toggle small { display: block; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ig-post-toggle small { font-size: 11px; color: #404040; }
 .ig-post-body { padding: 8px; display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #808080; }
+.ig-canonical-posts { display: flex; flex-direction: column; gap: 7px; }
+.ig-canonical-post { display: flex; flex-direction: column; background: #dfdfdf; box-shadow: inset -1px -1px #808080, inset 1px 1px #fff; }
+.ig-media-edit-row { display: grid; grid-template-columns: 48px minmax(120px, 1fr) repeat(3, auto); align-items: center; gap: 5px; padding: 5px; background: #c0c0c0; box-shadow: inset 1px 1px #fff, inset -1px -1px #808080; }
 .ig-trio { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) minmax(0, 1fr); gap: 4px; }
 .ig-x { position: absolute; top: 1px; right: 1px; width: 16px; height: 16px; padding: 0; font-size: 10px; line-height: 1; font-weight: 700; color: #fff; background: #b00020; border: 1px solid #000; cursor: pointer; }
 .ig-add-extra { width: 48px; height: 48px; display: grid; place-items: center; border: 2px dashed #808080; font-size: 18px; color: #000080; cursor: pointer; }
@@ -152,4 +155,6 @@
 @media (max-width: 520px) {
   .ig-fields, .ig-trio, .color-fields { grid-template-columns: 1fr; }
   .ig-profile-delete { align-items: stretch; flex-direction: column; }
+  .ig-media-edit-row { grid-template-columns: 48px minmax(0, 1fr); }
+  .ig-media-edit-row > .mini-btn { grid-row: 2; }
 }
