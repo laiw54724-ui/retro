@@ -16,6 +16,7 @@ import { buildProfileDirectory } from "../features/modules/instagram/profileDire
 import { auditAssetReferences } from "../lib/asset-reference-audit";
 import { collaborationActions } from "../lib/collaboration";
 import { CollaborationDialog } from "../features/collaboration/CollaborationDialog";
+import { SidebarToggle } from "../features/editor/SidebarToggle";
 
 
 
@@ -35,6 +36,25 @@ function loadedLegacyDocument(loaded: ReturnType<typeof loadVersionedSiteDocumen
   const legacy = projectV2ToLegacyDocument(loaded.document);
   if (!legacy.ok) throw new Error(legacy.diagnostics[0]?.message ?? "角色引用無效");
   return legacy.document;
+}
+
+const SIDEBAR_PREFERENCES_KEY = "retrodesk:editor-sidebars";
+
+type SidebarPreferences = { leftExpanded: boolean; rightExpanded: boolean };
+
+function loadSidebarPreferences(): SidebarPreferences {
+  const fallback = { leftExpanded: true, rightExpanded: true };
+  try {
+    const raw = window.localStorage.getItem(SIDEBAR_PREFERENCES_KEY);
+    if (!raw) return fallback;
+    const value = JSON.parse(raw) as Partial<SidebarPreferences>;
+    return {
+      leftExpanded: typeof value.leftExpanded === "boolean" ? value.leftExpanded : true,
+      rightExpanded: typeof value.rightExpanded === "boolean" ? value.rightExpanded : true
+    };
+  } catch {
+    return fallback;
+  }
 }
 
 export function EditorPage({ site }: { site: SiteRecord }) {
@@ -58,11 +78,20 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   const [migratingAssets, setMigratingAssets] = useState(false);
   const [deletingAssetId, setDeletingAssetId] = useState<string | null>(null);
   const [collaborationOpen, setCollaborationOpen] = useState(false);
+  const [sidebarPreferences, setSidebarPreferences] = useState(loadSidebarPreferences);
   const collaborationButtonRef = useRef<HTMLButtonElement | null>(null);
   const [versionedDraft, setVersionedDraft] = useState<SiteDocumentV2Input | null>(null);
   const versionedDraftRef = useRef<SiteDocumentV2Input | null>(null);
   versionedDraftRef.current = versionedDraft;
   const publishChecks = useMemo(() => store.document ? buildPublishChecks(store.document) : [], [store.document]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(SIDEBAR_PREFERENCES_KEY, JSON.stringify(sidebarPreferences));
+    } catch {
+      // Editor layout preferences are optional; storage failures must not block editing.
+    }
+  }, [sidebarPreferences]);
 
   function applyLoadedSite(site: Awaited<ReturnType<typeof api.getSite>>["site"]) {
     const loadedDraft = loadVersionedSiteDocument(site.draft_document, { siteId: site.id, migrateV1: true });
@@ -544,7 +573,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       </div> : null}
 
       <div className="editor-grid2">
-        {!layoutMode ? (
+        {!layoutMode && sidebarPreferences.leftExpanded ? (
           <LeftPanel
             document={store.document}
             selectedId={store.selectedId}
@@ -557,6 +586,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
             upload={uploadImage}
           />
         ) : null}
+        {!layoutMode ? <SidebarToggle side="left" expanded={sidebarPreferences.leftExpanded} onToggle={() => setSidebarPreferences((current) => ({ ...current, leftExpanded: !current.leftExpanded }))} /> : null}
 
         <section className="editor-stage2">
           {store.device === "desktop" ? (
@@ -584,7 +614,8 @@ export function EditorPage({ site }: { site: SiteRecord }) {
           )}
         </section>
 
-        {!layoutMode && store.device === "desktop" ? (
+        {!layoutMode && store.device === "desktop" ? <SidebarToggle side="right" expanded={sidebarPreferences.rightExpanded} onToggle={() => setSidebarPreferences((current) => ({ ...current, rightExpanded: !current.rightExpanded }))} /> : null}
+        {!layoutMode && store.device === "desktop" && sidebarPreferences.rightExpanded ? (
           <RightPanel
             document={store.document}
             selected={selected}

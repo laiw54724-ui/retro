@@ -31,7 +31,7 @@ export function LeftPanel({ document, selectedId, view, onAdd, onSelect, onToggl
   const [tab, setTab] = useState<Tab>(initialTab);
   const tabs: Array<[Tab, string]> = [["add", "新增"], ["layers", "視窗"], ["theme", "主題"]];
   return (
-    <aside className="left-panel2" aria-label="工具面板">
+    <aside id="editor-left-panel" className="left-panel2" aria-label="工具面板">
       <div role="tablist" className="w98-tabs">
         {tabs.map(([id, label]) => <button key={id} role="tab" type="button" className="w98-tab" aria-selected={tab === id} onClick={() => setTab(id)}>{label}</button>)}
       </div>

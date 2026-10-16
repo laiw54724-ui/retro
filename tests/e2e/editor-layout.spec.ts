@@ -159,7 +159,7 @@ test("Windows icon picker offers curated icons and searchable full library", asy
 test("desktop and mobile add surfaces share the registry modules", async ({ page }) => {
   const saves = await openEditor(page);
   const desktopLabels = await page.locator(".left-panel2 .add-card strong").allTextContents();
-  expect(desktopLabels).toEqual(["文件視窗", "相簿視窗", "連結視窗", "名片／關於我", "復古 IG 個人頁"]);
+  expect(desktopLabels).toEqual(["文件視窗", "相簿視窗", "連結視窗", "名片／關於我", "復古 IG 個人頁", "音樂播放器"]);
 
   await page.getByRole("button", { name: "手機版" }).click();
   await page.locator(".m-toolbar").getByRole("button", { name: "新增" }).click();
@@ -170,4 +170,26 @@ test("desktop and mobile add surfaces share the registry modules", async ({ page
 
   await mobileSheet.getByRole("button", { name: /文件視窗/ }).click();
   await expect.poll(() => saves.at(-1)?.document.windows.some((window) => window.type === "document")).toBe(true);
+});
+
+test("desktop sidebars collapse independently and remember their state", async ({ page }) => {
+  await openEditor(page);
+  const stage = page.locator(".editor-stage2");
+  const initialWidth = (await stage.boundingBox())!.width;
+
+  await page.getByRole("button", { name: "收合左側工具欄" }).click();
+  await expect(page.locator(".left-panel2")).toBeHidden();
+  await expect.poll(async () => (await stage.boundingBox())!.width).toBeGreaterThan(initialWidth);
+
+  await page.getByRole("button", { name: "收合右側屬性欄" }).click();
+  await expect(page.locator(".right-panel2")).toBeHidden();
+
+  const restoreLeft = page.getByRole("button", { name: "展開左側工具欄" });
+  await restoreLeft.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".left-panel2")).toBeVisible();
+
+  await page.reload();
+  await expect(page.locator(".left-panel2")).toBeVisible();
+  await expect(page.locator(".right-panel2")).toBeHidden();
 });

@@ -163,6 +163,7 @@ for (const width of [320, 375, 390, 430]) {
 
     await expect(page.locator(".left-panel2")).toBeHidden();
     await expect(page.locator(".right-panel2")).toBeHidden();
+    await expect(page.locator(".sidebar-toggle-rail")).toBeHidden();
     await expect(page.locator(".editor-stage2 .m-screen")).toBeVisible();
     await expect(page.getByRole("toolbar", { name: "手機編輯工具" })).toBeVisible();
     await expect(page.locator(".editor-topbar .brand")).toHaveCSS("font-family", /Cubic 11/);
@@ -206,8 +207,14 @@ for (const width of [768, 1024, 1440]) {
     await page.goto("/editor/site-1");
 
     await expect(page.locator(".left-panel2")).toBeVisible();
-    if (width < 1024) await expect(page.locator(".right-panel2")).toBeHidden();
-    else await expect(page.locator(".right-panel2")).toBeVisible();
+    await expect(page.getByRole("button", { name: "收合左側工具欄" })).toBeVisible();
+    if (width < 1024) {
+      await expect(page.locator(".right-panel2")).toBeHidden();
+      await expect(page.getByRole("button", { name: "收合右側屬性欄" })).toBeHidden();
+    } else {
+      await expect(page.locator(".right-panel2")).toBeVisible();
+      await expect(page.getByRole("button", { name: "收合右側屬性欄" })).toBeVisible();
+    }
     await expect(page.locator(".editor-stage2 .desktop-canvas")).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });

@@ -26,7 +26,7 @@ export function RightPanel({ document, selected, siteId, upload, onUpdate, onDel
 
   if (!selected) {
     return (
-      <aside className="right-panel2" aria-label="屬性面板">
+      <aside id="editor-right-panel" className="right-panel2" aria-label="屬性面板">
         <div className="w98-tabpanel w98-scroll panel-scroll">
           <div className="inspector-head"><Icon name="computer" size={22} /><strong>網站設定</strong></div>
           <label className="w98-field"><span>桌面名稱</span><input className="w98-input" value={document.siteName} onChange={(event) => onSiteName(event.target.value)} /></label>
@@ -53,7 +53,7 @@ export function RightPanel({ document, selected, siteId, upload, onUpdate, onDel
   const tabs: Array<[Tab, string]> = [["general", "通用"], ["icon", "圖示"], ["layout", "版面"]];
 
   return (
-    <aside className="right-panel2" aria-label="屬性面板">
+    <aside id="editor-right-panel" className="right-panel2" aria-label="屬性面板">
       <div className="inspector-head"><Icon name={selected.icon} size={22} /><strong>{selected.title}</strong></div>
       <div role="tablist" className="w98-tabs">
         {tabs.map(([id, label]) => <button key={id} role="tab" type="button" className="w98-tab" aria-selected={tab === id} onClick={() => setTab(id)}>{label}</button>)}

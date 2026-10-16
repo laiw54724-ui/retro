@@ -297,6 +297,16 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 .device-toggle { display: flex; flex-shrink: 0; }
 .editor-grid2 { flex: 1; min-height: 0; display: flex; background: #c0c0c0; }
 .editor-stage2 { flex: 1; min-width: 0; position: relative; display: flex; padding: 8px 0; }
+.sidebar-toggle-rail { width: 24px; flex: 0 0 24px; min-height: 0; display: flex; align-items: center; justify-content: center; background: var(--w98-face); }
+.sidebar-toggle-rail-left { padding-right: 2px; box-shadow: inset -1px 0 var(--w98-shadow), inset -2px 0 #fff; }
+.sidebar-toggle-rail-right { padding-left: 2px; box-shadow: inset 1px 0 #fff, inset 2px 0 var(--w98-shadow); }
+.sidebar-toggle-rail.collapsed { background: var(--w98-light); }
+.sidebar-toggle { width: 20px; height: 56px; padding: 0; border: 0; display: grid; place-items: center; color: #000; background: var(--w98-face); box-shadow: var(--w98-raised); cursor: pointer; }
+.sidebar-toggle:active { box-shadow: var(--w98-pressed); }
+.sidebar-toggle:focus-visible { outline: 2px solid var(--w98-accent); outline-offset: 1px; }
+.sidebar-toggle-mark { width: 0; height: 0; border-block: 6px solid transparent; }
+.sidebar-toggle-mark.points-left { border-right: 7px solid currentColor; }
+.sidebar-toggle-mark.points-right { border-left: 7px solid currentColor; }
 .editor-status2 { height: 26px; flex-shrink: 0; display: flex; align-items: center; gap: 14px; padding: 0 8px; font-size: 12px; background: #c0c0c0; box-shadow: inset 0 1px #fff; }
 .editor-status2 > span:not(.top-spacer) { padding: 0 8px; box-shadow: inset 1px 1px #808080, inset -1px -1px #fff; line-height: 20px; }
 @media (max-width: 1099px) {
@@ -306,6 +316,7 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 }
 @media (min-width: 768px) and (max-width: 1023px) {
   .right-panel2 { display: none; }
+  .sidebar-toggle-rail-right { display: none; }
   .topbar-meta { display: none; }
   .editor-topbar .w98-btn { padding-inline: 8px; }
 }
@@ -538,7 +549,7 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
   .editor-app { height: 100dvh; min-height: 100dvh; }
   .editor-topbar { height: 52px; min-height: 52px; gap: 6px; padding: 4px max(6px, env(safe-area-inset-right)) 4px max(6px, env(safe-area-inset-left)); overflow: hidden; }
   .editor-topbar .brand { display: flex; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-  .editor-topbar .topbar-meta, .editor-topbar .mobile-hide, .left-panel2, .right-panel2 { display: none !important; }
+  .editor-topbar .topbar-meta, .editor-topbar .mobile-hide, .left-panel2, .right-panel2, .sidebar-toggle-rail { display: none !important; }
   .editor-topbar .top-spacer { display: none; }
   .editor-topbar .w98-btn { height: 42px; min-height: 42px; padding: 0 9px; }
   .editor-grid2 { display: flex; min-height: 0; }
