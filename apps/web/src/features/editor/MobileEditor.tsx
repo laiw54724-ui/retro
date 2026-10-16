@@ -2,18 +2,12 @@ import { useMemo, useState } from "react";
 import { THEME_PRESETS, type DesktopWindow, type SiteDocument } from "@retrodesk/shared";
 import { RetroButton } from "../../components/RetroButton";
 import { RetroWindow } from "../../components/RetroWindow";
+import { Icon } from "../../components/Icon";
 import { InspectorContent } from "./InspectorContent";
 import { WindowRenderer } from "../site/WindowRenderer";
+import { moduleDefinitions } from "../modules/registry";
 
 type Mode = "desktop" | "add" | "edit" | "theme" | "preview";
-
-const modules: Array<{ type: DesktopWindow["type"]; label: string; desc: string }> = [
-  { type: "document", label: "文件", desc: "文字、圖片、按鈕與清單" },
-  { type: "gallery", label: "相簿", desc: "圖片網格與說明" },
-  { type: "links", label: "連結", desc: "社群與外部網址" },
-  { type: "about", label: "關於我", desc: "頭像、簡介與欄位" },
-  { type: "instagram", label: "復古 IG", desc: "個人頁與貼文" }
-];
 
 type Props = {
   document: SiteDocument;
@@ -104,10 +98,10 @@ export function MobileEditor({
             <h2>新增視窗</h2>
             <p>手機上不拖曳視窗。新增後直接編輯內容，桌面位置之後可在桌面版調整。</p>
             <div className="mobile-module-list">
-              {modules.map((item) => (
-                <button key={item.type} type="button" onClick={() => add(item.type)}>
-                  <span className="module-icon" />
-                  <span><strong>{item.label}</strong><small>{item.desc}</small></span>
+              {moduleDefinitions.map((module) => (
+                <button key={module.type} type="button" onClick={() => add(module.type)}>
+                  <Icon name={module.mobile.icon} size={32} className="module-icon" />
+                  <span><strong>{module.label}</strong><small>{module.description}</small></span>
                 </button>
               ))}
             </div>
@@ -167,7 +161,7 @@ export function MobileEditor({
             {previewWindow ? (
               <>
                 <button className="mobile-back" type="button" onClick={() => setPreviewId(null)}>‹ 預覽桌面</button>
-                <RetroWindow title={previewWindow.title} theme={document.theme}>
+                <RetroWindow title={previewWindow.title} theme={document.theme} appearance={previewWindow.appearance}>
                   <WindowRenderer window={previewWindow} theme={document.theme} onOpenWindow={setPreviewId} />
                 </RetroWindow>
               </>

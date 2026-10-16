@@ -42,15 +42,32 @@ Publishing copies the validated draft into `published_document`, increments `pub
 
 The prototype's strongest engineering idea is preserved: each window type is a module with one schema and one renderer shared by editor and visitor mode.
 
-Initial module types:
+Built-in module types:
 
 - document
 - gallery
 - links
 - about
 - instagram
+- music
+- moodboard
+- explorer
+- minesweeper
+- character dialog
+- moderated guestbook
 
-Future modules such as diary, guestbook, music player, character profile and visual novel should be added without changing the desktop canvas data model.
+Future modules such as diary, character profile and visual novel should be added through the registry without changing unrelated window-manager logic. The registry accepts reviewed built-in modules and data templates, not arbitrary executable plugins.
+
+## Ownership and collaboration
+
+An account may own multiple independent desktops and may be an editor or viewer on other desktops. `sites.owner_id` remains the sole ownership source of truth; `site_memberships` stores non-owner roles. The Worker resolves access on every request even though its service-role database client bypasses RLS. Invite tokens are returned once while only a digest is stored.
+
+### Bundled icon collections
+
+New icon choices are generated from the pinned upstream checkout into the
+`/windows-icons/` namespace. Legacy documents may continue to reference the
+read-only `/win98-icons/` compatibility namespace. The provenance JSON is
+evidence of the importer inputs and outputs, not a license grant.
 
 ## Security boundaries
 

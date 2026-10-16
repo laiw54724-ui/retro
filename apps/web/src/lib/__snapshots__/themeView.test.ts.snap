@@ -1,0 +1,46 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`theme token contract > derives complete active and inactive tokens for classic98 1`] = `
+{
+  "accentText": "#ffffff",
+  "bevel": "inset -1px -1px #0a0a0a, inset 1px 1px #ffffff, inset -2px -2px #808080, inset 2px 2px #dfdfdf",
+  "font": "'Cubic 11', system-ui, sans-serif",
+  "inactive": "linear-gradient(90deg, #808080, #dfdfdf)",
+  "labelRadius": "0px",
+  "sunken": "inset -1px -1px #ffffff, inset 1px 1px #808080, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a",
+  "taskbarText": "#111111",
+  "tile": "transparent",
+  "title": "linear-gradient(90deg, #000080, #0067b1)",
+  "titleText": "#ffffff",
+}
+`;
+
+exports[`theme token contract > derives complete active and inactive tokens for pixel 1`] = `
+{
+  "accentText": "#ffffff",
+  "bevel": "inset -1px -1px #100d20, inset 1px 1px #ffffff, inset -2px -2px #827aa3, inset 2px 2px #f0ecfa",
+  "font": "'Cubic 11', system-ui, sans-serif",
+  "inactive": "linear-gradient(90deg, #827aa3, #f0ecfa)",
+  "labelRadius": "3px",
+  "sunken": "inset -1px -1px #ffffff, inset 1px 1px #827aa3, inset -2px -2px #f0ecfa, inset 2px 2px #100d20",
+  "taskbarText": "#ffffff",
+  "tile": "transparent",
+  "title": "linear-gradient(90deg, #261f72, #c63f91)",
+  "titleText": "#ffffff",
+}
+`;
+
+exports[`theme token contract > derives complete active and inactive tokens for y2k 1`] = `
+{
+  "accentText": "#ffffff",
+  "bevel": "inset -1px -1px #17233d, inset 1px 1px #ffffff, inset -2px -2px #8292a8, inset 2px 2px #f7fbff",
+  "font": "'Cubic 11', system-ui, sans-serif",
+  "inactive": "linear-gradient(90deg, #8292a8, #f7fbff)",
+  "labelRadius": "0px",
+  "sunken": "inset -1px -1px #ffffff, inset 1px 1px #8292a8, inset -2px -2px #f7fbff, inset 2px 2px #17233d",
+  "taskbarText": "#10182a",
+  "tile": "#d7dbe2",
+  "title": "linear-gradient(90deg, #263d9a, #3769b0)",
+  "titleText": "#ffffff",
+}
+`;

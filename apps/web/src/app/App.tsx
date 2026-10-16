@@ -4,8 +4,9 @@ import { useAuth } from "./AuthProvider";
 import { LandingPage } from "../pages/LandingPage";
 import { AuthPage } from "../pages/AuthPage";
 import { OnboardingPage } from "../pages/OnboardingPage";
-import { EditorPage } from "../pages/EditorPage";
+import { CollaborativeSitePage } from "../pages/CollaborativeSitePage";
 import { PublicSitePage } from "../pages/PublicSitePage";
+import { InvitePage } from "../pages/InvitePage";
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { loading, user } = useAuth();
@@ -20,8 +21,11 @@ export function App() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/auth" element={<AuthPage />} />
+      <Route path="/invite" element={<InvitePage />} />
       <Route path="/onboarding" element={<RequireAuth><OnboardingPage /></RequireAuth>} />
-      <Route path="/editor/:siteId" element={<RequireAuth><EditorPage /></RequireAuth>} />
+      <Route path="/editor/:siteId" element={<RequireAuth><CollaborativeSitePage /></RequireAuth>} />
+      <Route path="/:handle/oc/:profileId" element={<PublicSitePage />} />
+      <Route path="/:handle/post/:postId" element={<PublicSitePage />} />
       <Route path="/:handle" element={<PublicSitePage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

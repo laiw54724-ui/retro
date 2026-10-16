@@ -2,7 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { documentFixture } from "./fixture";
 
-async function mockPublicSite(page: Page) {
+async function mockPublicSite(page: Page, publishedDocument = documentFixture) {
   await page.route("**/api/public/sites/demo", async (route) => {
     await route.fulfill({
       status: 200,
@@ -11,7 +11,7 @@ async function mockPublicSite(page: Page) {
         site: {
           username: "demo",
           site_name: "Demo Desk",
-          published_document: documentFixture,
+          published_document: publishedDocument,
           published_version: 1,
           published_at: "2026-10-15T00:00:00.000Z"
         }
@@ -19,6 +19,24 @@ async function mockPublicSite(page: Page) {
     });
   });
 }
+
+test("published image wallpaper covers the desktop without tiling", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await mockPublicSite(page, {
+    ...documentFixture,
+    theme: {
+      ...documentFixture.theme,
+      pattern: "image",
+      wallImage: "https://example.com/wallpaper.png"
+    }
+  });
+  await page.goto("/@demo");
+
+  const visitor = page.locator(".visitor-page");
+  await expect(visitor).toHaveCSS("background-size", "cover");
+  await expect(visitor).toHaveCSS("background-position", "50% 50%");
+  await expect(visitor).toHaveCSS("background-repeat", "no-repeat");
+});
 
 test("landing page has no critical accessibility violations", async ({ page }) => {
   await page.goto("/");
@@ -51,6 +69,37 @@ test("desktop visitor can minimize, restore, close and reopen windows", async ({
 
   await page.locator(".visitor-icon").filter({ hasText: "About.exe" }).click();
   await expect(dialog).toBeVisible();
+});
+
+test("desktop Start menu opens closed windows and the taskbar shows local time", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await mockPublicSite(page);
+  await page.goto("/@demo");
+
+  const clock = page.locator(".visitor-clock");
+  await expect(clock).toHaveText(/^\d{2}:\d{2}$/);
+  await expect(clock).not.toContainText("Demo Desk");
+
+  await page.getByRole("button", { name: "開始" }).click();
+  const menu = page.getByRole("menu", { name: "開始功能表" });
+  await expect(menu).toBeVisible();
+  await menu.getByRole("menuitem", { name: "Links.exe" }).click();
+  await expect(page.getByRole("dialog", { name: "Links.exe" })).toBeVisible();
+  await expect(menu).toBeHidden();
+  await expect(page.locator(".visitor-task-buttons").getByRole("button", { name: "Links.exe" })).toBeVisible();
+
+  await page.getByRole("button", { name: "開始" }).click();
+  await expect(menu).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(menu).toBeHidden();
+});
+
+test("published desktop uses each window's configured icon", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await mockPublicSite(page);
+  await page.goto("/@demo");
+
+  await expect(page.locator(".visitor-icon").filter({ hasText: "About.exe" }).locator(".w98-icon")).toBeVisible();
 });
 
 for (const width of [320, 390, 430]) {

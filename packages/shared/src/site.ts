@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { AssetReferenceSchema } from "./asset-reference";
 
 export const usernamePattern = /^[a-z0-9](?:[a-z0-9-]{1,18}[a-z0-9])?$/;
 export const reservedUsernames = new Set([
@@ -16,6 +17,14 @@ export const reservedUsernames = new Set([
   "www"
 ]);
 
+export const ImageUrlSchema = z.union([z.string().max(2048).refine((value) => {
+  try {
+    return ["http:", "https:"].includes(new URL(value).protocol);
+  } catch {
+    return false;
+  }
+}, "Unsupported image URL"), AssetReferenceSchema]);
+
 export const UsernameSchema = z
   .string()
   .trim()
@@ -31,7 +40,7 @@ export const ThemeSchema = z.object({
   wall: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   pattern: z.enum(["none", "dots", "checker", "stars", "image"]),
   patternColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
-  wallImage: z.string().url().nullable().optional(),
+  wallImage: ImageUrlSchema.nullable().optional(),
   face: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   light: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   shadow: z.string().regex(/^#[0-9a-fA-F]{6}$/),
@@ -64,7 +73,7 @@ export const WindowLayoutSchema = z.object({
   mobile: MobileLayoutSchema
 });
 
-const SafeUrlSchema = z.string().max(2048).refine((value) => {
+export const SafeUrlSchema = z.string().max(2048).refine((value) => {
   // A bare scheme is what the editor pre-fills; treat it as "not filled in yet" (rendered as an inert link).
   if (value === "" || value === "https://" || value === "http://") return true;
   try {
@@ -75,13 +84,23 @@ const SafeUrlSchema = z.string().max(2048).refine((value) => {
   }
 }, "Unsupported URL protocol");
 
-export const ImageUrlSchema = z.string().max(2048).refine((value) => {
+export const WebUrlSchema = z.string().max(2048).refine((value) => {
+  if (value === "" || value === "https://" || value === "http://") return true;
   try {
     return ["http:", "https:"].includes(new URL(value).protocol);
   } catch {
     return false;
   }
-}, "Unsupported image URL");
+}, "Use an HTTP(S) web address");
+
+export const HttpsAudioUrlSchema = z.string().max(2048).refine((value) => {
+  if (value === "" || value === "https://") return true;
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}, "Audio URL must use HTTPS");
 
 export const ImageCropSchema = z.object({
   x: z.number().min(0).max(100),
@@ -102,7 +121,7 @@ export const DocumentBlockSchema = z.discriminatedUnion("kind", [
   BaseBlockSchema.extend({ kind: z.literal("divider") })
 ]);
 
-const GalleryImageSchema = z.object({
+export const GalleryImageSchema = z.object({
   id: z.string().min(1),
   src: ImageUrlSchema.nullable(),
   title: z.string().max(200),
@@ -111,7 +130,7 @@ const GalleryImageSchema = z.object({
   href: SafeUrlSchema.default("")
 });
 
-const LinkItemSchema = z.object({
+export const LinkItemSchema = z.object({
   id: z.string().min(1),
   label: z.string().min(1).max(200),
   icon: z.string().max(120).default("link"),
@@ -122,21 +141,121 @@ const LinkItemSchema = z.object({
   iconUrl: z.string().max(2048).default("")
 });
 
-const AboutFieldSchema = z.object({ id: z.string().min(1), key: z.string().max(100), value: z.string().max(500) });
-const SocialLinkSchema = z.object({ id: z.string().min(1), label: z.string().max(100), url: SafeUrlSchema });
+export const AboutFieldSchema = z.object({ id: z.string().min(1), key: z.string().max(100), value: z.string().max(500) });
+export const SocialLinkSchema = z.object({ id: z.string().min(1), label: z.string().max(100), url: SafeUrlSchema });
 
-const IgCommentSchema = z.object({ id: z.string().min(1), user: z.string().max(64), text: z.string().max(1000) });
-const IgExtraImageSchema = z.object({ id: z.string().min(1), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default("") });
-const IgPostSchema = GalleryImageSchema.extend({
+export const IgCommentSchema = z.object({ id: z.string().min(1), user: z.string().max(64), text: z.string().max(1000) });
+export const IgExtraImageSchema = z.object({ id: z.string().min(1), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default("") });
+export const IgPostSchema = GalleryImageSchema.extend({
   location: z.string().max(120).default(""),
   date: z.string().max(40).default(""),
   likes: z.number().int().min(0).max(1e9).default(0),
   comments: z.array(IgCommentSchema).max(200).default([]),
   extra: z.array(IgExtraImageSchema).max(9).default([])
 });
-const IgHighlightSchema = z.object({ id: z.string().min(1), title: z.string().max(40), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default("") });
+export const IgHighlightSchema = z.object({ id: z.string().min(1), title: z.string().max(40), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default("") });
 
-const InstagramProfileSchema = z.object({
+export const MusicCharacterRefSchema = z.object({ siteId: z.string().trim().min(1).max(160), id: z.string().trim().min(1).max(160), kind: z.literal("profile") });
+export const MusicSourceSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("audioUrl"), url: HttpsAudioUrlSchema }),
+  z.object({ kind: z.literal("uploadedAudio"), asset: z.union([AssetReferenceSchema, HttpsAudioUrlSchema]) }),
+  z.object({ kind: z.literal("externalLink"), url: WebUrlSchema })
+]);
+export const MusicTrackSchema = z.object({
+  id: z.string().min(1).max(160),
+  title: z.string().max(200),
+  artist: z.string().max(200),
+  cover: ImageUrlSchema.nullable(),
+  coverUrl: z.string().max(2048).default(""),
+  source: MusicSourceSchema,
+  characterRef: MusicCharacterRefSchema.optional(),
+  lyrics: z.string().max(20_000).default(""),
+  rightsNote: z.string().max(1000).default("")
+});
+export const MusicPlaylistSchema = z.object({ id: z.string().min(1).max(160), title: z.string().max(200), trackIds: z.array(z.string().min(1).max(160)).max(100) });
+export const MusicContentSchema = z.object({ tracks: z.array(MusicTrackSchema).max(100), playlist: MusicPlaylistSchema }).superRefine((content, ctx) => {
+  const trackIds = new Set<string>();
+  for (const [index, track] of content.tracks.entries()) {
+    if (trackIds.has(track.id)) ctx.addIssue({ code: "custom", path: ["tracks", index, "id"], message: "Duplicate music track id" });
+    trackIds.add(track.id);
+  }
+  const playlistIds = new Set<string>();
+  for (const [index, trackId] of content.playlist.trackIds.entries()) {
+    if (playlistIds.has(trackId)) ctx.addIssue({ code: "custom", path: ["playlist", "trackIds", index], message: "Duplicate playlist track id" });
+    else if (!trackIds.has(trackId)) ctx.addIssue({ code: "custom", path: ["playlist", "trackIds", index], message: "Playlist references a missing track" });
+    playlistIds.add(trackId);
+  }
+});
+
+const MoodboardElementBaseSchema = z.object({
+  id: z.string().min(1).max(160),
+  x: z.number().finite().min(0).max(4096),
+  y: z.number().finite().min(0).max(4096),
+  width: z.number().finite().min(24).max(4096),
+  height: z.number().finite().min(24).max(4096),
+  zOrder: z.number().int().min(0).max(9999),
+  locked: z.boolean().default(false)
+});
+export const MoodboardElementSchema = z.discriminatedUnion("kind", [
+  MoodboardElementBaseSchema.extend({ kind: z.literal("text"), content: z.string().max(5000), color: z.string().regex(/^#[0-9a-fA-F]{6}$/), fontSize: z.number().int().min(10).max(160), align: z.enum(["left", "center", "right"]).default("left") }).strict(),
+  MoodboardElementBaseSchema.extend({ kind: z.literal("color"), color: z.string().regex(/^#[0-9a-fA-F]{6}$/) }).strict(),
+  MoodboardElementBaseSchema.extend({ kind: z.literal("image"), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default(""), alt: z.string().max(300).default(""), crop: ImageCropSchema.optional() }).strict()
+]);
+export const MoodboardContentSchema = z.object({
+  width: z.number().int().min(240).max(4096),
+  height: z.number().int().min(240).max(4096),
+  background: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  elements: z.array(MoodboardElementSchema).max(100)
+}).strict();
+
+export const ExplorerFolderSchema = z.object({
+  id: z.string().min(1).max(160), parentId: z.string().min(1).max(160).nullable(), name: z.string().trim().min(1).max(120),
+  order: z.number().int().min(0).max(9999), visibility: z.enum(["published", "draft"]).default("published")
+}).strict();
+export const ExplorerShortcutSchema = z.object({
+  id: z.string().min(1).max(160), parentId: z.string().min(1).max(160).nullable(), label: z.string().trim().min(1).max(160),
+  order: z.number().int().min(0).max(9999), visibility: z.enum(["published", "draft"]).default("published"),
+  target: z.discriminatedUnion("kind", [
+    z.object({ siteId: z.string().trim().min(1).max(160), id: z.string().trim().min(1).max(160), kind: z.literal("window") }).strict(),
+    z.object({ siteId: z.string().trim().min(1).max(160), id: z.string().trim().min(1).max(160), kind: z.literal("profile") }).strict(),
+    z.object({ siteId: z.string().trim().min(1).max(160), id: z.string().trim().min(1).max(160), kind: z.literal("post") }).strict()
+  ])
+}).strict();
+export const ExplorerContentSchema = z.object({ folders: z.array(ExplorerFolderSchema).max(500), shortcuts: z.array(ExplorerShortcutSchema).max(500) }).strict().superRefine((content, ctx) => {
+  const ids = new Set<string>();
+  for (const [index, item] of [...content.folders, ...content.shortcuts].entries()) {
+    if (ids.has(item.id)) ctx.addIssue({ code: "custom", path: [index < content.folders.length ? "folders" : "shortcuts", index < content.folders.length ? index : index - content.folders.length, "id"], message: "Duplicate explorer item id" });
+    ids.add(item.id);
+  }
+  const folders = new Map(content.folders.map((folder) => [folder.id, folder]));
+  for (const [index, item] of [...content.folders, ...content.shortcuts].entries()) {
+    if (item.parentId && !folders.has(item.parentId)) ctx.addIssue({ code: "custom", path: [index < content.folders.length ? "folders" : "shortcuts", index < content.folders.length ? index : index - content.folders.length, "parentId"], message: "Missing explorer parent" });
+  }
+  for (const [index, folder] of content.folders.entries()) {
+    let cursor = folder.parentId, depth = 1;
+    const seen = new Set([folder.id]);
+    while (cursor) {
+      if (seen.has(cursor)) { ctx.addIssue({ code: "custom", path: ["folders", index, "parentId"], message: "Explorer folder cycle" }); break; }
+      seen.add(cursor); depth += 1;
+      if (depth > 8) { ctx.addIssue({ code: "custom", path: ["folders", index, "parentId"], message: "Explorer folder depth exceeds 8" }); break; }
+      cursor = folders.get(cursor)?.parentId ?? null;
+    }
+  }
+});
+
+export const MinesweeperContentSchema = z.object({ rows: z.number().int().min(5).max(12), columns: z.number().int().min(5).max(12), mines: z.number().int().min(1).max(40) }).strict().superRefine((content, ctx) => {
+  if (content.mines >= content.rows * content.columns) ctx.addIssue({ code: "custom", path: ["mines"], message: "Mines must leave at least one safe cell" });
+});
+export const CharacterDialogContentSchema = z.object({
+  characterName: z.string().max(120), image: ImageUrlSchema.nullable(), imageUrl: z.string().max(2048).default(""), message: z.string().max(2000),
+  linkLabel: z.string().max(120).default(""), linkUrl: SafeUrlSchema.default(""), autoShow: z.boolean().default(false)
+}).strict();
+export const GuestbookContentSchema = z.object({
+  enabled: z.boolean().default(false),
+  intro: z.string().max(1000).default("歡迎留下訊息。新留言會先交由站長審核。")
+}).strict();
+
+export const InstagramProfileSchema = z.object({
   username: z.string().max(64),
   avatar: ImageUrlSchema.nullable(),
   avatarCrop: ImageCropSchema.optional(),
@@ -160,12 +279,19 @@ const InstagramProfileSchema = z.object({
   highlights: z.array(IgHighlightSchema).max(20).default([])
 });
 
-const BaseWindowSchema = z.object({
+export const WindowAppearanceSchema = z.object({
+  titleFrom: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  titleTo: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  titleGradient: z.boolean().default(true)
+});
+
+export const BaseWindowSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1).max(160),
   icon: z.string().min(1).max(500),
   layout: WindowLayoutSchema,
-  defaultOpen: z.boolean()
+  defaultOpen: z.boolean(),
+  appearance: WindowAppearanceSchema.optional()
 });
 
 export const DesktopWindowSchema = z.discriminatedUnion("type", [
@@ -198,7 +324,31 @@ export const DesktopWindowSchema = z.discriminatedUnion("type", [
   }),
   BaseWindowSchema.extend({
     type: z.literal("instagram"),
-    content: z.object({ profile: InstagramProfileSchema, images: z.array(IgPostSchema).max(60) })
+    content: z.object({ skin: z.enum(["win98", "modern"]).default("win98"), profile: InstagramProfileSchema, images: z.array(IgPostSchema).max(60) })
+  }),
+  BaseWindowSchema.extend({
+    type: z.literal("music"),
+    content: MusicContentSchema
+  }),
+  BaseWindowSchema.extend({
+    type: z.literal("moodboard"),
+    content: MoodboardContentSchema
+  }),
+  BaseWindowSchema.extend({
+    type: z.literal("explorer"),
+    content: ExplorerContentSchema
+  }),
+  BaseWindowSchema.extend({
+    type: z.literal("minesweeper"),
+    content: MinesweeperContentSchema
+  }),
+  BaseWindowSchema.extend({
+    type: z.literal("character-dialog"),
+    content: CharacterDialogContentSchema
+  }),
+  BaseWindowSchema.extend({
+    type: z.literal("guestbook"),
+    content: GuestbookContentSchema
   })
 ]);
 
@@ -231,11 +381,21 @@ export const THEME_PRESETS: Record<string, RetroTheme> = {
     dark: "#0a0a0a",
     text: "#111111",
     titleFrom: "#000080",
-    titleTo: "#1084d0",
+    titleTo: "#0067b1",
     taskbar: "#c0c0c0",
     accent: "#000080",
     font: "noto",
     iconStyle: "classic"
+  },
+  y2k: {
+    id: "y2k", name: "Y2K 銀藍", wall: "#b7d9ee", pattern: "checker", patternColor: "#d8edf8",
+    face: "#d7dbe2", light: "#f7fbff", shadow: "#8292a8", dark: "#17233d", text: "#10182a",
+    titleFrom: "#263d9a", titleTo: "#3769b0", taskbar: "#c5ceda", accent: "#263d9a", font: "pixel", iconStyle: "tile"
+  },
+  pixel: {
+    id: "pixel", name: "像素夜光", wall: "#17152d", pattern: "dots", patternColor: "#5e5aa8",
+    face: "#d7d1ea", light: "#f0ecfa", shadow: "#827aa3", dark: "#100d20", text: "#17132b",
+    titleFrom: "#261f72", titleTo: "#c63f91", taskbar: "#2d2850", accent: "#7138b6", font: "pixel", iconStyle: "sticker"
   },
   pink98: {
     id: "pink98",
@@ -331,7 +491,39 @@ export function makeWindow(type: DesktopWindow["type"], index = 0): DesktopWindo
     case "instagram":
       return {
         id: id(), type, title: "Instagram.exe", icon: "camera", layout: { ...layout, desktop: { ...layout.desktop, w: 420, h: 560 } }, defaultOpen: true,
-        content: { profile: { username: "retro", avatar: null, name: "Retro User", alt: "", bio: "", followers: "0", following: "0", followedBy: "", avatarUrl: "", linkLabel: "", linkUrl: "", dmUrl: "", verified: false, showCounts: true, showHighlights: true, showFollowedBy: true, showLikes: true, allowLikes: true, allowComments: true, highlights: [] }, images: [] }
+        content: { skin: "win98", profile: { username: "retro", avatar: null, name: "Retro User", alt: "", bio: "", followers: "0", following: "0", followedBy: "", avatarUrl: "", linkLabel: "", linkUrl: "", dmUrl: "", verified: false, showCounts: true, showHighlights: true, showFollowedBy: true, showLikes: true, allowLikes: true, allowComments: true, highlights: [] }, images: [] }
+      };
+    case "music": {
+      const playlistId = id();
+      return {
+        id: id(), type, title: "Music Player.exe", icon: "music", layout: { ...layout, desktop: { ...layout.desktop, w: 390, h: 430 } }, defaultOpen: true,
+        content: { tracks: [], playlist: { id: playlistId, title: "我的播放清單", trackIds: [] } }
+      };
+    }
+    case "moodboard":
+      return {
+        id: id(), type, title: "Moodboard.exe", icon: "photo", layout: { ...layout, desktop: { ...layout.desktop, w: 560, h: 520 } }, defaultOpen: true,
+        content: { width: 800, height: 600, background: "#ffffff", elements: [] }
+      };
+    case "explorer":
+      return {
+        id: id(), type, title: "Explorer.exe", icon: "folder", layout: { ...layout, desktop: { ...layout.desktop, w: 520, h: 440 } }, defaultOpen: true,
+        content: { folders: [], shortcuts: [] }
+      };
+    case "minesweeper":
+      return {
+        id: id(), type, title: "Minesweeper.exe", icon: "star", layout: { ...layout, desktop: { ...layout.desktop, w: 390, h: 470 } }, defaultOpen: false,
+        content: { rows: 8, columns: 8, mines: 10 }
+      };
+    case "character-dialog":
+      return {
+        id: id(), type, title: "Character.exe", icon: "user", layout: { ...layout, desktop: { ...layout.desktop, w: 360, h: 360 } }, defaultOpen: false,
+        content: { characterName: "我的角色", image: null, imageUrl: "", message: "嗨！歡迎來到我的桌面。", linkLabel: "", linkUrl: "", autoShow: false }
+      };
+    case "guestbook":
+      return {
+        id: id(), type, title: "Guestbook.exe", icon: "doc", layout: { ...layout, desktop: { ...layout.desktop, w: 430, h: 500 } }, defaultOpen: false,
+        content: { enabled: false, intro: "歡迎留下訊息。新留言會先交由站長審核。" }
       };
     default:
       return {
@@ -400,6 +592,9 @@ export type LinkItem = Extract<DesktopWindow, { type: "links" }>["content"]["lin
 export type IgPost = Extract<DesktopWindow, { type: "instagram" }>["content"]["images"][number];
 export type IgComment = IgPost["comments"][number];
 export type IgHighlight = Extract<DesktopWindow, { type: "instagram" }>["content"]["profile"]["highlights"][number];
+export type MusicTrack = z.infer<typeof MusicTrackSchema>;
+export type MusicPlaylist = z.infer<typeof MusicPlaylistSchema>;
+export type MoodboardElement = z.infer<typeof MoodboardElementSchema>;
 
 export function makeGalleryImage(init: Partial<GalleryImage> = {}): GalleryImage {
   return { id: newId(), src: null, title: "", caption: "", srcUrl: "", href: "", ...init };

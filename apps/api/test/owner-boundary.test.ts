@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const filters: Array<[string, unknown]> = [];
 
-function fakeQuery() {
+function fakeQuery(table: string) {
   const query = {
     select: () => query,
     eq: (field: string, value: unknown) => {
@@ -11,12 +11,13 @@ function fakeQuery() {
     },
     maybeSingle: async () => {
       const id = filters.findLast(([field]) => field === "id")?.[1];
-      const owner = filters.findLast(([field]) => field === "owner_id")?.[1];
-      const allowed = id === "site-a" && owner === "user-a";
+      if (table === "site_memberships") return { data: null, error: null };
+      const allowed = id === "site-a";
       return {
         data: allowed
           ? {
               id: "site-a",
+              owner_id: "user-a",
               username: "owner",
               site_name: "Owner site",
               draft_document: {},
@@ -37,7 +38,7 @@ function fakeQuery() {
 vi.mock("../src/lib/supabase", () => ({
   requireUser: vi.fn(async () => ({ id: "user-a", email: "a@example.com" })),
   serviceClient: vi.fn(() => ({
-    from: vi.fn(() => fakeQuery())
+    from: vi.fn((table: string) => fakeQuery(table))
   }))
 }));
 
@@ -53,13 +54,13 @@ describe("owner-scoped API boundaries", () => {
     const response = await sites.request("/sites/site-b", {}, {} as never);
     expect(response.status).toBe(404);
     expect(filters).toContainEqual(["id", "site-b"]);
-    expect(filters).toContainEqual(["owner_id", "user-a"]);
+    expect(filters).not.toContainEqual(["owner_id", "user-a"]);
   });
 
   it("does not allow media upload into another user's site", async () => {
     const response = await assets.request("/sites/site-b/assets", { method: "POST" }, {} as never);
     expect(response.status).toBe(404);
     expect(filters).toContainEqual(["id", "site-b"]);
-    expect(filters).toContainEqual(["owner_id", "user-a"]);
+    expect(filters).not.toContainEqual(["owner_id", "user-a"]);
   });
 });

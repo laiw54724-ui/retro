@@ -1,3 +1,4 @@
+import { isAssetReference } from "@retrodesk/shared";
 // Pixel-style 32x32 icons from the v2 design handoff.
 const K = 'stroke="#000000" stroke-width="2"';
 
@@ -28,9 +29,13 @@ export function builtinIconBackground(key: string): string {
   return `url("data:image/svg+xml,${encodeURIComponent(wrap(body))}") center / contain no-repeat`;
 }
 
-/** Only http(s) image URLs are ever used as an icon source. */
+/** Only approved remote URLs and local icon collection paths are image sources. */
 export function isImageIcon(value: string): boolean {
-  return /^https:\/\//i.test(value) || /^http:\/\/localhost[:/]/i.test(value);
+  return isAssetReference(value)
+    || /^https:\/\//i.test(value)
+    || /^http:\/\/localhost(?::\d+)?(?:\/|$)/i.test(value)
+    || /^\/win98-icons\/[A-Za-z0-9._-]+\.png$/i.test(value)
+    || /^\/windows-icons\/[A-Za-z0-9._-]+\.(?:ico|png)$/i.test(value);
 }
 
 /** Escapes a URL so it can sit inside CSS url("...") without breaking out of it. */

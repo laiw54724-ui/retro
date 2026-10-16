@@ -1,7 +1,12 @@
-import { useMemo, useRef, useState, type PointerEvent } from "react";
-import type { DesktopWindow, SiteDocument } from "@retrodesk/shared";
+import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
+import type { DesktopWindow, ProfileEntityV2, SiteDocument } from "@retrodesk/shared";
+import type { ProfileDirectoryEntry } from "../modules/types";
+import { Icon } from "../../components/Icon";
 import { RetroWindow } from "../../components/RetroWindow";
+import { useThemeView } from "../../lib/themeView";
+import { DesktopTaskbar } from "./DesktopTaskbar";
 import { WindowRenderer } from "./WindowRenderer";
+import { musicPlayback, useMusicPlayback } from "../modules/music/audioCoordinator";
 
 type WindowStatus = "open" | "minimized" | "closed";
 
@@ -21,11 +26,11 @@ type Gesture =
   | { kind: "move"; id: string; startX: number; startY: number; x: number; y: number; w: number; h: number }
   | { kind: "resize"; id: string; startX: number; startY: number; x: number; y: number; w: number; h: number };
 
-function initialRuntime(document: SiteDocument): RuntimeMap {
+function initialRuntime(document: SiteDocument, initialOpenId?: string): RuntimeMap {
   return Object.fromEntries(document.windows.map((window) => [
     window.id,
     {
-      status: window.defaultOpen ? "open" : "closed",
+      status: window.id === initialOpenId || (!initialOpenId && (window.defaultOpen || (window.type === "character-dialog" && window.content.autoShow))) ? "open" : "closed",
       maximized: false,
       x: window.layout.desktop.x,
       y: window.layout.desktop.y,
@@ -36,10 +41,14 @@ function initialRuntime(document: SiteDocument): RuntimeMap {
   ]));
 }
 
-export function VisitorDesktop({ document }: { document: SiteDocument }) {
-  const [runtime, setRuntime] = useState<RuntimeMap>(() => initialRuntime(document));
+export function VisitorDesktop({ document, profiles, profileIdsByWindow, profileDirectory, initialOpenId, initialPostId, publicShareBaseUrl, siteHandle }: { document: SiteDocument; profiles?: ProfileEntityV2[]; profileIdsByWindow?: Record<string, string>; profileDirectory?: ProfileDirectoryEntry[]; initialOpenId?: string; initialPostId?: string; publicShareBaseUrl?: string; siteHandle?: string }) {
+  const [runtime, setRuntime] = useState<RuntimeMap>(() => initialRuntime(document, initialOpenId));
   const desktopRef = useRef<HTMLDivElement | null>(null);
   const gesture = useRef<Gesture | null>(null);
+  const tv = useThemeView(document.theme);
+  const music = useMusicPlayback();
+
+  useEffect(() => () => musicPlayback.stopAll(), []);
 
   const topZ = useMemo(
     () => Math.max(0, ...Object.values(runtime).filter((item) => item.status === "open").map((item) => item.z)),
@@ -72,6 +81,7 @@ export function VisitorDesktop({ document }: { document: SiteDocument }) {
   }
 
   function close(id: string) {
+    musicPlayback.stopWindow(id);
     setRuntime((current) => current[id] ? { ...current, [id]: { ...current[id], status: "closed", maximized: false } } : current);
   }
 
@@ -177,7 +187,7 @@ export function VisitorDesktop({ document }: { document: SiteDocument }) {
   }
 
   return (
-    <div ref={desktopRef} className="visitor-desktop">
+    <div ref={desktopRef} className="visitor-desktop" style={{ fontFamily: tv.fontFamily, color: tv.text }}>
       {document.windows.map((window, index) => {
         const layout = window.layout.desktop;
         const iconX = layout.iconX ?? 16 + Math.floor(index / 7) * 88;
@@ -186,12 +196,12 @@ export function VisitorDesktop({ document }: { document: SiteDocument }) {
           <button
             key={"desktop-icon-" + window.id}
             type="button"
-            className="desktop-file visitor-icon"
+            className="deskicon visitor-icon"
             style={{ left: iconX, top: iconY }}
             onClick={() => openWindow(window.id)}
           >
-            <span className="file-icon" />
-            <small>{window.title}</small>
+            <span className="deskicon-tile" style={{ background: tv.tileBg, boxShadow: tv.tileShadow }}><Icon name={window.icon} size={32} /></span>
+            <small className="deskicon-label" style={{ background: tv.labelBg, color: tv.labelColor, border: tv.labelBorder, borderRadius: tv.labelRadius, textShadow: tv.labelShadow }}>{window.title}</small>
           </button>
         );
       })}
@@ -217,6 +227,7 @@ export function VisitorDesktop({ document }: { document: SiteDocument }) {
             <RetroWindow
               title={window.title}
               theme={document.theme}
+              appearance={window.appearance}
               active={state.z === topZ}
               maximized={state.maximized}
               interactiveControls
@@ -225,29 +236,25 @@ export function VisitorDesktop({ document }: { document: SiteDocument }) {
               onClose={() => close(window.id)}
               style={{ height: "100%" }}
             >
-              <WindowRenderer window={window} theme={document.theme} onOpenWindow={openWindow} />
+              <WindowRenderer window={window} theme={document.theme} onOpenWindow={openWindow} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialPostId={window.id === initialOpenId ? initialPostId : undefined} publicShareBaseUrl={publicShareBaseUrl} siteHandle={siteHandle} />
             </RetroWindow>
             {!state.maximized ? <span className="window-resize-handle" aria-hidden="true" /> : null}
           </div>
         );
       })}
 
-      <div className="taskbar visitor-taskbar" style={{ background: document.theme.taskbar }}>
-        <button type="button" className="start-button">開始</button>
-        <div className="visitor-task-buttons">
-          {document.windows.filter((window) => runtime[window.id]?.status !== "closed").map((window) => (
-            <button
-              key={window.id}
-              type="button"
-              className={runtime[window.id]?.status === "open" ? "active" : ""}
-              onClick={() => taskbarToggle(window.id)}
-            >
-              {window.title}
-            </button>
-          ))}
-        </div>
-        <span className="visitor-clock">{document.siteName}</span>
-      </div>
+      <DesktopTaskbar
+        document={document}
+        visitor
+        tasks={document.windows.map((desktopWindow) => ({
+          window: desktopWindow,
+          visible: runtime[desktopWindow.id]?.status !== "closed",
+          active: runtime[desktopWindow.id]?.status === "open" && runtime[desktopWindow.id]?.z === topZ,
+          statusLabel: music.windowId === desktopWindow.id && music.status === "playing" ? "播放中" : undefined
+        }))}
+        onOpen={openWindow}
+        onToggle={taskbarToggle}
+      />
     </div>
   );
 }

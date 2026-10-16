@@ -1,13 +1,18 @@
 import { create } from "zustand";
-import type { DesktopWindow, SiteDocument } from "@retrodesk/shared";
-import { makeWindow } from "@retrodesk/shared";
+import { mergeLegacyDocumentIntoV2, type DesktopWindow, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
+import { createWindow } from "../modules/registry";
+import type { SiteAccessRole } from "../../lib/collaboration";
 
 export type SaveStatus = "idle" | "dirty" | "saving" | "saved" | "error";
 
 type EditorState = {
   siteId: string | null;
+  accessRole: SiteAccessRole;
   username: string;
   document: SiteDocument | null;
+  versionedDocument: SiteDocumentV2Input | null;
+  versionedPast: SiteDocumentV2Input[];
+  versionedFuture: SiteDocumentV2Input[];
   lastSavedDocument: SiteDocument | null;
   publishedDocument: SiteDocument | null;
   publishedVersion: number | null;
@@ -23,10 +28,14 @@ type EditorState = {
     document: SiteDocument,
     version: number,
     publishedDocument: SiteDocument | null,
-    publishedVersion: number | null
+    publishedVersion: number | null,
+    accessRole: SiteAccessRole
   ) => void;
   setSaveStatus: (status: SaveStatus) => void;
   markSaved: (version: number, savedDocument: SiteDocument) => void;
+  setVersionedDocument: (document: SiteDocumentV2Input | null) => void;
+  /** Replace the legacy render projection and canonical v2 snapshot atomically. */
+  replaceDocument: (document: SiteDocument, historyKey?: string, versionedDocument?: SiteDocumentV2Input) => void;
   retrySave: () => void;
   markPublished: (publishedVersion: number) => void;
   undo: () => void;
@@ -37,6 +46,7 @@ type EditorState = {
   reorderMobile: (id: string, direction: -1 | 1) => void;
   setMobileColumns: (columns: 3 | 4) => void;
   setSiteName: (name: string) => void;
+  setSeoIndexing: (indexing: boolean) => void;
   setTheme: (theme: SiteDocument["theme"]) => void;
   addWindow: (type: DesktopWindow["type"]) => void;
   /** `historyKey`: edits with the same key within 1200ms collapse into one undo step. */
@@ -56,23 +66,31 @@ type EditorState = {
   autoArrangeIcons: (rows: number) => void;
 };
 
-const sameDocument = (a: SiteDocument | null, b: SiteDocument | null) => JSON.stringify(a) === JSON.stringify(b);
+const sameDocument = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
 // Coalesces rapid edits (typing) into one undo step.
 let lastHistoryKey: string | null = null;
 let lastHistoryAt = 0;
 
-function withHistory(state: EditorState, document: SiteDocument, extra: Partial<EditorState> = {}, historyKey?: string) {
-  if (!state.document || sameDocument(state.document, document)) return extra;
+function withHistory(state: EditorState, document: SiteDocument, extra: Partial<EditorState> = {}, historyKey?: string, explicitVersioned?: SiteDocumentV2Input): Partial<EditorState> {
+  const nextVersioned = explicitVersioned ?? (state.versionedDocument && state.siteId
+    ? mergeLegacyDocumentIntoV2(state.versionedDocument, document, { siteId: state.siteId })
+    : undefined);
+  const legacyChanged = !!state.document && !sameDocument(state.document, document);
+  const versionedChanged = !!nextVersioned && !sameDocument(state.versionedDocument, nextVersioned);
+  if (!legacyChanged && !versionedChanged) return extra;
   const now = Date.now();
   const merge = !!historyKey && historyKey === lastHistoryKey && now - lastHistoryAt < 1200 && state.past.length > 0;
   lastHistoryKey = historyKey ?? null;
   lastHistoryAt = now;
-  if (merge) return { ...extra, document, future: [], saveStatus: "dirty" as SaveStatus };
+  if (merge) return { ...extra, document, versionedDocument: nextVersioned ?? state.versionedDocument, future: [], versionedFuture: [], saveStatus: "dirty" as SaveStatus };
   return {
     ...extra,
     document,
-    past: [...state.past, state.document].slice(-50),
+    versionedDocument: nextVersioned ?? state.versionedDocument,
+    versionedPast: nextVersioned && state.versionedDocument ? [...state.versionedPast, state.versionedDocument].slice(-50) : state.versionedPast,
+    versionedFuture: nextVersioned ? [] : state.versionedFuture,
+    past: state.document ? [...state.past, state.document].slice(-50) : state.past,
     future: [],
     saveStatus: "dirty" as SaveStatus
   };
@@ -80,8 +98,12 @@ function withHistory(state: EditorState, document: SiteDocument, extra: Partial<
 
 export const useEditorStore = create<EditorState>((set) => ({
   siteId: null,
+  accessRole: "owner",
   username: "",
   document: null,
+  versionedDocument: null,
+  versionedPast: [],
+  versionedFuture: [],
   lastSavedDocument: null,
   publishedDocument: null,
   publishedVersion: null,
@@ -92,10 +114,14 @@ export const useEditorStore = create<EditorState>((set) => ({
   past: [],
   future: [],
 
-  setSite: (siteId, username, document, version, publishedDocument, publishedVersion) => set({
+  setSite: (siteId, username, document, version, publishedDocument, publishedVersion, accessRole) => set({
     siteId,
+    accessRole,
     username,
     document,
+    versionedDocument: null,
+    versionedPast: [],
+    versionedFuture: [],
     lastSavedDocument: document,
     publishedDocument,
     publishedVersion,
@@ -112,36 +138,46 @@ export const useEditorStore = create<EditorState>((set) => ({
     lastSavedDocument: savedDocument,
     saveStatus: sameDocument(state.document, savedDocument) ? "saved" : "dirty"
   })),
+  setVersionedDocument: (versionedDocument) => set({ versionedDocument, versionedPast: [], versionedFuture: [] }),
+  replaceDocument: (document, historyKey, versionedDocument) => set((state) => withHistory(state, document, {}, historyKey, versionedDocument)),
   retrySave: () => set((state) => state.document ? { saveStatus: "dirty" } : {}),
   markPublished: (publishedVersion) => set((state) => ({
     publishedVersion,
     publishedDocument: state.document,
   })),
   undo: () => set((state) => {
-    if (!state.document || state.past.length === 0) return {};
-    const previous = state.past[state.past.length - 1];
-    const future = [state.document, ...state.future].slice(0, 50);
+    if ((!state.document || state.past.length === 0) && state.versionedPast.length === 0) return {};
+    const previous = state.past[state.past.length - 1] ?? state.document!;
+    const future = state.document ? [state.document, ...state.future].slice(0, 50) : state.future;
     const selectedId = previous.windows.some((window) => window.id === state.selectedId)
       ? state.selectedId
       : previous.windows[0]?.id ?? null;
+    const previousVersioned = state.versionedPast[state.versionedPast.length - 1];
     return {
       document: previous,
-      past: state.past.slice(0, -1),
+      versionedDocument: previousVersioned ?? state.versionedDocument,
+      past: state.past.length ? state.past.slice(0, -1) : state.past,
       future,
+      versionedPast: previousVersioned ? state.versionedPast.slice(0, -1) : state.versionedPast,
+      versionedFuture: previousVersioned && state.versionedDocument ? [state.versionedDocument, ...state.versionedFuture].slice(0, 50) : state.versionedFuture,
       selectedId,
       saveStatus: "dirty"
     };
   }),
   redo: () => set((state) => {
-    if (!state.document || state.future.length === 0) return {};
-    const next = state.future[0];
+    if ((!state.document || state.future.length === 0) && state.versionedFuture.length === 0) return {};
+    const next = state.future[0] ?? state.document!;
     const selectedId = next.windows.some((window) => window.id === state.selectedId)
       ? state.selectedId
       : next.windows[0]?.id ?? null;
+    const nextVersioned = state.versionedFuture[0];
     return {
       document: next,
-      past: [...state.past, state.document].slice(-50),
-      future: state.future.slice(1),
+      versionedDocument: nextVersioned ?? state.versionedDocument,
+      past: state.document ? [...state.past, state.document].slice(-50) : state.past,
+      future: state.future.length ? state.future.slice(1) : state.future,
+      versionedPast: nextVersioned && state.versionedDocument ? [...state.versionedPast, state.versionedDocument].slice(-50) : state.versionedPast,
+      versionedFuture: nextVersioned ? state.versionedFuture.slice(1) : state.versionedFuture,
       selectedId,
       saveStatus: "dirty"
     };
@@ -204,12 +240,15 @@ export const useEditorStore = create<EditorState>((set) => ({
   setSiteName: (siteName) => set((state) => state.document
     ? withHistory(state, { ...state.document, siteName })
     : {}),
+  setSeoIndexing: (indexing) => set((state) => state.document && state.versionedDocument
+    ? withHistory(state, state.document, {}, undefined, { ...state.versionedDocument, seo: { indexing } })
+    : {}),
   setTheme: (theme) => set((state) => state.document
     ? withHistory(state, { ...state.document, theme })
     : {}),
   addWindow: (type) => set((state) => {
     if (!state.document) return {};
-    const window = makeWindow(type, state.document.windows.length);
+    const window = createWindow(type, state.document.windows.length);
     return withHistory(
       state,
       { ...state.document, windows: [...state.document.windows, window] },

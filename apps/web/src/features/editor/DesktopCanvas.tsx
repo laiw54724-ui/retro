@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
-import type { DesktopWindow } from "@retrodesk/shared";
+import type { CollectionEntityV2, DesktopWindow, PostEntityV2, ProfileEntityV2, SiteDocumentV2Input } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { RetroWindow } from "../../components/RetroWindow";
-import { themeView } from "../../lib/themeView";
+import { useThemeView } from "../../lib/themeView";
 import { WindowRenderer } from "../site/WindowRenderer";
+import { DesktopTaskbar } from "../site/DesktopTaskbar";
 import { useEditorStore } from "./store";
+import type { ProfileDirectoryEntry } from "../modules/types";
+import { musicPlayback, useMusicPlayback } from "../modules/music/audioCoordinator";
 
 const TASKBAR_H = 36;
 const GRID = 8;
@@ -21,21 +24,36 @@ function setGeo(el: HTMLElement, text: string) {
 
 type Props = {
   siteId?: string;
-  upload?: (file: File, kind?: "image" | "icon") => Promise<string | null>;
+  upload?: (file: File, kind?: "image" | "icon" | "audio") => Promise<string | null>;
+  profiles?: ProfileEntityV2[];
+  posts?: PostEntityV2[];
+  collections?: CollectionEntityV2[];
+  profileId?: string;
+  profileIdsByWindow?: Record<string, string>;
+  onProfileSelect?: (id: string, windowId?: string) => void;
+  onProfileAdd?: (windowId?: string) => void;
+  onProfileDuplicate?: (id: string, windowId?: string) => void;
+  onProfileChange?: (profileId: string, patch: Record<string, unknown>, historyKey?: string) => void;
+  onProfileDelete?: (profileId: string, retargetProfileId?: string) => void;
+  profileDeleteBlocked?: boolean;
+  profileDeleteGuardById?: Record<string, { windowTitles: string[]; postIds: string[] }>;
+  profileDirectory?: ProfileDirectoryEntry[];
+  updateContent?: (recipe: (document: SiteDocumentV2Input) => SiteDocumentV2Input, historyKey?: string) => void;
+  socialDocument?: SiteDocumentV2Input;
 };
 
-export function DesktopCanvas({ siteId, upload }: Props) {
+export function DesktopCanvas({ siteId, upload, profiles, posts, collections, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
   const document = useEditorStore((s) => s.document)!;
   const selectedId = useEditorStore((s) => s.selectedId);
   const view = useEditorStore((s) => s.viewState);
   const layoutMode = useEditorStore((s) => s.layoutMode);
   const snap = useEditorStore((s) => s.snap);
   const store = useEditorStore.getState;
-  const [startOpen, setStartOpen] = useState(false);
   const drag = useRef<Gesture | null>(null);
   const suppressClick = useRef(false);
   const canvasRef = useRef<HTMLDivElement | null>(null);
-  const tv = themeView(document.theme);
+  const tv = useThemeView(document.theme);
+  const music = useMusicPlayback();
   const snapping = layoutMode && snap;
 
   const round = (value: number) => (snapping ? Math.round(value / GRID) * GRID : Math.round(value));
@@ -59,12 +77,13 @@ export function DesktopCanvas({ siteId, upload }: Props) {
     function onKey(event: KeyboardEvent) {
       if (event.key === "Escape") {
         if (store().layoutMode) store().setLayoutMode(false);
-        setStartOpen(false);
       }
     }
     globalThis.addEventListener("keydown", onKey);
     return () => globalThis.removeEventListener("keydown", onKey);
   }, [store]);
+
+  useEffect(() => () => musicPlayback.stopAll(), []);
 
   // ----- window gestures -----
   function windowPointerDown(event: PointerEvent<HTMLDivElement>, win: DesktopWindow) {
@@ -164,13 +183,11 @@ export function DesktopCanvas({ siteId, upload }: Props) {
   const rows = () => Math.max(1, Math.floor((bounds().height - 20) / 94));
   const topZ = Math.max(0, ...document.windows.map((w) => w.layout.desktop.z));
   const selected = document.windows.find((w) => w.id === selectedId);
-  const clockText = new Date().toTimeString().slice(0, 5);
-
   return (
     <div
       ref={canvasRef}
       className={"desktop-canvas" + (layoutMode ? " layout" : "")}
-      onPointerDown={(event) => { if ((event.target as HTMLElement).dataset.bg) { store().select(null); setStartOpen(false); } }}
+      onPointerDown={(event) => { if ((event.target as HTMLElement).dataset.bg) store().select(null); }}
       style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: "center", fontFamily: tv.fontFamily, color: tv.text }}
     >
       {layoutMode && snap ? <div aria-hidden="true" className="grid-overlay" /> : null}
@@ -233,17 +250,18 @@ export function DesktopCanvas({ siteId, upload }: Props) {
               title={win.title}
               icon={win.icon}
               theme={document.theme}
+              appearance={win.appearance}
               active={isSel || layout.z === topZ}
               interactiveControls
               maximized={maximized}
               onMinimize={() => store().setViewState(win.id, "min")}
               onMaximize={() => store().setViewState(win.id, maximized ? null : "max")}
-              onClose={() => store().setViewState(win.id, "closed")}
+              onClose={() => { musicPlayback.stopWindow(win.id); store().setViewState(win.id, "closed"); }}
               titleBarProps={{ onDoubleClick: () => store().setViewState(win.id, maximized ? null : "max"), style: { cursor: layoutMode ? "move" : "default", touchAction: "none" } }}
               style={{ height: "100%" }}
               bodyStyle={{ padding: 0 }}
             >
-              <WindowRenderer window={win} theme={document.theme} editing={!layoutMode} allWindows={document.windows} siteId={siteId} upload={upload} onUpdate={store().updateWindow} />
+              <WindowRenderer window={win} theme={document.theme} editing={!layoutMode} allWindows={document.windows} siteId={siteId} upload={upload} onUpdate={store().updateWindow} profiles={profiles} posts={posts} collections={collections} profileId={profileId} profileIdsByWindow={profileIdsByWindow} onProfileSelect={onProfileSelect} onProfileAdd={onProfileAdd} onProfileDuplicate={onProfileDuplicate} onProfileChange={onProfileChange} onProfileDelete={onProfileDelete} profileDeleteBlocked={profileDeleteBlocked} profileDeleteGuardById={profileDeleteGuardById} profileDirectory={profileDirectory} updateContent={updateContent} socialDocument={socialDocument} />
             </RetroWindow>
             {layoutMode ? <div className="layout-veil"><span className="geo-text">{layout.x}, {layout.y} · {layout.w}×{layout.h}</span></div> : null}
             {!maximized ? <span className="window-resize-handle" aria-label="調整大小" /> : null}
@@ -267,38 +285,20 @@ export function DesktopCanvas({ siteId, upload }: Props) {
         <div className="edit-tag" aria-hidden="true">編輯模式 · 直接點視窗內容編輯</div>
       )}
 
-      {startOpen ? (
-        <div className="start-menu" style={{ background: tv.face, boxShadow: tv.bevel }}>
-          <div className="start-brand" style={{ background: tv.titleBgV }}>{document.siteName}</div>
-          <div className="start-items">
-            {document.windows.map((win) => (
-              <button key={win.id} type="button" className="start-item" style={{ color: tv.text }} onClick={() => { openWindow(win.id); setStartOpen(false); }}>
-                <Icon name={win.icon} size={22} /><span>{win.title}</span>
-              </button>
-            ))}
-            <div className="w98-sep" />
-            <small className="start-credit">Made with Retro Desktop</small>
-          </div>
-        </div>
-      ) : null}
-
-      <div className="taskbar2" style={{ background: tv.taskbar, boxShadow: `inset 0 1px ${tv.light}, inset 0 2px #ffffff` }}>
-        <button type="button" className="start-btn" style={{ background: tv.face, color: tv.text, boxShadow: startOpen ? tv.pressed : tv.bevel }} aria-expanded={startOpen} onClick={() => setStartOpen(!startOpen)}>
-          <Icon name="computer" size={18} />開始
-        </button>
-        <span className="tb-sep" style={{ borderLeft: `1px solid ${tv.shadow}` }} />
-        <div className="task-items">
-          {document.windows.filter((w) => view[w.id] !== "closed").map((win) => {
-            const active = selectedId === win.id && view[win.id] !== "min";
-            return (
-              <button key={win.id} type="button" className="task-item" style={{ background: active ? tv.light : tv.face, color: tv.text, fontWeight: active ? 700 : 400, boxShadow: active ? tv.pressed : tv.bevel }} onClick={() => toggleTask(win)}>
-                <Icon name={win.icon} size={16} /><span>{win.title}</span>
-              </button>
-            );
-          })}
-        </div>
-        <span className="clock" style={{ color: tv.taskbarText, boxShadow: `inset -1px -1px #ffffff, inset 1px 1px ${tv.shadow}` }}>{clockText}</span>
-      </div>
+      <DesktopTaskbar
+        document={document}
+        tasks={document.windows.map((win) => ({
+          window: win,
+          visible: view[win.id] !== "closed",
+          active: selectedId === win.id && view[win.id] !== "min",
+          statusLabel: music.windowId === win.id && music.status === "playing" ? "播放中" : undefined
+        }))}
+        onOpen={openWindow}
+        onToggle={(id) => {
+          const win = document.windows.find((candidate) => candidate.id === id);
+          if (win) toggleTask(win);
+        }}
+      />
     </div>
   );
 }

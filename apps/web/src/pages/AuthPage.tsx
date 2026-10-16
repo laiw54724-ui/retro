@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../app/AuthProvider";
-import { api } from "../lib/api";
+import { api, type SiteListRecord } from "../lib/api";
 import { supabase } from "../lib/supabase";
 import { RetroButton } from "../components/RetroButton";
+import { DesktopHub } from "../features/sites/DesktopHub";
 
 function readOAuthError() {
   const params = new URLSearchParams(window.location.search);
@@ -11,26 +12,33 @@ function readOAuthError() {
   return params.get("error_description") ?? hash.get("error_description") ?? params.get("error") ?? hash.get("error") ?? "";
 }
 
+function readNotice() {
+  return new URLSearchParams(window.location.search).get("notice") ?? "";
+}
+
 export function AuthPage() {
-  const navigate = useNavigate();
   const { loading, user, signOut } = useAuth();
   const [error, setError] = useState(readOAuthError);
+  const [notice] = useState(readNotice);
   const [busy, setBusy] = useState(false);
+  const [sites, setSites] = useState<SiteListRecord[]>([]);
+  const [sitesLoading, setSitesLoading] = useState(false);
 
-  async function openDesktop() {
-    setBusy(true);
+  async function loadDesktops() {
+    setSitesLoading(true);
     setError("");
     try {
-      const { sites } = await api.listSites();
-      navigate(sites.length ? `/editor/${sites[0].id}` : "/onboarding", { replace: true });
+      const result = await api.listSites();
+      setSites(result.sites);
     } catch (cause) {
-      setBusy(false);
       setError(cause instanceof Error ? cause.message : "無法讀取你的桌面");
+    } finally {
+      setSitesLoading(false);
     }
   }
 
   useEffect(() => {
-    if (user && !readOAuthError()) void openDesktop();
+    if (user) void loadDesktops();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
@@ -49,19 +57,12 @@ export function AuthPage() {
 
   return (
     <main className="auth-shell">
-      <section className="retro-panel auth-window">
-        <header className="landing-titlebar">Retro Desktop — {user ? "已登入" : "登入"}</header>
+      <section className={`retro-panel ${user ? "desktop-hub-window" : "auth-window"}`}>
+        <header className="landing-titlebar">Retro Desktop — {user ? "我的桌面" : "登入"}</header>
         {loading ? (
           <p className="info-box">確認登入狀態...</p>
         ) : user ? (
-          <>
-            <p className="info-box">已登入：{user.email}</p>
-            {error ? <p className="error-box">{error}</p> : null}
-            <div className="button-row end">
-              <RetroButton onClick={signOut}>登出</RetroButton>
-              <RetroButton className="primary" disabled={busy} onClick={openDesktop}>{busy ? "開啟中..." : "前往我的桌面"}</RetroButton>
-            </div>
-          </>
+          <DesktopHub email={user.email ?? "已登入帳號"} sites={sites} loading={sitesLoading} error={error} notice={notice} onRetry={() => void loadDesktops()} onSignOut={signOut} />
         ) : (
           <>
             {error ? <p className="error-box">登入失敗：{error}</p> : null}

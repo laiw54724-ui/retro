@@ -13,6 +13,10 @@ bucket_name = "retrodesk-assets-dev"
 [env.staging]
 name = "retrodesk-api-staging"
 
+[env.staging.vars]
+ALLOWED_ORIGINS = "https://retrodesk-staging.pages.dev"
+PUBLIC_ASSET_BASE_URL = "https://retrodesk-api-staging.beibeiz.workers.dev/api/assets"
+
 [[env.staging.r2_buckets]]
 binding = "ASSETS"
 bucket_name = "retrodesk-assets-staging"

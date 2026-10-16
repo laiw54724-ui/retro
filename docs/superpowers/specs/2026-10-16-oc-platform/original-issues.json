@@ -1,0 +1,84 @@
+{
+  "capturedOn": "2026-10-16",
+  "repository": "laiw54724-ui/retro",
+  "note": "更新前的 issue 內容；當時 #18–#28 均無留言、未關閉。",
+  "issues": [
+    {
+      "number": 18,
+      "title": "[Architecture] Extensible desktop app registry and typed content schemas",
+      "state": "OPEN",
+      "comments": [],
+      "body": "## Goal\nIntroduce an app registry for existing and future window modules. Define app id, schema version, icon, capabilities, editor, visitor renderer, migrations and mobile fallback. Reuse current window manager (#3) and editing infrastructure (#2); avoid arbitrary third-party executable plugins.\n\n## Scope & acceptance\nAcceptance: existing five modules remain compatible; new app registered without modifying unrelated window logic; schema migration and round-trip tests; safe visitor read-only rendering.\n\n## Dependencies\nCoordinate with existing #2 (editor/media), #3 (window manager), #4 (history), #5 (mobile) and #7 (security) as applicable."
+    },
+    {
+      "body": "## Goal\nBuild OC-focused Instagram.exe atop existing Retro IG MVP (#2): owner can create multiple fictional character profiles with avatar, bio, pronouns/custom fields, theme, handle unique within site, and select account. Separate fictional persona from real owner identity. Support drafts and public visibility.\n\n## Scope & acceptance\nAcceptance: two+ OC profiles, switch without content leakage, persisted reload, mobile editor, owner authorization tests.\n\n## Dependencies\nCoordinate with existing #2 (editor/media), #3 (window manager), #4 (history), #5 (mobile) and #7 (security) as applicable.",
+      "comments": [],
+      "number": 19,
+      "state": "OPEN",
+      "title": "[OC Instagram] Multi-character profiles and account switching"
+    },
+    {
+      "body": "## Goal\nUpgrade Instagram.exe visual UI: Win95 chrome with polished responsive profile, grid/list views, multi-image posts, alt text, captions, tags, pinned posts, themed highlights and OC/project collections. Use R2 upload workflow from #2, reuse shared media, accessible keyboard controls.\n\n## Scope & acceptance\nAcceptance: gallery and post CRUD, clear empty states, 320/390/430 mobile, image loading and performance tests.\n\n## Dependencies\nCoordinate with existing #2 (editor/media), #3 (window manager), #4 (history), #5 (mobile) and #7 (security) as applicable.",
+      "comments": [],
+      "number": 20,
+      "state": "OPEN",
+      "title": "[OC Instagram] Posts, galleries, profile layouts and OC collections"
+    },
+    {
+      "body": "## Goal\nDesign separate fictional likes/follows/comments (creator-authored worldbuilding) vs real visitor interactions; label simulated stats. Specify permission model for multi-owner collaborative worlds, invites, roles, moderation and abuse prevention before implementation. Phase 1: local fictional interactions only; phase 2: collaboration behind explicit opt-in.\n\n## Scope & acceptance\nAcceptance: fictional vs real data never confused, permissions documented, IDOR regression tests, no public user-generated comments without moderation controls.\n\n## Dependencies\nCoordinate with existing #2 (editor/media), #3 (window manager), #4 (history), #5 (mobile) and #7 (security) as applicable.",
+      "comments": [],
+      "number": 21,
+      "state": "OPEN",
+      "title": "[OC Instagram] Fictional social interactions and collaborative OC worlds"
+    },
+    {
+      "body": "## Goal\nCreate Music Player.exe with cover art, track metadata, progress/seek, play/pause, playlist, optional OC theme-song associations, volume, and accessible controls. Start with user-provided permitted audio or external links; do not bundle copyrighted music. Handle autoplay restrictions and mobile.\n\n## Scope & acceptance\nAcceptance: persist playlists, media error states, pause on navigation policy, keyboard and mobile acceptance.\n\n## Dependencies\nCoordinate with existing #2 (editor/media), #3 (window manager), #4 (history), #5 (mobile) and #7 (security) as applicable.",
+      "comments": [],
+      "number": 22,
+      "state": "OPEN",
+      "title": "[Apps] Retro Music Player with character playlists"
+    },
+    {
+      "body": "## Goal\nCreate Paint.exe-inspired visual composition editor for images, text, stickers and moodboards; not a full raster editor. Reuse R2 uploads and shared document model. Provide move/resize/layer, undo/redo integration (#4), export PNG with safe asset handling.\n\n## Scope & acceptance\nAcceptance: create/edit/save/reopen/export; touch-friendly controls; no loss on autosave conflict.\n\n## Dependencies\nCoordinate with existing #2 (editor/media), #3 (window manager), #4 (history), #5 (mobile) and #7 (security) as applicable.",
+      "comments": [],
+      "number": 23,
+      "state": "OPEN",
+      "title": "[Apps] Paint-style moodboard and OC profile canvas"
+    },
+    {
+      "body": "## Goal\nBuild Explorer.exe with nested folders, shortcuts to existing documents/galleries/OC profiles, breadcrumbs, search, move/reorder and public/private scope. Avoid duplicating actual R2 media on shortcut creation. Enforce cycle prevention, owner scope and depth safeguards.\n\n## Scope & acceptance\nAcceptance: nested folders persist; link targets resolve; no unauthorized access; mobile navigation usable.\n\n## Dependencies\nCoordinate with existing #2 (editor/media), #3 (window manager), #4 (history), #5 (mobile) and #7 (security) as applicable.",
+      "comments": [],
+      "number": 24,
+      "state": "OPEN",
+      "title": "[Apps] Explorer folders and OC worldbuilding library"
+    },
+    {
+      "body": "## Goal\nBuild lightweight optional apps: Minesweeper, customizable cat dialog, visitor guestbook and decorative desktop widgets. Separate static decorative content from user-submitted content. Guestbook requires spam/rate-limit, report/delete/moderation, privacy defaults.\n\n## Scope & acceptance\nAcceptance: app toggles, responsive windows, reduced-motion support, visitor interaction never changes owner's draft.\n\n## Dependencies\nCoordinate with existing #2 (editor/media), #3 (window manager), #4 (history), #5 (mobile) and #7 (security) as applicable.",
+      "comments": [],
+      "number": 25,
+      "state": "OPEN",
+      "title": "[Fun] Retro desktop mini-apps and guestbook"
+    },
+    {
+      "body": "## Goal\nEvaluate 98.css, react95, pixelarticons for selective adoption; implement theme tokens for classic gray/blue, colorful Y2K, pixel style and per-app overrides. Avoid global CSS collisions; ensure contrast, zoom, keyboard focus, mobile fallbacks.\n\n## Scope & acceptance\nAcceptance: theme preview and persistence, visual regression, license attribution for reused dependencies.\n\n## Dependencies\nCoordinate with existing #2 (editor/media), #3 (window manager), #4 (history), #5 (mobile) and #7 (security) as applicable.",
+      "comments": [],
+      "number": 26,
+      "state": "OPEN",
+      "title": "[Design] Retro themes and accessible Win95 design tokens"
+    },
+    {
+      "body": "## Goal\nPrepare repo open-source release: choose project license, README architecture/setup, CONTRIBUTING, CODE_OF_CONDUCT, SECURITY.md, issue/PR templates, attribution manifest, assets rights policy. Audit Windows logos/icons/fonts, Instagram marks, reference screenshots and user uploads; do not redistribute unlicensed assets. Document Cloudflare/Supabase local setup without secrets.\n\n## Scope & acceptance\nAcceptance: clean-room assets, dependency/license inventory, contributor setup verified, no secrets in history.\n\n## Dependencies\nCoordinate with existing #2 (editor/media), #3 (window manager), #4 (history), #5 (mobile) and #7 (security) as applicable.",
+      "comments": [],
+      "number": 27,
+      "state": "OPEN",
+      "title": "[Open Source] Licensing, third-party assets and contribution workflow"
+    },
+    {
+      "body": "## Goal\nPublic deep links to OC profile/posts/world collections, social previews/OG image, accessible SEO metadata and creator-controlled indexing. Add structured export of OC profiles and post metadata plus media manifest; respect private visibility and R2 permissions.\n\n## Scope & acceptance\nAcceptance: public links work unauthenticated, private content inaccessible, export/import schema documented, preview cards render.\n\n## Dependencies\nCoordinate with existing #2 (editor/media), #3 (window manager), #4 (history), #5 (mobile) and #7 (security) as applicable.",
+      "comments": [],
+      "number": 28,
+      "state": "OPEN",
+      "title": "[Platform] Shareable OC profiles, metadata and export"
+    }
+  ]
+}

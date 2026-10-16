@@ -1,14 +1,19 @@
 import type { ImageCrop } from "@retrodesk/shared";
+import { useAssetSource } from "../lib/assetSource";
 
 export const DEFAULT_CROP: ImageCrop = { x: 50, y: 50, zoom: 1 };
 
 /** Renders an image filling its (overflow:hidden) parent, positioned by a non-destructive crop. */
 export function AvatarImage({ src, crop = DEFAULT_CROP, alt = "" }: { src: string; crop?: ImageCrop; alt?: string }) {
+  const resolved = useAssetSource(src);
+  if (!resolved) return null;
   return (
     <img
-      src={src}
+      src={resolved}
       alt={alt}
       referrerPolicy="no-referrer"
+      loading="lazy"
+      decoding="async"
       draggable={false}
       style={{
         width: "100%",

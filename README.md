@@ -26,9 +26,9 @@ docs           architecture and implementation notes
 
 ## Local setup
 
-1. Install dependencies: `pnpm install`
+1. Install dependencies: `pnpm install --frozen-lockfile`
 2. Copy `.env.example` values into `apps/web/.env.local` and `apps/api/.dev.vars`.
-3. Apply `supabase/migrations/0001_initial.sql` to your Supabase project.
+3. Apply every SQL file in `supabase/migrations` in filename order to your Supabase project.
 4. Create an R2 bucket named `retrodesk-assets` or update `apps/api/wrangler.toml`.
 5. Run `pnpm dev`.
 
@@ -47,3 +47,16 @@ docs           architecture and implementation notes
 - Site mutations are owner-scoped.
 - Draft writes use optimistic version checks.
 - R2 uploads are MIME/size checked and namespaced by user + site.
+
+## Assets and licensing
+
+Third-party assets, fonts, icons, and user uploads have rights and terms
+separate from Retro's source code. See
+[`docs/THIRD_PARTY_ASSETS.md`](docs/THIRD_PARTY_ASSETS.md) for the asset
+boundary and provenance policy.
+
+The repository owner has not yet granted a root source-code license. Do not
+infer redistribution permission from public source access; see
+[`docs/LICENSE_SCOPE.md`](docs/LICENSE_SCOPE.md). Contributor setup and the
+single pre-merge verification gate are documented in
+[`CONTRIBUTING.md`](CONTRIBUTING.md).
