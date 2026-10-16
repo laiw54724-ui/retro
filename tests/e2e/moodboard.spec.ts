@@ -10,9 +10,9 @@ function boardDocument() {
   return { ...structuredClone(documentFixture), windows: [board] } as SiteDocument;
 }
 
-async function openEditor(page: Page) {
+async function openEditor(page: Page, draftDocument = boardDocument()) {
   await page.addInitScript((value) => localStorage.setItem("sb-example-auth-token", JSON.stringify(value)), session);
-  const site = { id: "site-1", username: "demo", site_name: "Demo Desk", draft_document: boardDocument(), draft_version: 1, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-15T00:00:00.000Z", access_role: "owner" };
+  const site = { id: "site-1", username: "demo", site_name: "Demo Desk", draft_document: draftDocument, draft_version: 1, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-15T00:00:00.000Z", access_role: "owner" };
   const saves: Array<{ document: SiteDocument }> = [];
   await page.route("**/api/sites/site-1/assets**", (route) => route.fulfill({ json: { assets: [] } }));
   await page.route("**/api/sites/site-1/draft", (route) => {
@@ -62,4 +62,36 @@ test("visitor moodboard stays readable without horizontal overflow on mobile", a
   await expect(dialog.getByText("角色靈感板", { exact: true })).toBeVisible();
   await expect(dialog.getByRole("list", { name: "Moodboard 內容" })).toContainText("角色靈感板");
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
+});
+
+test("author exports the bounded board as a real PNG after fonts are ready", async ({ page }) => {
+  const document = boardDocument();
+  const board = document.windows[0];
+  if (board.type !== "moodboard") throw new Error("moodboard fixture mismatch");
+  board.content.elements = [
+    { id: "color", kind: "color", x: 20, y: 20, width: 220, height: 160, zOrder: 0, locked: false, color: "#f5b7d2" },
+    { id: "text", kind: "text", x: 40, y: 50, width: 300, height: 120, zOrder: 1, locked: false, content: "角色世界觀", color: "#111111", fontSize: 42, align: "left" }
+  ];
+  await openEditor(page, document);
+  const dialog = page.getByRole("dialog", { name: "Moodboard.exe" });
+  const downloadPromise = page.waitForEvent("download");
+  await dialog.getByRole("button", { name: "匯出 PNG" }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe("Moodboard.exe.png");
+  await expect(dialog.getByRole("status")).toContainText("800×600 PNG");
+});
+
+test("PNG export identifies a cross-origin image that cannot be safely drawn", async ({ page }) => {
+  const document = boardDocument();
+  const board = document.windows[0];
+  if (board.type !== "moodboard") throw new Error("moodboard fixture mismatch");
+  board.content.elements = [{ id: "remote", kind: "image", x: 20, y: 20, width: 220, height: 160, zOrder: 0, locked: false, src: "https://images.example.test/oc.png", srcUrl: "", alt: "外站角色圖" }];
+  const pixel = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lm5+WQAAAABJRU5ErkJggg==", "base64");
+  await page.route("https://images.example.test/oc.png", (route) => route.fulfill({ status: 200, contentType: "image/png", body: pixel }));
+  await openEditor(page, document);
+  const dialog = page.getByRole("dialog", { name: "Moodboard.exe" });
+  await expect(dialog.locator(".moodboard-image")).toBeVisible();
+  await dialog.getByRole("button", { name: "匯出 PNG" }).click();
+  await expect(dialog.getByRole("status")).toContainText("外站角色圖");
+  await expect(dialog.getByRole("status")).toContainText("改用已上傳且允許匯出的圖片");
 });

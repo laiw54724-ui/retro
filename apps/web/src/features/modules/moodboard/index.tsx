@@ -2,6 +2,7 @@ import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react"
 import type { MoodboardElement } from "@retrodesk/shared";
 import { FilePick, SafeImg } from "../ui";
 import type { ModuleProps } from "../types";
+import { downloadMoodboardPng, exportMoodboardPng } from "./export";
 
 const newId = () => globalThis.crypto?.randomUUID?.() ?? `board-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
@@ -26,7 +27,7 @@ export function MoodboardView({ window }: ModuleProps<"moodboard">) {
   return (
     <div className="moodboard-view">
       <div className="moodboard-stage" style={{ aspectRatio: `${width}/${height}`, background }} aria-label="Moodboard 畫布">
-        {[...elements].sort((a, b) => a.zOrder - b.zOrder).map((element) => <div key={element.id} className={`moodboard-element ${element.kind}`} style={geometry(element, width, height)}><ElementContent element={element} /></div>)}
+        {[...elements].sort((a, b) => a.zOrder - b.zOrder).map((element) => <div key={element.id} data-moodboard-id={element.id} className={`moodboard-element ${element.kind}`} style={geometry(element, width, height)}><ElementContent element={element} /></div>)}
       </div>
       <ul className="sr-only" aria-label="Moodboard 內容">{elements.map((element) => <li key={element.id}>{label(element)}</li>)}</ul>
     </div>
@@ -36,6 +37,8 @@ export function MoodboardView({ window }: ModuleProps<"moodboard">) {
 export function MoodboardInlineEditor({ window, ctx, update }: ModuleProps<"moodboard">) {
   const [selectedId, setSelectedId] = useState<string | null>(window.content.elements[0]?.id ?? null);
   const drag = useRef<{ id: string; startX: number; startY: number; x: number; y: number } | null>(null);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const [exportStatus, setExportStatus] = useState("");
   const content = window.content;
   const selected = content.elements.find((element) => element.id === selectedId) ?? null;
   const setElements = (recipe: (elements: MoodboardElement[]) => MoodboardElement[], historyKey?: string) => update((current) => ({ ...current, content: { ...current.content, elements: recipe(current.content.elements) } }), historyKey);
@@ -86,6 +89,14 @@ export function MoodboardInlineEditor({ window, ctx, update }: ModuleProps<"mood
     if (!selected || selected.locked) return;
     patch(selected.id, { width: clamp(selected.width + delta, 24, content.width - selected.x), height: clamp(selected.height + delta, 24, content.height - selected.y) });
   }
+  async function exportPng() {
+    if (!stageRef.current) return;
+    setExportStatus("正在準備 PNG…");
+    const result = await exportMoodboardPng(content, stageRef.current);
+    if (!result.ok) { setExportStatus(`無法匯出：${result.blocked.join("、")}。請改用已上傳且允許匯出的圖片。`); return; }
+    downloadMoodboardPng(result.blob, window.title);
+    setExportStatus(`已匯出 ${content.width}×${content.height} PNG`);
+  }
 
   return (
     <div className="moodboard-editor">
@@ -94,11 +105,13 @@ export function MoodboardInlineEditor({ window, ctx, update }: ModuleProps<"mood
         <button type="button" className="w98-btn" onClick={() => add("color")}>色塊</button>
         <FilePick className="w98-btn" onFiles={(files) => void addImage(files[0])}>圖片…</FilePick>
         <label>背景 <input aria-label="畫布背景色" type="color" value={content.background} onChange={(event) => update((current) => ({ ...current, content: { ...current.content, background: event.target.value } }))} /></label>
+        <button type="button" className="w98-btn" onClick={() => void exportPng()}>匯出 PNG</button>
         <span>{content.elements.length}/100</span>
+        {exportStatus ? <span role="status" className="moodboard-export-status">{exportStatus}</span> : null}
       </div>
       <div className="moodboard-workspace">
-        <div className="moodboard-stage editing" style={{ aspectRatio: `${content.width}/${content.height}`, background: content.background }} onPointerDown={() => setSelectedId(null)}>
-          {[...content.elements].sort((a, b) => a.zOrder - b.zOrder).map((element) => <button key={element.id} type="button" aria-label={`選取${label(element)}`} aria-pressed={selectedId === element.id} className={`moodboard-element ${element.kind}${selectedId === element.id ? " selected" : ""}${element.locked ? " locked" : ""}`} style={geometry(element, content.width, content.height)} onPointerDown={(event) => pointerDown(event, element)} onPointerMove={pointerMove} onPointerUp={() => { drag.current = null; }} onPointerCancel={() => { drag.current = null; }}><ElementContent element={element} /></button>)}
+        <div ref={stageRef} className="moodboard-stage editing" style={{ aspectRatio: `${content.width}/${content.height}`, background: content.background }} onPointerDown={() => setSelectedId(null)}>
+          {[...content.elements].sort((a, b) => a.zOrder - b.zOrder).map((element) => <button key={element.id} type="button" data-moodboard-id={element.id} aria-label={`選取${label(element)}`} aria-pressed={selectedId === element.id} className={`moodboard-element ${element.kind}${selectedId === element.id ? " selected" : ""}${element.locked ? " locked" : ""}`} style={geometry(element, content.width, content.height)} onPointerDown={(event) => pointerDown(event, element)} onPointerMove={pointerMove} onPointerUp={() => { drag.current = null; }} onPointerCancel={() => { drag.current = null; }}><ElementContent element={element} /></button>)}
         </div>
         <aside className="moodboard-inspector" aria-label="選取物件屬性">
           {selected ? <>
