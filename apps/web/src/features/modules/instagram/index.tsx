@@ -90,11 +90,9 @@ export function IgInlineEditor(props: ModuleProps<"instagram">) {
         ))}
       </div>
 
-      {tab === "edit" &&
-      currentProfile &&
-      props.ctx.profiles &&
-      props.ctx.onProfileChange ? (
-        <div className="ig-profile-tools">
+      {tab === "edit" ? (
+        <div className="ig-edit-scroll w98-scroll" tabIndex={0} aria-label="Instagram 編輯內容">
+        {currentProfile && props.ctx.profiles && props.ctx.onProfileChange ? <div className="ig-profile-tools">
           <ProfileSwitcher
             profiles={props.ctx.profiles}
             currentId={currentProfile.id}
@@ -155,19 +153,19 @@ export function IgInlineEditor(props: ModuleProps<"instagram">) {
               </button>
             </div>
           ) : null}
-        </div>
-      ) : null}
-
-      <div className="ig-frame-inner">
-        {tab === "edit" ? (
+        </div> : null}
+        <div className="ig-frame-inner ig-frame-inner-edit">
           <IgEditForm {...props}>
             <CanonicalHighlightEditor props={props} />
             <CanonicalPostEditor props={props} />
           </IgEditForm>
-        ) : (
+        </div>
+        </div>
+      ) : (
+        <div className="ig-frame-inner">
           <IgPreview window={props.window} ctx={props.ctx} />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -21,9 +21,14 @@ test("legacy asset warning identifies each asset and refreshes after v2 migratio
   const site = { id: "site-1", username: "demo", site_name: "D", draft_document: draft, draft_version: 2, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-16T00:00:00.000Z" };
 
   await page.route("**/api/sites/site-1/assets", (route) => route.fulfill({ json: { assets: inventory } }));
+  await page.route("**/api/sites/site-1/assets/*", (route) => {
+    const id = route.request().url().split("/").at(-1);
+    inventory = inventory.filter((asset) => asset.id !== id);
+    return route.fulfill({ status: 204, body: "" });
+  });
   await page.route("**/api/sites/site-1/assets/migrate", (route) => {
     inventory = inventory.map((asset) => ({ ...asset, url: `retro-asset:${asset.id}`, storageScope: "draft_private", migrationStatus: "pending", migrationRequired: true, publicCopyRemaining: true }));
-    return route.fulfill({ json: { version: 3, document: migratedDocument, migratedCount: 3, cleanupWarnings: ids } });
+    return route.fulfill({ json: { version: 3, document: migratedDocument, migratedCount: inventory.length, cleanupWarnings: inventory.map((asset) => asset.id) } });
   });
   await page.route("**/api/sites/site-1/draft", (route) => route.fulfill({ json: { version: 3, updatedAt: "2026-10-16T00:01:00.000Z" } }));
   await page.route("**/api/sites/site-1", (route) => route.fulfill({ json: { site } }));
@@ -43,9 +48,13 @@ test("legacy asset warning identifies each asset and refreshes after v2 migratio
   await expect(dialog.getByText("未使用舊圖")).toBeVisible();
   await expect(dialog.getByText("草稿中沒有引用（可考慮刪除）")).toBeVisible();
   await expect(dialog.getByText(urls[2])).toBeVisible();
+  page.once("dialog", (prompt) => prompt.accept());
+  await dialog.getByRole("button", { name: "刪除未使用素材" }).click();
+  await expect(dialog.getByText("未使用舊圖")).toHaveCount(0);
+  await expect(page.getByText("有 2 個舊素材仍是公開網址。")).toBeVisible();
 
-  await dialog.getByRole("button", { name: "轉為私有（3）" }).click();
-  await expect(page.getByText("3 個舊公開副本因已發布版本仍在使用，暫時保留。")).toBeVisible();
-  await expect(dialog.getByText("私有預覽已完成，舊公開副本待清理")).toHaveCount(3);
+  await dialog.getByRole("button", { name: "轉為私有（2）" }).click();
+  await expect(page.getByText("2 個舊公開副本因已發布版本仍在使用，暫時保留。")).toBeVisible();
+  await expect(dialog.getByText("私有預覽已完成，舊公開副本待清理")).toHaveCount(2);
   await expect(dialog.getByText("尚未轉為私有")).toHaveCount(0);
 });

@@ -53,6 +53,7 @@ export function EditorPage() {
   const [assetInventory, setAssetInventory] = useState<AssetRecord[]>([]);
   const [assetInventoryOpen, setAssetInventoryOpen] = useState(false);
   const [migratingAssets, setMigratingAssets] = useState(false);
+  const [deletingAssetId, setDeletingAssetId] = useState<string | null>(null);
   const [versionedDraft, setVersionedDraft] = useState<SiteDocumentV2Input | null>(null);
   const versionedDraftRef = useRef<SiteDocumentV2Input | null>(null);
   versionedDraftRef.current = versionedDraft;
@@ -412,6 +413,23 @@ export function EditorPage() {
     finally { setMigratingAssets(false); }
   }
 
+  async function deleteUnusedAsset(asset: AssetRecord) {
+    if (deletingAssetId || !window.confirm(`確定刪除素材「${asset.name || asset.id}」？刪除後無法復原。`)) return;
+    setDeletingAssetId(asset.id);
+    try {
+      await api.deleteAsset(siteId, asset.id);
+      await refreshAssetInventory();
+      setMessage(`已刪除未使用素材「${asset.name || asset.id}」。`);
+    } catch (error) {
+      const code = error instanceof ApiError ? error.code : "";
+      setMessage(code === "asset_public_copy_pending"
+        ? "這個素材仍有已發布的舊公開副本；請先重新發布，再刪除。"
+        : error instanceof Error ? error.message : "刪除素材失敗");
+    } finally {
+      setDeletingAssetId(null);
+    }
+  }
+
   function updateSelected(recipe: (window: DesktopWindow) => DesktopWindow, historyKey?: string) {
     if (selected) store.updateWindow(selected.id, recipe, historyKey);
   }
@@ -492,6 +510,11 @@ export function EditorPage() {
                 <span className={`asset-status ${asset.storageScope === "legacy_public" ? "needs-migration" : "pending-cleanup"}`}>{asset.storageScope === "legacy_public" ? "尚未轉為私有" : "私有預覽已完成，舊公開副本待清理"}</span>
                 <div className="asset-reference-list">{references.length ? <>使用位置：{references.map((reference) => reference.label).join("、")}</> : "草稿中沒有引用（可考慮刪除）"}</div>
                 <div className="asset-source-url"><span>目前網址：</span><code>{asset.url}</code></div>
+                {!references.length ? <div className="button-row end asset-item-actions">
+                  <RetroButton className="danger" disabled={deletingAssetId === asset.id || !!asset.publicCopyRemaining} onClick={() => void deleteUnusedAsset(asset)}>
+                    {deletingAssetId === asset.id ? "刪除中…" : asset.publicCopyRemaining ? "重新發布後可刪除" : "刪除未使用素材"}
+                  </RetroButton>
+                </div> : <p className="asset-delete-hint">仍在使用中；請先從上列位置移除或替換圖片。</p>}
               </li>)}
             </ul> : <p role="status">目前沒有需要遷移或清理的舊素材。</p>}
             <div className="button-row end">

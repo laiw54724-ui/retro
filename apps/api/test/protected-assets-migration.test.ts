@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { readFileSync as readSource } from "node:fs";
 
 const migration = readFileSync(resolve(process.cwd(), "../../supabase/migrations/0004_protected_draft_assets.sql"), "utf8");
+const migrationFix = readFileSync(resolve(process.cwd(), "../../supabase/migrations/0005_fix_asset_migration_version_update.sql"), "utf8");
 const routeSource = readSource(resolve(process.cwd(), "src/routes/assets.ts"), "utf8");
 
 describe("protected draft asset migration contract", () => {
@@ -43,5 +44,12 @@ describe("protected draft asset migration contract", () => {
     expect(routeSource).toContain("publishedText.includes");
     expect(routeSource).toContain("cleanupWarnings");
     expect(routeSource).toContain("if (!(rows ?? []).length)");
+  });
+
+  it("qualifies the version update to avoid the RETURNS TABLE output-name collision", () => {
+    expect(migrationFix).toContain("create or replace function public.migrate_site_assets_private");
+    expect(migrationFix).toContain("update public.sites as target");
+    expect(migrationFix).toContain("draft_version = target.draft_version + 1");
+    expect(migrationFix).toContain("where target.id = p_site_id and target.owner_id = p_owner_id");
   });
 });

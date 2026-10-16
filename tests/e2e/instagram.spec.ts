@@ -131,6 +131,23 @@ test("desktop Instagram window owns wheel and keyboard scrolling", async ({ page
   await expect.poll(() => scroll.evaluate((node) => node.scrollTop)).toBe(0);
 });
 
+test("desktop Instagram editor owns wheel and keyboard scrolling", async ({ page }) => {
+  const { win } = await openEditor(page);
+  const scroll = win.locator(".ig-edit-scroll");
+  await expect.poll(() => scroll.evaluate((node) => node.scrollHeight > node.clientHeight)).toBe(true);
+
+  await scroll.hover();
+  await page.mouse.wheel(0, 480);
+  await expect.poll(() => scroll.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+
+  await scroll.evaluate((node) => { node.scrollTop = 0; });
+  await scroll.focus();
+  await page.keyboard.press("PageDown");
+  await expect.poll(() => scroll.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+});
+
 test("Win98 keeps window chrome square and OC media circular", async ({ page }) => {
   const { win } = await openEditor(page);
   await win.getByRole("tab", { name: "▶ 預覽互動" }).click();
