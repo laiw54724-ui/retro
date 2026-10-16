@@ -165,7 +165,7 @@ test("Windows icon picker offers curated icons and searchable full library", asy
 test("desktop and mobile add surfaces share the registry modules", async ({ page }) => {
   const saves = await openEditor(page);
   const desktopLabels = await page.locator(".left-panel2 .add-card strong").allTextContents();
-  expect(desktopLabels).toEqual(["文件視窗", "相簿視窗", "連結視窗", "名片／關於我", "復古 IG 個人頁", "音樂播放器"]);
+  expect(desktopLabels).toEqual(["文件視窗", "相簿視窗", "連結視窗", "名片／關於我", "復古 IG 個人頁", "音樂播放器", "Moodboard 畫板", "世界觀資料夾", "掃雷", "角色彈窗", "訪客留言簿"]);
 
   await page.getByRole("button", { name: "手機版" }).click();
   await page.locator(".m-toolbar").getByRole("button", { name: "新增" }).click();

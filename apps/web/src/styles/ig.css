@@ -121,7 +121,7 @@
 .ig-skin-win98 .ig-avatar-ring { background: transparent !important; padding: 3px; box-shadow: var(--w98-raised); }
 .ig-skin-win98 .ig-counts3 { padding: 5px; box-shadow: var(--w98-sunken); background: #fff; }
 .ig-skin-win98 .ig-btn { min-height: 32px; border: 0; background: #c0c0c0 !important; color: #000 !important; box-shadow: var(--w98-raised) !important; }
-.ig-skin-win98 .ig-btn.primary:not([aria-pressed="true"]) { background: var(--ig-profile-accent, #c0c0c0) !important; color: var(--ig-profile-accent-text, #000) !important; }
+.ig-skin-win98 .ig-follow-btn:not([aria-pressed="true"]) { background: var(--ig-profile-accent, #c0c0c0) !important; color: var(--ig-profile-accent-text, #000) !important; }
 .ig-skin-win98 .ig-btn:active, .ig-skin-win98 .ig-btn[aria-pressed="true"] { box-shadow: var(--w98-pressed) !important; }
 .ig-skin-win98 .ig-hls { padding: 5px; background: #fff; box-shadow: var(--w98-sunken); }
 .ig-skin-win98 .ig-feed-hls { margin: 4px; border: 0; background: #c0c0c0; }
