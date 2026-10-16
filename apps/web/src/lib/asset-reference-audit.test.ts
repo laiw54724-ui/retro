@@ -46,4 +46,10 @@ describe("auditAssetReferences", () => {
     expect(result[1].references[0]?.label).toBe("「雪國速寫」媒體第 1 張");
     expect(result[2].references[0]?.label).toBe("精選「冬日旅行」第 1 頁");
   });
+
+  it("names uploaded music assets by window and track", () => {
+    const asset = { ...image("77777777-7777-4777-8777-777777777777"), kind: "audio" as const, mimeType: "audio/mpeg", name: "theme.mp3" };
+    const input = { schemaVersion: 1, windows: [{ title: "Music Player.exe", type: "music", content: { tracks: [{ title: "被被子的主題曲", source: { kind: "uploadedAudio", asset: `retro-asset:${asset.id}` } }] } }] };
+    expect(auditAssetReferences(input as never, [asset])[0].references[0]?.label).toBe("Music Player.exe 的曲目「被被子的主題曲」音訊");
+  });
 });

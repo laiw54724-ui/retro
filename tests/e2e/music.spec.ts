@@ -54,7 +54,11 @@ async function openEditor(page: Page) {
   await page.addInitScript((value) => localStorage.setItem("sb-example-auth-token", JSON.stringify(value)), session);
   const site = { id: "site-1", username: "demo", site_name: "Demo Desk", draft_document: structuredClone(documentFixture), draft_version: 1, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-15T00:00:00.000Z", access_role: "owner" };
   const saves: Array<{ document: SiteDocument }> = [];
-  await page.route("**/api/sites/site-1/assets**", (route) => route.fulfill({ json: { assets: [] } }));
+  const uploadedId = "11111111-1111-4111-8111-111111111111";
+  await page.route(`**/api/sites/site-1/assets/${uploadedId}/content`, (route) => route.fulfill({ contentType: "audio/wav", body: "RIFF0000WAVEfmt " }));
+  await page.route("**/api/sites/site-1/assets", (route) => route.request().method() === "POST"
+    ? route.fulfill({ status: 201, json: { asset: { id: uploadedId, url: `retro-asset:${uploadedId}`, mimeType: "audio/wav", size: 16, kind: "audio", name: "theme" } } })
+    : route.fulfill({ json: { assets: [] } }));
   await page.route("**/api/sites/site-1/draft", (route) => {
     const body = route.request().postDataJSON() as { document: SiteDocument };
     saves.push(body);
@@ -69,6 +73,29 @@ async function openEditor(page: Page) {
   await expect.poll(() => saves.at(-1)?.document.schemaVersion).toBe(2);
   return { saves };
 }
+
+test("author uploads private audio, records rights, saves and reloads the stable reference", async ({ page }) => {
+  await installFakeMedia(page);
+  const { saves } = await openEditor(page);
+  await page.getByRole("button", { name: /音樂播放器/ }).click();
+  const player = page.getByRole("dialog", { name: "Music Player.exe" });
+  await player.getByRole("button", { name: "新增第一首" }).click();
+  const editor = player.locator(".music-track-editor").first();
+  await editor.locator(".music-source-tabs input[type=file]").setInputFiles({ name: "theme.wav", mimeType: "audio/wav", buffer: Buffer.from("RIFF0000WAVEfmt ") });
+  await expect(editor.getByText("檔案會保存在私有草稿")).toBeVisible();
+  await expect(editor.getByRole("button", { name: /試聽上傳檔|正在準備音訊/ })).toBeVisible();
+  await editor.getByLabel("權利說明（發布必填）").fill("本人原創");
+
+  await expect.poll(() => {
+    const music = saves.at(-1)?.document.windows.find((window) => window.type === "music");
+    return music?.type === "music" ? music.content.tracks[0] : null;
+  }).toMatchObject({ source: { kind: "uploadedAudio", asset: "retro-asset:11111111-1111-4111-8111-111111111111" }, rightsNote: "本人原創" });
+
+  await page.reload();
+  const reloaded = page.getByRole("dialog", { name: "Music Player.exe" });
+  await expect(reloaded.getByText("檔案會保存在私有草稿")).toBeVisible();
+  await expect(reloaded.getByLabel("權利說明（發布必填）")).toHaveValue("本人原創");
+});
 
 test("author adds, reorders, deletes and reloads a music playlist", async ({ page }) => {
   const { saves } = await openEditor(page);

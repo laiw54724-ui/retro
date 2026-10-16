@@ -10,7 +10,7 @@ type Props = {
   siteId?: string;
   value: string;
   onChange: (value: string) => void;
-  upload?: (file: File, kind?: "image" | "icon") => Promise<string | null>;
+  upload?: (file: File, kind?: "image" | "icon" | "audio") => Promise<string | null>;
   onDone?: () => void;
   size?: number;
 };

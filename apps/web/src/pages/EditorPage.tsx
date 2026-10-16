@@ -318,13 +318,15 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   if (loadError) return <main className="not-found"><div><h1>無法開啟編輯器</h1><p>{loadError}</p></div></main>;
   if (loading || !store.document) return <div className="boot-screen">Loading desktop...</div>;
 
-  async function uploadImage(file: File, kind: "image" | "icon" = "image"): Promise<string | null> {
-    if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
-      setMessage("無法上傳：請選擇 JPG、PNG、GIF 或 WebP。");
+  async function uploadImage(file: File, kind: "image" | "icon" | "audio" = "image"): Promise<string | null> {
+    const audio = kind === "audio";
+    const allowed = audio ? ["audio/mpeg", "audio/ogg", "audio/wav", "audio/x-wav"] : ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowed.includes(file.type)) {
+      setMessage(audio ? "無法上傳：請選擇 MP3、Ogg 或 WAV。" : "無法上傳：請選擇 JPG、PNG、GIF 或 WebP。");
       return null;
     }
-    if (file.size > 8 * 1024 * 1024) {
-      setMessage("檔案太大：單張 8 MB 以內。");
+    if (file.size > (audio ? 16 : 8) * 1024 * 1024) {
+      setMessage(audio ? "檔案太大：單首 16 MB 以內。" : "檔案太大：單張 8 MB 以內。");
       return null;
     }
     try {
@@ -332,10 +334,12 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       return asset.url;
     } catch (error) {
       const code = error instanceof ApiError ? error.code : "";
-      setMessage(code === "unsupported_media" || code === "invalid_image_bytes"
-        ? "無法上傳：請選擇 JPG、PNG、GIF 或 WebP。"
+      setMessage(code === "site_audio_quota_exceeded"
+        ? "音訊空間已滿：每個網站最多 100 MB。"
+        : code === "unsupported_media" || code === "invalid_image_bytes" || code === "invalid_audio_bytes"
+        ? audio ? "無法上傳：請選擇有效的 MP3、Ogg 或 WAV。" : "無法上傳：請選擇 JPG、PNG、GIF 或 WebP。"
         : code === "file_too_large"
-          ? "檔案太大：單張 8 MB 以內。"
+          ? audio ? "檔案太大：單首 16 MB 以內。" : "檔案太大：單張 8 MB 以內。"
           : "上傳失敗，請再試一次。");
       return null;
     }

@@ -31,6 +31,11 @@ describe("site schema security boundaries", () => {
     document.windows = [music];
     expect(SiteDocumentSchema.safeParse(document).success).toBe(true);
 
+    music.content.tracks[0].source = { kind: "uploadedAudio", asset: "retro-asset:11111111-1111-4111-8111-111111111111" };
+    expect(SiteDocumentSchema.safeParse(document).success).toBe(true);
+    music.content.tracks[0].source = { kind: "uploadedAudio", asset: "retro-asset:not-a-uuid" };
+    expect(SiteDocumentSchema.safeParse(document).success).toBe(false);
+
     music.content.tracks[0].source = { kind: "audioUrl", url: "http://media.example.com/theme.mp3" };
     expect(SiteDocumentSchema.safeParse(document).success).toBe(false);
     music.content.tracks[0].source = { kind: "externalLink", url: "mailto:music@example.com" };
@@ -152,6 +157,18 @@ describe("publish checks", () => {
     const checks = buildPublishChecks(doc);
     expect(checks.find((c) => c.text.includes("連結還沒設定"))?.level).toBe("warn");
     expect(hasBlockingCheck(checks)).toBe(false);
+  });
+
+  it("blocks publishing uploaded audio until a rights note is present", () => {
+    const doc = createStarterDocument("x", "classic98", "card");
+    const music = makeWindow("music");
+    if (music.type !== "music") throw new Error("music factory mismatch");
+    music.content.tracks = [{ id: "track", title: "Theme", artist: "OC", cover: null, coverUrl: "", source: { kind: "uploadedAudio", asset: "retro-asset:11111111-1111-4111-8111-111111111111" }, lyrics: "", rightsNote: "" }];
+    music.content.playlist.trackIds = ["track"];
+    doc.windows.push(music);
+    expect(buildPublishChecks(doc).some((check) => check.level === "error" && check.text.includes("權利說明"))).toBe(true);
+    music.content.tracks[0].rightsNote = "本人原創";
+    expect(buildPublishChecks(doc).some((check) => check.level === "error" && check.text.includes("權利說明"))).toBe(false);
   });
 });
 

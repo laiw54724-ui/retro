@@ -3,8 +3,8 @@ import { parseAssetReference } from "@retrodesk/shared";
 import { supabase } from "./supabase";
 
 const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8787").replace(/\/$/, "");
-type AsyncResolver = (source: string) => Promise<string | null>;
-const AssetSourceContext = createContext<AsyncResolver | null>(null);
+export type AsyncAssetResolver = (source: string) => Promise<string | null>;
+const AssetSourceContext = createContext<AsyncAssetResolver | null>(null);
 
 export function initialAssetSourceValue(source: string | null | undefined): string | null {
   return source && parseAssetReference(source) ? null : source ?? null;
@@ -17,7 +17,7 @@ export function createAssetResolver(input: { fetchBlob: (id: string) => Promise<
   let disposed = false;
   const createUrl = input.createUrl ?? ((blob: Blob) => URL.createObjectURL(blob));
   const revokeUrl = input.revokeUrl ?? ((url: string) => URL.revokeObjectURL(url));
-  const resolve: AsyncResolver = async (source) => {
+  const resolve: AsyncAssetResolver = async (source) => {
     const id = parseAssetReference(source);
     if (!id || disposed) return id ? null : source;
     const cached = cache.get(id);
@@ -32,6 +32,10 @@ export function createAssetResolver(input: { fetchBlob: (id: string) => Promise<
     pending.set(id, request); return request;
   };
   return { resolve, dispose: () => { disposed = true; for (const url of urls) revokeUrl(url); urls.clear(); cache.clear(); pending.clear(); } };
+}
+
+export function useAssetResolver(): AsyncAssetResolver | null {
+  return useContext(AssetSourceContext);
 }
 
 export function AssetSourceProvider({ siteId, children }: { siteId: string; children: ReactNode }) {

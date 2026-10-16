@@ -19,7 +19,7 @@ export type SiteRecord = {
 
 export type SiteListRecord = Pick<SiteRecord, "id" | "username" | "site_name" | "draft_version" | "published_version" | "published_at" | "updated_at" | "access_role">;
 
-export type AssetKind = "image" | "icon";
+export type AssetKind = "image" | "icon" | "audio";
 export type PublishResult = { publishedVersion: number; publishedAt: string; url: string; artifactStatus: "synced" | "failed"; retryable: boolean; artifactKey?: string; warning?: string };
 export type AssetRecord = { id: string; url: string; mimeType: string; size: number; kind: AssetKind; name: string; createdAt: string; storageScope?: "legacy_public" | "draft_private"; migrationStatus?: string; migrationRequired?: boolean; publicCopyRemaining?: boolean };
 

@@ -3,11 +3,13 @@ import type { MusicTrack } from "@retrodesk/shared";
 import { FilePick, ImageUrlField, MiniBtn, SafeImg } from "../ui";
 import { moveById, type ModuleProps } from "../types";
 import { musicPlayback, useMusicPlayback } from "./audioCoordinator";
+import { useAssetResolver, useAssetSource } from "../../../lib/assetSource";
 
 const newId = () => globalThis.crypto?.randomUUID?.() ?? `track-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-const playable = (track: MusicTrack) => {
-  if (track.source.kind !== "audioUrl") return false;
-  try { return new URL(track.source.url).protocol === "https:"; } catch { return false; }
+const playableUrl = (url: string | null | undefined) => {
+  if (!url) return false;
+  if (url.startsWith("blob:")) return true;
+  try { return new URL(url).protocol === "https:"; } catch { return false; }
 };
 const formatTime = (seconds: number | null) => {
   if (seconds === null || !Number.isFinite(seconds)) return "--:--";
@@ -27,6 +29,11 @@ export function MusicView({ window, ctx }: ModuleProps<"music">) {
   const activeForWindow = playback.windowId === window.id;
   const [selectedId, setSelectedId] = useState(() => tracks[0]?.id ?? "");
   const selected = tracks.find((track) => track.id === (activeForWindow ? playback.trackId : selectedId)) ?? tracks[0];
+  const uploadedSource = selected?.source.kind === "uploadedAudio" ? selected.source.asset : null;
+  const resolvedUploadedSource = useAssetSource(uploadedSource);
+  const resolveAsset = useAssetResolver();
+  const playbackUrl = selected?.source.kind === "audioUrl" ? selected.source.url : selected?.source.kind === "uploadedAudio" ? resolvedUploadedSource : null;
+  const sourceLink = selected?.source.kind === "uploadedAudio" ? null : selected?.source.url ?? null;
 
   useEffect(() => {
     if (activeForWindow && !tracks.some((track) => track.id === playback.trackId)) musicPlayback.stopWindow(window.id);
@@ -39,9 +46,17 @@ export function MusicView({ window, ctx }: ModuleProps<"music">) {
   const isPlaying = activeForWindow && playback.trackId === selected.id && playback.status === "playing";
   const isLoading = activeForWindow && playback.trackId === selected.id && playback.status === "loading";
   const character = ctx.profileDirectory?.find((entry) => entry.id === selected.characterRef?.id);
-  const selectAndPlay = (next: MusicTrack) => { setSelectedId(next.id); if (playable(next)) void musicPlayback.play(window.id, next.id, next.source.url); };
-  const previous = () => selectAndPlay(tracks[(index - 1 + tracks.length) % tracks.length]);
-  const next = () => selectAndPlay(tracks[(index + 1) % tracks.length]);
+  const selectAndPlay = async (next: MusicTrack) => {
+    setSelectedId(next.id);
+    if (next.source.kind === "audioUrl" && playableUrl(next.source.url)) void musicPlayback.play(window.id, next.id, next.source.url);
+    else if (next.source.kind === "uploadedAudio") {
+      const source = resolveAsset ? await resolveAsset(next.source.asset) : next.source.asset;
+      if (playableUrl(source)) void musicPlayback.play(window.id, next.id, source!);
+      else musicPlayback.stopWindow(window.id);
+    } else musicPlayback.stopWindow(window.id);
+  };
+  const previous = () => void selectAndPlay(tracks[(index - 1 + tracks.length) % tracks.length]);
+  const next = () => void selectAndPlay(tracks[(index + 1) % tracks.length]);
 
   return (
     <div className="music-player">
@@ -57,16 +72,16 @@ export function MusicView({ window, ctx }: ModuleProps<"music">) {
 
       <div className="music-controls" role="group" aria-label="播放控制">
         <button type="button" className="w98-btn music-control" aria-label="上一首" onClick={previous}>|◀</button>
-        {selected.source.kind === "audioUrl" ? (
+        {selected.source.kind !== "externalLink" ? (
           <button
             type="button"
             className="w98-btn music-control music-play"
-            disabled={!playable(selected) || isLoading}
+            disabled={!playableUrl(playbackUrl) || isLoading}
             aria-label={isPlaying ? "暫停" : "播放"}
-            onClick={() => isPlaying ? musicPlayback.pause(window.id) : void musicPlayback.play(window.id, selected.id, selected.source.url)}
+            onClick={() => isPlaying ? musicPlayback.pause(window.id) : playbackUrl ? void musicPlayback.play(window.id, selected.id, playbackUrl) : undefined}
           >{isLoading ? "…" : isPlaying ? "Ⅱ" : "▶"}</button>
         ) : (
-          <button type="button" className="w98-btn music-open" onClick={() => ctx.onLink({ target: "url", url: selected.source.url, label: selected.title })}>開啟原連結 ↗</button>
+          <button type="button" className="w98-btn music-open" onClick={() => ctx.onLink({ target: "url", url: sourceLink ?? undefined, label: selected.title })}>開啟原連結 ↗</button>
         )}
         <button type="button" className="w98-btn music-control" aria-label="下一首" onClick={next}>▶|</button>
       </div>
@@ -79,7 +94,7 @@ export function MusicView({ window, ctx }: ModuleProps<"music">) {
       </div>
 
       {activeForWindow && playback.trackId === selected.id && playback.error ? <div role="alert" className="music-error">{playback.error}</div> : null}
-      {selected.source.url && selected.source.url !== "https://" ? <button type="button" className="music-source-link" onClick={() => ctx.onLink({ target: "url", url: selected.source.url, label: selected.title })}>來源／原連結 ↗</button> : null}
+      {sourceLink && sourceLink !== "https://" ? <button type="button" className="music-source-link" onClick={() => ctx.onLink({ target: "url", url: sourceLink, label: selected.title })}>來源／原連結 ↗</button> : null}
 
       <div className="music-track-list w98-sunken" role="list" aria-label="曲目清單">
         {tracks.map((track, trackIndex) => {
@@ -97,6 +112,11 @@ export function MusicView({ window, ctx }: ModuleProps<"music">) {
       {selected.rightsNote ? <small className="music-rights">權利說明：{selected.rightsNote}</small> : null}
     </div>
   );
+}
+
+function UploadedAudioPreview({ windowId, trackId, source, previewing, loading }: { windowId: string; trackId: string; source: string; previewing: boolean; loading: boolean }) {
+  const resolved = useAssetSource(source);
+  return <button type="button" className="w98-btn music-preview" disabled={!playableUrl(resolved) || loading} onClick={() => previewing ? musicPlayback.pause(windowId) : resolved ? void musicPlayback.play(windowId, trackId, resolved) : undefined}>{previewing ? "Ⅱ 停止試聽" : resolved ? "▶ 試聽上傳檔" : "正在準備音訊…"}</button>;
 }
 export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">) {
   const tracks = orderedTracks(window);
@@ -125,6 +145,11 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
     const stored = await ctx.upload?.(file, "image");
     if (stored) patchTrack(trackId, { cover: stored, coverUrl: "" });
   };
+  const uploadAudio = async (trackId: string, file: File) => {
+    stopPreviewForTrack(trackId);
+    const stored = await ctx.upload?.(file, "audio");
+    if (stored) patchTrackSource(trackId, { kind: "uploadedAudio", asset: stored });
+  };
 
   return (
     <div className="music-editor">
@@ -132,10 +157,11 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
         <label><span className="w98-hint">播放清單名稱</span><input className="w98-input" value={window.content.playlist.title} onChange={(event) => update((current) => ({ ...current, content: { ...current.content, playlist: { ...current.content.playlist, title: event.target.value } } }), `music-playlist-${window.id}`)} /></label>
         <button type="button" className="w98-btn primary" onClick={addTrack}>＋ 新增曲目</button>
       </div>
-      <p className="w98-hint">HTTPS 音訊可在訪客操作後播放；YouTube、Spotify 等平台頁面請選「外部連結」。本版不會抓取或上傳音訊。</p>
+      <p className="w98-hint">可上傳你原創或已獲授權的 MP3／Ogg／WAV（單首 16 MB、每站 100 MB）。YouTube、Spotify 等平台頁面請選「外部連結」，系統不會代抓音訊。</p>
       {!tracks.length ? <div className="music-editor-empty"><strong>還沒有曲目</strong><span>先新增一首，再填入你有權使用的音訊或作品連結。</span><button type="button" className="w98-btn" onClick={addTrack}>新增第一首</button></div> : null}
       {tracks.map((track, index) => {
         const previewing = playback.windowId === window.id && playback.trackId === track.id && playback.status === "playing";
+        const directUrl = track.source.kind === "audioUrl" ? track.source.url : null;
         return (
           <fieldset key={track.id} className="w98-fieldset music-track-editor">
             <legend>{index + 1}. {track.title || "未命名曲目"}</legend>
@@ -153,13 +179,14 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
               <div><FilePick className="w98-btn small" onFiles={(files) => void uploadCover(track.id, files[0])}>上傳封面…</FilePick><ImageUrlField raw={track.coverUrl} label="封面圖片網址" placeholder="https://…" onCommit={(raw, cover) => patchTrack(track.id, { coverUrl: raw, cover })} /></div>
             </div>
             <div className="seg music-source-tabs" role="group" aria-label="來源類型">
+              <FilePick className={`w98-btn grow${track.source.kind === "uploadedAudio" ? " on" : ""}`} accept="audio/mpeg,audio/ogg,audio/wav,.mp3,.ogg,.wav" onFiles={(files) => void uploadAudio(track.id, files[0])}>上傳音訊</FilePick>
               <button type="button" className={`w98-btn grow${track.source.kind === "audioUrl" ? " on" : ""}`} aria-pressed={track.source.kind === "audioUrl"} onClick={() => patchTrackSource(track.id, { kind: "audioUrl", url: "https://" })}>HTTPS 音訊</button>
               <button type="button" className={`w98-btn grow${track.source.kind === "externalLink" ? " on" : ""}`} aria-pressed={track.source.kind === "externalLink"} onClick={() => patchTrackSource(track.id, { kind: "externalLink", url: "https://" })}>外部連結</button>
             </div>
-            <label><span>{track.source.kind === "audioUrl" ? "音訊直連（HTTPS）" : "平台／作品頁連結"}</span><input className="w98-input" value={track.source.url} onChange={(event) => patchTrackSource(track.id, { ...track.source, url: event.target.value }, `music-source-${track.id}`)} /></label>
-            {track.source.kind === "audioUrl" ? <button type="button" className="w98-btn music-preview" disabled={!playable(track) || playback.status === "loading" && playback.trackId === track.id} onClick={() => previewing ? musicPlayback.pause(window.id) : void musicPlayback.play(window.id, track.id, track.source.url)}>{previewing ? "Ⅱ 停止試聽" : "▶ 試聽"}</button> : <span className="w98-hint">訪客會看到「開啟原連結」，不會假裝能在站內播放。</span>}
+            {track.source.kind === "uploadedAudio" ? <div className="music-upload-source"><FilePick className="w98-btn" accept="audio/mpeg,audio/ogg,audio/wav,.mp3,.ogg,.wav" onFiles={(files) => void uploadAudio(track.id, files[0])}>更換音訊檔…</FilePick><span className="w98-hint">檔案會保存在私有草稿；發布時才建立公開版本。</span></div> : <label><span>{track.source.kind === "audioUrl" ? "音訊直連（HTTPS）" : "平台／作品頁連結"}</span><input className="w98-input" value={track.source.url} onChange={(event) => patchTrackSource(track.id, track.source.kind === "audioUrl" ? { kind: "audioUrl", url: event.target.value } : { kind: "externalLink", url: event.target.value }, `music-source-${track.id}`)} /></label>}
+            {track.source.kind === "audioUrl" ? <button type="button" className="w98-btn music-preview" disabled={!playableUrl(directUrl) || playback.status === "loading" && playback.trackId === track.id} onClick={() => previewing ? musicPlayback.pause(window.id) : directUrl ? void musicPlayback.play(window.id, track.id, directUrl) : undefined}>{previewing ? "Ⅱ 停止試聽" : "▶ 試聽"}</button> : track.source.kind === "uploadedAudio" ? <UploadedAudioPreview windowId={window.id} trackId={track.id} source={track.source.asset} previewing={previewing} loading={playback.status === "loading" && playback.trackId === track.id} /> : <span className="w98-hint">訪客會看到「開啟原連結」，不會假裝能在站內播放。</span>}
             <label><span>角色主題曲（選填）</span><select className="w98-input" value={track.characterRef?.id ?? ""} onChange={(event) => patchTrack(track.id, { characterRef: event.target.value && ctx.siteId ? { kind: "profile", siteId: ctx.siteId, id: event.target.value } : undefined })}><option value="">不指定角色</option>{ctx.profiles?.map((profile) => <option key={profile.id} value={profile.id}>{profile.displayName ?? profile.name ?? profile.handle ?? profile.username}</option>)}</select></label>
-            <label><span>權利說明</span><input className="w98-input" value={track.rightsNote} placeholder="例：原創曲／已獲授權" onChange={(event) => patchTrack(track.id, { rightsNote: event.target.value }, `music-rights-${track.id}`)} /></label>
+            <label><span>權利說明{track.source.kind === "uploadedAudio" ? "（發布必填）" : ""}</span><input className="w98-input" value={track.rightsNote} placeholder="例：本人原創／已獲作者授權" aria-required={track.source.kind === "uploadedAudio"} onChange={(event) => patchTrack(track.id, { rightsNote: event.target.value }, `music-rights-${track.id}`)} /></label>
             <label><span>歌詞／文字（選填）</span><textarea className="w98-textarea" rows={4} value={track.lyrics} onChange={(event) => patchTrack(track.id, { lyrics: event.target.value }, `music-lyrics-${track.id}`)} /></label>
           </fieldset>
         );

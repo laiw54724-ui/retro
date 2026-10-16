@@ -158,6 +158,7 @@ export const IgHighlightSchema = z.object({ id: z.string().min(1), title: z.stri
 export const MusicCharacterRefSchema = z.object({ siteId: z.string().trim().min(1).max(160), id: z.string().trim().min(1).max(160), kind: z.literal("profile") });
 export const MusicSourceSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("audioUrl"), url: HttpsAudioUrlSchema }),
+  z.object({ kind: z.literal("uploadedAudio"), asset: z.union([AssetReferenceSchema, HttpsAudioUrlSchema]) }),
   z.object({ kind: z.literal("externalLink"), url: WebUrlSchema })
 ]);
 export const MusicTrackSchema = z.object({

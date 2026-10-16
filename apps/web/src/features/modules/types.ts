@@ -15,8 +15,8 @@ export type ModuleCtx = {
   siteId?: string;
   windows: Array<{ id: string; title: string }>;
   onLink: (action: LinkAction) => void;
-  /** Editor only. Resolves to the stored image URL, or null after showing an error. */
-  upload?: (file: File, kind?: "image" | "icon") => Promise<string | null>;
+  /** Editor only. Resolves to the stable stored asset reference, or null after showing an error. */
+  upload?: (file: File, kind?: "image" | "icon" | "audio") => Promise<string | null>;
   /** Optional boundary for resolving future site-level entities. v1 callers omit it. */
   resolveEntity?: (ref: EntityRef) => unknown | null;
   /** v2 Instagram profile authoring channel; omitted for public/v1 callers. */
@@ -58,7 +58,7 @@ export type ModuleCapabilities = {
   mobile: boolean;
   /** The module can open links through the shared LinkAction boundary. */
   links: boolean;
-  /** The module can use the scoped image/icon upload boundary. */
+  /** The module can use the scoped private asset upload boundary. */
   uploads: boolean;
 };
 

@@ -24,7 +24,7 @@ function setGeo(el: HTMLElement, text: string) {
 
 type Props = {
   siteId?: string;
-  upload?: (file: File, kind?: "image" | "icon") => Promise<string | null>;
+  upload?: (file: File, kind?: "image" | "icon" | "audio") => Promise<string | null>;
   profiles?: ProfileEntityV2[];
   posts?: PostEntityV2[];
   collections?: CollectionEntityV2[];

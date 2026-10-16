@@ -3,7 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const state: {
   role: "editor" | "viewer" | null;
   inserts: Array<Record<string, unknown>>;
-} = { role: "editor", inserts: [] };
+  audioSizes: number[];
+} = { role: "editor", inserts: [], audioSizes: [] };
 
 function queryFor(table: string) {
   const query: any = {
@@ -19,7 +20,7 @@ function queryFor(table: string) {
       if (table === "site_assets") return { data: { id: "asset-a", object_key: "draft/users/owner-a/sites/site-a/asset-a.png", storage_scope: "draft_private", migration_status: "not_required", legacy_object_key: null }, error: null };
       return { data: null, error: null };
     },
-    then: (resolve: (value: unknown) => unknown) => Promise.resolve({ data: null, error: null }).then(resolve)
+    then: (resolve: (value: unknown) => unknown) => Promise.resolve({ data: table === "site_assets" ? state.audioSizes.map((size_bytes) => ({ size_bytes })) : null, error: null }).then(resolve)
   };
   return query;
 }
@@ -32,7 +33,7 @@ vi.mock("../src/lib/supabase", () => ({
 const { assets } = await import("../src/routes/assets");
 
 describe("shared draft asset permissions", () => {
-  beforeEach(() => { state.role = "editor"; state.inserts.length = 0; });
+  beforeEach(() => { state.role = "editor"; state.inserts.length = 0; state.audioSizes.length = 0; });
 
   it("stores editor uploads under the authoritative owner's prefix", async () => {
     const put = vi.fn(async () => undefined);
@@ -42,6 +43,37 @@ describe("shared draft asset permissions", () => {
     expect(response.status).toBe(201);
     expect(put).toHaveBeenCalledWith(expect.stringMatching(/^draft\/users\/owner-a\/sites\/site-a\/.+\.png$/), expect.any(ArrayBuffer), expect.objectContaining({ customMetadata: { ownerId: "owner-a", siteId: "site-a" } }));
     expect(state.inserts[0]).toMatchObject({ site_id: "site-a", owner_id: "owner-a", object_key: expect.stringContaining("draft/users/owner-a/sites/site-a/") });
+  });
+
+  it("validates and stores normalized private audio uploads", async () => {
+    const put = vi.fn(async () => undefined);
+    const body = new FormData();
+    body.set("kind", "audio");
+    body.set("file", new File([new TextEncoder().encode("RIFF0000WAVEfmt ")], "theme.wav", { type: "audio/x-wav" }));
+    const response = await assets.request("/sites/site-a/assets", { method: "POST", body }, { ASSETS: { put, delete: vi.fn() } } as never);
+    expect(response.status).toBe(201);
+    await expect(response.json()).resolves.toMatchObject({ asset: { kind: "audio", mimeType: "audio/wav" } });
+    expect(put).toHaveBeenCalledWith(expect.stringMatching(/^draft\/users\/owner-a\/sites\/site-a\/.+\.wav$/), expect.any(ArrayBuffer), expect.objectContaining({ httpMetadata: { contentType: "audio/wav", cacheControl: "private, no-store" } }));
+    expect(state.inserts[0]).toMatchObject({ kind: "audio", mime_type: "audio/wav" });
+  });
+
+  it("rejects spoofed audio and site quota overflow before writing R2", async () => {
+    const put = vi.fn(async () => undefined);
+    const spoofed = new FormData();
+    spoofed.set("kind", "audio");
+    spoofed.set("file", new File(["<html>"], "fake.mp3", { type: "audio/mpeg" }));
+    const spoofedResponse = await assets.request("/sites/site-a/assets", { method: "POST", body: spoofed }, { ASSETS: { put, delete: vi.fn() } } as never);
+    expect(spoofedResponse.status).toBe(415);
+    await expect(spoofedResponse.json()).resolves.toMatchObject({ error: { code: "invalid_audio_bytes" } });
+
+    state.audioSizes.push(100 * 1024 * 1024);
+    const quota = new FormData();
+    quota.set("kind", "audio");
+    quota.set("file", new File([new TextEncoder().encode("ID3\u0004\u0000")], "theme.mp3", { type: "audio/mpeg" }));
+    const quotaResponse = await assets.request("/sites/site-a/assets", { method: "POST", body: quota }, { ASSETS: { put, delete: vi.fn() } } as never);
+    expect(quotaResponse.status).toBe(413);
+    await expect(quotaResponse.json()).resolves.toMatchObject({ error: { code: "site_audio_quota_exceeded" } });
+    expect(put).not.toHaveBeenCalled();
   });
 
   it("allows viewers to list and preview but not delete", async () => {

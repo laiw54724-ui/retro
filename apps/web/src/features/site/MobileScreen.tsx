@@ -17,7 +17,7 @@ type Props = {
   /** Draw the phone bezel and status bar (preview and editor); the real visitor page is full screen. */
   framed?: boolean;
   siteId?: string;
-  upload?: (file: File, kind?: "image" | "icon") => Promise<string | null>;
+  upload?: (file: File, kind?: "image" | "icon" | "audio") => Promise<string | null>;
   onPreview?: () => void;
   profiles?: ProfileEntityV2[];
   posts?: PostEntityV2[];
@@ -183,7 +183,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   return <div className="visitor-mobile framed"><div className="m-bezel">{body}</div></div>;
 }
 
-function MobileEdit({ window, count, siteId, upload }: { window: DesktopWindow; count: number; siteId?: string; upload?: (file: File, kind?: "image" | "icon") => Promise<string | null> }) {
+function MobileEdit({ window, count, siteId, upload }: { window: DesktopWindow; count: number; siteId?: string; upload?: (file: File, kind?: "image" | "icon" | "audio") => Promise<string | null> }) {
   const store = useEditorStore();
   const patch = (change: Partial<DesktopWindow>, key?: string) => store.updateWindow(window.id, (current) => ({ ...current, ...change }) as DesktopWindow, key);
   return (

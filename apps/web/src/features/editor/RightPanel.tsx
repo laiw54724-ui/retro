@@ -9,7 +9,7 @@ type Props = {
   document: SiteDocument;
   selected: DesktopWindow | null;
   siteId: string;
-  upload?: (file: File, kind?: "image" | "icon") => Promise<string | null>;
+  upload?: (file: File, kind?: "image" | "icon" | "audio") => Promise<string | null>;
   onUpdate: (recipe: (window: DesktopWindow) => DesktopWindow, historyKey?: string) => void;
   onDelete: () => void;
   onDuplicate: () => void;

@@ -14,8 +14,9 @@ app.use("/api/*", async (c, next) => {
   const allowed = parseAllowedOrigins(c.env.ALLOWED_ORIGINS || "");
   return cors({
     origin: (origin) => allowed.has(origin) ? origin : "",
-    allowHeaders: ["Authorization", "Content-Type"],
-    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowHeaders: ["Authorization", "Content-Type", "Range"],
+    allowMethods: ["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"],
+    exposeHeaders: ["Accept-Ranges", "Content-Length", "Content-Range", "Content-Type", "ETag"],
     maxAge: 86400
   })(c, next);
 });

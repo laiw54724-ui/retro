@@ -46,6 +46,10 @@ function describePath(document: AnyRecord, path: Array<string | number>): string
     if (field === "content" && window?.type === "about" && (path[3] === "avatar" || path[3] === "avatarUrl")) return `${windowTitle} 的頭像`;
     if (field === "content" && window?.type === "about" && path[3] === "banner") return `${windowTitle} 的橫幅`;
     if (field === "content" && window?.type === "gallery" && path[3] === "images" && typeof path[4] === "number") return `${windowTitle} 的相簿第 ${path[4] + 1} 張`;
+    if (field === "content" && window?.type === "music" && path[3] === "tracks" && typeof path[4] === "number" && path[5] === "source" && path[6] === "asset") {
+      const track = (content?.tracks as unknown[] | undefined)?.[path[4]];
+      return `${windowTitle} 的曲目「${titleFor(track, `第 ${path[4] + 1} 首`)}」音訊`;
+    }
     if (field === "content" && path[3] === "profile" && path[4] === "avatar") return `${windowTitle} 的頭像`;
     if (field === "content" && path[3] === "profile" && path[4] === "avatarUrl") return `${windowTitle} 的頭像網址`;
     if (field === "content" && path[3] === "profile" && path[4] === "highlights" && typeof path[5] === "number") {

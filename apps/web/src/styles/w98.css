@@ -503,6 +503,7 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 .music-cover-editor { display: flex; align-items: flex-start; gap: 8px; }
 .music-cover-editor > div:last-child { min-width: 0; flex: 1; display: grid; gap: 6px; }
 .music-source-tabs { display: flex; }
+.music-upload-source { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .music-preview { min-height: 38px; justify-self: start; }
 .music-track-editor .w98-textarea { width: 100%; resize: vertical; }
 
@@ -516,7 +517,7 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
   .music-editor-head { grid-template-columns: 1fr; }
   .music-editor-head > .w98-btn { min-height: 44px; }
   .music-cover-editor { flex-direction: column; }
-  .music-source-tabs { display: grid; grid-template-columns: 1fr 1fr; }
+  .music-source-tabs { display: grid; grid-template-columns: 1fr; }
   .music-source-tabs .w98-btn { min-height: 44px; }
 }
 

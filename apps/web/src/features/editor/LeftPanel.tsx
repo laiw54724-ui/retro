@@ -23,7 +23,7 @@ type Props = {
   onToggleVisible: (id: string) => void;
   onMoveLayer: (id: string, direction: -1 | 1) => void;
   onTheme: (theme: RetroTheme) => void;
-  upload?: (file: File, kind?: "image" | "icon") => Promise<string | null>;
+  upload?: (file: File, kind?: "image" | "icon" | "audio") => Promise<string | null>;
   initialTab?: Tab;
 };
 

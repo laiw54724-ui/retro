@@ -13,7 +13,7 @@ export function MiniBtn({ children, label, danger, on, ...rest }: { children: Re
 }
 
 /** Hidden file input wrapped in a button-like label. Resets so picking the same file twice still fires. */
-export function FilePick({ children, onFiles, multiple, className = "mini-btn wide", title }: { children: ReactNode; onFiles: (files: File[]) => void; multiple?: boolean; className?: string; title?: string }) {
+export function FilePick({ children, onFiles, multiple, className = "mini-btn wide", title, accept = "image/jpeg,image/png,image/webp,image/gif" }: { children: ReactNode; onFiles: (files: File[]) => void; multiple?: boolean; className?: string; title?: string; accept?: string }) {
   const id = useId();
   function change(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
@@ -23,7 +23,7 @@ export function FilePick({ children, onFiles, multiple, className = "mini-btn wi
   return (
     <label htmlFor={id} className={className} title={title}>
       {children}
-      <input id={id} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple={multiple} onChange={change} className="visually-hidden" />
+      <input id={id} type="file" accept={accept} multiple={multiple} onChange={change} className="visually-hidden" />
     </label>
   );
 }

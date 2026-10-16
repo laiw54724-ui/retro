@@ -22,6 +22,7 @@ import {
   type DesktopWindow,
   type SiteDocument,
 } from "./site";
+import { AssetReferenceSchema } from "./asset-reference";
 
 const BoundedId = z.string().trim().min(1).max(160);
 /** Canonical OC handles are URL-safe, lower-case labels. Display names remain unrestricted. */
@@ -61,6 +62,7 @@ const StrictThemeSchema = z.object(ThemeSchema.shape).strict();
 const StrictMusicCharacterRefSchema = z.object({ siteId: BoundedId, id: BoundedId, kind: z.literal("profile") }).strict();
 const StrictMusicSourceSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("audioUrl"), url: HttpsAudioUrlSchema }).strict(),
+  z.object({ kind: z.literal("uploadedAudio"), asset: z.union([AssetReferenceSchema, HttpsAudioUrlSchema]) }).strict(),
   z.object({ kind: z.literal("externalLink"), url: WebUrlSchema }).strict()
 ]);
 const StrictMusicTrackSchema = z.object({

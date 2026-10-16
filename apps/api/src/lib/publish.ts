@@ -25,7 +25,7 @@ export async function copyReferencedAssets(
     const row = byId.get(id);
     if (!row) return { ok: false, code: "missing", assetId: id, message: `Referenced asset ${id} was not found` };
     if (row.owner_id !== input.ownerId || row.site_id !== input.siteId) return { ok: false, code: "foreign", assetId: id, message: `Referenced asset ${id} does not belong to this site` };
-    const draftKey = new RegExp(`^draft/users/${escapeRegExp(input.ownerId)}/sites/${escapeRegExp(input.siteId)}/${escapeRegExp(id)}\\.(jpg|png|webp|gif)$`, "i");
+    const draftKey = new RegExp(`^draft/users/${escapeRegExp(input.ownerId)}/sites/${escapeRegExp(input.siteId)}/${escapeRegExp(id)}\\.(jpg|png|webp|gif|mp3|ogg|wav)$`, "i");
     const keyMatch = typeof row.object_key === "string" ? row.object_key.match(draftKey) : null;
     if (row.storage_scope !== "draft_private" || !keyMatch) return { ok: false, code: "foreign", assetId: id, message: `Referenced asset ${id} is not a private draft asset` };
     const extension = keyMatch[1].toLowerCase();
