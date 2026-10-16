@@ -199,3 +199,22 @@
 - staging DB：`supabase db push --dry-run` 只列出 `0006_site_collaboration.sql`；正式 push 成功，remote migration history 顯示 0001–0006 全部一致。
 - staging Worker：`https://retrodesk-api-staging.beibeiz.workers.dev`，version `324d3446-7eb4-4dcf-afe5-8192aebc92e1`，以 `--env staging --keep-vars` 保留 dashboard secrets/vars；startup 52ms。
 - live smoke：health `200`；未登入 `/api/sites` 與 `POST /api/invites/accept` 都是 `401`，後者含 `private, no-store`。本段沒有 web runtime 變更，因此沒有重發 Pages。
+
+## #21B2 collaboration UI and invitation acceptance
+
+驗證日期：2026-10-16（Asia/Singapore）。本節完成 #21 的前端協作入口、角色介面與安全邀請接受流程；搭配 #21A／#21B1 後，#21 的規劃範圍已形成可用閉環。
+
+- 規格與計畫：`docs/superpowers/specs/2026-10-16-collaboration-ui-21b2-design.md`、`docs/superpowers/plans/2026-10-16-collaboration-ui-21b2.md`。
+- 實作 commits：web contract `73b370e`、安全邀請 `7f4f1b7`、viewer 私人草稿 `c8087b5`、editor 權限 `7323366`、owner 協作者管理 `d815ebc`、review hardening `b91100e`。
+- invitation safety：邀請 token 只從 URL fragment 讀取，立即從網址移除，僅暫存於 `sessionStorage`；不使用 query string／`localStorage`，不破壞 Supabase OAuth hash。接受邀請沿用 `POST` JSON body，成功或 terminal error 清除 token，暫時性登入／網路錯誤保留可重試狀態。
+- role-aware UI：owner 可發布與管理協作者；editor 可編輯、儲存及上傳，但不可發布、遷移舊素材或管理協作者；viewer 直接進入唯讀私人草稿，不掛載 editor，也不產生 autosave／upload／publish 等作者副作用。
+- immediate revocation：editor 儲存遇到失去權限會立即退出作者介面；遠端重新載入若角色降為 viewer，也會離開 editor 並顯示通知。
+- owner management：協作者視窗支援成員列表、邀請建立／撤銷、角色更新與移除確認；邀請 URL 僅在建立後顯示一次。包含 loading／empty／error 狀態、Escape、初始焦點、焦點返回與 320px 觸控尺寸。
+- full unit：175 passed（shared 59 + API 79 + web 37）。
+- typecheck：pass（shared、API、web）；build：pass（shared、API Wrangler dry-run、web Vite）。非阻斷訊息只有既有 Wrangler sandbox log-file EPERM、multi-environment、Zod PURE comment 與 bundle-size warning。
+- full E2E：83 passed（Chromium、單 worker、32.7s），涵蓋 invitation、owner/editor/viewer、權限變更、唯讀草稿、全部既有 auth／publish／asset／OC／scroll／responsive regressions。
+- `git diff --check`：pass；milestone code review 已修正 Supabase OAuth fragment、mutation error retention、invalid viewer draft、nested main、權限撤銷退出與邀請 retry，最終無未解阻斷項。
+- Impeccable detector：依規定只執行一次；兩項輸出分別是既有側頁籤提示（`w98.css:462`）及真實網格畫布的 decorative-grid 建議（`w98.css:252`），均由既有 commit `e0389e69` 引入，非本段 regression，經人工覆核豁免。
+- Cloudflare Pages staging deployment：`2c597bc1`。canonical：https://retrodesk-staging.pages.dev；immutable：https://2c597bc1.retrodesk-staging.pages.dev；bundle `index-tzrzBCWz.js`／`index-CII9sC4A.css`。Worker 無 runtime 變更，維持 #21B1 version。
+- HTTP smoke：canonical／immutable 的 `/`、`/invite` 均為 `200` 且指向相同新 bundle；API `/api/health` `200`；bundle 含協作者、唯讀私人草稿與邀請文案，不含 fallback `example.supabase.co` 或 `localhost:8787`。
+- live browser smoke：以假 token 開啟 `/invite#token=…` 後，網址立即變成無 fragment 的 `/invite`；staging 正確辨識登入帳號並只顯示「切換 Google 帳號／接受邀請」。未送出假邀請，不修改任何協作資料。
