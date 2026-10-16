@@ -79,3 +79,23 @@ test("viewer opens a private draft reader without mounting authoring behavior", 
   await expect(page.getByRole("tab", { name: "主題" })).toHaveCount(0);
   expect(draftWrites).toBe(0);
 });
+
+test("editor can save drafts but cannot publish, migrate, or manage collaborators", async ({ page }) => {
+  await signIn(page);
+  const saves: unknown[] = [];
+  const site = { id: "site-editor", username: "shared", site_name: "Shared Desk", draft_document: documentFixture, draft_version: 1, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-16T00:00:00.000Z", access_role: "editor" };
+  await page.route("**/api/sites/site-editor", (route) => route.fulfill({ json: { site } }));
+  await page.route("**/api/sites/site-editor/assets**", (route) => route.fulfill({ json: { assets: [] } }));
+  await page.route("**/api/sites/site-editor/draft", (route) => {
+    saves.push(route.request().postDataJSON());
+    return route.fulfill({ json: { version: saves.length + 1, updatedAt: "2026-10-16T00:01:00.000Z" } });
+  });
+
+  await page.goto("/editor/site-editor");
+  await expect(page.getByText("編輯者 · 只有擁有者可以發布")).toBeVisible();
+  await page.getByLabel("視窗標題").fill("Shared About");
+  await expect.poll(() => saves.length).toBeGreaterThan(0);
+  await expect(page.getByRole("button", { name: "發布", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "協作者" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /轉為私有/ })).toHaveCount(0);
+});

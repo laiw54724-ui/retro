@@ -292,6 +292,7 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 .save-text { font-size: 12px; white-space: nowrap; flex-shrink: 0; color: var(--w98-success); }
 .save-text.error { color: var(--w98-error); }
 .save-text.dirty, .save-text.saving { color: var(--w98-muted); }
+.collaboration-role-note { max-width: 230px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 3px 8px; color: #5c4300; background: #fff4bd; border: 1px solid #8a7200; font-size: 12px; font-weight: 700; }
 .editor-topbar .w98-btn { height: 30px; min-height: 30px; padding: 0 12px; flex-shrink: 0; }
 .device-toggle { display: flex; flex-shrink: 0; }
 .editor-grid2 { flex: 1; min-height: 0; display: flex; background: #c0c0c0; }

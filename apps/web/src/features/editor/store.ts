@@ -1,11 +1,13 @@
 import { create } from "zustand";
 import { mergeLegacyDocumentIntoV2, type DesktopWindow, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { createWindow } from "../modules/registry";
+import type { SiteAccessRole } from "../../lib/collaboration";
 
 export type SaveStatus = "idle" | "dirty" | "saving" | "saved" | "error";
 
 type EditorState = {
   siteId: string | null;
+  accessRole: SiteAccessRole;
   username: string;
   document: SiteDocument | null;
   versionedDocument: SiteDocumentV2Input | null;
@@ -26,7 +28,8 @@ type EditorState = {
     document: SiteDocument,
     version: number,
     publishedDocument: SiteDocument | null,
-    publishedVersion: number | null
+    publishedVersion: number | null,
+    accessRole: SiteAccessRole
   ) => void;
   setSaveStatus: (status: SaveStatus) => void;
   markSaved: (version: number, savedDocument: SiteDocument) => void;
@@ -94,6 +97,7 @@ function withHistory(state: EditorState, document: SiteDocument, extra: Partial<
 
 export const useEditorStore = create<EditorState>((set) => ({
   siteId: null,
+  accessRole: "owner",
   username: "",
   document: null,
   versionedDocument: null,
@@ -109,8 +113,9 @@ export const useEditorStore = create<EditorState>((set) => ({
   past: [],
   future: [],
 
-  setSite: (siteId, username, document, version, publishedDocument, publishedVersion) => set({
+  setSite: (siteId, username, document, version, publishedDocument, publishedVersion, accessRole) => set({
     siteId,
+    accessRole,
     username,
     document,
     versionedDocument: null,

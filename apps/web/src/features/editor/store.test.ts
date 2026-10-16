@@ -22,7 +22,7 @@ describe("editor canonical history", () => {
   it("keeps profile-only and normal edits paired through undo and redo", () => {
     const { legacy, versioned } = profileFixture();
     const store = useEditorStore.getState();
-    store.setSite("site-a", "alice", legacy, 1, null, null);
+    store.setSite("site-a", "alice", legacy, 1, null, null, "owner");
     store.setVersionedDocument(versioned);
     const profileOnly = withProfileAccent(versioned, "#ff00aa");
     store.replaceDocument(legacy, "profile-theme-mixed", profileOnly);
@@ -42,7 +42,7 @@ describe("editor canonical history", () => {
   it("clears canonical redo after a coalesced replacement edit", () => {
     const { legacy, versioned } = profileFixture();
     const store = useEditorStore.getState();
-    store.setSite("site-a", "alice", legacy, 1, null, null);
+    store.setSite("site-a", "alice", legacy, 1, null, null, "owner");
     store.setVersionedDocument(versioned);
     store.setSiteName("Baseline history");
     const pink = withProfileAccent(useEditorStore.getState().versionedDocument!, "#ff00aa");
@@ -54,5 +54,14 @@ describe("editor canonical history", () => {
     store.redo();
     expect(useEditorStore.getState().versionedDocument?.entities.profiles[0]?.themeOverride?.accent).toBe("#00aa00");
     expect(useEditorStore.getState().versionedFuture).toHaveLength(0);
+  });
+
+  it("records and resets the access role with the loaded site", () => {
+    const { legacy } = profileFixture();
+    const store = useEditorStore.getState();
+    store.setSite("site-a", "alice", legacy, 1, null, null, "editor");
+    expect(useEditorStore.getState().accessRole).toBe("editor");
+    store.setSite("site-b", "bob", legacy, 2, null, null, "owner");
+    expect(useEditorStore.getState().accessRole).toBe("owner");
   });
 });

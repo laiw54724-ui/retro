@@ -14,6 +14,7 @@ import { useAuth } from "../app/AuthProvider";
 import { AssetSourceProvider } from "../lib/assetSource";
 import { buildProfileDirectory } from "../features/modules/instagram/profileDirectory";
 import { auditAssetReferences } from "../lib/asset-reference-audit";
+import { collaborationActions } from "../lib/collaboration";
 
 
 
@@ -71,7 +72,8 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       loadedLegacyDocument(loadedDraft),
       site.draft_version,
       loadedPublished ? loadedLegacyDocument(loadedPublished) : null,
-      site.published_version ?? null
+      site.published_version ?? null,
+      site.access_role
     );
     // Set the canonical v2 state in the same transaction as the legacy render
     // adapter, so an autosave can never observe a stale v2 document after reload.
@@ -391,7 +393,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       if (!loaded.ok) throw new Error(loaded.diagnostics[0]?.message ?? "遷移後的草稿格式無效");
       const legacy = loadedLegacyDocument(loaded);
       const canonical = loaded.version === 2 ? loaded.document : null;
-      store.setSite(store.siteId!, store.username, legacy, result.version, store.publishedDocument, store.publishedVersion);
+      store.setSite(store.siteId!, store.username, legacy, result.version, store.publishedDocument, store.publishedVersion, store.accessRole);
       versionedDraftRef.current = canonical;
       setVersionedDraft(canonical);
       store.setVersionedDocument(canonical);
@@ -451,6 +453,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
           : "已儲存";
 
   const layoutMode = store.layoutMode && store.device === "desktop";
+  const actions = collaborationActions(store.accessRole);
 
   return (
     <AssetSourceProvider siteId={siteId}>
@@ -466,6 +469,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         <RetroButton className="mobile-hide" disabled={store.past.length === 0} onClick={store.undo} aria-label="復原" title="復原 (Ctrl+Z)">↶ 復原</RetroButton>
         <RetroButton className="mobile-hide" disabled={store.future.length === 0} onClick={store.redo} aria-label="重做" title="重做 (Ctrl+Shift+Z)">↷ 重做</RetroButton>
         <span className={"save-text mobile-hide " + store.saveStatus} title={draftIssue ?? undefined} role="status">{saveText}</span>
+        {store.accessRole === "editor" ? <span className="collaboration-role-note" title="只有桌面擁有者可以發布與管理協作者">編輯者 · 只有擁有者可以發布</span> : null}
         <div className="top-spacer" />
         <div role="group" aria-label="裝置" className="device-toggle mobile-hide">
           <button type="button" aria-pressed={store.device === "desktop"} className={"w98-btn" + (store.device === "desktop" ? " on" : "")} onClick={() => store.setDevice("desktop")}>桌面版</button>
@@ -473,9 +477,9 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         </div>
         <RetroButton onClick={() => setPreview(true)}>▶ 訪客預覽</RetroButton>
         {store.publishedDocument ? <a className="w98-btn mobile-hide" href={"/@" + store.username} target="_blank" rel="noreferrer">開啟已發布網站</a> : null}
-        <RetroButton className="primary" onClick={requestPublish} disabled={publishing || (!!store.publishedDocument && !hasUnpublishedChanges)}>
+        {actions.publish ? <RetroButton className="primary" onClick={requestPublish} disabled={publishing || (!!store.publishedDocument && !hasUnpublishedChanges)}>
           {store.publishedDocument ? "重新發布" : "發布"}
-        </RetroButton>
+        </RetroButton> : null}
         <RetroButton className="mobile-hide" onClick={async () => { await signOut(); navigate("/"); }}>登出</RetroButton>
       </header>
 
@@ -495,7 +499,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
           </span> : null}
         </div>
         <button type="button" onClick={() => setAssetInventoryOpen(true)}>查看是哪幾個</button>
-        {legacyAssets.length > 0 ? <button disabled={migratingAssets || store.saveStatus === "saving" || store.saveStatus === "error" || conflict} onClick={migrateLegacyAssets}>{migratingAssets ? "遷移中…" : "轉為私有素材"}</button> : null}
+        {legacyAssets.length > 0 && actions.migrateAssets ? <button disabled={migratingAssets || store.saveStatus === "saving" || store.saveStatus === "error" || conflict} onClick={migrateLegacyAssets}>{migratingAssets ? "遷移中…" : "轉為私有素材"}</button> : null}
       </div> : null}
 
       {assetInventoryOpen ? <div className="modal-backdrop" role="presentation">
@@ -518,7 +522,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
             </ul> : <p role="status">目前沒有需要遷移或清理的舊素材。</p>}
             <div className="button-row end">
               <RetroButton onClick={() => void refreshAssetInventory().catch((error) => setMessage(error instanceof Error ? error.message : "無法重新盤點素材"))}>重新盤點</RetroButton>
-              {legacyAssets.length ? <RetroButton className="primary" disabled={migratingAssets || store.saveStatus === "saving" || store.saveStatus === "error" || conflict} onClick={migrateLegacyAssets}>{migratingAssets ? "遷移中…" : `轉為私有（${legacyAssets.length}）`}</RetroButton> : null}
+              {legacyAssets.length && actions.migrateAssets ? <RetroButton className="primary" disabled={migratingAssets || store.saveStatus === "saving" || store.saveStatus === "error" || conflict} onClick={migrateLegacyAssets}>{migratingAssets ? "遷移中…" : `轉為私有（${legacyAssets.length}）`}</RetroButton> : null}
               <RetroButton onClick={() => setAssetInventoryOpen(false)}>關閉</RetroButton>
             </div>
           </div>
