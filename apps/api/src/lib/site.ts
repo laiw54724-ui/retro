@@ -35,3 +35,7 @@ export const CreateInviteSchema = z.object({
 }).strict();
 
 export const UpdateMemberSchema = z.object({ role: CollaborationRoleSchema }).strict();
+
+export const AcceptInviteSchema = z.object({
+  token: z.string().regex(/^[A-Za-z0-9_-]{43}$/)
+}).strict();

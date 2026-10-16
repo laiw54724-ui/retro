@@ -53,6 +53,7 @@ describe("collaboration lifecycle routes", () => {
     const response = await collaboration.request("/sites/site-a/invites", { method: "POST", body: JSON.stringify({ email: " Member@Example.COM ", role: "editor", expiryHours: 24 }) }, {} as never);
     expect(response.status).toBe(201);
     const body = await response.json() as any;
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
     expect(body.token).toMatch(/^[A-Za-z0-9_-]{43}$/);
     expect(body.invite).not.toHaveProperty("token_digest");
     expect(state.rpcCalls[0]).toMatchObject({ name: "create_site_invite", args: { p_site_id: "site-a", p_actor_id: "owner-a", p_email: "member@example.com", p_role: "editor", p_token_digest: expect.stringMatching(/^[0-9a-f]{64}$/) } });
@@ -77,7 +78,7 @@ describe("collaboration lifecycle routes", () => {
 
   it("accepts using the authenticated normalized email and a digest", async () => {
     const token = "A".repeat(43);
-    const response = await collaboration.request(`/invites/${token}/accept`, { method: "POST" }, {} as never);
+    const response = await collaboration.request("/invites/accept", { method: "POST", body: JSON.stringify({ token }) }, {} as never);
     expect(response.status).toBe(200);
     expect(state.rpcCalls[0]).toMatchObject({ name: "accept_site_invite", args: { p_user_id: "owner-a", p_email: "owner@example.com", p_token_digest: expect.stringMatching(/^[0-9a-f]{64}$/) } });
   });
@@ -90,7 +91,7 @@ describe("collaboration lifecycle routes", () => {
     ["invalid_invite", 404]
   ])("maps %s without leaking invite state", async (message, status) => {
     state.rpcError = { message };
-    const response = await collaboration.request(`/invites/${"B".repeat(43)}/accept`, { method: "POST" }, {} as never);
+    const response = await collaboration.request("/invites/accept", { method: "POST", body: JSON.stringify({ token: "B".repeat(43) }) }, {} as never);
     expect(response.status).toBe(status);
   });
 

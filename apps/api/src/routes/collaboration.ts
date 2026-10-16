@@ -3,10 +3,15 @@ import type { Env } from "../env";
 import { requireSiteRole, SiteAccessError, type SiteAccess } from "../lib/access";
 import { jsonError } from "../lib/http";
 import { createInviteToken, digestInviteToken } from "../lib/invites";
-import { CreateInviteSchema, UpdateMemberSchema } from "../lib/site";
+import { AcceptInviteSchema, CreateInviteSchema, UpdateMemberSchema } from "../lib/site";
 import { requireUser, serviceClient } from "../lib/supabase";
 
 export const collaboration = new Hono<{ Bindings: Env }>();
+
+collaboration.use("*", async (c, next) => {
+  await next();
+  c.header("Cache-Control", "private, no-store");
+});
 
 async function requireManager(
   c: Context<{ Bindings: Env }>,
@@ -115,16 +120,13 @@ collaboration.delete("/sites/:siteId/members/:userId", async (c) => {
   return c.body(null, 204);
 });
 
-collaboration.post("/invites/:token/accept", async (c) => {
+collaboration.post("/invites/accept", async (c) => {
   const user = await requireUser(c);
   if (user instanceof Response) return user;
   if (!user.email) return jsonError(c, 403, "verified_email_required", "A verified email address is required");
-  let digest: string;
-  try {
-    digest = await digestInviteToken(c.req.param("token"));
-  } catch {
-    return jsonError(c, 404, "invalid_invite", "Invitation not found");
-  }
+  const body = AcceptInviteSchema.safeParse(await c.req.json().catch(() => null));
+  if (!body.success) return jsonError(c, 404, "invalid_invite", "Invitation not found");
+  const digest = await digestInviteToken(body.data.token);
   const client = serviceClient(c.env);
   const { data, error } = await client.rpc("accept_site_invite", { p_token_digest: digest, p_user_id: user.id, p_email: user.email.trim().toLowerCase() });
   if (error) return rpcFailure(c, error);
