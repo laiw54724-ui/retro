@@ -3,6 +3,7 @@ export * from "./image-url";
 export * from "./publish-checks";
 export * from "./public-projection";
 export * from "./public-metadata";
+export * from "./site-transfer";
 export * from "./demo";
 export * from "./site-versioning";
 export * from "./asset-reference";

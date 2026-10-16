@@ -17,6 +17,7 @@ import { auditAssetReferences } from "../lib/asset-reference-audit";
 import { collaborationActions } from "../lib/collaboration";
 import { CollaborationDialog } from "../features/collaboration/CollaborationDialog";
 import { SidebarToggle } from "../features/editor/SidebarToggle";
+import { TransferDialog } from "../features/transfer/TransferDialog";
 
 
 
@@ -78,6 +79,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   const [migratingAssets, setMigratingAssets] = useState(false);
   const [deletingAssetId, setDeletingAssetId] = useState<string | null>(null);
   const [collaborationOpen, setCollaborationOpen] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
   const [sidebarPreferences, setSidebarPreferences] = useState(loadSidebarPreferences);
   const collaborationButtonRef = useRef<HTMLButtonElement | null>(null);
   const [versionedDraft, setVersionedDraft] = useState<SiteDocumentV2Input | null>(null);
@@ -523,6 +525,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         </div>
         <RetroButton onClick={() => setPreview(true)}>▶ 訪客預覽</RetroButton>
         {actions.manageMembers ? <RetroButton ref={collaborationButtonRef} onClick={() => setCollaborationOpen(true)}>協作者</RetroButton> : null}
+        {actions.manageMembers ? <RetroButton onClick={() => setTransferOpen(true)}>匯出／匯入</RetroButton> : null}
         {store.publishedDocument ? <a className="w98-btn mobile-hide" href={"/@" + store.username} target="_blank" rel="noreferrer">開啟已發布網站</a> : null}
         {actions.publish ? <RetroButton className="primary" onClick={requestPublish} disabled={publishing || (!!store.publishedDocument && !hasUnpublishedChanges)}>
           {store.publishedDocument ? "重新發布" : "發布"}
@@ -648,6 +651,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
       {preview ? <VisitorPreview document={store.document} username={store.username} published={!!store.publishedDocument && !hasUnpublishedChanges} onClose={() => setPreview(false)} /> : null}
       {collaborationOpen ? <CollaborationDialog siteId={siteId} onClose={closeCollaboration} /> : null}
+      {transferOpen ? <TransferDialog siteId={siteId} username={store.username} published={!!store.publishedDocument} onClose={() => setTransferOpen(false)} onImported={(newSiteId) => navigate(`/editor/${newSiteId}`)} /> : null}
 
       {conflict ? (
         <div className="modal-backdrop" role="presentation">

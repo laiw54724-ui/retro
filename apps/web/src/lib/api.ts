@@ -1,4 +1,4 @@
-import type { SiteDocument, VersionedSiteDocument, VersionedSiteDocumentInput } from "@retrodesk/shared";
+import type { ImportPreview, RetroExportPackage, SiteDocument, VersionedSiteDocument, VersionedSiteDocumentInput } from "@retrodesk/shared";
 import { supabase } from "./supabase";
 import type { CollaboratorRole, CreatedSiteInvite, SiteAccessRole, SiteInvite, SiteMember } from "./collaboration";
 
@@ -62,6 +62,19 @@ async function request<T>(path: string, init: RequestInit = {}, authenticated = 
   return payload as T;
 }
 
+async function download(path: string) {
+  const token = await accessToken();
+  if (!token) throw new ApiError(401, "unauthorized", "Please sign in first");
+  const response = await fetch(API_URL + path, { headers: { Authorization: "Bearer " + token } });
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null);
+    throw new ApiError(response.status, payload?.error?.code ?? "export_failed", payload?.error?.message ?? "Export failed", payload?.error?.details);
+  }
+  const disposition = response.headers.get("Content-Disposition") ?? "";
+  const filename = /filename="([^"]+)"/.exec(disposition)?.[1] ?? "retro-export.json";
+  return { blob: await response.blob(), filename };
+}
+
 export const api = {
   usernameAvailability(username: string) {
     return request<{ available: boolean; reason?: string }>("/api/usernames/" + encodeURIComponent(username) + "/availability", {}, false);
@@ -96,6 +109,16 @@ export const api = {
       { cache: "no-store" },
       false
     );
+  },
+  exportSite(siteId: string, scope: "draft" | "published") {
+    return download(`/api/sites/${encodeURIComponent(siteId)}/export?scope=${scope}`);
+  },
+  previewImport(value: unknown) {
+    return request<{ preview: ImportPreview; digest: string }>("/api/imports/preview", { method: "POST", body: JSON.stringify(value) });
+  },
+  confirmImport(value: RetroExportPackage, input: { digest: string; username: string; siteName: string; allowMissingMedia: boolean }) {
+    const query = new URLSearchParams({ digest: input.digest, username: input.username, siteName: input.siteName, allowMissingMedia: String(input.allowMissingMedia) });
+    return request<{ site: { id: string; username: string; site_name: string; draft_version: number }; missingMedia: ImportPreview["missingMedia"] }>(`/api/imports/confirm?${query}`, { method: "POST", body: JSON.stringify(value) });
   },
   publicGuestbook(username: string) {
     return request<{ entries: GuestbookEntry[] }>(`/api/public/sites/${encodeURIComponent(username)}/guestbook`, { cache: "no-store" }, false);
