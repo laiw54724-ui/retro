@@ -19,6 +19,7 @@ export function igIcons(color: string): Record<string, string> {
     search: S("<circle cx='11' cy='11' r='7'/><path d='M21 21l-4.3-4.3'/>"),
     grid: S("<rect x='3' y='3' width='18' height='18'/><path d='M3 9h18M3 15h18M9 3v18M15 3v18'/>"),
     list: S("<rect x='3' y='3' width='18' height='8'/><rect x='3' y='14' width='18' height='7'/>"),
+    collections: S("<path d='M3 7h7l2 2h9v11H3z'/><path d='M3 7V4h7l2 2h7v3'/>"),
     back: S("<path d='M15 18l-6-6 6-6'/>"),
     more: S(dots, "none"),
     multi: S("<rect x='7' y='3' width='14' height='14'/><path d='M3 7v14h14'/>", "#ffffff"),

@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import type { IgPost } from "@retrodesk/shared";
 import { AvatarImage } from "../../../components/AvatarImage";
 import { SafeImg } from "../ui";
-import { safeHref, type ModuleProps } from "../types";
+import { safeHref, type ModuleProps, type ProfileDirectoryPost } from "../types";
 import { igIcons } from "./igIcons";
 import { useIgSession } from "./useIgSession";
 
@@ -27,6 +27,13 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
   const directoryEntry = ctx.profileDirectory?.find((entry) => entry.id === s.activeProfileId);
   const profile = directoryEntry?.profile ?? window.content.profile;
   const posts = directoryEntry?.posts ?? window.content.images;
+  const collections = directoryEntry?.collections ?? [];
+  const postById = new Map(posts.map((post) => [post.id, post]));
+  const visibleCollections = collections
+    .map((collection) => ({ ...collection, postIds: collection.postIds.filter((postId) => postById.has(postId)) }))
+    .filter((collection) => collection.postIds.length > 0);
+  const pinnedPosts = posts.filter((post) => !!(post as Partial<ProfileDirectoryPost>).pinned);
+  const regularPosts = posts.filter((post) => !(post as Partial<ProfileDirectoryPost>).pinned);
   const canBrowseProfiles = profileDirectory.some((entry) => entry.id !== s.activeProfileId);
   const canonicalHighlights = directoryEntry?.highlights ?? [];
   const highlights = canonicalHighlights.length ? canonicalHighlights.map((highlight) => ({ id: highlight.id, title: highlight.title, src: highlight.coverSrc, srcUrl: highlight.coverSrcUrl })) : profile.highlights;
@@ -73,6 +80,15 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
     const inputOpen = profile.allowComments && (single || s.commentOpen[key]);
     const draft = s.drafts[key] ?? "";
     const current = sources[index];
+    const currentMedia = (post as Partial<ProfileDirectoryPost>).media?.[index];
+    const mediaStyle: CSSProperties = single && currentMedia?.aspectRatio
+      ? { ...phStyle, aspectRatio: currentMedia.aspectRatio }
+      : phStyle;
+    const imageStyle: CSSProperties = single
+      ? currentMedia?.aspectRatio
+        ? { width: "100%", height: "100%", objectFit: "contain", display: "block" }
+        : { width: "auto", height: "auto", maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }
+      : { width: "100%", height: "100%", objectFit: "cover", display: "block" };
     return (
       <article key={post.id} className="ig-card">
         <div className="ig-card-head">
@@ -80,8 +96,8 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
           <span className="ig-card-who"><strong>{profile.username}</strong>{post.location ? <span>{post.location}</span> : null}</span>
           <button type="button" className="ig-icbtn" aria-label="更多選項" onClick={() => s.setSheetId(post.id)}><Ic bg={I.more} size={20} /></button>
         </div>
-        <div className="ig-media ph" style={phStyle} onDoubleClick={() => { if (profile.allowLikes) s.doubleLike(post.id); }}>
-          {current ? <SafeImg src={current} alt={post.caption} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : null}
+        <div className={`ig-media ph${single ? ` detail${currentMedia?.aspectRatio ? " has-ratio" : ""}` : ""}`} style={mediaStyle} onDoubleClick={() => { if (profile.allowLikes) s.doubleLike(post.id); }}>
+          {current ? <SafeImg src={current} alt={currentMedia?.alt || post.caption} style={imageStyle} /> : null}
           {sources.length > 1 ? (
             <>
               <span className="ig-count">{index + 1}/{sources.length}</span>
@@ -142,19 +158,55 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
     </div>
   );
 
+  const renderCollections = () => (
+    <ul className="ig-collection-list" aria-label="作品合集">
+      {visibleCollections.map((collection) => {
+        const coverPost = collection.postIds.length ? postById.get(collection.postIds[0]) : undefined;
+        return (
+          <li key={collection.id}>
+            <button
+              type="button"
+              className="ig-collection-card"
+              aria-label={`開啟合集：${collection.title}`}
+              onClick={() => s.openCollection(collection.id)}
+            >
+              <span className="ig-collection-cover ph" style={phStyle}>
+                {coverPost?.src ? <SafeImg src={coverPost.src} alt="" compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : <Ic bg={I.collections} size={30} />}
+              </span>
+              <span className="ig-collection-copy">
+                <strong>{collection.title}</strong>
+                {collection.description ? <span>{collection.description}</span> : null}
+                <small>{collection.postIds.length} 篇作品</small>
+              </span>
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
+
   const q = s.query.trim().toLowerCase();
   const explored = q ? posts.filter((post) => `${post.caption} ${post.location} ${post.title}`.toLowerCase().includes(q)) : posts;
   const savedPosts = posts.filter((post) => s.saved[s.interactionKey(post.id)]);
   const postFor = s.postId ? posts.find((post) => post.id === s.postId) : undefined;
+  const collectionFor = s.collectionId ? visibleCollections.find((collection) => collection.id === s.collectionId) : undefined;
+  const collectionPosts = collectionFor?.postIds.flatMap((postId) => {
+    const post = postById.get(postId);
+    return post ? [post] : [];
+  }) ?? [];
 
-  const headTitle = { profile: profile.username || "username", feed: "Instagram", explore: "探索", saved: "已收藏", directory: "此桌面的角色", post: "貼文" }[s.screen];
+  const headTitle = s.screen === "collection"
+    ? collectionFor?.title ?? "合集"
+    : { profile: profile.username || "username", feed: "Instagram", explore: "探索", saved: "已收藏", directory: "此桌面的角色", post: "貼文" }[s.screen];
   const nav: Array<{ id: "feed" | "explore" | "saved" | "profile"; label: string; icon?: string }> = [
     { id: "feed", label: "首頁", icon: s.screen === "feed" ? I.homeFill : I.home },
     { id: "explore", label: "探索", icon: I.search },
     { id: "saved", label: "已收藏", icon: s.screen === "saved" ? I.bookmarkFill : I.bookmark },
     { id: "profile", label: "個人" }
   ];
-  const activeNav = s.screen === "post" ? s.previousScreen : s.screen;
+  const activeNav = s.screen === "post"
+    ? s.previousScreen === "collection" ? "profile" : s.previousScreen
+    : s.screen === "collection" ? "profile" : s.screen;
   const story = s.story >= 0 ? storyFrames[s.story] : undefined;
 
   return (
@@ -197,15 +249,18 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
               </div>
               {showHighlights ? renderHighlights(false) : null}
             </div>
-            <div role="tablist" className="ig-ptabs">
-              {(["grid", "list"] as const).map((id) => (
-                <button key={id} role="tab" type="button" aria-selected={s.gridTab === id} aria-label={id === "grid" ? "格狀" : "列表"} style={{ boxShadow: s.gridTab === id ? `inset 0 -2px ${tv.text}` : "none" }} onClick={() => s.setGridTab(id)}>
-                  <Ic bg={id === "grid" ? I.grid : I.list} size={22} />
+            <div role="tablist" className="ig-ptabs" style={{ gridTemplateColumns: `repeat(${visibleCollections.length ? 3 : 2}, minmax(0, 1fr))` }}>
+              {(["grid", "list", ...(visibleCollections.length ? ["collections" as const] : [])] as const).map((id) => (
+                <button key={id} role="tab" type="button" aria-selected={s.gridTab === id} aria-label={id === "grid" ? "格狀" : id === "list" ? "列表" : "合集"} style={{ boxShadow: s.gridTab === id ? `inset 0 -2px ${tv.text}` : "none" }} onClick={() => s.setGridTab(id)}>
+                  <Ic bg={id === "grid" ? I.grid : id === "list" ? I.list : I.collections} size={22} />
                 </button>
               ))}
             </div>
             {posts.length === 0 ? <div className="ig-empty"><Ic bg={I.camera} size={44} /><strong>還沒有貼文</strong><span>在編輯分頁上傳照片就會出現在這裡。</span></div>
-              : s.gridTab === "grid" ? renderGrid(posts) : <div>{posts.map((post) => renderCard(post))}</div>}
+              : s.gridTab === "collections" ? renderCollections() : <>
+                {pinnedPosts.length ? <section className="ig-pinned" aria-labelledby={`pinned-${s.activeProfileId}`}><h2 id={`pinned-${s.activeProfileId}`}>置頂作品</h2>{renderGrid(pinnedPosts)}</section> : null}
+                {regularPosts.length ? s.gridTab === "grid" ? renderGrid(regularPosts) : <div>{regularPosts.map((post) => renderCard(post))}</div> : null}
+              </>}
           </>
         ) : null}
 
@@ -232,6 +287,13 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
 
         {s.screen === "directory" ? (
           <div className="ig-directory"><h2>此桌面的角色</h2><p className="ig-note">這是創作者在此桌面公開的角色清單。</p>{(ctx.profileDirectory ?? []).map((entry) => <button type="button" className="ig-directory-row" key={entry.id} onClick={() => s.navigateProfile(entry.id)}><span className="ig-avatar ph" style={{ width: 48, height: 48, ...phStyle }}>{entry.profile.avatar ? <AvatarImage src={entry.profile.avatar} crop={entry.profile.avatarCrop} /> : null}</span><span><strong>{entry.profile.name || entry.profile.username}</strong><small>@{entry.profile.username}</small></span></button>)}</div>
+        ) : null}
+
+        {s.screen === "collection" ? (
+          collectionFor ? <section className="ig-collection-view" aria-label={`合集：${collectionFor.title}`}>
+            <header><strong>{collectionFor.title}</strong>{collectionFor.description ? <p>{collectionFor.description}</p> : null}<span>{collectionPosts.length} 篇作品</span></header>
+            {collectionPosts.length ? renderGrid(collectionPosts) : <div className="ig-empty"><Ic bg={I.collections} size={44} /><strong>這個合集目前沒有公開作品</strong></div>}
+          </section> : <div className="ig-empty"><strong>找不到這個合集</strong></div>
         ) : null}
 
         {s.screen === "post" ? (postFor ? renderCard(postFor, true) : <div className="ig-empty"><strong>找不到這篇貼文</strong></div>) : null}

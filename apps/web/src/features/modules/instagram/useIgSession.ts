@@ -1,17 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export type IgScreen = "profile" | "feed" | "explore" | "saved" | "directory" | "post";
+export type IgScreen = "profile" | "feed" | "explore" | "saved" | "directory" | "collection" | "post";
 export type IgComment = { id: string; user: string; text: string };
-type Route = { screen: IgScreen; profileId: string; postId: string | null };
+export type IgGridTab = "grid" | "list" | "collections";
+type Route = { screen: IgScreen; profileId: string; postId: string | null; collectionId: string | null };
 type HistoryFrame = { route: Route; scrollTop: number };
 
 /** Visitor-only Instagram state. Lives in memory; never writes the document or API. */
 export function useIgSession(highlightCount: (profileId: string) => number, entryProfileId = "entry", sessionScope = "ig") {
-  const [route, setRoute] = useState<Route>({ screen: "profile", profileId: entryProfileId, postId: null });
+  const [route, setRoute] = useState<Route>({ screen: "profile", profileId: entryProfileId, postId: null, collectionId: null });
   const history = useRef<HistoryFrame[]>([]);
   const pendingScroll = useRef<number | null>(null);
   const [, setHistoryVersion] = useState(0);
-  const [gridTabs, setGridTabs] = useState<Record<string, "grid" | "list">>({});
+  const [gridTabs, setGridTabs] = useState<Record<string, IgGridTab>>({});
   const [followedProfiles, setFollowedProfiles] = useState<Record<string, boolean>>({});
   const [liked, setLiked] = useState<Record<string, boolean>>({});
   const [saved, setSaved] = useState<Record<string, boolean>>({});
@@ -46,7 +47,7 @@ export function useIgSession(highlightCount: (profileId: string) => number, entr
   useEffect(() => {
     history.current = [];
     pendingScroll.current = 0;
-    setRoute({ screen: "profile", profileId: entryProfileId, postId: null });
+    setRoute({ screen: "profile", profileId: entryProfileId, postId: null, collectionId: null });
     setHistoryVersion((value) => value + 1);
     closeStory();
   }, [entryProfileId, sessionScope, closeStory]);
@@ -69,7 +70,7 @@ export function useIgSession(highlightCount: (profileId: string) => number, entr
     };
     frame = requestAnimationFrame(restore);
     return () => cancelAnimationFrame(frame);
-  }, [route.screen, route.postId, route.profileId]);
+  }, [route.screen, route.postId, route.collectionId, route.profileId]);
 
   const showToast = useCallback((message: string) => {
     clearTimeout(timers.current.toast);
@@ -87,17 +88,18 @@ export function useIgSession(highlightCount: (profileId: string) => number, entr
     setSheetId(null);
     closeStory();
   };
-  const go = (screen: Exclude<IgScreen, "post" | "directory">) => {
+  const go = (screen: Exclude<IgScreen, "post" | "directory" | "collection">) => {
     history.current = [];
     pendingScroll.current = 0;
-    setRoute({ screen, profileId: route.profileId, postId: null });
+    setRoute({ screen, profileId: route.profileId, postId: null, collectionId: null });
     setHistoryVersion((value) => value + 1);
     setSheetId(null);
     closeStory();
   };
-  const openDirectory = () => push({ screen: "directory", profileId: route.profileId, postId: null });
-  const navigateProfile = (profileId: string) => push({ screen: "profile", profileId, postId: null });
-  const openPost = (postId: string) => push({ screen: "post", profileId: route.profileId, postId });
+  const openDirectory = () => push({ screen: "directory", profileId: route.profileId, postId: null, collectionId: null });
+  const navigateProfile = (profileId: string) => push({ screen: "profile", profileId, postId: null, collectionId: null });
+  const openCollection = (collectionId: string) => push({ screen: "collection", profileId: route.profileId, postId: null, collectionId });
+  const openPost = (postId: string) => push({ screen: "post", profileId: route.profileId, postId, collectionId: null });
   const back = () => {
     const previous = history.current.pop();
     if (!previous) return;
@@ -158,15 +160,15 @@ export function useIgSession(highlightCount: (profileId: string) => number, entr
 
   const activeProfileId = route.profileId;
   return {
-    screen: route.screen, postId: route.postId, activeProfileId,
+    screen: route.screen, postId: route.postId, collectionId: route.collectionId, activeProfileId,
     previousScreen: history.current.at(-1)?.route.screen ?? "profile", historyDepth: history.current.length,
     interactionKey, gridTab: gridTabs[profileKey] ?? "grid", followed: !!followedProfiles[profileKey],
     liked, saved, extraComments, drafts, showAll, commentOpen, slide, query: queries[profileKey] ?? "", sheetId, burst, toast, story, storyProgress, storyPaused, scrollRef,
-    setGridTab: (value: "grid" | "list") => setGridTabs((state) => ({ ...state, [profileKey]: value })),
+    setGridTab: (value: IgGridTab) => setGridTabs((state) => ({ ...state, [profileKey]: value })),
     setFollowed: (value: boolean) => setFollowedProfiles((state) => ({ ...state, [profileKey]: value })),
     setDrafts, setShowAll, setCommentOpen, setSlide,
     setQuery: (value: string) => setQueries((state) => ({ ...state, [profileKey]: value })),
-    setSheetId, showToast, go, openDirectory, openPost, navigateProfile, back,
+    setSheetId, showToast, go, openDirectory, openCollection, openPost, navigateProfile, back,
     toggleLike, doubleLike, toggleSave, postComment, openStory, closeStory, stepStory, toggleStoryPause: () => setStoryPaused((value) => !value)
   };
 }

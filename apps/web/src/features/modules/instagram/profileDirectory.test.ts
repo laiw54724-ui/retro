@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createStarterDocument, duplicateProfile, migrateSiteDocumentV2 } from "@retrodesk/shared";
+import { createPost, createStarterDocument, duplicateProfile, migrateSiteDocumentV2 } from "@retrodesk/shared";
 import { buildProfileDirectory } from "./profileDirectory";
 
 describe("Instagram profile directory", () => {
@@ -30,5 +30,52 @@ describe("Instagram profile directory", () => {
     expect(JSON.stringify(publicDirectory)).not.toContain("private caption");
     expect(JSON.stringify(publicDirectory)).not.toContain("private-avatar.png");
     expect(JSON.stringify(publicDirectory)).not.toContain("private-profile");
+  });
+
+  it("projects only published collections and removes draft or dead post references", () => {
+    const migrated = migrateSiteDocumentV2(createStarterDocument("Collections", "classic98", "instagram"), { siteId: "site-a" });
+    if (!migrated.ok || migrated.version !== 2) throw new Error("fixture migration failed");
+    let document = migrated.document;
+    const profile = document.entities.profiles[0];
+    if (!profile) throw new Error("fixture profile missing");
+    const created = createPost(document, { id: "post:public", authorProfileId: profile.id, title: "Public post" }, { siteId: "site-a" });
+    if (!created.ok) throw new Error("fixture post failed");
+    document = created.document;
+    const publicPost = document.entities.posts[0];
+    if (!publicPost) throw new Error("fixture post missing");
+    profile.visibility = "published";
+    publicPost.visibility = "published";
+    const draftPost = { ...structuredClone(publicPost), id: "post:draft", visibility: "draft" as const, caption: "private collection post" };
+    document.entities.posts.push(draftPost);
+    document.entities.collections = [
+      {
+        kind: "collection",
+        id: "collection:public",
+        siteId: "site-a",
+        ownerProfileId: profile.id,
+        visibility: "published",
+        title: "Public collection",
+        description: "Visible",
+        postIds: [draftPost.id, publicPost.id, "post:missing"],
+      },
+      {
+        kind: "collection",
+        id: "collection:draft",
+        siteId: "site-a",
+        ownerProfileId: profile.id,
+        visibility: "draft",
+        title: "Secret collection",
+        description: "Hidden",
+        postIds: [publicPost.id],
+      },
+    ];
+
+    const directory = buildProfileDirectory(document, true);
+    expect(directory[0]?.collections).toEqual([
+      expect.objectContaining({ id: "collection:public", postIds: [publicPost.id] }),
+    ]);
+    expect(JSON.stringify(directory)).not.toContain("private collection post");
+    expect(JSON.stringify(directory)).not.toContain("Secret collection");
+    expect(JSON.stringify(directory)).not.toContain("post:missing");
   });
 });

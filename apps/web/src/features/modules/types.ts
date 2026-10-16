@@ -3,7 +3,8 @@ import type { CollectionEntityV2, DesktopWindow, EntityRef, HighlightEntityV2, I
 import type { ThemeView } from "../../lib/themeView";
 
 export type LinkAction = { target: "url" | "window"; url?: string; windowId?: string; label?: string };
-export type ProfileDirectoryEntry = { id: string; siteId: string; profile: Extract<DesktopWindow, { type: "instagram" }>["content"]["profile"]; posts: IgPost[]; highlights: HighlightEntityV2[]; themeOverride?: { accent: string; background: string } };
+export type ProfileDirectoryPost = IgPost & Pick<PostEntityV2, "media" | "worldDateLabel" | "taggedProfileIds" | "collectionIds" | "pinned">;
+export type ProfileDirectoryEntry = { id: string; siteId: string; profile: Extract<DesktopWindow, { type: "instagram" }>["content"]["profile"]; posts: ProfileDirectoryPost[]; highlights: HighlightEntityV2[]; collections: CollectionEntityV2[]; themeOverride?: { accent: string; background: string } };
 
 export type ModuleCtx = {
   theme: RetroTheme;

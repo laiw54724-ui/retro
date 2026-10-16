@@ -58,6 +58,79 @@ function twoWindowDocument(): SiteDocumentV2Input {
   return document;
 }
 
+function presentationDocument(): SiteDocumentV2Input {
+  const document = ocDocument();
+  const profile = document.entities.profiles.find((item) => item.id === "profile:ig");
+  const pinned = document.entities.posts.find((post) => post.authorProfileId === "profile:ig");
+  if (!profile || !pinned) throw new Error("presentation fixture missing");
+  profile.visibility = "published";
+  pinned.visibility = "published";
+  pinned.title = "Pinned snow";
+  pinned.caption = "Pinned snow caption";
+  pinned.pinned = true;
+  pinned.collectionIds = ["collection:snow"];
+  pinned.media[0] = { ...pinned.media[0], alt: "Wide pinned artwork", aspectRatio: 2 };
+  const regular = {
+    ...structuredClone(pinned),
+    id: "post:ig:regular",
+    title: "Regular work",
+    caption: "Regular work caption",
+    pinned: false,
+    media: pinned.media.map((media) => ({ ...media, id: `${media.id}:regular`, aspectRatio: 0.75 })),
+    collectionIds: ["collection:snow"],
+  };
+  const draft = {
+    ...structuredClone(pinned),
+    id: "post:ig:draft",
+    title: "Private draft work",
+    caption: "Private draft caption",
+    visibility: "draft" as const,
+    pinned: false,
+    collectionIds: ["collection:secret"],
+  };
+  document.entities.posts = [pinned, regular, draft, ...document.entities.posts.filter((post) => post.authorProfileId !== "profile:ig")];
+  document.entities.collections = [
+    {
+      kind: "collection",
+      id: "collection:snow",
+      siteId: "site-1",
+      ownerProfileId: "profile:ig",
+      visibility: "published",
+      title: "Snow collection",
+      description: "Two public works",
+      postIds: [regular.id, pinned.id, draft.id],
+    },
+    {
+      kind: "collection",
+      id: "collection:secret",
+      siteId: "site-1",
+      ownerProfileId: "profile:ig",
+      visibility: "draft",
+      title: "Secret collection",
+      description: "Hidden collection",
+      postIds: [draft.id],
+    },
+  ];
+  return document;
+}
+
+function noPublicCollectionPostsDocument(): SiteDocumentV2Input {
+  const document = presentationDocument();
+  const draftPost = document.entities.posts.find((post) => post.id === "post:ig:draft");
+  if (!draftPost) throw new Error("draft fixture missing");
+  document.entities.collections = [{
+    kind: "collection",
+    id: "collection:empty-public",
+    siteId: "site-1",
+    ownerProfileId: "profile:ig",
+    visibility: "published",
+    title: "No public works",
+    description: "Contains only a draft",
+    postIds: [draftPost.id],
+  }];
+  return document;
+}
+
 async function mockEditor(page: Page, document = ocDocument()) {
   await page.addInitScript((value) => localStorage.setItem("sb-example-auth-token", JSON.stringify(value)), session);
   const saves: Array<{ document: SiteDocumentV2Input }> = [];
@@ -259,6 +332,45 @@ test("collection authoring autosaves ordered post membership and survives reload
   await expect(reloaded.getByRole("checkbox", { name: "收錄 Second work" })).toBeChecked();
   await expect(reloaded.locator(".ig-collection-post-row").filter({ hasText: "p1" })).toHaveAttribute("data-order", "1");
   await expect(reloaded.locator(".ig-collection-post-row").filter({ hasText: "Second work" })).toHaveAttribute("data-order", "2");
+});
+
+for (const width of [1280, 390]) {
+  test(`published pinned posts, collections and natural-ratio details work at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: width < 500 ? 844 : 800 });
+    await mockPublic(page, presentationDocument());
+    await page.goto("/@demo");
+    if (width < 500) await page.getByRole("button", { name: "Instagram.exe" }).click();
+    const win = page.getByRole("dialog", { name: "Instagram.exe" });
+
+    await expect(win.getByRole("heading", { name: "置頂作品" })).toBeVisible();
+    await expect(win.locator(".ig-pinned").getByRole("button", { name: "開啟貼文：Pinned snow caption" })).toBeVisible();
+    await expect(win.getByRole("button", { name: "開啟貼文：Private draft caption" })).toHaveCount(0);
+    await expect(win.getByRole("tab", { name: "合集" })).toBeVisible();
+    await win.getByRole("tab", { name: "合集" }).click();
+    await expect(win.getByText("Secret collection")).toHaveCount(0);
+    await win.getByRole("button", { name: "開啟合集：Snow collection" }).click();
+    await expect(win.locator(".ig-title strong")).toHaveText("Snow collection");
+    const collectionPosts = win.locator(".ig-collection-view .ig-cell");
+    await expect(collectionPosts).toHaveCount(2);
+    await expect(collectionPosts.nth(0)).toHaveAttribute("aria-label", "開啟貼文：Regular work caption");
+    await expect(collectionPosts.nth(1)).toHaveAttribute("aria-label", "開啟貼文：Pinned snow caption");
+    await collectionPosts.nth(1).click();
+    const detail = win.locator(".ig-media.detail");
+    await expect(detail).toBeVisible();
+    const box = await detail.boundingBox();
+    expect(box && box.width / box.height).toBeGreaterThan(1.95);
+    expect(box && box.width / box.height).toBeLessThan(2.05);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
+  });
+}
+
+test("collections tab stays hidden when published collections contain no public posts", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await mockPublic(page, noPublicCollectionPostsDocument());
+  await page.goto("/@demo");
+  const win = page.getByRole("dialog", { name: "Instagram.exe" });
+  await expect(win.getByRole("tab", { name: "合集" })).toHaveCount(0);
+  await expect(win.getByText("No public works")).toHaveCount(0);
 });
 
 for (const width of [1280, 390]) {
