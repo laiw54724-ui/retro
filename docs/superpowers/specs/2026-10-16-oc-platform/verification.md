@@ -180,3 +180,22 @@
 - Cloudflare Pages staging deployment：`5ecaee3b`。canonical：https://retrodesk-staging.pages.dev；immutable：https://5ecaee3b.retrodesk-staging.pages.dev；bundle `index-BAgbviXf.js`／`index-BpHe8PS8.css`。
 - live smoke：Pages canonical／immutable `200`、API `/api/health` `200`；線上 bundle 含「角色世界觀內容」、「所有角色」、「僅本次瀏覽」，使用 staging API/Supabase，不含 fallback `example.supabase.co` 或邀請成員入口。
 - Issue 狀態：只完成 #21A milestone；#21 保持 OPEN，待 #21B 的 migration、API membership/invite、RLS 與權限矩陣另行實作及安全審查。
+
+## #21B1 real collaboration security backend
+
+驗證日期：2026-10-16（Asia/Singapore）。本節完成真正多人協作的資料庫與 API 安全邊界；管理成員、接受邀請的前端 UI 留在 #21B2，因此 #21 維持 OPEN。
+
+- 實作計畫：`docs/superpowers/plans/2026-10-16-collaboration-security-21b1.md`。
+- 實作 commits：資料庫合約 `ce347f2`、request-time 權限 `8f76d85`、共享網站路由 `1b95da5`、安全邀請 API `f3c35c8`、共享私有素材 `3a33b94`、token log 防護 `56afebd`。
+- ownership／roles：`sites.owner_id` 維持唯一 owner truth；membership 只允許 editor/viewer。owner 可管理、發布與編輯，editor 可讀寫草稿及草稿素材但不可發布／管理成員，viewer 僅可讀。
+- immediate revocation：Worker 使用 service-role 時仍在每次請求重新查詢 site owner 與 membership；不存在或已移除的 membership 回非洩漏 `404`，不快取角色。
+- invitation safety：32-byte Web Crypto token 只在建立回應出現一次，Postgres 只存 SHA-256 digest；邀請綁定正規化登入 email、15 分鐘至 7 天期限、單次使用，接受時鎖列並原子寫 membership／accepted state／audit。
+- log/cache safety：code review 發現 URL token 會被 Hono logger 記錄，已改為 `POST /api/invites/accept` JSON body；所有協作回應帶 `Cache-Control: private, no-store`，list／RPC 回應不包含 digest。
+- asset boundary：editor upload 仍寫入 authoritative owner 的 `draft/users/<owner>/sites/<site>/...` 路徑與 owner metadata；viewer 只能 list／preview，legacy migration 仍 owner-only。
+- full unit：156 passed（shared 59 + API 79 + web 18）。
+- typecheck：pass（shared、API、web）；build：pass（shared、API Wrangler dry-run、web Vite）。
+- full E2E：74 passed（Chromium，30.0s），包含全部既有 auth、publish、asset migration、OC、scroll 與 responsive regressions。
+- `git diff --check`：pass；release code review 修正 raw invite token logging 後，API full suite 79/79 與 typecheck/build 再次通過。
+- staging DB：`supabase db push --dry-run` 只列出 `0006_site_collaboration.sql`；正式 push 成功，remote migration history 顯示 0001–0006 全部一致。
+- staging Worker：`https://retrodesk-api-staging.beibeiz.workers.dev`，version `324d3446-7eb4-4dcf-afe5-8192aebc92e1`，以 `--env staging --keep-vars` 保留 dashboard secrets/vars；startup 52ms。
+- live smoke：health `200`；未登入 `/api/sites` 與 `POST /api/invites/accept` 都是 `401`，後者含 `private, no-store`。本段沒有 web runtime 變更，因此沒有重發 Pages。
