@@ -22,6 +22,14 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
   const followers = Number.parseInt(profile.followers.replace(/[^0-9]/g, ""), 10) || 0;
   const followersText = s.followed ? String(followers + 1) : profile.followers || "0";
   const phStyle: CSSProperties = { ["--ph-a" as string]: tv.light, ["--ph-b" as string]: tv.face };
+  const appStyle: CSSProperties = {
+    background: "#fff",
+    boxShadow: tv.sunken,
+    ...(ctx.profileThemeOverride ? {
+      ["--ig-profile-accent" as string]: ctx.profileThemeOverride.accent,
+      ["--ig-profile-accent-text" as string]: "#fff"
+    } : {})
+  };
 
   const avatar = (size: number, ring?: string) => (
     <span className="ig-avatar ph" style={{ width: size, height: size, border: ring, ...phStyle }}>
@@ -130,7 +138,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
   const story = s.story >= 0 ? highlights[s.story] : undefined;
 
   return (
-    <div className={`ig-app ig-skin-${window.content.skin}`} style={{ background: "#fff", boxShadow: tv.sunken }}>
+    <div className={`ig-app ig-skin-${window.content.skin}`} style={appStyle}>
       <div className="ig-top">
         {s.screen === "post" ? <button type="button" className="ig-icbtn lg" aria-label="返回" onClick={() => s.go(s.back)}><Ic bg={I.back} size={22} /></button> : null}
         <span className="ig-title">
@@ -163,7 +171,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
                 {profile.showFollowedBy && profile.followedBy ? <span className="ig-followed">{profile.followedBy}</span> : null}
               </div>
               <div className="ig-btns">
-                <button type="button" aria-pressed={s.followed} className="ig-btn" style={s.followed ? { background: tv.face, color: tv.text, boxShadow: tv.pressed } : { background: tv.accent, color: "#fff", boxShadow: tv.bevel }} onClick={() => s.setFollowed(!s.followed)}>{s.followed ? "✓ Following" : "+ Follow"}</button>
+                <button type="button" aria-pressed={s.followed} className="ig-btn primary" style={s.followed ? { background: tv.face, color: tv.text, boxShadow: tv.pressed } : { background: tv.accent, color: "#fff", boxShadow: tv.bevel }} onClick={() => s.setFollowed(!s.followed)}>{s.followed ? "✓ Following" : "+ Follow"}</button>
                 {profile.dmUrl ? <button type="button" className="ig-btn" style={{ background: tv.face, color: tv.text, boxShadow: tv.bevel }} onClick={() => ctx.onLink({ target: "url", url: profile.dmUrl, label: "訊息" })}>訊息</button> : null}
                 <button type="button" className="ig-btn" style={{ background: tv.face, color: tv.text, boxShadow: tv.bevel }} onClick={() => s.showToast("已複製個人檔案連結")}>分享</button>
               </div>

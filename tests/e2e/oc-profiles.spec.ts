@@ -46,6 +46,10 @@ test("desktop OC editor switches, searches, duplicates, edits and safely retarge
   const switcher = win.getByRole("region", { name: "角色切換器" });
   await expect(switcher).toBeVisible();
 
+  await switcher.getByRole("button", { name: "＋ 新增角色" }).click();
+  await expect.poll(() => saves.at(-1)?.document.entities.profiles.some((profile) => profile.handle === "oc-3")).toBe(true);
+  await expect.poll(() => saves.at(-1)?.document.windows.find((window) => window.type === "instagram")?.content.profileRef.id).toBe(saves.at(-1)?.document.entities.profiles.find((profile) => profile.handle === "oc-3")?.id);
+
   await switcher.getByLabel("搜尋角色").fill("Bei");
   await expect(switcher.getByRole("option")).toHaveCount(1);
   await switcher.getByRole("option").getByRole("button", { name: "Bei Original @bei" }).click();
@@ -71,13 +75,34 @@ test("desktop OC editor switches, searches, duplicates, edits and safely retarge
 
 test("mobile OC editor exposes the same profile tools without horizontal overflow", async ({ page }) => {
   await page.setViewportSize({ width: 1400, height: 900 });
-  await mockEditor(page);
+  const saves = await mockEditor(page);
   await page.getByRole("button", { name: "手機版" }).click();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole("button", { name: "Instagram.exe" }).click();
   await page.getByRole("button", { name: "編輯此視窗" }).click();
-  await expect(page.getByRole("region", { name: "角色切換器" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "＋ 新增角色" })).toBeVisible();
+  const win = page.getByRole("dialog", { name: "Instagram.exe" });
+  const switcher = win.getByRole("region", { name: "角色切換器" });
+  await expect(switcher).toBeVisible();
+  await switcher.getByLabel("搜尋角色").fill("Bei");
+  await switcher.getByRole("button", { name: "Bei Original @bei" }).click();
+  await win.getByRole("textbox", { name: "顯示名稱" }).fill("Bei Mobile");
+  await expect.poll(() => saves.at(-1)?.document.entities.profiles.find((profile) => profile.handle === "bei")?.displayName).toBe("Bei Mobile");
+
+  await switcher.getByLabel("搜尋角色").fill("");
+  await switcher.getByRole("button", { name: "＋ 新增角色" }).click();
+  await expect.poll(() => saves.at(-1)?.document.entities.profiles.some((profile) => profile.handle === "oc-3")).toBe(true);
+  await win.getByRole("button", { name: "展開角色設定" }).click();
+  await win.getByRole("checkbox", { name: "自訂內容主題（只影響 IG 內容）" }).check();
+  await win.getByLabel("IG 內容強調色").fill("#00ff00");
+  await win.getByLabel("IG 內容背景色").fill("#102030");
+  await expect.poll(() => saves.at(-1)?.document.entities.profiles.find((profile) => profile.handle === "oc-3")?.themeOverride).toEqual({ accent: "#00ff00", background: "#102030" });
+
+  const deleteButton = win.getByRole("button", { name: "刪除並轉接" });
+  await expect(deleteButton).toBeDisabled();
+  await win.getByLabel(/此角色仍被視窗／貼文使用/).selectOption({ label: "Bei Mobile" });
+  await deleteButton.click();
+  await expect.poll(() => saves.at(-1)?.document.entities.profiles.some((profile) => profile.handle === "oc-3")).toBe(false);
+  await expect.poll(() => saves.at(-1)?.document.windows.find((window) => window.type === "instagram")?.content.profileRef.id).toBe("profile:bei");
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
 });
 
@@ -89,6 +114,7 @@ for (const width of [1280, 390]) {
     if (width < 500) await page.getByRole("button", { name: "Instagram.exe" }).click();
     const win = page.getByRole("dialog", { name: "Instagram.exe" });
     await expect(win.locator(".ig-frame")).toHaveCSS("background-color", "rgb(18, 52, 86)");
+    await expect(win.getByRole("button", { name: "+ Follow" })).toHaveCSS("background-color", "rgb(255, 0, 170)");
     const outerTitle = width < 500 ? page.locator(".m-titlebar") : win.locator(".retro-titlebar");
     await expect(outerTitle).not.toHaveCSS("background-color", "rgb(18, 52, 86)");
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
