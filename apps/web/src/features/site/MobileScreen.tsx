@@ -31,12 +31,13 @@ type Props = {
   profileDeleteGuardById?: Record<string, { windowTitles: string[]; postIds: string[] }>;
   profileDirectory?: ProfileDirectoryEntry[];
   updateContent?: (recipe: (document: SiteDocumentV2Input) => SiteDocumentV2Input, historyKey?: string) => void;
+  socialDocument?: SiteDocumentV2Input;
 };
 
 const clock = () => new Date().toTimeString().slice(0, 5);
 
 /** The single-window phone experience. Used for visitors, the editor preview and the mobile editor. */
-export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview, profiles, posts, collections, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent }: Props) {
+export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview, profiles, posts, collections, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
   const editor = mode === "editor";
   const store = useEditorStore();
   const tv = useThemeView(document.theme);
@@ -107,6 +108,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
                 profileDeleteGuardById={profileDeleteGuardById}
                 profileDirectory={profileDirectory}
                 updateContent={updateContent}
+                socialDocument={socialDocument}
               />
             </div>
             {editor ? <button type="button" className="m-fab" onClick={() => setInlineEdit(!inlineEdit)}>{inlineEdit ? "完成編輯" : "編輯此視窗"}</button> : null}

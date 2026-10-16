@@ -1,14 +1,21 @@
 import { useState } from "react";
 import {
   addPostMedia,
+  createActorComment,
   createPost,
+  deleteActorComment,
   deletePost,
   deletePostMedia,
   normalizeImageUrl,
   patchPostMedia,
   reorderPost,
   reorderPostMedia,
+  reorderActorComment,
+  setPostNamedLikers,
+  setPostOtherLikeCount,
+  updateActorComment,
   updatePost,
+  type ActorCommentV2,
   type PostEntityV2,
   type SiteDocumentV2Input
 } from "@retrodesk/shared";
@@ -76,6 +83,8 @@ export function CanonicalPostEditor({ props }: Props) {
     (next, item) => run(addPostMedia(next, post.id, { id: `media:${crypto.randomUUID()}`, ...item }, { siteId }), next),
     document
   ));
+  const social = (recipe: (document: SiteDocumentV2Input) => ReturnType<typeof setPostNamedLikers>, key?: string) => mutate((document) => run(recipe(document), document), key);
+  const changeComment = (postId: string, comment: ActorCommentV2, key?: string) => social((document) => updateActorComment(document, postId, comment.id, comment, { siteId }), key);
 
   return <fieldset className="w98-fieldset ig-canonical-posts"><legend>貼文與作品（{posts.length}）</legend>
     <div className="ie-row">
@@ -118,6 +127,26 @@ export function CanonicalPostEditor({ props }: Props) {
             <label className="check-row"><input type="checkbox" checked={post.visibility === "published"} onChange={(event) => patchPost(post, { visibility: event.target.checked ? "published" : "draft" })} />公開顯示</label>
             <label className="check-row"><input type="checkbox" checked={post.pinned} onChange={(event) => patchPost(post, { pinned: event.target.checked })} />置頂</label>
           </div>
+          <fieldset className="w98-fieldset ig-post-social"><legend>角色世界觀互動</legend>
+            <strong>具名喜歡者</strong>
+            <div className="ig-social-checks compact">
+              {(ctx.profiles ?? []).map((candidate) => <label key={`${post.id}-liker-${candidate.id}`} className="check-row"><input type="checkbox" checked={post.namedLikerIds.includes(candidate.id)} onChange={(event) => social((document) => setPostNamedLikers(document, post.id, event.target.checked ? [...post.namedLikerIds, candidate.id] : post.namedLikerIds.filter((id) => id !== candidate.id), { siteId }))} /><span>{candidate.displayName ?? candidate.name} <small>@{candidate.handle ?? candidate.username}</small></span></label>)}
+            </div>
+            <label className="w98-field"><span>其他虛構喜歡人數</span><input type="number" min={0} max={1_000_000_000} className="w98-input compact" aria-label="其他虛構喜歡人數" value={post.otherLikeCount} onChange={(event) => social((document) => setPostOtherLikeCount(document, post.id, Math.max(0, Number(event.target.value) || 0), { siteId }), `post-other-likes-${post.id}`)} /></label>
+            <strong>角色留言（{post.actorComments.length}）</strong>
+            {post.actorComments.map((comment, commentIndex) => <div key={comment.id} className="ig-actor-comment-row">
+              <select className="w98-input compact" aria-label={`留言 ${commentIndex + 1} 作者`} value={comment.authorKind === "profile" ? comment.authorProfileId : "__legacy"} onChange={(event) => changeComment(post.id, event.target.value === "__legacy" ? { id: comment.id, authorKind: "legacy", legacyAuthorText: comment.authorKind === "legacy" ? comment.legacyAuthorText : "friend", text: comment.text } : { id: comment.id, authorKind: "profile", authorProfileId: event.target.value, text: comment.text })}>
+                {(ctx.profiles ?? []).map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.displayName ?? candidate.name}</option>)}
+                <option value="__legacy">純文字舊角色</option>
+              </select>
+              {comment.authorKind === "legacy" ? <input className="w98-input compact" aria-label={`留言 ${commentIndex + 1} 舊作者名稱`} value={comment.legacyAuthorText} onChange={(event) => changeComment(post.id, { ...comment, legacyAuthorText: event.target.value }, `comment-author-${comment.id}`)} /> : null}
+              <input className="w98-input compact grow" aria-label={`留言 ${commentIndex + 1} 內容`} value={comment.text} onChange={(event) => changeComment(post.id, { ...comment, text: event.target.value }, `comment-text-${comment.id}`)} />
+              <button type="button" className="mini-btn" aria-label={`留言 ${commentIndex + 1} 往前`} disabled={commentIndex === 0} onClick={() => social((document) => reorderActorComment(document, post.id, comment.id, -1, { siteId }))}>▲</button>
+              <button type="button" className="mini-btn" aria-label={`留言 ${commentIndex + 1} 往後`} disabled={commentIndex === post.actorComments.length - 1} onClick={() => social((document) => reorderActorComment(document, post.id, comment.id, 1, { siteId }))}>▼</button>
+              <button type="button" className="mini-btn danger" aria-label={`刪除留言 ${commentIndex + 1}`} onClick={() => social((document) => deleteActorComment(document, post.id, comment.id, { siteId }))}>×</button>
+            </div>)}
+            <div className="ie-row"><button type="button" className="w98-btn small" onClick={() => social((document) => createActorComment(document, post.id, { authorKind: "profile", authorProfileId: authorId, text: "" }, { siteId, id: `comment:${crypto.randomUUID()}` }))}>＋ 角色留言</button><button type="button" className="w98-btn small" onClick={() => social((document) => createActorComment(document, post.id, { authorKind: "legacy", legacyAuthorText: "friend", text: "" }, { siteId, id: `comment:${crypto.randomUUID()}` }))}>＋ 純文字留言</button></div>
+          </fieldset>
           <strong>圖片（{post.media.length}/10）</strong>
           {post.media.map((media, mediaIndex) => <div key={media.id} className="ig-media-edit-row">
             <span className="ig-thumb sq48 ph">{media.src ? <AvatarImage src={media.src} crop={media.crop} alt={media.alt} /> : null}</span>

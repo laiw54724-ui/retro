@@ -78,7 +78,7 @@ export function setPostOtherLikeCount(document: SiteDocumentV2Input, postId: str
   return finish(prepared.document, options.siteId);
 }
 
-export function createActorComment(document: SiteDocumentV2Input, postId: string, input: Omit<ActorCommentV2, "id">, options: { siteId: string; id: string }): SocialOperationResult {
+export function createActorComment(document: SiteDocumentV2Input, postId: string, input: { authorKind: "profile"; authorProfileId: string; text: string } | { authorKind: "legacy"; legacyAuthorText: string; text: string }, options: { siteId: string; id: string }): SocialOperationResult {
   const prepared = prepare(document, options.siteId); if (!prepared.ok) return prepared;
   const target = post(prepared.document, postId, options.siteId); if (!target) return fail(["postId"], "找不到貼文。", "missing");
   const parsed = ActorCommentV2Schema.safeParse({ id: options.id, ...input });

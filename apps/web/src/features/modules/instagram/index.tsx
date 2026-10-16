@@ -3,6 +3,7 @@ import type { ModuleProps } from "../types";
 import { CanonicalHighlightEditor } from "./CanonicalHighlightEditor";
 import { CanonicalPostEditor } from "./CanonicalPostEditor";
 import { CanonicalCollectionEditor } from "./CanonicalCollectionEditor";
+import { CanonicalSocialEditor } from "./CanonicalSocialEditor";
 import { IgEditForm } from "./IgEditForm";
 import { IgPreview } from "./IgPreview";
 import { ProfileEditor } from "./ProfileEditor";
@@ -110,6 +111,7 @@ export function IgInlineEditor(props: ModuleProps<"instagram">) {
               (await props.ctx.upload?.(file, "image")) ?? null
             }
           />
+          <CanonicalSocialEditor props={props} />
           {props.ctx.onProfileDelete ? (
             <div className="ig-profile-delete">
               {props.ctx.profileDeleteGuard ? (

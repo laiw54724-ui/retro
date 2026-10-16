@@ -160,6 +160,42 @@ async function mockPublic(page: Page, document = ocDocument()) {
   await page.route("**/api/public/sites/demo", (route) => route.fulfill({ json: { site: { username: "demo", site_name: "Demo Desk", published_document: document, published_version: 2, published_at: "2026-10-15T00:00:00.000Z" } } }));
 }
 
+test("author configures fictional follows, named likes and actor comments with autosave", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const saves = await mockEditor(page);
+  const win = page.getByRole("dialog", { name: "Instagram.exe" });
+  const social = win.getByRole("group", { name: "角色互動" });
+  await social.getByLabel("搜尋互動角色").fill("Bei");
+  const following = social.locator("section").filter({ hasText: "追蹤中名單" });
+  await following.getByRole("checkbox").check();
+  await social.getByRole("button", { name: /其他粉絲數.*舊顯示：100/ }).click();
+  await social.getByRole("spinbutton", { name: "其他粉絲數" }).fill("12");
+
+  const postToggle = win.locator(".ig-canonical-posts .ig-post-toggle").first();
+  if (await postToggle.getAttribute("aria-expanded") !== "true") await postToggle.click();
+  const post = win.getByRole("group", { name: "角色世界觀互動" }).first();
+  await post.scrollIntoViewIfNeeded();
+  await post.getByRole("checkbox", { name: /Bei Original/ }).check();
+  await post.getByRole("spinbutton", { name: "其他虛構喜歡人數" }).fill("8");
+  await post.getByRole("button", { name: "＋ 角色留言" }).click();
+  await post.getByRole("textbox", { name: "留言 1 內容" }).fill("世界觀留言");
+
+  await expect.poll(() => saves.at(-1)?.document.entities.followEdges?.length).toBe(1);
+  const saved = saves.at(-1)?.document;
+  expect(saved?.entities.followEdges?.[0]).toMatchObject({ fromProfileId: "profile:ig", toProfileId: "profile:bei" });
+  expect(saved?.entities.profiles.find((profile) => profile.id === "profile:ig")?.otherFollowerCount).toBe(12);
+  expect(saved?.entities.posts[0].namedLikerIds).toContain("profile:bei");
+  expect(saved?.entities.posts[0].otherLikeCount).toBe(8);
+  expect(saved?.entities.posts[0].actorComments[0]).toMatchObject({ authorKind: "profile", text: "世界觀留言" });
+
+  await page.reload();
+  const reloaded = page.getByRole("dialog", { name: "Instagram.exe" });
+  const reloadedSocial = reloaded.getByRole("group", { name: "角色互動" });
+  await reloadedSocial.getByLabel("搜尋互動角色").fill("Bei");
+  await expect(reloadedSocial.locator("section").filter({ hasText: "追蹤中名單" }).getByRole("checkbox")).toBeChecked();
+  await expect(reloadedSocial.getByRole("spinbutton", { name: "其他粉絲數" })).toHaveValue("12");
+});
+
 test("desktop OC editor switches, searches, duplicates, edits and safely retargets profiles", async ({ page }) => {
   await page.setViewportSize({ width: 1400, height: 1000 });
   const saves = await mockEditor(page);

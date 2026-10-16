@@ -29,6 +29,7 @@ type Props = {
   profileDeleteGuardById?: Record<string, { windowTitles: string[]; postIds: string[] }>;
   profileDirectory?: ProfileDirectoryEntry[];
   updateContent?: (recipe: (document: SiteDocumentV2Input) => SiteDocumentV2Input, historyKey?: string) => void;
+  socialDocument?: SiteDocumentV2Input;
 };
 
 function openExternal(url: string) {
@@ -41,7 +42,7 @@ function openExternal(url: string) {
   }
 }
 
-export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, mobile = false, editing = false, siteId, upload, onUpdate, profiles, posts, collections, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent }: Props) {
+export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, mobile = false, editing = false, siteId, upload, onUpdate, profiles, posts, collections, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
   const tv = useThemeView(theme);
   const onLink = (action: LinkAction) => {
     if (editing) return; // links are inert while editing
@@ -59,7 +60,7 @@ export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, m
     onProfileDuplicate: (id) => onProfileDuplicate?.(id, win.id), onProfileChange: (id, patch, key) => onProfileChange?.(id, patch, key),
     onProfileDelete: (id, target) => onProfileDelete?.(id, target),
     profileDeleteBlocked: !!profileDeleteGuardById?.[resolvedProfileId ?? ""] && ((profileDeleteGuardById?.[resolvedProfileId ?? ""]?.windowTitles.length ?? 0) > 0 || (profileDeleteGuardById?.[resolvedProfileId ?? ""]?.postIds.length ?? 0) > 0),
-    profileDeleteGuard: profileDeleteGuardById?.[resolvedProfileId ?? ""], profileDirectory, updateContent
+    profileDeleteGuard: profileDeleteGuardById?.[resolvedProfileId ?? ""], profileDirectory, updateContent, socialDocument
   };
   const update = (recipe: (current: DesktopWindow) => DesktopWindow, key?: string) => onUpdate?.(win.id, recipe, key);
 

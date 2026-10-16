@@ -36,6 +36,8 @@ export type ModuleCtx = {
   profileDirectory?: ProfileDirectoryEntry[];
   /** Editor-only canonical content mutation. The recipe is committed as one v2 history step. */
   updateContent?: (recipe: (document: SiteDocumentV2Input) => SiteDocumentV2Input, historyKey?: string) => void;
+  /** Editor-only read snapshot used by canonical interaction controls. */
+  socialDocument?: SiteDocumentV2Input;
 };
 
 export type WindowOf<T extends DesktopWindow["type"]> = Extract<DesktopWindow, { type: T }>;
