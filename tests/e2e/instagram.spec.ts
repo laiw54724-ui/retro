@@ -37,10 +37,10 @@ test("preview: navigation, follow, double-tap like, carousel, comment, save, sto
   const { win } = await openEditor(page);
   await win.getByRole("tab", { name: "▶ 預覽互動" }).click();
 
-  // follow bumps the follower count
+  // visitor follow state is local and never rewrites the author's fictional count
   await expect(win.locator(".ig-counts3")).toContainText("100");
   await win.getByRole("button", { name: "+ Follow" }).click();
-  await expect(win.locator(".ig-counts3")).toContainText("101");
+  await expect(win.locator(".ig-counts3")).toContainText("100");
   await expect(win.getByRole("button", { name: "✓ Following" })).toBeVisible();
 
   // home feed
@@ -103,7 +103,7 @@ test("turning off comments and likes hides those controls for visitors", async (
   await win.getByRole("button", { name: "首頁" }).click();
   const first = win.locator(".ig-card").first();
   await expect(first.getByRole("button", { name: "留言" })).toHaveCount(0);
-  await expect(first.getByRole("button", { name: "讚" })).toHaveCount(0);
+  await expect(first.getByRole("button", { name: "讚", exact: true })).toHaveCount(0);
   await expect(first.getByText("nice")).toHaveCount(0);
   await first.locator(".ig-media").dblclick();
   await expect(first.getByText("10 個讚")).toBeVisible();

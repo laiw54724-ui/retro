@@ -79,7 +79,8 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
     const socialPost = post as Partial<ProfileDirectoryPost>;
     const namedLikerIds = socialPost.namedLikerIds ?? [];
     const hasStructuredLikes = Array.isArray(socialPost.namedLikerIds) || socialPost.otherLikeCount !== undefined;
-    const likes = hasStructuredLikes ? namedLikerIds.length + (socialPost.otherLikeCount ?? 0) : post.likes;
+    const baseLikes = hasStructuredLikes ? namedLikerIds.length + (socialPost.otherLikeCount ?? 0) : post.likes;
+    const likes = baseLikes + (s.liked[key] ? 1 : 0);
     const inputOpen = profile.allowComments && (single || s.commentOpen[key]);
     const draft = s.drafts[key] ?? "";
     const current = sources[index];
@@ -266,6 +267,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
               <div className="ig-btns">
                 <button type="button" aria-pressed={s.followed} className="ig-btn primary" title="僅本次瀏覽" style={s.followed ? { background: tv.face, color: tv.text, boxShadow: tv.pressed } : { background: tv.accent, color: "#fff", boxShadow: tv.bevel }} onClick={() => s.setFollowed(!s.followed)}>{s.followed ? "✓ Following（僅本次瀏覽）" : "+ Follow（僅本次瀏覽）"}</button>
                 {profile.dmUrl ? <button type="button" className="ig-btn" style={{ background: tv.face, color: tv.text, boxShadow: tv.bevel }} onClick={() => ctx.onLink({ target: "url", url: profile.dmUrl, label: "訊息" })}>訊息</button> : null}
+                {profileDirectory.length > 1 ? <button type="button" className="ig-btn" style={{ background: tv.face, color: tv.text, boxShadow: tv.bevel }} onClick={s.openDirectory}>所有角色</button> : null}
                 <button type="button" className="ig-btn" style={{ background: tv.face, color: tv.text, boxShadow: tv.bevel }} onClick={() => s.showToast("已複製個人檔案連結")}>分享</button>
               </div>
               {showHighlights ? renderHighlights(false) : null}

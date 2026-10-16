@@ -554,8 +554,8 @@ test("desktop visitor navigates OC directory and posts with layered back and scr
   await expect(win.getByRole("button", { name: "✓ Following" })).toBeVisible();
   await win.getByRole("button", { name: "開啟貼文：Retro archive 0" }).click();
   let card = win.locator(".ig-card");
-  await card.getByRole("button", { name: "讚" }).click();
-  await expect(card.getByRole("button", { name: "讚" })).toHaveAttribute("aria-pressed", "true");
+  await card.getByRole("button", { name: "讚", exact: true }).click();
+  await expect(card.getByRole("button", { name: "讚", exact: true })).toHaveAttribute("aria-pressed", "true");
   await card.getByRole("button", { name: "收藏" }).click();
   await expect(card.getByRole("button", { name: "收藏" })).toHaveAttribute("aria-pressed", "true");
   await card.getByRole("button", { name: "留言" }).click();
@@ -567,7 +567,7 @@ test("desktop visitor navigates OC directory and posts with layered back and scr
 
   // Invoke the already-visible profile control without Playwright auto-scrolling
   // it back to the top, so the navigation frame must preserve this offset.
-  await win.getByRole("button", { name: /粉絲/ }).evaluate((button) => (button as HTMLButtonElement).click());
+  await win.getByRole("button", { name: "所有角色" }).evaluate((button) => (button as HTMLButtonElement).click());
   await expect(win.getByRole("heading", { name: "此桌面的角色" })).toBeVisible();
   await expect(win.getByText("Secret Draft Character")).toHaveCount(0);
   await win.getByRole("button", { name: "Bei Original @bei" }).click();
@@ -576,7 +576,7 @@ test("desktop visitor navigates OC directory and posts with layered back and scr
   await win.getByRole("button", { name: "開啟貼文：Bei timeline" }).click();
   await expect(win.locator(".ig-title strong")).toHaveText("貼文");
   card = win.locator(".ig-card");
-  await expect(card.getByRole("button", { name: "讚" })).toHaveAttribute("aria-pressed", "false");
+  await expect(card.getByRole("button", { name: "讚", exact: true })).toHaveAttribute("aria-pressed", "false");
   await expect(card.getByRole("button", { name: "收藏" })).toHaveAttribute("aria-pressed", "false");
   await expect(card.getByText("Only on Retro")).toHaveCount(0);
 
@@ -589,7 +589,7 @@ test("desktop visitor navigates OC directory and posts with layered back and scr
   await expect(win.getByRole("button", { name: "✓ Following" })).toBeVisible();
   await expect.poll(() => scroll.evaluate((node) => node.scrollTop)).toBeGreaterThan(100);
 
-  await win.getByRole("button", { name: /追蹤中/ }).click();
+  await win.getByRole("button", { name: "所有角色" }).click();
   await win.getByRole("button", { name: "Bei Original @bei" }).click();
   await win.getByRole("button", { name: "關閉" }).click();
   await page.locator(".visitor-icon").filter({ hasText: "Instagram.exe" }).click();
@@ -604,7 +604,7 @@ test("mobile visitor can browse the published OC directory without draft leakage
   const win = page.getByRole("dialog", { name: "Instagram.exe" });
   const scroll = win.locator(".ig-scroll");
   await expect.poll(() => scroll.evaluate((node) => { node.scrollTop = 180; return node.scrollTop; })).toBeGreaterThan(100);
-  await win.getByRole("button", { name: /粉絲/ }).evaluate((button) => (button as HTMLButtonElement).click());
+  await win.getByRole("button", { name: "所有角色" }).evaluate((button) => (button as HTMLButtonElement).click());
   await expect(win.getByText("Secret Draft Character")).toHaveCount(0);
   await win.getByRole("button", { name: "Bei Original @bei" }).click();
   await win.getByRole("button", { name: "開啟貼文：Bei timeline" }).click();

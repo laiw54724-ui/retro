@@ -67,6 +67,7 @@ describe("versioned site document contract", () => {
       expect(entity).toMatchObject({ handle: "alice", displayName: "Alice", legacyUsernameLabel: "alice", legacyFollowersLabel: "101", legacyFollowingLabel: "202", otherFollowerCount: null, otherFollowingCount: null });
       const legacyPost = originalIg.content.images[0];
       const migratedPost = result.document.entities.posts[0];
+      expect(migratedPost).toMatchObject({ namedLikerIds: [], otherLikeCount: 300, actorComments: [] });
       const { kind: pk, id: pid, siteId: ps, visibility: pv, authorProfileId, media: _media, worldDateLabel: _worldDateLabel, taggedProfileIds: _taggedProfileIds, collectionIds: _collectionIds, pinned: _pinned, namedLikerIds: _namedLikerIds, otherLikeCount: _otherLikeCount, actorComments: _actorComments, ...postFields } = migratedPost;
       const { id: legacyPostId, ...legacyPostFields } = legacyPost;
       expect(postFields).toEqual(legacyPostFields);
