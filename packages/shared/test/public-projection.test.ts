@@ -55,6 +55,15 @@ describe("public site projection", () => {
     draft.entities.collections.push({ kind: "collection", id: "collection-public", siteId: profile.siteId, ownerProfileId: profile.id, visibility: "published", title: "Works", description: "", postIds: [post.id] });
     draft.entities.collections.push({ kind: "collection", id: "collection-hidden-owner", siteId: profile.siteId, ownerProfileId: hidden.id, visibility: "published", title: "Private collection", description: "do not leak", postIds: [post.id] });
     post.collectionIds = ["collection-public", "collection-hidden-owner"];
+    post.namedLikerIds = [profile.id, hidden.id];
+    post.actorComments = [
+      { id: "comment-public", authorKind: "profile", authorProfileId: profile.id, text: "hello" },
+      { id: "comment-hidden", authorKind: "profile", authorProfileId: hidden.id, text: "PRIVATE_ACTOR" },
+      { id: "comment-legacy", authorKind: "legacy", legacyAuthorText: "old friend", text: "legacy" }
+    ];
+    draft.entities.followEdges.push(
+      { kind: "follow", id: "follow-public", siteId: profile.siteId, fromProfileId: profile.id, toProfileId: hidden.id }
+    );
     const result = projectPublicSiteDocument(draft, profile.siteId);
     expect(result.ok).toBe(true);
     if (!result.ok || result.version !== 2) return;
@@ -68,6 +77,10 @@ describe("public site projection", () => {
     expect(result.document.entities.collections[0]?.postIds).toEqual([post.id]);
     expect(JSON.stringify(result.document)).not.toContain("Private collection");
     expect(JSON.stringify(result.document)).not.toContain("private/embedded.png");
+    expect(result.document.entities.posts[0]?.namedLikerIds).toEqual([profile.id]);
+    expect(result.document.entities.posts[0]?.actorComments.map((comment) => comment.id)).toEqual(["comment-public", "comment-legacy"]);
+    expect(result.document.entities.followEdges).toEqual([]);
+    expect(JSON.stringify(result.document)).not.toContain("PRIVATE_ACTOR");
   });
 
   it("is deterministic and rejects invalid or unsupported versions", () => {

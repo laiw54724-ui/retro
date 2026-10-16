@@ -46,6 +46,7 @@ describe("versioned site document contract", () => {
     if (!result.ok) return;
     expect(result.document.entities.profiles).toHaveLength(1);
     expect(result.document.entities.posts).toHaveLength(1);
+    expect(result.document.entities.followEdges).toEqual([]);
     expect(result.document.entities.profiles[0]).toMatchObject({ id: "profile:ig-1", siteId: "site-a", kind: "profile", visibility: "published", username: "alice" });
     expect(result.document.entities.posts[0]).toMatchObject({ id: "post:ig-1:p1", authorProfileId: "profile:ig-1", comments: [{ id: "c1" }], extra: [{ id: "e1" }] });
     expect(result.document.windows.find((w) => w.id === "ig-1")).toMatchObject({ content: { profileRef: { siteId: "site-a", id: "profile:ig-1", kind: "profile" } } });
@@ -63,10 +64,10 @@ describe("versioned site document contract", () => {
       const entity = result.document.entities.profiles[0];
       const { kind, id, siteId, visibility, ...profileFields } = entity;
       expect(profileFields).toMatchObject(legacyProfile);
-      expect(entity).toMatchObject({ handle: "alice", displayName: "Alice", legacyUsernameLabel: "alice", legacyFollowersLabel: "101", legacyFollowingLabel: "202" });
+      expect(entity).toMatchObject({ handle: "alice", displayName: "Alice", legacyUsernameLabel: "alice", legacyFollowersLabel: "101", legacyFollowingLabel: "202", otherFollowerCount: null, otherFollowingCount: null });
       const legacyPost = originalIg.content.images[0];
       const migratedPost = result.document.entities.posts[0];
-      const { kind: pk, id: pid, siteId: ps, visibility: pv, authorProfileId, media: _media, worldDateLabel: _worldDateLabel, taggedProfileIds: _taggedProfileIds, collectionIds: _collectionIds, pinned: _pinned, ...postFields } = migratedPost;
+      const { kind: pk, id: pid, siteId: ps, visibility: pv, authorProfileId, media: _media, worldDateLabel: _worldDateLabel, taggedProfileIds: _taggedProfileIds, collectionIds: _collectionIds, pinned: _pinned, namedLikerIds: _namedLikerIds, otherLikeCount: _otherLikeCount, actorComments: _actorComments, ...postFields } = migratedPost;
       const { id: legacyPostId, ...legacyPostFields } = legacyPost;
       expect(postFields).toEqual(legacyPostFields);
     }

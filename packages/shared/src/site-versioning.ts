@@ -68,7 +68,9 @@ const ProfileAuthoringFields = {
   themeOverride: ProfileThemeOverrideSchema.optional(),
   legacyUsernameLabel: z.string().max(64).optional(),
   legacyFollowersLabel: z.string().max(32).optional(),
-  legacyFollowingLabel: z.string().max(32).optional()
+  legacyFollowingLabel: z.string().max(32).optional(),
+  otherFollowerCount: z.number().int().min(0).max(1e9).nullable().default(null),
+  otherFollowingCount: z.number().int().min(0).max(1e9).nullable().default(null)
 };
 const StrictPostFields = { ...PostFields, comments: z.array(StrictCommentSchema).max(200).default([]), extra: z.array(StrictExtraImageSchema).max(9).default([]) };
 export const PostMediaV2Schema = z.object({
@@ -84,16 +86,26 @@ export const CollectionEntityV2Schema = z.object({
   kind: z.literal("collection"), id: BoundedId, siteId: BoundedId, ownerProfileId: BoundedId, visibility: VisibilitySchema,
   title: z.string().max(120), description: z.string().max(1000).default(""), postIds: z.array(BoundedId).max(500).default([])
 }).strict();
+export const ActorCommentV2Schema = z.discriminatedUnion("authorKind", [
+  z.object({ id: BoundedId, authorKind: z.literal("profile"), authorProfileId: BoundedId, text: z.string().max(1000) }).strict(),
+  z.object({ id: BoundedId, authorKind: z.literal("legacy"), legacyAuthorText: z.string().max(64), text: z.string().max(1000) }).strict()
+]);
+export const FollowEdgeV2Schema = z.object({
+  kind: z.literal("follow"), id: BoundedId, siteId: BoundedId, fromProfileId: BoundedId, toProfileId: BoundedId
+}).strict();
 export type PostMediaV2 = z.infer<typeof PostMediaV2Schema>;
 export type HighlightFrameV2 = z.infer<typeof HighlightFrameV2Schema>;
 export type HighlightEntityV2 = z.infer<typeof HighlightEntityV2Schema>;
 export type CollectionEntityV2 = z.infer<typeof CollectionEntityV2Schema>;
+export type ActorCommentV2 = z.infer<typeof ActorCommentV2Schema>;
+export type FollowEdgeV2 = z.infer<typeof FollowEdgeV2Schema>;
 export const ProfileEntityV2Schema = z.object({
   kind: z.literal("profile"), id: BoundedId, siteId: BoundedId, visibility: VisibilitySchema, ...StrictProfileFields, ...ProfileAuthoringFields
 }).strict();
 export const PostEntityV2Schema = z.object({
   kind: z.literal("post"), id: BoundedId, siteId: BoundedId, visibility: VisibilitySchema, authorProfileId: BoundedId, ...StrictPostFields,
   media: z.array(PostMediaV2Schema).max(10).default([]), worldDateLabel: z.string().max(120).default(""), taggedProfileIds: z.array(BoundedId).max(100).default([]), collectionIds: z.array(BoundedId).max(100).default([]), pinned: z.boolean().default(false),
+  namedLikerIds: z.array(BoundedId).max(100).default([]), otherLikeCount: z.number().int().min(0).max(1e9).default(0), actorComments: z.array(ActorCommentV2Schema).max(200).default([]),
   createdAt: z.string().datetime().optional(), updatedAt: z.string().datetime().optional()
 }).strict();
 export type ProfileEntityV2 = z.infer<typeof ProfileEntityV2Schema>;
@@ -122,7 +134,7 @@ export type DesktopWindowV2 = z.infer<typeof DesktopWindowV2Schema>;
 export const SiteDocumentV2Schema = z.object({
   schemaVersion: z.literal(2), siteName: z.string().min(1).max(120), theme: StrictThemeSchema,
   windows: z.array(DesktopWindowV2Schema).max(100), mobileColumns: z.number().int().min(3).max(4).default(4),
-  entities: z.object({ profiles: z.array(ProfileEntityV2Schema).max(100), posts: z.array(PostEntityV2Schema).max(500), highlights: z.array(HighlightEntityV2Schema).max(200).default([]), collections: z.array(CollectionEntityV2Schema).max(200).default([]) }).strict()
+  entities: z.object({ profiles: z.array(ProfileEntityV2Schema).max(100), posts: z.array(PostEntityV2Schema).max(500), highlights: z.array(HighlightEntityV2Schema).max(200).default([]), collections: z.array(CollectionEntityV2Schema).max(200).default([]), followEdges: z.array(FollowEdgeV2Schema).max(10_000).default([]) }).strict()
 }).strict();
 export type SiteDocumentV2 = z.infer<typeof SiteDocumentV2Schema>;
 /** Raw v2 shape accepted by Zod; defaulted fields may be omitted intentionally. */
@@ -178,8 +190,8 @@ export function projectV2ToLegacyDocument(document: SiteDocumentV2Input): { ok: 
     if (window.type !== "instagram") return window;
     const profile = profiles.get(window.content.profileRef.id);
     if (!profile || profile.siteId !== window.content.profileRef.siteId) return null;
-    const { kind: _kind, id: _id, siteId: _siteId, visibility: _visibility, handle: _handle, displayName: _displayName, pronouns: _pronouns, customFields: _customFields, worldTags: _worldTags, themeOverride: _themeOverride, legacyUsernameLabel: _legacyUsernameLabel, legacyFollowersLabel: _legacyFollowersLabel, legacyFollowingLabel: _legacyFollowingLabel, ...legacyProfile } = profile;
-    const posts = document.entities.posts.filter((post) => post.siteId === profile.siteId && post.authorProfileId === profile.id).map(({ kind: _postKind, siteId: _postSiteId, visibility: _postVisibility, authorProfileId: _authorProfileId, media, worldDateLabel: _worldDateLabel, taggedProfileIds: _taggedProfileIds, collectionIds: _collectionIds, pinned: _pinned, createdAt: _createdAt, updatedAt: _updatedAt, ...post }) => {
+    const { kind: _kind, id: _id, siteId: _siteId, visibility: _visibility, handle: _handle, displayName: _displayName, pronouns: _pronouns, customFields: _customFields, worldTags: _worldTags, themeOverride: _themeOverride, legacyUsernameLabel: _legacyUsernameLabel, legacyFollowersLabel: _legacyFollowersLabel, legacyFollowingLabel: _legacyFollowingLabel, otherFollowerCount: _otherFollowerCount, otherFollowingCount: _otherFollowingCount, ...legacyProfile } = profile;
+    const posts = document.entities.posts.filter((post) => post.siteId === profile.siteId && post.authorProfileId === profile.id).map(({ kind: _postKind, siteId: _postSiteId, visibility: _postVisibility, authorProfileId: _authorProfileId, media, worldDateLabel: _worldDateLabel, taggedProfileIds: _taggedProfileIds, collectionIds: _collectionIds, pinned: _pinned, namedLikerIds: _namedLikerIds, otherLikeCount: _otherLikeCount, actorComments: _actorComments, createdAt: _createdAt, updatedAt: _updatedAt, ...post }) => {
       if (!media?.length) return post;
       const [first, ...rest] = media;
       return { ...post, src: first.src, srcUrl: first.srcUrl, extra: rest.map((item) => ({ id: item.id, src: item.src, srcUrl: item.srcUrl })) };
@@ -206,7 +218,7 @@ export function mergeLegacyDocumentIntoV2(document: SiteDocumentV2Input, legacy:
   const highlightEdits = new Set<string>();
   const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
   const legacyProfileOf = (profile: ProfileEntityV2) => {
-    const { kind: _kind, id: _id, siteId: _siteId, visibility: _visibility, handle: _handle, displayName: _displayName, pronouns: _pronouns, customFields: _customFields, worldTags: _worldTags, themeOverride: _themeOverride, legacyUsernameLabel: _legacyUsernameLabel, legacyFollowersLabel: _legacyFollowersLabel, legacyFollowingLabel: _legacyFollowingLabel, ...legacyProfile } = profile;
+    const { kind: _kind, id: _id, siteId: _siteId, visibility: _visibility, handle: _handle, displayName: _displayName, pronouns: _pronouns, customFields: _customFields, worldTags: _worldTags, themeOverride: _themeOverride, legacyUsernameLabel: _legacyUsernameLabel, legacyFollowersLabel: _legacyFollowersLabel, legacyFollowingLabel: _legacyFollowingLabel, otherFollowerCount: _otherFollowerCount, otherFollowingCount: _otherFollowingCount, ...legacyProfile } = profile;
     return { ...legacyProfile, username: profile.handle ?? profile.username, name: profile.displayName ?? profile.name };
   };
   // Keep this local helper structurally typed so legacy module edits do not
@@ -265,13 +277,13 @@ export function mergeLegacyDocumentIntoV2(document: SiteDocumentV2Input, legacy:
     }
     const posts = legacyWindow.content.images;
     const existing = next.entities.posts.filter((post) => post.authorProfileId === profile.id);
-    const baseline = existing.map(({ kind: _kind, siteId: _siteId, visibility: _visibility, authorProfileId: _authorProfileId, media, worldDateLabel: _worldDateLabel, taggedProfileIds: _taggedProfileIds, collectionIds: _collectionIds, pinned: _pinned, createdAt: _createdAt, updatedAt: _updatedAt, ...post }) => media?.length ? { ...post, src: media[0].src, srcUrl: media[0].srcUrl, extra: media.slice(1).map((item) => ({ id: item.id, src: item.src, srcUrl: item.srcUrl })) } : post);
+    const baseline = existing.map(({ kind: _kind, siteId: _siteId, visibility: _visibility, authorProfileId: _authorProfileId, media, worldDateLabel: _worldDateLabel, taggedProfileIds: _taggedProfileIds, collectionIds: _collectionIds, pinned: _pinned, namedLikerIds: _namedLikerIds, otherLikeCount: _otherLikeCount, actorComments: _actorComments, createdAt: _createdAt, updatedAt: _updatedAt, ...post }) => media?.length ? { ...post, src: media[0].src, srcUrl: media[0].srcUrl, extra: media.slice(1).map((item) => ({ id: item.id, src: item.src, srcUrl: item.srcUrl })) } : post);
     const postsChanged = !same(posts, baseline);
     if (postsChanged && !postEdits.has(profile.id)) {
       const existingIds = new Set(existing.map((post) => post.id));
       next.entities.posts = next.entities.posts.filter((post) => post.authorProfileId !== profile.id);
       const existingById = new Map(existing.map((item) => [item.id, item]));
-      next.entities.posts.push(...posts.map((post) => { const old = existingById.get(post.id); return { kind: "post" as const, siteId: profile.siteId, visibility: old?.visibility ?? "published" as const, authorProfileId: profile.id, ...post, id: existingIds.has(post.id) ? post.id : `post:${profile.id}:${post.id}`, media: [{ id: old?.media?.[0]?.id ?? `${post.id}:media`, src: post.src, srcUrl: post.srcUrl, alt: old?.media?.[0]?.alt ?? "", crop: old?.media?.[0]?.crop, aspectRatio: old?.media?.[0]?.aspectRatio }, ...post.extra.map((item, index) => ({ id: old?.media?.[index + 1]?.id ?? item.id, src: item.src, srcUrl: item.srcUrl, alt: old?.media?.[index + 1]?.alt ?? "", crop: old?.media?.[index + 1]?.crop, aspectRatio: old?.media?.[index + 1]?.aspectRatio }))], worldDateLabel: old?.worldDateLabel ?? "", taggedProfileIds: old?.taggedProfileIds ?? [], collectionIds: old?.collectionIds ?? [], pinned: old?.pinned ?? false, createdAt: old?.createdAt, updatedAt: old?.updatedAt }; }));
+      next.entities.posts.push(...posts.map((post) => { const old = existingById.get(post.id); return { kind: "post" as const, siteId: profile.siteId, visibility: old?.visibility ?? "published" as const, authorProfileId: profile.id, ...post, id: existingIds.has(post.id) ? post.id : `post:${profile.id}:${post.id}`, media: [{ id: old?.media?.[0]?.id ?? `${post.id}:media`, src: post.src, srcUrl: post.srcUrl, alt: old?.media?.[0]?.alt ?? "", crop: old?.media?.[0]?.crop, aspectRatio: old?.media?.[0]?.aspectRatio }, ...post.extra.map((item, index) => ({ id: old?.media?.[index + 1]?.id ?? item.id, src: item.src, srcUrl: item.srcUrl, alt: old?.media?.[index + 1]?.alt ?? "", crop: old?.media?.[index + 1]?.crop, aspectRatio: old?.media?.[index + 1]?.aspectRatio }))], worldDateLabel: old?.worldDateLabel ?? "", taggedProfileIds: old?.taggedProfileIds ?? [], collectionIds: old?.collectionIds ?? [], pinned: old?.pinned ?? false, namedLikerIds: old?.namedLikerIds ?? [], otherLikeCount: old?.otherLikeCount ?? 0, actorComments: old?.actorComments ?? [], createdAt: old?.createdAt, updatedAt: old?.updatedAt }; }));
       postEdits.add(profile.id);
     }
     const index = next.windows.findIndex((window) => window.id === legacyWindow.id);
@@ -330,10 +342,11 @@ function invalid(raw: unknown, diagnostics: Diagnostic[]): InvalidResult { retur
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value); }
 
 function semanticDiagnostics(document: SiteDocumentV2): Diagnostic[] {
-  const out: Diagnostic[] = [], windowIds = new Set<string>(), profileIds = new Set<string>(), postIds = new Set<string>(), highlightIds = new Set<string>(), collectionIds = new Set<string>();
+  const out: Diagnostic[] = [], windowIds = new Set<string>(), profileIds = new Set<string>(), postIds = new Set<string>(), highlightIds = new Set<string>(), collectionIds = new Set<string>(), followIds = new Set<string>(), followPairs = new Set<string>();
   const scopeSites = new Set<string>([...document.entities.profiles, ...document.entities.posts].map((e) => e.siteId));
   for (const entity of document.entities.highlights) scopeSites.add(entity.siteId);
   for (const entity of document.entities.collections) scopeSites.add(entity.siteId);
+  for (const entity of document.entities.followEdges) scopeSites.add(entity.siteId);
   for (const window of document.windows) if (window.type === "instagram") scopeSites.add(window.content.profileRef.siteId);
   const mixedSiteScope = scopeSites.size > 1;
   if (mixedSiteScope) out.push({ path: ["entities"], message: "Mixed site scope", code: "cross_site" });
@@ -361,6 +374,9 @@ function semanticDiagnostics(document: SiteDocumentV2): Diagnostic[] {
     if (!document.entities.profiles.some((p) => p.id === post.authorProfileId && p.siteId === post.siteId)) out.push({ path: ["entities", "posts", i, "authorProfileId"], message: mixedSiteScope ? "Cross-site author profile" : "Missing author profile", code: mixedSiteScope ? "cross_site" : "missing_ref" });
     for (const [j, profileId] of post.taggedProfileIds.entries()) if (!document.entities.profiles.some((p) => p.id === profileId && p.siteId === post.siteId)) out.push({ path: ["entities", "posts", i, "taggedProfileIds", j], message: "Missing tagged profile", code: "missing_ref" });
     for (const [j, collectionId] of post.collectionIds.entries()) if (!document.entities.collections.some((collection) => collection.id === collectionId && collection.siteId === post.siteId)) out.push({ path: ["entities", "posts", i, "collectionIds", j], message: "Missing post collection", code: "missing_ref" });
+    if (new Set(post.namedLikerIds).size !== post.namedLikerIds.length) out.push({ path: ["entities", "posts", i, "namedLikerIds"], message: "Duplicate named liker", code: "duplicate_ref" });
+    for (const [j, profileId] of post.namedLikerIds.entries()) if (!document.entities.profiles.some((p) => p.id === profileId && p.siteId === post.siteId)) out.push({ path: ["entities", "posts", i, "namedLikerIds", j], message: "Missing named liker", code: "missing_ref" });
+    for (const [j, comment] of post.actorComments.entries()) if (comment.authorKind === "profile" && !document.entities.profiles.some((p) => p.id === comment.authorProfileId && p.siteId === post.siteId)) out.push({ path: ["entities", "posts", i, "actorComments", j, "authorProfileId"], message: "Missing comment author", code: "missing_ref" });
   }
   for (const [i, highlight] of document.entities.highlights.entries()) {
     if (highlightIds.has(highlight.id)) out.push({ path: ["entities", "highlights", i, "id"], message: "Duplicate entity id", code: "duplicate_id" }); highlightIds.add(highlight.id);
@@ -370,6 +386,13 @@ function semanticDiagnostics(document: SiteDocumentV2): Diagnostic[] {
     if (collectionIds.has(collection.id)) out.push({ path: ["entities", "collections", i, "id"], message: "Duplicate entity id", code: "duplicate_id" }); collectionIds.add(collection.id);
     if (!document.entities.profiles.some((p) => p.id === collection.ownerProfileId && p.siteId === collection.siteId)) out.push({ path: ["entities", "collections", i, "ownerProfileId"], message: "Missing collection owner", code: "missing_ref" });
     for (const [j, postId] of collection.postIds.entries()) if (!document.entities.posts.some((p) => p.id === postId && p.siteId === collection.siteId)) out.push({ path: ["entities", "collections", i, "postIds", j], message: "Missing collection post", code: "missing_ref" });
+  }
+  for (const [i, edge] of document.entities.followEdges.entries()) {
+    if (followIds.has(edge.id)) out.push({ path: ["entities", "followEdges", i, "id"], message: "Duplicate follow id", code: "duplicate_id" }); followIds.add(edge.id);
+    if (edge.fromProfileId === edge.toProfileId) out.push({ path: ["entities", "followEdges", i], message: "A profile cannot follow itself", code: "self_follow" });
+    const pair = `${edge.fromProfileId}\u0000${edge.toProfileId}`;
+    if (followPairs.has(pair)) out.push({ path: ["entities", "followEdges", i], message: "Duplicate follow edge", code: "duplicate_edge" }); followPairs.add(pair);
+    for (const [field, id] of [["fromProfileId", edge.fromProfileId], ["toProfileId", edge.toProfileId]] as const) if (!document.entities.profiles.some((profile) => profile.id === id && profile.siteId === edge.siteId)) out.push({ path: ["entities", "followEdges", i, field], message: "Missing follow profile", code: "missing_ref" });
   }
   return out;
 }
@@ -438,7 +461,7 @@ export function migrateSiteDocumentV2(raw: unknown, options: { siteId: string })
     const profileId = boundedGeneratedId(`profile:${windowId}`, profileIds);
     const legacy = window.content.profile;
     const handle = uniqueProfileHandle(legacy.username, profileHandles);
-    profiles.push({ kind: "profile", id: profileId, siteId: options.siteId, visibility: "published", ...legacy, handle, displayName: legacy.name || handle, pronouns: "", customFields: [], worldTags: [], legacyUsernameLabel: legacy.username, legacyFollowersLabel: legacy.followers, legacyFollowingLabel: legacy.following });
+    profiles.push({ kind: "profile", id: profileId, siteId: options.siteId, visibility: "published", ...legacy, handle, displayName: legacy.name || handle, pronouns: "", customFields: [], worldTags: [], legacyUsernameLabel: legacy.username, legacyFollowersLabel: legacy.followers, legacyFollowingLabel: legacy.following, otherFollowerCount: null, otherFollowingCount: null });
     for (const highlight of legacy.highlights) {
       const highlightId = boundedGeneratedId(`highlight:${windowId}:${highlight.id}`, highlightIds);
       highlights.push({ kind: "highlight", id: highlightId, siteId: options.siteId, ownerProfileId: profileId, visibility: "published", title: highlight.title, coverSrc: highlight.src, coverSrcUrl: highlight.srcUrl, coverAlt: "", frames: [{ id: boundedGeneratedId(`${highlightId}:frame`, frameIds), src: highlight.src, srcUrl: highlight.srcUrl, alt: "", text: "" }] });
@@ -446,13 +469,13 @@ export function migrateSiteDocumentV2(raw: unknown, options: { siteId: string })
     for (const post of window.content.images) {
       const postId = boundedGeneratedId(`post:${windowId}:${post.id}`, postIds);
       const media = [{ id: boundedGeneratedId(`${postId}:media`, mediaIds), src: post.src, srcUrl: post.srcUrl, alt: "" }, ...post.extra.map((item) => ({ id: boundedGeneratedId(`${postId}:media:${item.id}`, mediaIds), src: item.src, srcUrl: item.srcUrl, alt: "" }))];
-      posts.push({ kind: "post", siteId: options.siteId, visibility: "published", authorProfileId: profileId, ...post, id: postId, media, worldDateLabel: "", taggedProfileIds: [], collectionIds: [], pinned: false });
+      posts.push({ kind: "post", siteId: options.siteId, visibility: "published", authorProfileId: profileId, ...post, id: postId, media, worldDateLabel: "", taggedProfileIds: [], collectionIds: [], pinned: false, namedLikerIds: [], otherLikeCount: 0, actorComments: [] });
     }
     const migratedWindow = DesktopWindowV2Schema.safeParse({ ...window, id: windowId, content: { skin: window.content.skin, profileRef: { siteId: options.siteId, id: profileId, kind: "profile" } } });
     if (!migratedWindow.success) return invalid(raw, diagnosticsFrom(migratedWindow.error));
     windows.push(migratedWindow.data);
   }
-  const migrated: SiteDocumentV2 = { schemaVersion: 2, siteName: source.siteName, theme: source.theme, windows, mobileColumns: source.mobileColumns, entities: { profiles, posts, highlights, collections } };
+  const migrated: SiteDocumentV2 = { schemaVersion: 2, siteName: source.siteName, theme: source.theme, windows, mobileColumns: source.mobileColumns, entities: { profiles, posts, highlights, collections, followEdges: [] } };
   const validated = parseSiteDocument(migrated);
   if (validated.ok && validated.version === 2) return validated;
   if (!validated.ok && validated.code === "invalid") return invalid(raw, validated.diagnostics);
@@ -505,6 +528,7 @@ function validatedOutput(document: SiteDocumentV2Input): ProfileDiagnostic[] {
 
 function documentSiteScope(document: SiteDocumentV2Input): Set<string> {
   const sites = new Set<string>([...document.entities.profiles, ...document.entities.posts].map((entity) => entity.siteId));
+  for (const edge of document.entities.followEdges ?? []) sites.add(edge.siteId);
   for (const window of document.windows) if (window.type === "instagram") sites.add(window.content.profileRef.siteId);
   return sites;
 }
@@ -597,12 +621,15 @@ export function deleteOrRetargetProfile(document: SiteDocumentV2Input, profileId
   const next = structuredClone(document);
   if (options.retargetProfileId) {
     next.windows = next.windows.map((window) => window.type === "instagram" && window.content.profileRef.id === profileId ? { ...window, content: { ...window.content, profileRef: { ...window.content.profileRef, id: options.retargetProfileId! } } } : window);
-    next.entities.posts = next.entities.posts.map((post) => ({ ...post, authorProfileId: post.authorProfileId === profileId ? options.retargetProfileId! : post.authorProfileId, taggedProfileIds: (post.taggedProfileIds ?? []).map((id) => id === profileId ? options.retargetProfileId! : id) }));
+    next.entities.posts = next.entities.posts.map((post) => ({ ...post, authorProfileId: post.authorProfileId === profileId ? options.retargetProfileId! : post.authorProfileId, taggedProfileIds: (post.taggedProfileIds ?? []).map((id) => id === profileId ? options.retargetProfileId! : id), namedLikerIds: (post.namedLikerIds ?? []).map((id) => id === profileId ? options.retargetProfileId! : id).filter((id, index, list) => list.indexOf(id) === index), actorComments: (post.actorComments ?? []).map((comment) => comment.authorKind === "profile" && comment.authorProfileId === profileId ? { ...comment, authorProfileId: options.retargetProfileId! } : comment) }));
     next.entities.highlights = (next.entities.highlights ?? []).map((highlight) => highlight.ownerProfileId === profileId ? { ...highlight, ownerProfileId: options.retargetProfileId! } : highlight);
     next.entities.collections = (next.entities.collections ?? []).map((collection) => collection.ownerProfileId === profileId ? { ...collection, ownerProfileId: options.retargetProfileId! } : collection);
+    next.entities.followEdges = (next.entities.followEdges ?? []).map((edge) => ({ ...edge, fromProfileId: edge.fromProfileId === profileId ? options.retargetProfileId! : edge.fromProfileId, toProfileId: edge.toProfileId === profileId ? options.retargetProfileId! : edge.toProfileId })).filter((edge, index, list) => edge.fromProfileId !== edge.toProfileId && list.findIndex((candidate) => candidate.fromProfileId === edge.fromProfileId && candidate.toProfileId === edge.toProfileId) === index);
   } else {
     next.entities.highlights = (next.entities.highlights ?? []).filter((highlight) => highlight.ownerProfileId !== profileId);
     next.entities.collections = (next.entities.collections ?? []).filter((collection) => collection.ownerProfileId !== profileId);
+    next.entities.followEdges = (next.entities.followEdges ?? []).filter((edge) => edge.fromProfileId !== profileId && edge.toProfileId !== profileId);
+    next.entities.posts = next.entities.posts.map((post) => ({ ...post, namedLikerIds: (post.namedLikerIds ?? []).filter((id) => id !== profileId), actorComments: (post.actorComments ?? []).filter((comment) => comment.authorKind !== "profile" || comment.authorProfileId !== profileId) }));
   }
   next.entities.profiles = next.entities.profiles.filter((profile) => profile.id !== profileId);
   const outputDiagnostics = validatedOutput(next);

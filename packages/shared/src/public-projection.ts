@@ -39,7 +39,13 @@ function projectV2(document: SiteDocumentV2, currentSiteId: string): SiteDocumen
   const profileIds = new Set(profiles.map((profile) => profile.id));
   const collections = document.entities.collections.filter((collection) => collection.siteId === currentSiteId && collection.visibility === "published" && profileIds.has(collection.ownerProfileId));
   const collectionIds = new Set(collections.map((collection) => collection.id));
-  const posts = document.entities.posts.filter((post) => post.siteId === currentSiteId && post.visibility === "published" && profileIds.has(post.authorProfileId)).map((post) => ({ ...post, taggedProfileIds: post.taggedProfileIds.filter((id) => profileIds.has(id)), collectionIds: post.collectionIds.filter((id) => collectionIds.has(id)) }));
+  const posts = document.entities.posts.filter((post) => post.siteId === currentSiteId && post.visibility === "published" && profileIds.has(post.authorProfileId)).map((post) => ({
+    ...post,
+    taggedProfileIds: post.taggedProfileIds.filter((id) => profileIds.has(id)),
+    collectionIds: post.collectionIds.filter((id) => collectionIds.has(id)),
+    namedLikerIds: post.namedLikerIds.filter((id) => profileIds.has(id)),
+    actorComments: post.actorComments.filter((comment) => comment.authorKind === "legacy" || profileIds.has(comment.authorProfileId))
+  }));
   const postIds = new Set(posts.map((post) => post.id));
   const highlights = document.entities.highlights.filter((highlight) => highlight.siteId === currentSiteId && highlight.visibility === "published" && profileIds.has(highlight.ownerProfileId));
   const profilesWithCanonicalHighlights = new Set(document.entities.highlights.filter((highlight) => highlight.siteId === currentSiteId).map((highlight) => highlight.ownerProfileId));
@@ -61,5 +67,6 @@ function projectV2(document: SiteDocumentV2, currentSiteId: string): SiteDocumen
         }
       };
     });
-  return { ...document, windows, entities: { profiles: publicProfiles, posts, highlights, collections: publicCollections } };
+  const followEdges = document.entities.followEdges.filter((edge) => edge.siteId === currentSiteId && profileIds.has(edge.fromProfileId) && profileIds.has(edge.toProfileId));
+  return { ...document, windows, entities: { profiles: publicProfiles, posts, highlights, collections: publicCollections, followEdges } };
 }
