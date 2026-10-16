@@ -15,13 +15,15 @@ const state = {
 };
 const baseDocument = state.site.draft_document;
 
-function query(result: unknown) {
+function query(result: unknown, table = "sites") {
   let ownerFilter = "";
   let updateMode = false;
   const q = {
     select: () => q,
     eq: (field: string, value: string) => { if (field === "owner_id") ownerFilter = value; return q; },
-    maybeSingle: async () => ({ data: updateMode ? (state.updateNoMatch ? null : { id: "site-a" }) : (ownerFilter && ownerFilter !== state.site.owner_id ? null : result), error: updateMode ? state.updateError : null }),
+    maybeSingle: async () => table === "site_memberships"
+      ? ({ data: null, error: null })
+      : ({ data: updateMode ? (state.updateNoMatch ? null : { id: "site-a" }) : (ownerFilter && ownerFilter !== state.site.owner_id ? null : result), error: updateMode ? state.updateError : null }),
     update: (value: Record<string, unknown>) => { state.updates.push(value); updateMode = true; return q; },
     then: (resolve: (value: unknown) => unknown) => Promise.resolve({ data: null, error: state.updateError }).then(resolve)
   };
@@ -31,7 +33,7 @@ function query(result: unknown) {
 vi.mock("../src/lib/supabase", () => ({
   requireUser: vi.fn(async () => state.requestUser),
   serviceClient: vi.fn(() => ({
-    from: vi.fn(() => query(state.site)),
+    from: vi.fn((table: string) => query(state.site, table)),
     rpc: vi.fn(async (name: string, args: Record<string, unknown>) => { state.rpcCalls.push({ name, args }); return { data: state.committed, error: state.rpcError }; })
   }))
 }));

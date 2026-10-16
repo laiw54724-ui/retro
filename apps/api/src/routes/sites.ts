@@ -1,12 +1,27 @@
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { projectPublicSiteDocument, UsernameSchema, validateSiteDocumentScope } from "@retrodesk/shared";
 import type { Env } from "../env";
 import { jsonError } from "../lib/http";
 import { requireUser, serviceClient } from "../lib/supabase";
 import { CreateSiteSchema, PublishSchema, SaveDraftSchema } from "../lib/site";
 import { copyReferencedAssets, publishedArtifactKey, recordArtifactStatus, writePublishedArtifact } from "../lib/publish";
+import { requireSiteRole, SiteAccessError, type SiteAction, type SiteAccess } from "../lib/access";
 
 export const sites = new Hono<{ Bindings: Env }>();
+
+async function loadSiteAccess(
+  c: Context<{ Bindings: Env }>,
+  supabase: ReturnType<typeof serviceClient>,
+  userId: string,
+  action: SiteAction
+): Promise<SiteAccess | Response> {
+  try {
+    return await requireSiteRole(supabase, c.req.param("siteId") ?? "", userId, action);
+  } catch (error) {
+    if (error instanceof SiteAccessError) return jsonError(c, error.status, error.code, error.message);
+    throw error;
+  }
+}
 
 function containsExactString(value: unknown, needle: string): boolean {
   if (typeof value === "string") return value === needle;
@@ -46,13 +61,36 @@ sites.get("/sites", async (c) => {
   const user = await requireUser(c);
   if (user instanceof Response) return user;
   const supabase = serviceClient(c.env);
-  const { data, error } = await supabase
+  const { data: owned, error: ownedError } = await supabase
     .from("sites")
     .select("id,username,site_name,draft_version,published_version,published_at,updated_at")
     .eq("owner_id", user.id)
     .order("updated_at", { ascending: false });
-  if (error) return jsonError(c, 500, "db_error", "Could not load sites");
-  return c.json({ sites: data ?? [] });
+  if (ownedError) return jsonError(c, 500, "db_error", "Could not load sites");
+  const { data: memberships, error: membershipError } = await supabase
+    .from("site_memberships")
+    .select("site_id,role")
+    .eq("user_id", user.id);
+  if (membershipError) return jsonError(c, 500, "db_error", "Could not load sites");
+  const membershipRows = memberships ?? [];
+  const sharedIds = membershipRows.map((membership) => membership.site_id);
+  let shared: Array<Record<string, unknown>> = [];
+  if (sharedIds.length) {
+    const result = await supabase
+      .from("sites")
+      .select("id,username,site_name,draft_version,published_version,published_at,updated_at")
+      .in("id", sharedIds)
+      .order("updated_at", { ascending: false });
+    if (result.error) return jsonError(c, 500, "db_error", "Could not load sites");
+    shared = result.data ?? [];
+  }
+  const roleBySite = new Map(membershipRows.map((membership) => [membership.site_id, membership.role]));
+  const combined: Array<Record<string, unknown>> = [
+    ...(owned ?? []).map((site) => ({ ...site, access_role: "owner" as const })),
+    ...shared.map((site) => ({ ...site, access_role: roleBySite.get(String(site.id)) }))
+  ];
+  combined.sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)));
+  return c.json({ sites: combined });
 });
 
 sites.post("/sites", async (c) => {
@@ -86,15 +124,16 @@ sites.get("/sites/:siteId", async (c) => {
   const user = await requireUser(c);
   if (user instanceof Response) return user;
   const supabase = serviceClient(c.env);
+  const access = await loadSiteAccess(c, supabase, user.id, "read");
+  if (access instanceof Response) return access;
   const { data, error } = await supabase
     .from("sites")
     .select("id,username,site_name,draft_document,draft_version,published_document,published_version,published_at,updated_at")
-    .eq("id", c.req.param("siteId"))
-    .eq("owner_id", user.id)
+    .eq("id", access.siteId)
     .maybeSingle();
   if (error) return jsonError(c, 500, "db_error", "Could not load site");
   if (!data) return jsonError(c, 404, "not_found", "Site not found");
-  return c.json({ site: data });
+  return c.json({ site: { ...data, access_role: access.role } });
 });
 
 sites.put("/sites/:siteId/draft", async (c) => {
@@ -104,11 +143,12 @@ sites.put("/sites/:siteId/draft", async (c) => {
   if (!payload.success) return jsonError(c, 400, "invalid_draft", "Invalid draft payload", payload.error.flatten());
 
   const supabase = serviceClient(c.env);
+  const access = await loadSiteAccess(c, supabase, user.id, "write");
+  if (access instanceof Response) return access;
   const { data: current, error: readError } = await supabase
     .from("sites")
     .select("id,draft_version")
-    .eq("id", c.req.param("siteId"))
-    .eq("owner_id", user.id)
+    .eq("id", access.siteId)
     .maybeSingle();
   if (readError) return jsonError(c, 500, "db_error", "Could not load draft");
   if (!current) return jsonError(c, 404, "not_found", "Site not found");
@@ -128,7 +168,6 @@ sites.put("/sites/:siteId/draft", async (c) => {
       updated_at: new Date().toISOString()
     })
     .eq("id", current.id)
-    .eq("owner_id", user.id)
     .eq("draft_version", payload.data.expectedVersion)
     .select("draft_version,updated_at")
     .maybeSingle();
@@ -145,11 +184,12 @@ sites.post("/sites/:siteId/publish", async (c) => {
   if (!payload.success) return jsonError(c, 400, "invalid_publish", "Invalid publish payload", payload.error.flatten());
 
   const supabase = serviceClient(c.env);
+  const access = await loadSiteAccess(c, supabase, user.id, "publish");
+  if (access instanceof Response) return access;
   const { data: site, error: readError } = await supabase
     .from("sites")
     .select("id,owner_id,username,site_name,draft_document,draft_version,published_version")
-    .eq("id", c.req.param("siteId"))
-    .eq("owner_id", user.id)
+    .eq("id", access.siteId)
     .maybeSingle();
   if (readError) return jsonError(c, 500, "db_error", "Could not load site");
   if (!site) return jsonError(c, 404, "not_found", "Site not found");
@@ -162,7 +202,7 @@ sites.post("/sites/:siteId/publish", async (c) => {
       ? jsonError(c, 400, "unsupported_document_version", "This document version cannot be published", { version: projection.version })
       : jsonError(c, 400, "invalid_publish_document", "The draft cannot be published", { diagnostics: projection.diagnostics });
   }
-  const assetCopy = await copyReferencedAssets(c.env, supabase, { ownerId: user.id, siteId: site.id, username: site.username, document: projection.document });
+  const assetCopy = await copyReferencedAssets(c.env, supabase, { ownerId: access.ownerId, siteId: site.id, username: site.username, document: projection.document });
   if (!assetCopy.ok) {
     const status = assetCopy.code === "copy_failed" || assetCopy.code === "unavailable" ? 502 : 400;
     return jsonError(c, status, "publish_assets_failed", assetCopy.message, { assetId: assetCopy.assetId, reason: assetCopy.code });
@@ -171,7 +211,7 @@ sites.post("/sites/:siteId/publish", async (c) => {
   if (!rewrittenProjection.ok) return jsonError(c, 400, "invalid_publish_document", "The published document is invalid after asset replacement", { diagnostics: rewrittenProjection.code === "invalid" ? rewrittenProjection.diagnostics : [] });
   const { data: committed, error: publishError } = await supabase.rpc("publish_site_atomic", {
     p_site_id: site.id,
-    p_owner_id: user.id,
+    p_owner_id: access.ownerId,
     p_expected_version: payload.data.expectedVersion,
     p_expected_published_version: site.published_version ?? 0,
     p_document: rewrittenProjection.document
@@ -191,8 +231,8 @@ sites.post("/sites/:siteId/publish", async (c) => {
     publishedAt: row.published_at,
     artifactKey: row.artifact_key ?? publishedArtifactKey(site.username, row.published_version)
   });
-  const statusResult = await recordArtifactStatus(supabase, site.id, user.id, row.published_version, artifact.artifactStatus, artifact.error);
-  const cleanupWarnings = await cleanupPendingLegacyAssets(c.env, supabase, site.id, user.id, rewrittenProjection.document);
+  const statusResult = await recordArtifactStatus(supabase, site.id, access.ownerId, row.published_version, artifact.artifactStatus, artifact.error);
+  const cleanupWarnings = await cleanupPendingLegacyAssets(c.env, supabase, site.id, access.ownerId, rewrittenProjection.document);
   if (statusResult.error || !statusResult.updated) return c.json({ publishedVersion: row.published_version, publishedAt: row.published_at, url: `/@${site.username}`, ...artifact, artifactStatus: "failed", retryable: true, cleanupWarnings, warning: statusResult.error ? "Published database version is live; artifact status could not be recorded." : "This publication is stale; the artifact was written but its status was not recorded for the current version." });
   return c.json({ publishedVersion: row.published_version, publishedAt: row.published_at, url: `/@${site.username}`, ...artifact, cleanupWarnings });
 });
@@ -201,11 +241,12 @@ sites.post("/sites/:siteId/publish/retry", async (c) => {
   const user = await requireUser(c);
   if (user instanceof Response) return user;
   const supabase = serviceClient(c.env);
+  const access = await loadSiteAccess(c, supabase, user.id, "publish");
+  if (access instanceof Response) return access;
   const { data: site, error } = await supabase
     .from("sites")
     .select("id,owner_id,username,published_document,published_version,published_at,published_artifact_key")
-    .eq("id", c.req.param("siteId"))
-    .eq("owner_id", user.id)
+    .eq("id", access.siteId)
     .maybeSingle();
   if (error) return jsonError(c, 500, "db_error", "Could not load published site");
   if (!site) return jsonError(c, 404, "not_found", "Site not found");
@@ -217,8 +258,8 @@ sites.post("/sites/:siteId/publish/retry", async (c) => {
     publishedAt: site.published_at,
     artifactKey: site.published_artifact_key ?? publishedArtifactKey(site.username, site.published_version)
   });
-  const statusResult = await recordArtifactStatus(supabase, site.id, user.id, site.published_version, artifact.artifactStatus, artifact.error);
-  const cleanupWarnings = await cleanupPendingLegacyAssets(c.env, supabase, site.id, user.id, site.published_document);
+  const statusResult = await recordArtifactStatus(supabase, site.id, access.ownerId, site.published_version, artifact.artifactStatus, artifact.error);
+  const cleanupWarnings = await cleanupPendingLegacyAssets(c.env, supabase, site.id, access.ownerId, site.published_document);
   if (statusResult.error || !statusResult.updated) return c.json({ publishedVersion: site.published_version, publishedAt: site.published_at, url: `/@${site.username}`, ...artifact, artifactStatus: "failed", retryable: true, cleanupWarnings, warning: statusResult.error ? "Artifact was written but status could not be recorded." : "This artifact status is stale; retry from the current published version." });
   return c.json({ publishedVersion: site.published_version, publishedAt: site.published_at, url: `/@${site.username}`, ...artifact, cleanupWarnings });
 });

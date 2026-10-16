@@ -5,7 +5,7 @@ const state = { document: null as unknown };
 const query = {
   select: () => query,
   eq: () => query,
-  maybeSingle: async () => ({ data: { id: "site-a", draft_version: 1, draft_document: state.document }, error: null }),
+  maybeSingle: async () => ({ data: { id: "site-a", owner_id: "user-a", draft_version: 1, draft_document: state.document }, error: null }),
   update: () => query
 };
 vi.mock("../src/lib/supabase", () => ({
