@@ -1,9 +1,13 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { parseAssetReference } from "@retrodesk/shared";
 import { supabase } from "./supabase";
 
 const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8787").replace(/\/$/, "");
 export type AsyncAssetResolver = (source: string) => Promise<string | null>;
+export type AssetSourceState = {
+  source: string | null;
+  status: "empty" | "loading" | "ready" | "failed";
+};
 const AssetSourceContext = createContext<AsyncAssetResolver | null>(null);
 
 export function initialAssetSourceValue(source: string | null | undefined): string | null {
@@ -39,41 +43,62 @@ export function useAssetResolver(): AsyncAssetResolver | null {
 }
 
 export function AssetSourceProvider({ siteId, children }: { siteId: string; children: ReactNode }) {
-  const resolver = useMemo(() => createAssetResolver({ fetchBlob: async (id) => {
+  const [current, setCurrent] = useState<{ siteId: string; resolve: AsyncAssetResolver } | null>(null);
+  useEffect(() => {
+    // The effect owns the disposable resolver. StrictMode replays effect setup
+    // after cleanup, so each setup needs a fresh instance with its own cache.
+    const resolver = createAssetResolver({ fetchBlob: async (id) => {
       const { data } = await supabase.auth.getSession();
       const token = data.session?.access_token;
       if (!token) return null;
       const response = await fetch(`${API_URL}/api/sites/${encodeURIComponent(siteId)}/assets/${id}/content`, { headers: { Authorization: `Bearer ${token}` } });
       if (!response.ok) return null;
       return response.blob();
-    } }), [siteId]);
-  useEffect(() => {
+    } });
+    setCurrent({ siteId, resolve: resolver.resolve });
     return () => resolver.dispose();
-  }, [resolver]);
-  return <AssetSourceContext.Provider value={resolver.resolve}>{children}</AssetSourceContext.Provider>;
+  }, [siteId]);
+  // A site change must stop exposing the old resolver before effects run.
+  const resolve = current?.siteId === siteId ? current.resolve : null;
+  return <AssetSourceContext.Provider value={resolve}>{children}</AssetSourceContext.Provider>;
 }
 
-export function useAssetSource(source: string | null | undefined): string | null {
+export function useAssetSourceState(source: string | null | undefined): AssetSourceState {
   const resolve = useContext(AssetSourceContext);
-  const [state, setState] = useState<{ source: string | null | undefined; value: string | null }>(() => ({
-    source,
-    // Protected references must never be exposed as an image URL while they
-    // are being exchanged for a short-lived blob URL.
-    value: initialAssetSourceValue(source),
-  }));
   const isProtectedReference = !!source && !!parseAssetReference(source);
+  const [state, setState] = useState<{
+    input: string | null | undefined;
+    resolve: AsyncAssetResolver | null;
+    result: AssetSourceState;
+  }>(() => ({
+    input: source,
+    resolve,
+    result: { source: null, status: "loading" },
+  }));
   useEffect(() => {
     let active = true;
     if (!source || !isProtectedReference) {
-      setState({ source, value: source ?? null });
+      setState({ input: source, resolve, result: { source: source || null, status: source ? "ready" : "empty" } });
       return () => { active = false; };
     }
-    setState({ source, value: null });
+    setState({ input: source, resolve, result: { source: null, status: "loading" } });
     if (!resolve) return () => { active = false; };
-    resolve(source).then((next) => { if (active) setState({ source, value: next }); });
+    resolve(source).then((next) => {
+      if (active) setState({ input: source, resolve, result: { source: next, status: next ? "ready" : "failed" } });
+    }, () => {
+      if (active) setState({ input: source, resolve, result: { source: null, status: "failed" } });
+    });
     return () => { active = false; };
   }, [isProtectedReference, resolve, source]);
-  // Effects run after paint. Derive a reset value for a changed source so a
-  // previous URL (or failure state) cannot flash while the new reference loads.
-  return state.source === source ? state.value : (isProtectedReference ? null : source ?? null);
+  if (!source) return { source: null, status: "empty" };
+  if (!isProtectedReference) return { source, status: "ready" };
+  // Effects run after paint. Guard both input and resolver identity so even the
+  // same protected reference cannot flash a previous site's URL or failure.
+  return state.input === source && state.resolve === resolve
+    ? state.result
+    : { source: null, status: "loading" };
+}
+
+export function useAssetSource(source: string | null | undefined): string | null {
+  return useAssetSourceState(source).source;
 }
