@@ -1,0 +1,55 @@
+name: Integration merge probe
+
+on:
+  push:
+    branches:
+      - integration/merge-usability-probe
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out candidate history
+        uses: actions/checkout@v4
+        with:
+          ref: integration/retro-usability-release
+          fetch-depth: 0
+
+      - name: Attempt three-way merge and capture conflicts
+        shell: bash
+        run: |
+          set -u
+          git config user.name "Retro integration probe"
+          git config user.email "actions@users.noreply.github.com"
+          git fetch origin claude/usability-batch1
+          mkdir -p merge-artifact/{base,ours,theirs,markers}
+          set +e
+          git merge --no-commit --no-ff origin/claude/usability-batch1
+          merge_status=$?
+          set -e
+          printf '%s\n' "$merge_status" > merge-artifact/merge-status.txt
+          git status --short > merge-artifact/status.txt
+          git diff --name-only --diff-filter=U | tee merge-artifact/conflicts.txt
+          git diff --cc > merge-artifact/conflicts.patch || true
+          while IFS= read -r path; do
+            [ -n "$path" ] || continue
+            mkdir -p "merge-artifact/base/$(dirname "$path")" \
+                     "merge-artifact/ours/$(dirname "$path")" \
+                     "merge-artifact/theirs/$(dirname "$path")" \
+                     "merge-artifact/markers/$(dirname "$path")"
+            git show ":1:$path" > "merge-artifact/base/$path" 2>/dev/null || true
+            git show ":2:$path" > "merge-artifact/ours/$path" 2>/dev/null || true
+            git show ":3:$path" > "merge-artifact/theirs/$path" 2>/dev/null || true
+            cp "$path" "merge-artifact/markers/$path" 2>/dev/null || true
+          done < merge-artifact/conflicts.txt
+
+      - name: Upload merge evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: usability-merge-probe
+          path: merge-artifact
+          if-no-files-found: error
+          retention-days: 3
