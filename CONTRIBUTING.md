@@ -22,13 +22,19 @@ During development, run the focused typecheck or test that covers your change. B
 pnpm verify:contributor
 ```
 
-That gate scans tracked files and reachable Git history for common secret formats, audits bundled asset coverage, then runs typecheck, unit tests, build, and E2E. Migration contract tests live under `apps/api/test/*migration.test.ts` and run with the unit suite.
+That gate scans tracked files and reachable Git history for common secret formats, audits bundled assets and the frozen dependency-license inventory, then runs typecheck, unit tests, build, and E2E. Migration contract tests live under `apps/api/test/*migration.test.ts` and run with the unit suite.
 
-If you change the pinned Windows icon import, also run the deep reproducibility check with an exact upstream checkout:
+Windows icon binaries are ignored and must never be committed. To test the
+optional pack locally after reviewing its unresolved rights status, run:
 
 ```bash
-pnpm icons:audit -- --source=/absolute/path/to/win95-winxp_icons
+pnpm icons:install -- --acknowledge-third-party-rights
 ```
+
+Run `pnpm icons:remove` before the complete contributor gate. If you change the
+importer or generated catalog, run the deep reproducibility check with an exact
+upstream checkout using
+`pnpm icons:audit -- --source=/absolute/path/to/win95-winxp_icons`.
 
 ## Assets and content
 

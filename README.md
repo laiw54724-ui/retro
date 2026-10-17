@@ -50,13 +50,25 @@ docs           architecture and implementation notes
 
 ## Assets and licensing
 
+Retro Desktop's original source is available under the [MIT License](LICENSE).
+The license does not cover user content or separately licensed/excluded assets;
+see [third-party notices](THIRD_PARTY_NOTICES.md).
+
 Third-party assets, fonts, icons, and user uploads have rights and terms
 separate from Retro's source code. See
 [`docs/THIRD_PARTY_ASSETS.md`](docs/THIRD_PARTY_ASSETS.md) for the asset
-boundary and provenance policy.
+boundary and provenance policy, and
+[`docs/DEPENDENCY_LICENSES.md`](docs/DEPENDENCY_LICENSES.md) for the audited
+frozen dependency inventory.
 
-The repository owner has not yet granted a root source-code license. Do not
-infer redistribution permission from public source access; see
-[`docs/LICENSE_SCOPE.md`](docs/LICENSE_SCOPE.md). Contributor setup and the
-single pre-merge verification gate are documented in
-[`CONTRIBUTING.md`](CONTRIBUTING.md).
+Windows icon binaries are intentionally absent from the repository and default
+build. Self-hosters who have reviewed the upstream rights status may opt in:
+
+```bash
+pnpm icons:install -- --acknowledge-third-party-rights
+```
+
+Run `pnpm icons:remove` before creating a redistributable build. Missing
+optional or legacy icons automatically use Retro's built-in SVG fallbacks.
+Contributor setup and the single pre-merge verification gate are documented
+in [`CONTRIBUTING.md`](CONTRIBUTING.md).

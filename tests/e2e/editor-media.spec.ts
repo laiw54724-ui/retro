@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { documentFixture } from "./fixture";
+import { documentFixture, mockWindowsIconPack } from "./fixture";
 
 const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg==", "base64");
 const DRIVE_ID = "1AbCdEfGhIjKlMnOpQrStUvWxYz012345";
@@ -58,7 +58,8 @@ test("rejects non-https avatar links with a visible reason", async ({ page }) =>
   await expect(about.locator(".about-avatar img")).toHaveCount(0);
 });
 
-test("picks sourced Windows icons on desktop and mobile and preserves legacy PNGs", async ({ page }) => {
+test("uses an installed optional icon pack and leaves removed legacy PNGs unavailable", async ({ page }) => {
+  await mockWindowsIconPack(page);
   const saves = await openEditor(page);
   let draft = structuredClone(documentFixture);
   await page.unroute("**/api/sites/site-1");
@@ -87,7 +88,7 @@ test("picks sourced Windows icons on desktop and mobile and preserves legacy PNG
     return { src: image.src, naturalWidth: image.naturalWidth };
   });
   expect(legacy.src).toContain("/win98-icons/computer_2_cool-4.png");
-  expect(legacy.naturalWidth).toBe(48);
+  expect(legacy.naturalWidth).toBe(0);
 
   await page.getByRole("button", { name: "手機版" }).click();
   await page.getByRole("button", { name: "About.exe" }).click();

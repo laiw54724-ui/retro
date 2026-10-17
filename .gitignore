@@ -16,3 +16,8 @@ apps/web/vite.config.d.ts
 test-results/
 supabase/.temp/
 .worktrees/
+
+# Optional, user-installed third-party icon packs. They are never part of the
+# MIT source distribution or default build.
+apps/web/public/windows-icons/
+apps/web/public/win98-icons/

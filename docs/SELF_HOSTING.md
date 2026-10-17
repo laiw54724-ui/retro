@@ -16,13 +16,30 @@ corepack enable
 corepack prepare pnpm@10.18.2 --activate
 pnpm install --frozen-lockfile
 pnpm security:audit
-pnpm assets:audit
+pnpm assets:audit:release
 pnpm typecheck
 pnpm test:unit
 pnpm build
 ```
 
-No production secret is needed for these checks. The strict `pnpm assets:audit:release` gate intentionally fails while the Windows icon collections remain unresolved; see [third-party assets](THIRD_PARTY_ASSETS.md).
+No production secret is needed for these checks. A clean clone passes the
+strict release gate because Windows icon binaries are excluded.
+
+## Optional Windows icon pack
+
+The application works without the pack and uses built-in SVG fallbacks. If you
+have reviewed the upstream rights status and want the searchable historical
+collection in your own deployment, install it directly from the pinned source:
+
+```bash
+pnpm icons:install -- --acknowledge-third-party-rights
+```
+
+This writes ignored files to `apps/web/public/windows-icons/`. They will be
+copied into your local/deployed web build, but remain outside Retro's MIT
+License. `pnpm assets:audit` verifies an installed pack. The stricter
+`pnpm assets:audit:release` deliberately rejects it; run `pnpm icons:remove`
+to restore a redistributable clean build.
 
 ## Configure services
 

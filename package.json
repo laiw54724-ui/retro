@@ -9,12 +9,16 @@
     "lint": "pnpm -r lint",
     "test:unit": "pnpm -r --if-present test:unit",
     "test:e2e": "playwright test",
+    "icons:install": "node scripts/install-windows-icons.mjs",
+    "icons:remove": "node scripts/install-windows-icons.mjs --remove",
     "icons:import": "node scripts/import-windows-icons.mjs",
     "icons:audit": "node scripts/import-windows-icons.mjs --check",
     "assets:audit": "node scripts/audit-third-party-assets.mjs",
     "assets:audit:release": "node scripts/audit-third-party-assets.mjs --release",
+    "licenses:audit": "node scripts/audit-dependency-licenses.mjs",
+    "licenses:report": "node scripts/audit-dependency-licenses.mjs --write",
     "security:audit": "node scripts/audit-secrets.mjs",
-    "verify:contributor": "pnpm security:audit && pnpm assets:audit && pnpm typecheck && pnpm test:unit && pnpm build && pnpm security:audit -- --artifacts-only && pnpm test:e2e"
+    "verify:contributor": "pnpm security:audit && pnpm assets:audit:release && pnpm licenses:audit && pnpm typecheck && pnpm test:unit && pnpm build && pnpm security:audit -- --artifacts-only && pnpm test:e2e"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",

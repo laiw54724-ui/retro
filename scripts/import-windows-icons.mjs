@@ -11,6 +11,7 @@ const EXPECTED_COMMIT = '728a866ad59a54fd4082dbe000e1e62e50bd90e9';
 const PRIMARY_URL = 'https://github.com/trapd00r/win95-winxp_icons';
 const SECONDARY_URL = 'https://winclassic.github.io/resources';
 const OUT_DIR = path.join(ROOT, 'apps/web/public/windows-icons');
+const PACK_MARKER_NAME = '.retro-icon-pack.json';
 const MANIFEST = path.join(ROOT, 'apps/web/src/lib/windowsIconManifest.ts');
 const PROVENANCE = path.join(ROOT, 'docs/assets/windows-icons.provenance.json');
 const THIRD_PARTY_ASSETS = path.join(ROOT, 'docs/THIRD_PARTY_ASSETS.md');
@@ -42,6 +43,15 @@ function relSlug(relativePath) {
   return slug || `icon-${sha256(Buffer.from(relativePath)).slice(0, 12)}`;
 }
 function json(value) { return JSON.stringify(value, null, 2) + '\n'; }
+function packMarker(fileCount) {
+  return json({
+    schemaVersion: 1,
+    source: PRIMARY_URL,
+    commit: EXPECTED_COMMIT,
+    fileCount,
+    license: 'NOASSERTION',
+  });
+}
 async function walk(directory, base = directory) {
   const entries = await fs.readdir(directory, { withFileTypes: true });
   const result = [];
@@ -194,7 +204,7 @@ async function build(source) {
     inputs: data.inputs,
     outputs,
   };
-  return { data, manifest: tsManifest(data.records, data.curated), provenance: json(provenance) };
+  return { data, manifest: tsManifest(data.records, data.curated), provenance: json(provenance), marker: packMarker(data.records.length) };
 }
 async function run() {
   await recoverTransaction();
@@ -233,11 +243,12 @@ async function run() {
     let outputEntries;
     try { outputEntries = await fs.readdir(OUT_DIR, { withFileTypes: true }); }
     catch { throw new Error(`missing output directory: ${path.relative(ROOT, OUT_DIR)}`); }
-    const expectedFiles = new Set(built.data.records.map((record) => path.basename(record.path)));
+    const expectedFiles = new Set([...built.data.records.map((record) => path.basename(record.path)), PACK_MARKER_NAME]);
     const actualFiles = new Set(outputEntries.filter((entry) => entry.isFile()).map((entry) => entry.name));
     const extraFiles = outputEntries.filter((entry) => !entry.isFile() || !expectedFiles.has(entry.name)).map((entry) => entry.name).sort(codeUnitCompare);
     const missingFiles = [...expectedFiles].filter((name) => !actualFiles.has(name)).sort(codeUnitCompare);
     if (extraFiles.length || missingFiles.length) throw new Error(`output inventory mismatch: extra=[${extraFiles.join(', ')}] missing=[${missingFiles.join(', ')}]`);
+    if (await fs.readFile(path.join(OUT_DIR, PACK_MARKER_NAME), 'utf8') !== built.marker) throw new Error(`pack marker differs: ${PACK_MARKER_NAME}`);
     for (const record of built.data.records) {
       const actual = await hashFile(path.join(OUT_DIR, path.basename(record.path)));
       const expected = provenanceData.outputs.find((item) => item.path === path.relative(ROOT, path.join(OUT_DIR, path.basename(record.path))).split(path.sep).join('/'));
@@ -249,6 +260,7 @@ async function run() {
   await fs.mkdir(STAGING_DIR, { recursive: true });
   try {
     for (const record of built.data.records) await fs.copyFile(path.join(source, record.upstreamPath), path.join(STAGING_DIR, path.basename(record.path)));
+    await durableExclusiveWrite(path.join(STAGING_DIR, PACK_MARKER_NAME), built.marker);
     for (const record of built.data.records) {
       const staged = await hashFile(path.join(STAGING_DIR, path.basename(record.path)));
       const input = await hashFile(path.join(source, record.upstreamPath));

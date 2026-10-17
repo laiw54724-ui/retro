@@ -43,6 +43,23 @@ export function cssUrl(url: string): string {
   return `url("${url.replace(/["()\\\s]/g, (ch) => "%" + ch.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0"))}")`;
 }
 
+/** Built-in semantic replacement when an optional or legacy image is absent. */
+export function fallbackIconKey(value: string | undefined | null): BuiltinIconKey {
+  const source = (value ?? "").toLowerCase().replace(/\.[a-z0-9]+$/, "");
+  if (/camera|instagram|webcam/.test(source)) return "camera";
+  if (/photo|image|picture|bitmap|jpeg|gif|png/.test(source)) return "photo";
+  if (/folder|directory/.test(source)) return "folder";
+  if (/music|audio|sound|midi|cd-player/.test(source)) return "music";
+  if (/mail|envelope|message/.test(source)) return "mail";
+  if (/user|person|profile|contact|address-book/.test(source)) return "user";
+  if (/computer|desktop|monitor|pc-/.test(source)) return "computer";
+  if (/network|internet|world|globe|link|url/.test(source)) return "link";
+  if (/paint|palette|brush/.test(source)) return "palette";
+  if (/favorite|favourite|star/.test(source)) return "star";
+  if (/recycle|trash|dustbin/.test(source)) return "trash";
+  return "doc";
+}
+
 /** CSS background for an icon value: a built-in key or an uploaded/linked image URL. */
 export function iconBackground(value: string | undefined | null): string {
   if (!value) return builtinIconBackground("doc");
