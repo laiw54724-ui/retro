@@ -6,7 +6,7 @@ on:
       - integration/merge-usability-probe
     paths:
       - .github/workflows/apply-usability-integration.yml
-      - .integration/usability-resolution.patch.gz.b64.part*
+      - .integration/usability-resolution-overlay.tar.gz.b64.part*
 
 permissions:
   contents: write
@@ -22,6 +22,7 @@ jobs:
     env:
       EXPECTED_CANDIDATE: 61aa099fd78204e15d9968f8d47d73addcf6a364
       EXPECTED_SOURCE: 3cbfc2c9f2e4e4927c1300381a2ba3e5b4ee10ef
+      EXPECTED_OVERLAY_SHA256: a0c9e1b485ea6508c1945b83f449a65be3889b92c6e9c3a407cf419eb3432985
       PROBE_REF: integration/merge-usability-probe
     steps:
       - name: Check out the pinned candidate
@@ -43,12 +44,29 @@ jobs:
           test "$(git rev-parse refs/remotes/origin/claude/usability-batch1)" = "$EXPECTED_SOURCE"
           test "$(git rev-parse refs/remotes/origin/integration/retro-usability-release)" = "$EXPECTED_CANDIDATE"
 
-          for part in 01 02 03; do
-            git show "refs/remotes/origin/${PROBE_REF}:.integration/usability-resolution.patch.gz.b64.part${part}"
-          done > "$RUNNER_TEMP/usability-resolution.patch.gz.b64"
-          base64 --decode "$RUNNER_TEMP/usability-resolution.patch.gz.b64" > "$RUNNER_TEMP/usability-resolution.patch.gz"
-          gzip -dc "$RUNNER_TEMP/usability-resolution.patch.gz" > "$RUNNER_TEMP/usability-resolution.patch"
-          sha256sum "$RUNNER_TEMP/usability-resolution.patch" | tee "$RUNNER_TEMP/resolution-sha256.txt"
+          for part in 00 01 02 03 04; do
+            git show "refs/remotes/origin/${PROBE_REF}:.integration/usability-resolution-overlay.tar.gz.b64.part${part}"
+          done > "$RUNNER_TEMP/usability-resolution-overlay.tar.gz.b64"
+          base64 --decode "$RUNNER_TEMP/usability-resolution-overlay.tar.gz.b64" > "$RUNNER_TEMP/usability-resolution-overlay.tar.gz"
+          printf '%s  %s\n' "$EXPECTED_OVERLAY_SHA256" "$RUNNER_TEMP/usability-resolution-overlay.tar.gz" | sha256sum --check
+
+          cat > "$RUNNER_TEMP/expected-overlay-files.txt" <<'EOF'
+          apps/web/src/features/editor/RightPanel.tsx
+          apps/web/src/features/modules/gallery/index.tsx
+          apps/web/src/features/modules/gallery/Lightbox.tsx
+          apps/web/src/features/modules/links/IconPicker.tsx
+          apps/web/src/features/modules/links/index.tsx
+          apps/web/src/features/site/MobileScreen.tsx
+          apps/web/src/features/site/VisitorDesktop.tsx
+          apps/web/src/pages/EditorPage.tsx
+          tests/e2e/editor-media.spec.ts
+          tests/e2e/explorer.spec.ts
+          tests/e2e/media-tasks.spec.ts
+          docs/releases/2026-10-17-retro-usability-release-candidate.md
+          EOF
+          sed -i 's/^          //' "$RUNNER_TEMP/expected-overlay-files.txt"
+          tar -tzf "$RUNNER_TEMP/usability-resolution-overlay.tar.gz" > "$RUNNER_TEMP/actual-overlay-files.txt"
+          diff -u "$RUNNER_TEMP/expected-overlay-files.txt" "$RUNNER_TEMP/actual-overlay-files.txt"
 
           git config user.name "Retro integration"
           git config user.email "actions@users.noreply.github.com"
@@ -59,7 +77,7 @@ jobs:
           test "$merge_status" -eq 1
           test "$(git rev-parse MERGE_HEAD)" = "$EXPECTED_SOURCE"
 
-          patch --batch --forward -p1 < "$RUNNER_TEMP/usability-resolution.patch"
+          tar -xzf "$RUNNER_TEMP/usability-resolution-overlay.tar.gz" -C .
           git add -A
 
           if test -n "$(git ls-files -u)"; then
@@ -76,7 +94,8 @@ jobs:
           mkdir -p "$RUNNER_TEMP/integration-evidence"
           git status --short | tee "$RUNNER_TEMP/integration-evidence/status-before-commit.txt"
           git diff --cached --stat | tee "$RUNNER_TEMP/integration-evidence/merge-stat.txt"
-          cp "$RUNNER_TEMP/resolution-sha256.txt" "$RUNNER_TEMP/integration-evidence/"
+          sha256sum "$RUNNER_TEMP/usability-resolution-overlay.tar.gz" | tee "$RUNNER_TEMP/integration-evidence/overlay-sha256.txt"
+          cp "$RUNNER_TEMP/actual-overlay-files.txt" "$RUNNER_TEMP/integration-evidence/overlay-files.txt"
 
           git commit -m "chore(integration): merge usability batch 1"
           final_sha="$(git rev-parse HEAD)"
