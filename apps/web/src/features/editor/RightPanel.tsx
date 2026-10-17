@@ -2,6 +2,8 @@ import { useState } from "react";
 import type { DesktopWindow, SiteDocument } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { IconPicker } from "../modules/links/IconPicker";
+import { WindowAppearanceEditor } from "./WindowAppearanceEditor";
+import { WindowChromeEditor } from "./WindowChromeEditor";
 
 type Tab = "general" | "icon" | "layout";
 
@@ -49,11 +51,6 @@ export function RightPanel({ document, selected, siteId, upload, onUpdate, onDel
   const layout = selected.layout.desktop;
   const setDesktop = (change: Partial<typeof layout>, key?: string) =>
     onUpdate((window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, ...change } } }), key);
-  const setAppearance = (change: Partial<NonNullable<DesktopWindow["appearance"]>>, key?: string) =>
-    onUpdate((window) => ({
-      ...window,
-      appearance: { titleFrom: document.theme.titleFrom, titleTo: document.theme.titleTo, titleGradient: true, ...window.appearance, ...change }
-    }), key);
   const tabs: Array<[Tab, string]> = [["general", "通用"], ["icon", "圖示"], ["layout", "版面"]];
 
   return (
@@ -83,17 +80,8 @@ export function RightPanel({ document, selected, siteId, upload, onUpdate, onDel
         ) : null}
         {tab === "layout" ? (
           <>
-            <fieldset className="appearance-editor">
-              <legend>標題列外觀</legend>
-              <label className="check-row"><input type="checkbox" aria-label="自訂標題列" checked={!!selected.appearance} onChange={(event) => onUpdate((window) => ({ ...window, appearance: event.target.checked ? { titleFrom: document.theme.titleFrom, titleTo: document.theme.titleTo, titleGradient: true } : undefined }))} />自訂標題列</label>
-              <div className="titlebar-preview" aria-hidden="true" style={{ background: selected.appearance ? (selected.appearance.titleGradient ? `linear-gradient(90deg, ${selected.appearance.titleFrom}, ${selected.appearance.titleTo})` : selected.appearance.titleFrom) : `linear-gradient(90deg, ${document.theme.titleFrom}, ${document.theme.titleTo})` }}>視窗標題</div>
-              <div className="color-fields">
-                <label className="w98-field"><span>起始色</span><input aria-label="標題起始色" type="color" disabled={!selected.appearance} value={selected.appearance?.titleFrom ?? document.theme.titleFrom} onChange={(event) => setAppearance({ titleFrom: event.target.value }, "title-from" + selected.id)} /></label>
-                <label className="w98-field"><span>結束色</span><input aria-label="標題結束色" type="color" disabled={!selected.appearance || !selected.appearance.titleGradient} value={selected.appearance?.titleTo ?? document.theme.titleTo} onChange={(event) => setAppearance({ titleTo: event.target.value }, "title-to" + selected.id)} /></label>
-              </div>
-              <label className="check-row"><input type="checkbox" aria-label="使用漸層" disabled={!selected.appearance} checked={selected.appearance?.titleGradient ?? true} onChange={(event) => setAppearance({ titleGradient: event.target.checked })} />使用漸層</label>
-              <button type="button" className="w98-btn block" disabled={!selected.appearance} onClick={() => onUpdate((window) => ({ ...window, appearance: undefined }))}>恢復主題設定</button>
-            </fieldset>
+            <WindowChromeEditor key={selected.id} theme={document.theme} window={selected} onChange={(chrome) => onUpdate((window) => ({ ...window, chrome }))} />
+            <WindowAppearanceEditor key={selected.id} theme={document.theme} window={selected} onChange={(appearance, historyKey) => onUpdate((window) => ({ ...window, appearance }), historyKey)} />
             <div className="w98-sep" />
             <div className="geometry-grid">
               <label className="w98-field"><span>X</span><input className="w98-input" type="number" value={layout.x} onChange={(event) => setDesktop({ x: clamp(Number(event.target.value), 0, 5000) }, "x" + selected.id)} /></label>

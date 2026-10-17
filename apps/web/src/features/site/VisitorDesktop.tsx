@@ -223,17 +223,21 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
             onPointerMove={pointerMove}
             onPointerUp={pointerUp}
             onPointerCancel={() => { gesture.current = null; }}
+            onFocusCapture={() => focus(window.id)}
           >
             <RetroWindow
               title={window.title}
+              icon={window.icon}
               theme={document.theme}
               appearance={window.appearance}
+              chrome={window.chrome}
               active={state.z === topZ}
               maximized={state.maximized}
               interactiveControls
               onMinimize={() => minimize(window.id)}
               onMaximize={() => toggleMaximize(window.id)}
               onClose={() => close(window.id)}
+              titleBarProps={{ onDoubleClick: () => toggleMaximize(window.id), style: { touchAction: "none" } }}
               style={{ height: "100%" }}
             >
               <WindowRenderer window={window} theme={document.theme} onOpenWindow={openWindow} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialPostId={window.id === initialOpenId ? initialPostId : undefined} publicShareBaseUrl={publicShareBaseUrl} siteHandle={siteHandle} />

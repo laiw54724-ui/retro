@@ -19,6 +19,27 @@ function withProfileAccent(document: SiteDocumentV2Input, accent: string): SiteD
 }
 
 describe("editor canonical history", () => {
+  it("applies a theme as one undo step while retaining window appearance and OC content", () => {
+    const { legacy, versioned } = profileFixture();
+    const appearance = { titleFrom: "#ffffff", titleTo: "#001144", titleGradient: false };
+    legacy.windows[0].appearance = appearance;
+    versioned.windows[0].appearance = appearance;
+    const store = useEditorStore.getState();
+    store.setSite("site-a", "alice", legacy, 1, null, null, "owner");
+    store.setVersionedDocument(versioned);
+    store.setTheme({ ...legacy.theme, titleFrom: "#445566", titleTo: "#556677" });
+    expect(useEditorStore.getState().past).toHaveLength(1);
+    expect(useEditorStore.getState().versionedDocument?.windows[0].appearance).toEqual(appearance);
+    expect(useEditorStore.getState().versionedDocument?.entities).toEqual(versioned.entities);
+    expect(useEditorStore.getState().document?.theme.accent).toBe(legacy.theme.accent);
+    store.undo();
+    expect(useEditorStore.getState().document).toEqual(legacy);
+    store.redo();
+    expect(useEditorStore.getState().document?.theme.titleFrom).toBe("#445566");
+    store.duplicateWindow(legacy.windows[0].id);
+    expect(useEditorStore.getState().document?.windows.at(-1)?.appearance).toEqual(appearance);
+  });
+
   it("keeps profile-only and normal edits paired through undo and redo", () => {
     const { legacy, versioned } = profileFixture();
     const store = useEditorStore.getState();

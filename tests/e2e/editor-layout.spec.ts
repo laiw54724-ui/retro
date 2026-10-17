@@ -137,8 +137,8 @@ test("one window can override, flatten and reset its title bar", async ({ page }
 
   await page.getByRole("tab", { name: "版面" }).click();
   await page.getByLabel("自訂標題列").check();
-  await page.getByLabel("標題起始色").fill("#112233");
-  await page.getByLabel("標題結束色").fill("#445566");
+  await page.getByLabel("標題起始色", { exact: true }).fill("#112233");
+  await page.getByLabel("標題結束色", { exact: true }).fill("#445566");
   await expect(titlebar).toHaveCSS("background-image", /linear-gradient/);
   await expect.poll(() => saves.at(-1)?.document.windows.find((window) => window.id === "about")?.appearance?.titleFrom).toBe("#112233");
 

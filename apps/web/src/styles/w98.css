@@ -245,6 +245,19 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 .titlebar-preview { min-height: 28px; padding: 5px 8px; color: #fff; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .color-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .color-fields input[type="color"] { width: 100%; min-height: 32px; padding: 2px; border: 0; background: #fff; box-shadow: var(--w98-sunken); }
+.appearance-editor .color-fields, .w98-fieldset .color-fields { grid-template-columns: minmax(0, 1fr); }
+.appearance-color-field { min-width: 0; display: grid; gap: 4px; }
+.appearance-color-inputs { min-width: 0; display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 6px; }
+.appearance-color-inputs .w98-input { width: 100%; min-width: 0; }
+.appearance-color-error { color: #8a0018; line-height: 1.4; }
+.appearance-editor .seg .w98-btn { min-width: 0; }
+.appearance-editor .seg .w98-btn[aria-pressed="true"] { box-shadow: var(--w98-sunken); }
+.m-sheet .appearance-color-inputs input, .m-sheet .appearance-editor .w98-btn, .m-sheet .theme-draft-actions .w98-btn { min-height: 44px; }
+.m-sheet .appearance-editor .check-row { min-height: 44px; }
+.m-sheet .appearance-color-inputs .w98-input { font-size: 16px; }
+.m-sheet .theme-draft-actions { position: sticky; top: 0; z-index: 2; padding: 6px 0; background: var(--w98-face); }
+.m-sheet .theme-head .w98-btn, .m-sheet .w98-fieldset button { min-height: 44px; }
+.m-sheet .swatches .swatch { width: 44px; height: 44px; }
 .seg { display: flex; gap: 4px; }
 
 /* ---- desktop canvas v2 ---- */

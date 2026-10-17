@@ -28,6 +28,7 @@ import {
   type SiteDocument,
 } from "./site";
 import { AssetReferenceSchema } from "./asset-reference";
+import { WindowChromeSchema } from "./window-chrome";
 
 const BoundedId = z.string().trim().min(1).max(160);
 /** Canonical OC handles are URL-safe, lower-case labels. Display names remain unrestricted. */
@@ -146,7 +147,7 @@ export type PostEntityV2 = z.infer<typeof PostEntityV2Schema>;
 
 const BaseV2Window = z.object({
   id: BoundedId, title: z.string().min(1).max(160), icon: z.string().min(1).max(500), layout: StrictWindowLayoutSchema,
-  defaultOpen: z.boolean(), appearance: StrictAppearanceSchema.optional()
+  defaultOpen: z.boolean(), appearance: StrictAppearanceSchema.optional(), chrome: WindowChromeSchema.optional()
 }).strict();
 const NonInstagramWindowV2Schema = z.discriminatedUnion("type", [
   BaseV2Window.extend({ type: z.literal("document"), content: z.object({ blocks: z.array(StrictDocumentBlockSchema).max(100) }).strict() }),
