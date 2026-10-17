@@ -1,0 +1,147 @@
+name: RC65 supplemental WebKit verification
+
+on:
+  push:
+    branches: [test/retro-rc65-webkit-predeploy]
+    paths: [.github/workflows/rc65-webkit-predeploy.yml]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: retro-rc65-webkit-predeploy
+  cancel-in-progress: false
+
+jobs:
+  webkit-boundaries:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CANDIDATE_SHA: 23ca6c461a981e609bb913c3837fe28f379fab00
+      CANDIDATE_TREE: 833fde7b17d3e99708e342dfd934acb7742b7f2f
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: 23ca6c461a981e609bb913c3837fe28f379fab00
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.23.3
+      - name: Confirm the unchanged release candidate
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
+          test "$(git rev-parse HEAD^{tree})" = "$CANDIDATE_TREE"
+          git diff --exit-code
+          mkdir -p .rc65-evidence
+          {
+            printf 'candidate_sha=%s\ncandidate_tree=%s\nworkflow_sha=%s\n' "$CANDIDATE_SHA" "$CANDIDATE_TREE" "$GITHUB_SHA"
+            sha256sum pnpm-lock.yaml
+            node --version
+            uname -a
+          } | tee .rc65-evidence/identity.txt
+      - name: Install the existing frozen toolchain and WebKit only
+        run: |
+          set -euo pipefail
+          corepack enable
+          corepack prepare pnpm@10.18.2 --activate
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps webkit
+          { pnpm --version; pnpm exec playwright --version; } | tee -a .rc65-evidence/identity.txt
+      - name: Select representative existing tests without changing assertions
+        run: |
+          set -euo pipefail
+          test ! -e playwright.rc65-supplement.config.ts
+          cat > playwright.rc65-supplement.config.ts <<'TS'
+          import { defineConfig } from '@playwright/test';
+          import base from './playwright.config';
+          // Supplemental engine coverage, not a replacement for the contributor gate.
+          // These are the original candidate tests. No test source or assertion is edited.
+          export default defineConfig({
+            ...base,
+            forbidOnly: true,
+            retries: 0,
+            workers: 1,
+            globalTimeout: 12 * 60 * 1000,
+            testMatch: [
+              '**/compat-roundtrip.spec.ts',
+              '**/gallery-lightbox.spec.ts',
+              '**/music-sources.spec.ts',
+              '**/icon-picker.spec.ts',
+              '**/media-tasks.spec.ts',
+              '**/explorer.spec.ts',
+              '**/about-links-ux.spec.ts',
+            ],
+            grep: new RegExp([
+              'document with every additive field',
+              'an old document without the additive fields',
+              'lightbox is a full-viewport portal',
+              'background is inert and unscrollable',
+              'broken image explains itself',
+              'nothing loads until the visitor asks',
+              'only one platform or native source can run',
+              'no hidden player keeps sound going',
+              'native audio does not keep playing in a hidden tree',
+              'only the visible public player tree exists',
+              'player controls fit a 320px phone',
+              'pick -> preview -> apply saves only',
+              'cancel, Escape and backdrop-free close',
+              'keyboard: open, search, arrow through the grid',
+              'mobile (320|390)px: dialog fits',
+              'published page shows library icons',
+              'private uploaded icons resolve authenticated blobs',
+              'five-file batch keeps four successes',
+              'window icon upload',
+              'deleting a target',
+              'phone editor deletes',
+              'about and links groups contain long text',
+            ].join('|')),
+            outputDir: 'test-results/rc65-webkit',
+            reporter: [
+              ['line'],
+              ['json', { outputFile: '.rc65-evidence/results.json' }],
+              ['html', { outputFolder: '.rc65-evidence/report', open: 'never' }],
+            ],
+            projects: [{ name: 'rc65-webkit', use: { browserName: 'webkit' } }],
+          });
+          TS
+          cp playwright.rc65-supplement.config.ts .rc65-evidence/
+          pnpm exec playwright test --config=playwright.rc65-supplement.config.ts --list --reporter=line | tee .rc65-evidence/selected-tests.txt
+      - name: Run the supplemental engine coverage once, without retries
+        run: |
+          set -euo pipefail
+          pnpm exec playwright test --config=playwright.rc65-supplement.config.ts 2>&1 | tee .rc65-evidence/webkit.log
+      - name: Record exact results and verify unchanged tracked source
+        if: always()
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
+          test "$(git rev-parse HEAD^{tree})" = "$CANDIDATE_TREE"
+          git diff --exit-code
+          git diff --cached --exit-code
+          if [ -f .rc65-evidence/results.json ]; then
+            node <<'JS'
+          const fs = require('node:fs');
+          const result = JSON.parse(fs.readFileSync('.rc65-evidence/results.json', 'utf8'));
+          const report = { candidate: process.env.CANDIDATE_SHA, tree: process.env.CANDIDATE_TREE, stats: result.stats, errors: result.errors };
+          fs.writeFileSync('.rc65-evidence/summary.json', JSON.stringify(report, null, 2));
+          console.log(JSON.stringify(report, null, 2));
+          if (!result.stats || result.stats.expected + result.stats.unexpected < 1) throw new Error('No tests executed');
+          if (result.stats.unexpected || result.stats.flaky || result.stats.skipped || result.errors?.length) process.exitCode = 1;
+          JS
+          else
+            echo 'No test result exists; verification is not complete.' >&2
+            exit 1
+          fi
+      - name: Upload evidence, including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: rc65-webkit-23ca6c461a981e609bb913c3837fe28f379fab00
+          path: |
+            .rc65-evidence
+            test-results/rc65-webkit
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
