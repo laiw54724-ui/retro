@@ -1,4 +1,5 @@
 export * from "./site";
+export * from "./window-chrome";
 export * from "./image-url";
 export * from "./publish-checks";
 export * from "./public-projection";
@@ -12,3 +13,5 @@ export * from "./highlight-operations";
 export * from "./collection-operations";
 export * from "./social-selectors";
 export * from "./social-operations";
+export * from "./embed-provider";
+export * from "./explorer-integrity";

@@ -1,4 +1,5 @@
 import { isAssetReference } from "@retrodesk/shared";
+import { hasLibraryIdShape, libraryNameOf, resolveLibraryIcon } from "./iconLibrary/library";
 // Pixel-style 32x32 icons from the v2 design handoff.
 const K = 'stroke="#000000" stroke-width="2"';
 
@@ -64,6 +65,15 @@ export function fallbackIconKey(value: string | undefined | null): BuiltinIconKe
 export function iconBackground(value: string | undefined | null): string {
   if (!value) return builtinIconBackground("doc");
   if (ICON_SVG_BODIES[value]) return builtinIconBackground(value);
+  if (hasLibraryIdShape(value)) {
+    const icon = resolveLibraryIcon(value);
+    return icon ? `${cssUrl(icon.url)} center / contain no-repeat` : builtinIconBackground(fallbackIconKey(libraryNameOf(value)));
+  }
   if (isImageIcon(value)) return `${cssUrl(value)} center / contain no-repeat`;
   return builtinIconBackground("doc");
+}
+
+/** Pixel-art PNGs must not be smoothed when scaled; vector and mono sets are left alone. */
+export function iconImageRendering(value: string | null | undefined): "pixelated" | undefined {
+  return resolveLibraryIcon(value)?.pixel ? "pixelated" : undefined;
 }

@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
 const manifestPath = path.resolve(ROOT, process.env.RETRO_ASSET_MANIFEST || "docs/assets/third-party-assets.manifest.json");
 const releaseMode = process.argv.includes("--release");
-const assetExtensions = new Set([".gif", ".ico", ".jpeg", ".jpg", ".mp3", ".ogg", ".otf", ".png", ".ttf", ".wav", ".webp", ".woff", ".woff2"]);
+const assetExtensions = new Set([".gif", ".ico", ".jpeg", ".jpg", ".mp3", ".ogg", ".otf", ".png", ".svg", ".ttf", ".wav", ".webp", ".woff", ".woff2"]);
 const optionalMarkerName = ".retro-icon-pack.json";
 
 function relative(file) { return path.relative(ROOT, file).split(path.sep).join("/"); }
@@ -78,6 +78,23 @@ async function verifyOptionalWindowsPack(collection, files) {
   }
 }
 
+async function verifyProvenance(collection, files) {
+  const provenance = JSON.parse(await fs.readFile(path.resolve(ROOT, collection.detailManifest), "utf8"));
+  const set = provenance.sets?.[collection.provenanceSet];
+  if (!set || set.source?.url !== collection.source.url || set.source?.revision !== collection.source.revision || set.license !== collection.license) throw new Error(`${collection.id}: provenance does not match the manifest`);
+  const expected = new Map(set.outputs.map((item) => [item.path, item]));
+  const noticePath = `${collection.paths[0]}/NOTICE.txt`;
+  const icons = files.filter((file) => relative(file) !== noticePath);
+  if (icons.length !== expected.size) throw new Error(`${collection.id}: ${icons.length} icon files but provenance lists ${expected.size}`);
+  for (const file of icons) {
+    const item = expected.get(relative(file));
+    if (!item) throw new Error(`${collection.id}: unexpected file ${relative(file)}`);
+    if (sha256(await fs.readFile(file)) !== item.sha256) throw new Error(`${collection.id}: hash mismatch ${relative(file)}`);
+  }
+  const notice = await fs.readFile(path.join(ROOT, noticePath), "utf8");
+  if (!notice.includes(collection.source.revision) || !notice.includes(collection.license)) throw new Error(`${collection.id}: NOTICE.txt does not record the pinned source and license`);
+}
+
 const manifest = JSON.parse(await fs.readFile(manifestPath, "utf8"));
 if (manifest.schemaVersion !== 2 || !Array.isArray(manifest.collections) || !Array.isArray(manifest.excludedCollections)) throw new Error("unsupported third-party asset manifest");
 const covered = new Map();
@@ -92,6 +109,7 @@ for (const collection of manifest.collections) {
   if (files.length !== collection.expectedFileCount) throw new Error(`${collection.id}: expected ${collection.expectedFileCount} files, found ${files.length}`);
   const actualHash = await treeHash(files);
   if (actualHash !== collection.treeSha256) throw new Error(`${collection.id}: tree hash mismatch (${actualHash})`);
+  if (collection.detailManifest) await verifyProvenance(collection, files);
   for (const file of files) {
     const key = relative(file);
     if (covered.has(key)) throw new Error(`${key} is covered by both ${covered.get(key)} and ${collection.id}`);

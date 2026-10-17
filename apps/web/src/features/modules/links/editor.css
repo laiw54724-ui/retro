@@ -1,0 +1,186 @@
+.links-editor,
+.links-view {
+  width: 100%;
+  min-width: 0;
+  container-type: inline-size;
+  overflow-wrap: anywhere;
+}
+
+/* Keep the final control above the phone editor's floating Done button. */
+.m-win-body .links-editor {
+  padding-bottom: 76px;
+}
+
+.link-public-item,
+.link-editor-card {
+  min-width: 0;
+}
+
+.link-public-item > .link-tile {
+  width: 100%;
+}
+
+.links-view .link-label {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.links-view .link-tile:disabled {
+  opacity: .7;
+  cursor: default;
+}
+
+.link-editor-card {
+  gap: 8px;
+  padding: 6px;
+  border-style: solid;
+  border-color: #aaa;
+  background: #f4f4f4;
+  color: #111;
+}
+
+.links-editor .link-tile.edit {
+  min-width: 0;
+}
+
+.links-editor .link-input {
+  width: 0;
+  min-height: 32px;
+}
+
+.links-editor .link-icon.btn {
+  width: 36px;
+  height: 36px;
+}
+
+.link-destination-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.link-destination-row > .link-destination {
+  flex: 1;
+  min-width: 0;
+  padding-block: 6px;
+}
+
+.link-destination,
+.link-settings-hint,
+.links-editor-empty {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  color: #404040;
+}
+
+.link-destination.is-problem {
+  color: #842019;
+}
+
+.link-public-item > .link-destination {
+  padding: 4px 2px;
+}
+
+.link-editor-actions,
+.link-target-types,
+.link-colors {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.link-editor-actions .link-order {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  color: #555;
+}
+
+.link-target-types [aria-pressed="true"] {
+  box-shadow: var(--w98-pressed);
+  font-weight: 700;
+}
+
+.link-settings-panel {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.link-settings-panel[hidden] {
+  display: none;
+}
+
+.link-settings-panel fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 8px;
+  border: 1px solid #aaa;
+  background: #fff;
+}
+
+.link-settings-panel legend {
+  font-size: 12px;
+  padding: 0 4px;
+}
+
+.link-settings-panel label:not(.swatch) {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.links-editor .ie,
+.link-settings-panel .w98-select {
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+  font-size: 14px;
+}
+
+.links-editor .mini-btn,
+.links-editor .ie-add {
+  min-height: 32px;
+  height: auto;
+  padding-inline: 8px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.link-colors .swatch {
+  width: 26px;
+  height: 26px;
+}
+
+.links-editor .ie-add:disabled {
+  color: #666;
+  cursor: not-allowed;
+}
+
+@container (max-width: 430px) {
+  .links-editor .mini-btn,
+  .links-editor .ie-add,
+  .links-editor .link-input {
+    min-height: 44px;
+  }
+
+  .links-editor .link-icon.btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .link-colors .swatch {
+    width: 36px;
+    height: 36px;
+  }
+}

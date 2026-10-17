@@ -7,7 +7,9 @@ import { WindowRenderer } from "../site/WindowRenderer";
 import { DesktopTaskbar } from "../site/DesktopTaskbar";
 import { useEditorStore } from "./store";
 import type { ProfileDirectoryEntry } from "../modules/types";
-import { musicPlayback, useMusicPlayback } from "../modules/music/audioCoordinator";
+import { useMusicPlayback } from "../modules/music/audioCoordinator";
+import { stopAllMedia, stopWindowMedia } from "../modules/music/mediaSession";
+import styles from "./DesktopCanvas.module.css";
 
 const TASKBAR_H = 36;
 const GRID = 8;
@@ -85,7 +87,7 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
     return () => globalThis.removeEventListener("keydown", onKey);
   }, [store]);
 
-  useEffect(() => () => musicPlayback.stopAll(), []);
+  useEffect(() => () => stopAllMedia(), []);
 
   // ----- window gestures -----
   function windowPointerDown(event: PointerEvent<HTMLDivElement>, win: DesktopWindow) {
@@ -260,25 +262,27 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
             onPointerMove={windowPointerMove}
             onPointerUp={windowPointerUp}
             onPointerCancel={() => { drag.current = null; }}
+            onFocusCapture={() => { if (store().selectedId !== win.id) store().focusWindow(win.id); }}
           >
             <RetroWindow
               title={win.title}
               icon={win.icon}
               theme={document.theme}
               appearance={win.appearance}
+              chrome={win.chrome}
               active={isSel || layout.z === topZ}
               interactiveControls
               maximized={maximized}
-              onMinimize={() => store().setViewState(win.id, "min")}
+              onMinimize={() => { stopWindowMedia(win.id); store().setViewState(win.id, "min"); }}
               onMaximize={() => store().setViewState(win.id, maximized ? null : "max")}
-              onClose={() => { musicPlayback.stopWindow(win.id); store().setViewState(win.id, "closed"); }}
+              onClose={() => { stopWindowMedia(win.id); store().setViewState(win.id, "closed"); }}
               titleBarProps={{ onDoubleClick: () => store().setViewState(win.id, maximized ? null : "max"), style: { cursor: layoutMode ? "move" : "default", touchAction: "none" } }}
               style={{ height: "100%" }}
               bodyStyle={{ padding: 0 }}
             >
               <WindowRenderer window={win} theme={document.theme} editing={!layoutMode} allWindows={document.windows} siteId={siteId} upload={upload} onUpdate={store().updateWindow} profiles={profiles} posts={posts} collections={collections} profileId={profileId} profileIdsByWindow={profileIdsByWindow} onProfileSelect={onProfileSelect} onProfileAdd={onProfileAdd} onProfileDuplicate={onProfileDuplicate} onProfileChange={onProfileChange} onProfileDelete={onProfileDelete} profileDeleteBlocked={profileDeleteBlocked} profileDeleteGuardById={profileDeleteGuardById} profileDirectory={profileDirectory} updateContent={updateContent} socialDocument={socialDocument} />
             </RetroWindow>
-            {layoutMode ? <div className="layout-veil"><span className="geo-text">{layout.x}, {layout.y} · {layout.w}×{layout.h}</span></div> : null}
+            {layoutMode ? <div className={`layout-veil ${styles.layoutVeil}`}><span className="geo-text">{layout.x}, {layout.y} · {layout.w}×{layout.h}</span></div> : null}
             {!maximized ? <span className="window-resize-handle" aria-label="調整大小" /> : null}
           </div>
         );

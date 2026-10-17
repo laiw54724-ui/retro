@@ -536,3 +536,58 @@ describe("versioned site document contract", () => {
     expect(parseSiteDocument(merged)).toMatchObject({ ok: true, version: 2 });
   });
 });
+
+describe("provider embed music sources", () => {
+  const spotifySource = { kind: "providerEmbed" as const, provider: "spotify" as const, resourceType: "track" as const, resourceId: "50q2aUjWoTn6CJIfSPRJQA", canonicalUrl: "https://open.spotify.com/track/50q2aUjWoTn6CJIfSPRJQA", originalUrl: "https://open.spotify.com/track/50q2aUjWoTn6CJIfSPRJQA?si=abc" };
+
+  function withTrack(source: unknown) {
+    const v1 = fixture();
+    const music = makeWindow("music", v1.windows.length);
+    if (music.type !== "music") throw new Error("music factory mismatch");
+    music.id = "music-embed";
+    music.content.tracks = [{ id: "t1", title: "Embed", artist: "", cover: null, coverUrl: "", source: source as never, lyrics: "", rightsNote: "" }];
+    music.content.playlist.trackIds = ["t1"];
+    v1.windows.push(music);
+    return { v1, music };
+  }
+
+  it("round-trips through v2 migration and legacy projection unchanged", () => {
+    const { v1, music } = withTrack(spotifySource);
+    const migrated = migrateSiteDocumentV2(v1, { siteId: "site-a" });
+    expect(migrated).toMatchObject({ ok: true, version: 2 });
+    if (!migrated.ok || migrated.version !== 2) return;
+    expect(migrated.document.windows.find((window) => window.id === "music-embed")).toEqual(music);
+    const projected = projectV2ToLegacyDocument(migrated.document);
+    expect(projected).toMatchObject({ ok: true });
+    if (projected.ok) expect(projected.document.windows.find((window) => window.id === "music-embed")).toEqual(music);
+  });
+
+  it("accepts a YouTube source and rejects sources that do not match their canonical URL", () => {
+    const youtube = { kind: "providerEmbed", provider: "youtube", resourceType: "video", resourceId: "dQw4w9WgXcQ", canonicalUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", originalUrl: "" };
+    const ok = withTrack(youtube);
+    expect(migrateSiteDocumentV2(ok.v1, { siteId: "site-a" })).toMatchObject({ ok: true });
+    for (const bad of [
+      { ...spotifySource, provider: "youtube" },
+      { ...spotifySource, resourceId: "aaaaaaaaaaaaaaaaaaaaaa" },
+      { ...spotifySource, resourceType: "album" },
+      { ...spotifySource, canonicalUrl: "https://evil.example/track/50q2aUjWoTn6CJIfSPRJQA" },
+      { ...spotifySource, canonicalUrl: "https://open.spotify.com/track/50q2aUjWoTn6CJIfSPRJQA?si=1" },
+      { ...spotifySource, originalUrl: "javascript:alert(1)" }
+    ]) {
+      const { v1 } = withTrack(bad);
+      const result = migrateSiteDocumentV2(v1, { siteId: "site-a" });
+      expect(result.ok, JSON.stringify(bad)).toBe(false);
+    }
+  });
+
+  it("keeps the v2 document strict about unknown source fields", () => {
+    const { v1 } = withTrack(spotifySource);
+    const migrated = migrateSiteDocumentV2(v1, { siteId: "site-a" });
+    if (!migrated.ok || migrated.version !== 2) throw new Error("migration failed");
+    const strict = structuredClone(migrated.document);
+    const window = strict.windows.find((candidate) => candidate.id === "music-embed");
+    if (!window || window.type !== "music") throw new Error("missing music window");
+    (window.content.tracks[0].source as Record<string, unknown>).extra = "not allowed";
+    expect(parseSiteDocument(strict)).toMatchObject({ ok: false, code: "invalid" });
+  });
+});

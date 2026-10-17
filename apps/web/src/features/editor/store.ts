@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { mergeLegacyDocumentIntoV2, type DesktopWindow, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
+import { danglingExplorerShortcuts, describeShortcutTarget, mergeLegacyDocumentIntoV2, newlyDanglingShortcuts, removeExplorerShortcuts, type DanglingShortcut, type DesktopWindow, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { createWindow } from "../modules/registry";
 import type { SiteAccessRole } from "../../lib/collaboration";
 
@@ -52,6 +52,10 @@ type EditorState = {
   /** `historyKey`: edits with the same key within 1200ms collapse into one undo step. */
   updateWindow: (id: string, recipe: (window: DesktopWindow) => DesktopWindow, historyKey?: string) => void;
   deleteWindow: (id: string) => void;
+  /** An edit that would orphan Explorer shortcuts waits here for the author's confirmation. */
+  pendingIntegrity: PendingIntegrity | null;
+  confirmIntegrity: () => void;
+  cancelIntegrity: () => void;
   duplicateWindow: (id: string) => void;
   bringToFront: (id: string) => void;
   moveLayer: (id: string, direction: -1 | 1) => void;
@@ -72,10 +76,35 @@ const sameDocument = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stri
 let lastHistoryKey: string | null = null;
 let lastHistoryAt = 0;
 
-function withHistory(state: EditorState, document: SiteDocument, extra: Partial<EditorState> = {}, historyKey?: string, explicitVersioned?: SiteDocumentV2Input): Partial<EditorState> {
-  const nextVersioned = explicitVersioned ?? (state.versionedDocument && state.siteId
+export type PendingIntegrity = {
+  impacts: Array<DanglingShortcut & { targetText: string }>;
+  document: SiteDocument;
+  extra: Partial<EditorState>;
+  historyKey?: string;
+  explicitVersioned?: SiteDocumentV2Input;
+};
+
+/**
+ * `guard`: an edit that leaves an Explorer shortcut without its target is not applied. It is parked in
+ * `pendingIntegrity` so the author sees the affected shortcuts first; confirming applies the edit together with
+ * removal of exactly those shortcuts in one history step.
+ */
+function withHistory(state: EditorState, document: SiteDocument, extra: Partial<EditorState> = {}, historyKey?: string, explicitVersioned?: SiteDocumentV2Input, guard = true): Partial<EditorState> {
+  let nextVersioned = explicitVersioned ?? (state.versionedDocument && state.siteId
     ? mergeLegacyDocumentIntoV2(state.versionedDocument, document, { siteId: state.siteId })
     : undefined);
+  if (guard) {
+    const before = state.versionedDocument ?? state.document;
+    const after = nextVersioned ?? document;
+    const impacts = before ? newlyDanglingShortcuts(before, after) : [];
+    if (impacts.length) {
+      return { pendingIntegrity: { impacts: impacts.map((item) => ({ ...item, targetText: describeShortcutTarget(before!, item) })), document, extra, historyKey, explicitVersioned } };
+    }
+  } else {
+    // Confirmed edit: also sweep any other broken shortcut so the draft is always savable.
+    document = removeExplorerShortcuts(document, danglingExplorerShortcuts(nextVersioned ?? document));
+    if (nextVersioned) nextVersioned = removeExplorerShortcuts(nextVersioned, danglingExplorerShortcuts(nextVersioned));
+  }
   const legacyChanged = !!state.document && !sameDocument(state.document, document);
   const versionedChanged = !!nextVersioned && !sameDocument(state.versionedDocument, nextVersioned);
   if (!legacyChanged && !versionedChanged) return extra;
@@ -130,6 +159,7 @@ export const useEditorStore = create<EditorState>((set) => ({
     saveStatus: "saved",
     past: [],
     future: [],
+    pendingIntegrity: null,
     viewState: {}
   }),
   setSaveStatus: (saveStatus) => set({ saveStatus }),
@@ -336,10 +366,22 @@ export const useEditorStore = create<EditorState>((set) => ({
     };
     return withHistory(state, document);
   }),
+  pendingIntegrity: null,
+  cancelIntegrity: () => set({ pendingIntegrity: null }),
+  confirmIntegrity: () => set((state) => {
+    const pending = state.pendingIntegrity;
+    if (!pending) return {};
+    const drop = pending.impacts;
+    const legacy = removeExplorerShortcuts(pending.document, drop);
+    const versioned = pending.explicitVersioned ? removeExplorerShortcuts(pending.explicitVersioned, drop) : undefined;
+    return { ...withHistory(state, legacy, pending.extra, pending.historyKey, versioned, false), pendingIntegrity: null };
+  }),
   deleteWindow: (id) => set((state) => {
     if (!state.document) return {};
     const windows = state.document.windows
       .filter((window) => window.id !== id)
+      // Leave references intact until withHistory can show the affected shortcuts.
+      // confirmIntegrity removes the target and those references in one undo step.
       .map((window, index) => ({ ...window, layout: { ...window.layout, mobile: { order: index } } }));
     return withHistory(
       state,

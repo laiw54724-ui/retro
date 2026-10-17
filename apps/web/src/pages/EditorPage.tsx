@@ -18,6 +18,9 @@ import { collaborationActions } from "../lib/collaboration";
 import { CollaborationDialog } from "../features/collaboration/CollaborationDialog";
 import { SidebarToggle } from "../features/editor/SidebarToggle";
 import { TransferDialog } from "../features/transfer/TransferDialog";
+import { EditorMediaProvider } from "../features/media/editorMedia";
+import { IntegrityDialog } from "../features/editor/IntegrityDialog";
+import { stopAllMedia } from "../features/modules/music/mediaSession";
 
 
 
@@ -122,6 +125,12 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     versionedDraftRef.current = next;
     setVersionedDraft(next);
     store.replaceDocument(projected.document, historyKey, next);
+    // An edit that would orphan Explorer shortcuts waits for confirmation; keep the draft in step with the store.
+    const held = useEditorStore.getState();
+    if (held.pendingIntegrity && held.versionedDocument) {
+      versionedDraftRef.current = held.versionedDocument;
+      setVersionedDraft(held.versionedDocument);
+    }
   }
 
   function updateContent(recipe: (document: SiteDocumentV2Input) => SiteDocumentV2Input, historyKey?: string) {
@@ -505,6 +514,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
   return (
     <AssetSourceProvider siteId={siteId}>
+    <EditorMediaProvider key={siteId} siteId={siteId}>
     <main className="editor-app">
       <header className="editor-topbar">
         <Link to="/auth" className="brand" title="回到我的桌面"><Icon name="computer" size={22} />Retro Desktop</Link>
@@ -523,7 +533,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
           <button type="button" aria-pressed={store.device === "desktop"} className={"w98-btn" + (store.device === "desktop" ? " on" : "")} onClick={() => store.setDevice("desktop")}>桌面版</button>
           <button type="button" aria-pressed={store.device === "mobile"} className={"w98-btn" + (store.device === "mobile" ? " on" : "")} onClick={() => { store.setLayoutMode(false); store.setDevice("mobile"); }}>手機版</button>
         </div>
-        <RetroButton onClick={() => setPreview(true)}>▶ 訪客預覽</RetroButton>
+        <RetroButton onClick={() => { stopAllMedia(); setPreview(true); }}>▶ 訪客預覽</RetroButton>
         {actions.manageMembers ? <RetroButton ref={collaborationButtonRef} onClick={() => setCollaborationOpen(true)}>協作者</RetroButton> : null}
         {actions.manageMembers ? <RetroButton onClick={() => setTransferOpen(true)}>匯出／匯入</RetroButton> : null}
         {store.publishedDocument ? <a className="w98-btn mobile-hide" href={"/@" + store.username} target="_blank" rel="noreferrer">開啟已發布網站</a> : null}
@@ -618,7 +628,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
               socialDocument={versionedDraft ?? undefined}
             />
           ) : (
-            <MobileScreen document={store.document} mode="editor" framed siteId={siteId} upload={uploadImage} onPreview={() => setPreview(true)} profiles={editorProfiles} posts={editorPosts} collections={editorCollections} profileIdsByWindow={profileIdsByWindow} onProfileSelect={selectProfile} onProfileAdd={addProfile} onProfileDuplicate={duplicateProfileForWindow} onProfileChange={changeProfile} onProfileDelete={deleteProfile} profileDeleteBlocked={selectedProfileReferenced} profileDeleteGuardById={profileDeleteGuardById} profileDirectory={profileDirectory} updateContent={updateContent} socialDocument={versionedDraft ?? undefined} />
+            <MobileScreen document={store.document} mode="editor" framed siteId={siteId} upload={uploadImage} onPreview={() => { stopAllMedia(); setPreview(true); }} profiles={editorProfiles} posts={editorPosts} collections={editorCollections} profileIdsByWindow={profileIdsByWindow} onProfileSelect={selectProfile} onProfileAdd={addProfile} onProfileDuplicate={duplicateProfileForWindow} onProfileChange={changeProfile} onProfileDelete={deleteProfile} profileDeleteBlocked={selectedProfileReferenced} profileDeleteGuardById={profileDeleteGuardById} profileDirectory={profileDirectory} updateContent={updateContent} socialDocument={versionedDraft ?? undefined} />
           )}
         </section>
 
@@ -650,6 +660,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       </footer>
 
       {preview ? <VisitorPreview document={store.document} username={store.username} published={!!store.publishedDocument && !hasUnpublishedChanges} onClose={() => setPreview(false)} /> : null}
+      <IntegrityDialog />
       {collaborationOpen ? <CollaborationDialog siteId={siteId} onClose={closeCollaboration} /> : null}
       {transferOpen ? <TransferDialog siteId={siteId} username={store.username} published={!!store.publishedDocument} onClose={() => setTransferOpen(false)} onImported={(newSiteId) => navigate(`/editor/${newSiteId}`)} /> : null}
 
@@ -714,6 +725,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         </div>
       ) : null}
     </main>
+    </EditorMediaProvider>
     </AssetSourceProvider>
   );
 }

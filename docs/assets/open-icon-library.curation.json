@@ -1,0 +1,3443 @@
+{
+ "schemaVersion": 1,
+ "note": "Hand-curated first batch. Every entry must exist in the pinned upstream source; the importer fails otherwise. Add entries here, never in generated files.",
+ "purposes": {
+  "folder": "資料夾",
+  "document": "文件",
+  "image": "圖片",
+  "music": "音樂",
+  "person": "人物",
+  "tool": "工具",
+  "other": "其他"
+ },
+ "sets": {
+  "haiku": {
+   "label": "Haiku 彩色復古",
+   "category": "retro",
+   "ext": "svg",
+   "kind": "color",
+   "source": {
+    "url": "https://github.com/haiku/haiku",
+    "path": "data/artwork/icons",
+    "revision": "ac9aaea72eb11a8c425dbdd2d1f47fc9761c70c9"
+   },
+   "license": "MIT",
+   "licenseUrl": "https://www.haiku-inc.org/trademarks/haiku_icons/",
+   "authorOrRightsHolder": "Haiku, Inc. and the Haiku icon artists",
+   "attribution": "Icons from the Haiku operating system (https://www.haiku-os.org), MIT license. Per Haiku, Inc. the only provision is to mention the origin. Haiku logo, Leaf and other Haiku, Inc. trademarks, and third-party application logos found in the same directory, are NOT included.",
+   "convertedWith": "hvif-tools icon2icon (MIT) at 3789a261230fd6faad0dfda3b7b2743a2d878125",
+   "include": [
+    {
+     "src": "Folder_generic",
+     "id": "folder",
+     "zh": "資料夾",
+     "en": "Folder",
+     "keywords": "directory 檔案夾",
+     "purposes": [
+      "folder"
+     ]
+    },
+    {
+     "src": "Folder_home",
+     "id": "folder-home",
+     "zh": "家資料夾",
+     "en": "Home folder",
+     "keywords": "home 首頁 個人",
+     "purposes": [
+      "folder"
+     ]
+    },
+    {
+     "src": "Folder_download",
+     "id": "folder-download",
+     "zh": "下載資料夾",
+     "en": "Download folder",
+     "keywords": "下載 download",
+     "purposes": [
+      "folder"
+     ]
+    },
+    {
+     "src": "Folder_apps",
+     "id": "folder-apps",
+     "zh": "應用程式資料夾",
+     "en": "Apps folder",
+     "keywords": "程式 應用 apps",
+     "purposes": [
+      "folder"
+     ]
+    },
+    {
+     "src": "Folder_config",
+     "id": "folder-config",
+     "zh": "設定資料夾",
+     "en": "Config folder",
+     "keywords": "設定 config",
+     "purposes": [
+      "folder"
+     ]
+    },
+    {
+     "src": "Folder_development",
+     "id": "folder-dev",
+     "zh": "開發資料夾",
+     "en": "Development folder",
+     "keywords": "程式碼 dev code",
+     "purposes": [
+      "folder"
+     ]
+    },
+    {
+     "src": "Folder_fonts",
+     "id": "folder-fonts",
+     "zh": "字型資料夾",
+     "en": "Fonts folder",
+     "keywords": "字體 font",
+     "purposes": [
+      "folder"
+     ]
+    },
+    {
+     "src": "Folder_mail",
+     "id": "folder-mail",
+     "zh": "郵件資料夾",
+     "en": "Mail folder",
+     "keywords": "信件 email",
+     "purposes": [
+      "folder"
+     ]
+    },
+    {
+     "src": "Folder_people",
+     "id": "folder-people",
+     "zh": "人物資料夾",
+     "en": "People folder",
+     "keywords": "人 聯絡人 角色 characters",
+     "purposes": [
+      "folder",
+      "person"
+     ]
+    },
+    {
+     "src": "Folder_prefs",
+     "id": "folder-prefs",
+     "zh": "偏好設定資料夾",
+     "en": "Preferences folder",
+     "keywords": "設定 prefs",
+     "purposes": [
+      "folder"
+     ]
+    },
+    {
+     "src": "File_Generic",
+     "id": "file",
+     "zh": "檔案",
+     "en": "File",
+     "keywords": "文件 generic",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "File_Text",
+     "id": "text-file",
+     "zh": "文字文件",
+     "en": "Text document",
+     "keywords": "txt 文字 筆記",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "File_Text_Open",
+     "id": "text-file-open",
+     "zh": "開啟的文字文件",
+     "en": "Open text document",
+     "keywords": "打開 開啟",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "File_PDF",
+     "id": "pdf",
+     "zh": "PDF 文件",
+     "en": "PDF document",
+     "keywords": "pdf",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "File_HTML",
+     "id": "html",
+     "zh": "網頁檔案",
+     "en": "HTML file",
+     "keywords": "網頁 html web",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "File_SourceCode",
+     "id": "source-code",
+     "zh": "程式碼檔案",
+     "en": "Source code",
+     "keywords": "code 程式",
+     "purposes": [
+      "document",
+      "tool"
+     ]
+    },
+    {
+     "src": "File_Archive",
+     "id": "archive",
+     "zh": "壓縮檔",
+     "en": "Archive",
+     "keywords": "壓縮 封存",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "File_Archive_ZIP",
+     "id": "zip",
+     "zh": "ZIP 壓縮檔",
+     "en": "ZIP archive",
+     "keywords": "zip 壓縮",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "File_Bookmark",
+     "id": "bookmark-file",
+     "zh": "書籤",
+     "en": "Bookmark",
+     "keywords": "書籤 收藏",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "File_Task",
+     "id": "task",
+     "zh": "待辦事項",
+     "en": "Task",
+     "keywords": "任務 todo 待辦",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "File_Mail",
+     "id": "mail-file",
+     "zh": "郵件檔案",
+     "en": "Mail file",
+     "keywords": "信件",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "File_Chart_Open",
+     "id": "chart-file",
+     "zh": "圖表文件",
+     "en": "Chart document",
+     "keywords": "圖表 簡報 統計",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "File_Spreadsheet_Open",
+     "id": "spreadsheet",
+     "zh": "試算表",
+     "en": "Spreadsheet",
+     "keywords": "表格 data",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "File_Database_Open",
+     "id": "database",
+     "zh": "資料庫",
+     "en": "Database",
+     "keywords": "資料 db",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "File_Image_1",
+     "id": "image-1",
+     "zh": "圖片",
+     "en": "Image",
+     "keywords": "照片 photo picture",
+     "purposes": [
+      "image"
+     ]
+    },
+    {
+     "src": "File_Image_2",
+     "id": "image-2",
+     "zh": "圖片（紫）",
+     "en": "Image (purple)",
+     "keywords": "照片 photo picture",
+     "purposes": [
+      "image"
+     ]
+    },
+    {
+     "src": "File_Graphics_Open",
+     "id": "graphics",
+     "zh": "繪圖檔案",
+     "en": "Graphics file",
+     "keywords": "向量 繪圖 draw",
+     "purposes": [
+      "image"
+     ]
+    },
+    {
+     "src": "File_Video",
+     "id": "video",
+     "zh": "影片",
+     "en": "Video",
+     "keywords": "電影 影音 movie",
+     "purposes": [
+      "image"
+     ]
+    },
+    {
+     "src": "App_ShowImage",
+     "id": "image-viewer",
+     "zh": "圖片檢視器",
+     "en": "Image viewer",
+     "keywords": "相簿 照片 photo gallery",
+     "purposes": [
+      "image"
+     ]
+    },
+    {
+     "src": "App_Screenshot",
+     "id": "screenshot",
+     "zh": "螢幕截圖",
+     "en": "Screenshot",
+     "keywords": "截圖 capture",
+     "purposes": [
+      "image",
+      "tool"
+     ]
+    },
+    {
+     "src": "File_Audio",
+     "id": "audio-file",
+     "zh": "音訊檔案",
+     "en": "Audio file",
+     "keywords": "音樂 聲音 music",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "File_Audio_2",
+     "id": "music-file",
+     "zh": "音樂檔案",
+     "en": "Music file",
+     "keywords": "音樂 歌曲 song",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "File_Playlist",
+     "id": "playlist",
+     "zh": "播放清單",
+     "en": "Playlist",
+     "keywords": "歌單 list",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "App_MediaPlayer",
+     "id": "media-player",
+     "zh": "媒體播放器",
+     "en": "Media player",
+     "keywords": "播放 影音 player",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "App_MidiPlayer",
+     "id": "midi-player",
+     "zh": "MIDI 播放器",
+     "en": "MIDI player",
+     "keywords": "midi 合成",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "App_SoundRecorder",
+     "id": "sound-recorder",
+     "zh": "錄音機",
+     "en": "Sound recorder",
+     "keywords": "錄音 麥克風 record",
+     "purposes": [
+      "music",
+      "tool"
+     ]
+    },
+    {
+     "src": "App_CDPlayer",
+     "id": "cd-player",
+     "zh": "CD 播放器",
+     "en": "CD player",
+     "keywords": "光碟 cd",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "Device_CD",
+     "id": "cd",
+     "zh": "光碟",
+     "en": "CD",
+     "keywords": "cd dvd 光碟片",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "Misc_Speaker",
+     "id": "speaker",
+     "zh": "喇叭",
+     "en": "Speaker",
+     "keywords": "音量 聲音 sound",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "Misc_Speaker_Muted",
+     "id": "speaker-muted",
+     "zh": "靜音喇叭",
+     "en": "Muted speaker",
+     "keywords": "靜音 mute",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "Prefs_Sounds",
+     "id": "sounds",
+     "zh": "音效設定",
+     "en": "Sounds",
+     "keywords": "音效 聲音",
+     "purposes": [
+      "music",
+      "tool"
+     ]
+    },
+    {
+     "src": "App_People",
+     "id": "people",
+     "zh": "聯絡人",
+     "en": "People",
+     "keywords": "人物 通訊錄 角色 contacts",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "File_Person",
+     "id": "person",
+     "zh": "人物",
+     "en": "Person",
+     "keywords": "角色 人 contact character",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "Misc_Phonebook",
+     "id": "phonebook",
+     "zh": "電話簿",
+     "en": "Phonebook",
+     "keywords": "通訊錄 電話",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "App_Chat",
+     "id": "chat",
+     "zh": "聊天",
+     "en": "Chat",
+     "keywords": "對話 訊息 message",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "App_Calculator",
+     "id": "calculator",
+     "zh": "計算機",
+     "en": "Calculator",
+     "keywords": "計算 數學 math",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "App_Clock",
+     "id": "clock",
+     "zh": "時鐘",
+     "en": "Clock",
+     "keywords": "時間 time",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "App_Terminal",
+     "id": "terminal",
+     "zh": "終端機",
+     "en": "Terminal",
+     "keywords": "指令 cmd console",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "App_CharacterMap",
+     "id": "character-map",
+     "zh": "字元對照表",
+     "en": "Character map",
+     "keywords": "字元 符號 symbols",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "App_Magnify",
+     "id": "magnify",
+     "zh": "放大鏡",
+     "en": "Magnifier",
+     "keywords": "放大 搜尋 zoom",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "App_StyledEdit",
+     "id": "text-editor",
+     "zh": "文字編輯器",
+     "en": "Text editor",
+     "keywords": "編輯 文字 筆記 edit",
+     "purposes": [
+      "tool",
+      "document"
+     ]
+    },
+    {
+     "src": "App_Icon-O-Matic",
+     "id": "icon-editor",
+     "zh": "圖示編輯器",
+     "en": "Icon editor",
+     "keywords": "向量 設計 vector",
+     "purposes": [
+      "tool",
+      "image"
+     ]
+    },
+    {
+     "src": "App_PackageInstaller",
+     "id": "installer",
+     "zh": "安裝程式",
+     "en": "Installer",
+     "keywords": "安裝 install",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "App_SoftwareUpdater",
+     "id": "updater",
+     "zh": "軟體更新",
+     "en": "Software updater",
+     "keywords": "更新 update",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "App_DiskUsage",
+     "id": "disk-usage",
+     "zh": "磁碟用量",
+     "en": "Disk usage",
+     "keywords": "容量 空間",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "App_Workspaces",
+     "id": "workspaces",
+     "zh": "工作區",
+     "en": "Workspaces",
+     "keywords": "桌面 切換 desktop",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "Prefs_Appearance",
+     "id": "appearance",
+     "zh": "外觀設定",
+     "en": "Appearance",
+     "keywords": "主題 色彩 theme",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "Prefs_Backgrounds",
+     "id": "backgrounds",
+     "zh": "背景設定",
+     "en": "Backgrounds",
+     "keywords": "桌布 背景 wallpaper",
+     "purposes": [
+      "tool",
+      "image"
+     ]
+    },
+    {
+     "src": "Prefs_Fonts",
+     "id": "fonts",
+     "zh": "字型設定",
+     "en": "Fonts",
+     "keywords": "字體 font",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "Prefs_Screen",
+     "id": "screen",
+     "zh": "螢幕設定",
+     "en": "Screen",
+     "keywords": "顯示器 解析度 display",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "Prefs_Keyboard",
+     "id": "keyboard",
+     "zh": "鍵盤",
+     "en": "Keyboard",
+     "keywords": "打字 keys",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "Prefs_Mouse",
+     "id": "mouse",
+     "zh": "滑鼠",
+     "en": "Mouse",
+     "keywords": "游標 cursor",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "Prefs_Network",
+     "id": "network",
+     "zh": "網路設定",
+     "en": "Network",
+     "keywords": "連線 網路 internet",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "Prefs_Printer",
+     "id": "printer",
+     "zh": "印表機",
+     "en": "Printer",
+     "keywords": "列印 print",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "Prefs_Media",
+     "id": "media-settings",
+     "zh": "媒體設定",
+     "en": "Media settings",
+     "keywords": "影音 設定",
+     "purposes": [
+      "tool",
+      "music"
+     ]
+    },
+    {
+     "src": "Misc_Magic_Wand",
+     "id": "magic-wand",
+     "zh": "魔法棒",
+     "en": "Magic wand",
+     "keywords": "魔法 特效 magic",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "Misc_Marker",
+     "id": "marker",
+     "zh": "麥克筆",
+     "en": "Marker",
+     "keywords": "筆 畫筆 標記 pen",
+     "purposes": [
+      "tool",
+      "image"
+     ]
+    },
+    {
+     "src": "Trash_Empty",
+     "id": "trash-empty",
+     "zh": "空垃圾桶",
+     "en": "Empty trash",
+     "keywords": "垃圾 刪除 trash",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "Trash_Full",
+     "id": "trash-full",
+     "zh": "滿的垃圾桶",
+     "en": "Full trash",
+     "keywords": "垃圾 刪除 trash",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "Action_Search",
+     "id": "search",
+     "zh": "搜尋",
+     "en": "Search",
+     "keywords": "尋找 find",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "Device_Clipboard",
+     "id": "clipboard",
+     "zh": "剪貼簿",
+     "en": "Clipboard",
+     "keywords": "貼上 複製 paste",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "Device_FlatbedScanner",
+     "id": "scanner",
+     "zh": "掃描器",
+     "en": "Scanner",
+     "keywords": "掃描 scan",
+     "purposes": [
+      "tool",
+      "image"
+     ]
+    },
+    {
+     "src": "App_Finance",
+     "id": "finance",
+     "zh": "財務",
+     "en": "Finance",
+     "keywords": "金錢 帳務 money",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "Misc_Birthday_Cake",
+     "id": "birthday-cake",
+     "zh": "生日蛋糕",
+     "en": "Birthday cake",
+     "keywords": "派對 生日 party",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Misc_Book",
+     "id": "book",
+     "zh": "書",
+     "en": "Book",
+     "keywords": "閱讀 書本 read",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "Misc_Box",
+     "id": "box",
+     "zh": "箱子",
+     "en": "Box",
+     "keywords": "盒子 收納",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Misc_Bug",
+     "id": "bug",
+     "zh": "蟲",
+     "en": "Bug",
+     "keywords": "除錯 昆蟲",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Misc_Earth",
+     "id": "earth",
+     "zh": "地球",
+     "en": "Earth",
+     "keywords": "世界 地球儀 world",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Misc_Hand",
+     "id": "hand",
+     "zh": "手",
+     "en": "Hand",
+     "keywords": "手掌",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Misc_LAN",
+     "id": "lan",
+     "zh": "區域網路",
+     "en": "LAN",
+     "keywords": "網路 電腦 network",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Misc_Paper_Plane",
+     "id": "paper-plane",
+     "zh": "紙飛機",
+     "en": "Paper plane",
+     "keywords": "寄送 傳送 send",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Misc_Scroll",
+     "id": "scroll",
+     "zh": "捲軸",
+     "en": "Scroll",
+     "keywords": "卷軸 古書",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "Misc_Sphere",
+     "id": "sphere",
+     "zh": "球體",
+     "en": "Sphere",
+     "keywords": "球 水晶球",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Misc_Window",
+     "id": "window",
+     "zh": "視窗",
+     "en": "Window",
+     "keywords": "窗戶",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Misc_WebSearch",
+     "id": "web-search",
+     "zh": "網頁搜尋",
+     "en": "Web search",
+     "keywords": "搜尋 網路",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Misc_Croissant",
+     "id": "croissant",
+     "zh": "可頌",
+     "en": "Croissant",
+     "keywords": "麵包 食物 food",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Alert_Idea",
+     "id": "idea",
+     "zh": "點子",
+     "en": "Idea",
+     "keywords": "燈泡 想法 lightbulb",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Alert_Info",
+     "id": "info",
+     "zh": "資訊",
+     "en": "Info",
+     "keywords": "提示 說明",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Alert_Warning",
+     "id": "warning",
+     "zh": "警告",
+     "en": "Warning",
+     "keywords": "注意 caution",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Alert_Stop",
+     "id": "stop",
+     "zh": "停止",
+     "en": "Stop",
+     "keywords": "禁止",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Mail_Send",
+     "id": "mail-send",
+     "zh": "寄信",
+     "en": "Send mail",
+     "keywords": "傳送 信件",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "App_Mail",
+     "id": "mail",
+     "zh": "信箱",
+     "en": "Mail",
+     "keywords": "電子郵件 email",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "Action_GoHome",
+     "id": "go-home",
+     "zh": "回首頁",
+     "en": "Go home",
+     "keywords": "首頁 家 home",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Action_Download",
+     "id": "download",
+     "zh": "下載",
+     "en": "Download",
+     "keywords": "下載",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Device_Harddisk",
+     "id": "harddisk",
+     "zh": "硬碟",
+     "en": "Hard disk",
+     "keywords": "磁碟 儲存 storage",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Device_Mobile",
+     "id": "mobile",
+     "zh": "手機",
+     "en": "Mobile phone",
+     "keywords": "行動裝置 phone",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Device_Pendrive",
+     "id": "pendrive",
+     "zh": "隨身碟",
+     "en": "USB drive",
+     "keywords": "usb",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Device_SD",
+     "id": "sd-card",
+     "zh": "記憶卡",
+     "en": "SD card",
+     "keywords": "sd 卡",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "Device_Floppy",
+     "id": "floppy",
+     "zh": "磁碟片",
+     "en": "Floppy disk",
+     "keywords": "軟碟 儲存 save",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "Device_NAS",
+     "id": "nas",
+     "zh": "網路硬碟",
+     "en": "NAS",
+     "keywords": "伺服器 server",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "App_Teapot",
+     "id": "teapot",
+     "zh": "茶壺",
+     "en": "Teapot",
+     "keywords": "茶 tea",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "App_Mandelbrot",
+     "id": "mandelbrot",
+     "zh": "曼德博集合",
+     "en": "Mandelbrot",
+     "keywords": "碎形 數學 fractal",
+     "purposes": [
+      "image"
+     ]
+    }
+   ]
+  },
+  "pixelart": {
+   "label": "Pixel-Art Icons 彩色像素",
+   "category": "pixel",
+   "ext": "png",
+   "kind": "color",
+   "source": {
+    "url": "https://github.com/tstamborski/pixelart-icons",
+    "path": "png",
+    "revision": "aff260c021f9a8053719de0113cd59e428c87eca"
+   },
+   "license": "CC0-1.0",
+   "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "authorOrRightsHolder": "Tomasz Stamborski",
+   "attribution": "Pixel-Art Icons by Tomasz Stamborski, CC0 1.0 (no attribution required; source kept for provenance). Brand logos, operating-system logos, fictional characters, weapons, tobacco and drug references are NOT included.",
+   "include": [
+    {
+     "src": "alarmclock",
+     "id": "alarm-clock",
+     "zh": "鬧鐘",
+     "en": "Alarm clock",
+     "keywords": "時間 提醒 alarm",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "birthday",
+     "id": "birthday",
+     "zh": "生日",
+     "en": "Birthday",
+     "keywords": "蛋糕 派對 party",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "brush",
+     "id": "brush",
+     "zh": "畫筆",
+     "en": "Brush",
+     "keywords": "繪畫 美術 paint",
+     "purposes": [
+      "image",
+      "tool"
+     ]
+    },
+    {
+     "src": "calc",
+     "id": "calculator",
+     "zh": "計算機",
+     "en": "Calculator",
+     "keywords": "計算 數學 math",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "calendar",
+     "id": "calendar",
+     "zh": "日曆",
+     "en": "Calendar",
+     "keywords": "日期 行事曆 date",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "cash",
+     "id": "cash",
+     "zh": "現金",
+     "en": "Cash",
+     "keywords": "錢 金錢 money",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "cassette",
+     "id": "cassette",
+     "zh": "卡帶",
+     "en": "Cassette",
+     "keywords": "錄音帶 音樂 tape",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "cell-phone",
+     "id": "cell-phone",
+     "zh": "手機",
+     "en": "Cell phone",
+     "keywords": "電話 phone",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "cherries",
+     "id": "cherries",
+     "zh": "櫻桃",
+     "en": "Cherries",
+     "keywords": "水果 食物 fruit",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "clock",
+     "id": "clock",
+     "zh": "時鐘",
+     "en": "Clock",
+     "keywords": "時間 time",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "cloudy",
+     "id": "cloudy",
+     "zh": "多雲",
+     "en": "Cloudy",
+     "keywords": "天氣 雲 weather",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "comb",
+     "id": "comb",
+     "zh": "梳子",
+     "en": "Comb",
+     "keywords": "整理 髮",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "copy",
+     "id": "copy",
+     "zh": "複製",
+     "en": "Copy",
+     "keywords": "拷貝",
+     "purposes": [
+      "document",
+      "tool"
+     ]
+    },
+    {
+     "src": "cut",
+     "id": "cut",
+     "zh": "剪下",
+     "en": "Cut",
+     "keywords": "剪刀 scissors",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "dices",
+     "id": "dice",
+     "zh": "骰子",
+     "en": "Dice",
+     "keywords": "遊戲 隨機 game",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "error",
+     "id": "error",
+     "zh": "錯誤",
+     "en": "Error",
+     "keywords": "叉叉 失敗",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "exit",
+     "id": "exit",
+     "zh": "離開",
+     "en": "Exit",
+     "keywords": "出口 登出 logout",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "eyes",
+     "id": "eyes",
+     "zh": "眼睛",
+     "en": "Eyes",
+     "keywords": "看 眼 look",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "film",
+     "id": "film",
+     "zh": "底片",
+     "en": "Film",
+     "keywords": "電影 影片 movie",
+     "purposes": [
+      "image"
+     ]
+    },
+    {
+     "src": "flower",
+     "id": "flower",
+     "zh": "花",
+     "en": "Flower",
+     "keywords": "植物 花朵 plant",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "gem",
+     "id": "gem",
+     "zh": "寶石",
+     "en": "Gem",
+     "keywords": "鑽石 珠寶 jewel",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "guitar",
+     "id": "guitar",
+     "zh": "吉他",
+     "en": "Guitar",
+     "keywords": "樂器 音樂 instrument",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "heart",
+     "id": "heart",
+     "zh": "愛心",
+     "en": "Heart",
+     "keywords": "喜歡 愛 love",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "info",
+     "id": "info",
+     "zh": "資訊",
+     "en": "Info",
+     "keywords": "說明 information",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "laboratory",
+     "id": "laboratory",
+     "zh": "實驗室",
+     "en": "Laboratory",
+     "keywords": "科學 燒瓶 science",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "lemon",
+     "id": "lemon",
+     "zh": "檸檬",
+     "en": "Lemon",
+     "keywords": "水果 fruit",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "letter",
+     "id": "letter",
+     "zh": "信封",
+     "en": "Letter",
+     "keywords": "信件 郵件 mail",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "letter-open",
+     "id": "letter-open",
+     "zh": "打開的信",
+     "en": "Open letter",
+     "keywords": "信件 mail",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "lollipop",
+     "id": "lollipop",
+     "zh": "棒棒糖",
+     "en": "Lollipop",
+     "keywords": "糖果 甜 candy",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "music-on",
+     "id": "music-on",
+     "zh": "音樂開啟",
+     "en": "Music on",
+     "keywords": "音樂 喇叭 聲音 sound",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "music-off",
+     "id": "music-off",
+     "zh": "音樂關閉",
+     "en": "Music off",
+     "keywords": "靜音 mute",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "newfile",
+     "id": "new-file",
+     "zh": "新檔案",
+     "en": "New file",
+     "keywords": "新增文件 new document",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "openfile",
+     "id": "open-file",
+     "zh": "開啟檔案",
+     "en": "Open file",
+     "keywords": "開啟 資料夾 open folder",
+     "purposes": [
+      "folder",
+      "document"
+     ]
+    },
+    {
+     "src": "orange",
+     "id": "orange",
+     "zh": "柳橙",
+     "en": "Orange",
+     "keywords": "橘子 水果 fruit",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "palette",
+     "id": "palette",
+     "zh": "調色盤",
+     "en": "Palette",
+     "keywords": "顏色 繪畫 color paint",
+     "purposes": [
+      "image",
+      "tool"
+     ]
+    },
+    {
+     "src": "paste",
+     "id": "paste",
+     "zh": "貼上",
+     "en": "Paste",
+     "keywords": "剪貼簿 clipboard",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "peace",
+     "id": "peace",
+     "zh": "和平",
+     "en": "Peace",
+     "keywords": "和平符號",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "pencil",
+     "id": "pencil",
+     "zh": "鉛筆",
+     "en": "Pencil",
+     "keywords": "編輯 寫字 edit write",
+     "purposes": [
+      "tool",
+      "document"
+     ]
+    },
+    {
+     "src": "pendrive",
+     "id": "pendrive",
+     "zh": "隨身碟",
+     "en": "Pen drive",
+     "keywords": "usb",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "printer",
+     "id": "printer",
+     "zh": "印表機",
+     "en": "Printer",
+     "keywords": "列印 print",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "question",
+     "id": "question",
+     "zh": "問號",
+     "en": "Question",
+     "keywords": "疑問 說明 help",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "rainy",
+     "id": "rainy",
+     "zh": "下雨",
+     "en": "Rainy",
+     "keywords": "天氣 雨 weather",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "remove-file",
+     "id": "remove-file",
+     "zh": "刪除檔案",
+     "en": "Remove file",
+     "keywords": "移除 delete",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "savefile",
+     "id": "save-file",
+     "zh": "儲存檔案",
+     "en": "Save file",
+     "keywords": "存檔 save",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "star-red",
+     "id": "star-red",
+     "zh": "紅色星星",
+     "en": "Red star",
+     "keywords": "星 星號",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "star-yellow",
+     "id": "star-yellow",
+     "zh": "黃色星星",
+     "en": "Yellow star",
+     "keywords": "星 星號 收藏 favorite",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "stormy",
+     "id": "stormy",
+     "zh": "暴風雨",
+     "en": "Stormy",
+     "keywords": "雷雨 天氣 storm",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "sunny",
+     "id": "sunny",
+     "zh": "晴天",
+     "en": "Sunny",
+     "keywords": "太陽 天氣 sun",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "thermometer",
+     "id": "thermometer",
+     "zh": "溫度計",
+     "en": "Thermometer",
+     "keywords": "溫度 temperature",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "tools",
+     "id": "tools",
+     "zh": "工具",
+     "en": "Tools",
+     "keywords": "扳手 螺絲 wrench",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "traffic-lights",
+     "id": "traffic-lights",
+     "zh": "紅綠燈",
+     "en": "Traffic lights",
+     "keywords": "交通",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "umbrella",
+     "id": "umbrella",
+     "zh": "雨傘",
+     "en": "Umbrella",
+     "keywords": "雨 天氣 rain",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "warning",
+     "id": "warning",
+     "zh": "警告",
+     "en": "Warning",
+     "keywords": "注意 驚嘆號",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "bananas",
+     "id": "bananas",
+     "zh": "香蕉",
+     "en": "Bananas",
+     "keywords": "水果 fruit",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "carrot",
+     "id": "carrot",
+     "zh": "紅蘿蔔",
+     "en": "Carrot",
+     "keywords": "蔬菜 食物 vegetable",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "battery",
+     "id": "battery",
+     "zh": "電池",
+     "en": "Battery",
+     "keywords": "電量 power",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "old-tree",
+     "id": "old-tree",
+     "zh": "老樹",
+     "en": "Old tree",
+     "keywords": "樹 植物 tree",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "hotdog",
+     "id": "hotdog",
+     "zh": "熱狗",
+     "en": "Hot dog",
+     "keywords": "食物 food",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "ant",
+     "id": "ant",
+     "zh": "螞蟻",
+     "en": "Ant",
+     "keywords": "昆蟲 insect",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "notatnik",
+     "id": "notepad",
+     "zh": "記事本",
+     "en": "Notepad",
+     "keywords": "筆記 文字 note",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "potion-blue",
+     "id": "potion-blue",
+     "zh": "藍色藥水",
+     "en": "Blue potion",
+     "keywords": "魔法 遊戲 magic",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "potion-green",
+     "id": "potion-green",
+     "zh": "綠色藥水",
+     "en": "Green potion",
+     "keywords": "魔法 遊戲 magic",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "potion-red",
+     "id": "potion-red",
+     "zh": "紅色藥水",
+     "en": "Red potion",
+     "keywords": "魔法 遊戲 magic",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "cpu",
+     "id": "cpu",
+     "zh": "處理器",
+     "en": "CPU",
+     "keywords": "晶片 chip",
+     "purposes": [
+      "tool"
+     ]
+    }
+   ]
+  },
+  "pixelarticons": {
+   "label": "Pixelarticons 單色像素",
+   "category": "mono",
+   "ext": "svg",
+   "kind": "mono",
+   "source": {
+    "url": "https://github.com/halfmage/pixelarticons",
+    "path": "svg",
+    "revision": "c9ecc2da61afde85dbe539025e3d931c6152ad75"
+   },
+   "license": "MIT",
+   "licenseUrl": "https://github.com/halfmage/pixelarticons/blob/main/LICENSE",
+   "authorOrRightsHolder": "Gerrit Halfmann",
+   "attribution": "Pixelarticons (free set) by Gerrit Halfmann, MIT License, Copyright (c) 2019 Gerrit Halfmann. Pro/Mini/Prime series and brand-logo icons are NOT included.",
+   "include": [
+    {
+     "src": "folder",
+     "id": "folder",
+     "zh": "資料夾",
+     "en": "Folder",
+     "keywords": "directory 檔案夾",
+     "purposes": [
+      "folder"
+     ]
+    },
+    {
+     "src": "folder-plus",
+     "id": "folder-plus",
+     "zh": "新增資料夾",
+     "en": "New folder",
+     "keywords": "新增 add",
+     "purposes": [
+      "folder"
+     ]
+    },
+    {
+     "src": "archive",
+     "id": "archive",
+     "zh": "封存",
+     "en": "Archive",
+     "keywords": "歸檔 保存",
+     "purposes": [
+      "folder",
+      "document"
+     ]
+    },
+    {
+     "src": "inbox",
+     "id": "inbox",
+     "zh": "收件匣",
+     "en": "Inbox",
+     "keywords": "信件 收件",
+     "purposes": [
+      "folder"
+     ]
+    },
+    {
+     "src": "package",
+     "id": "package",
+     "zh": "套件",
+     "en": "Package",
+     "keywords": "包裹 打包",
+     "purposes": [
+      "folder"
+     ]
+    },
+    {
+     "src": "library",
+     "id": "library",
+     "zh": "圖書館",
+     "en": "Library",
+     "keywords": "書 館藏",
+     "purposes": [
+      "folder"
+     ]
+    },
+    {
+     "src": "files",
+     "id": "files",
+     "zh": "多個檔案",
+     "en": "Files",
+     "keywords": "文件 documents",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "file",
+     "id": "file",
+     "zh": "檔案",
+     "en": "File",
+     "keywords": "文件",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "file-text",
+     "id": "file-text",
+     "zh": "文字檔案",
+     "en": "Text file",
+     "keywords": "文字 txt",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "article",
+     "id": "article",
+     "zh": "文章",
+     "en": "Article",
+     "keywords": "文字 內容",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "notes",
+     "id": "notes",
+     "zh": "筆記",
+     "en": "Notes",
+     "keywords": "記錄 note",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "note",
+     "id": "note",
+     "zh": "便條",
+     "en": "Note",
+     "keywords": "紙條",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "notebook",
+     "id": "notebook",
+     "zh": "筆記本",
+     "en": "Notebook",
+     "keywords": "日記 本子",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "clipboard",
+     "id": "clipboard",
+     "zh": "剪貼簿",
+     "en": "Clipboard",
+     "keywords": "貼上 清單",
+     "purposes": [
+      "document",
+      "tool"
+     ]
+    },
+    {
+     "src": "sticky-note",
+     "id": "sticky-note",
+     "zh": "便利貼",
+     "en": "Sticky note",
+     "keywords": "貼紙 note",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "bookmark",
+     "id": "bookmark",
+     "zh": "書籤",
+     "en": "Bookmark",
+     "keywords": "收藏",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "book-open",
+     "id": "book-open",
+     "zh": "打開的書",
+     "en": "Open book",
+     "keywords": "閱讀 read",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "calendar",
+     "id": "calendar",
+     "zh": "日曆",
+     "en": "Calendar",
+     "keywords": "日期 date",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "receipt",
+     "id": "receipt",
+     "zh": "收據",
+     "en": "Receipt",
+     "keywords": "發票 帳單",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "script",
+     "id": "script",
+     "zh": "腳本",
+     "en": "Script",
+     "keywords": "劇本 程式",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "image",
+     "id": "image",
+     "zh": "圖片",
+     "en": "Image",
+     "keywords": "照片 photo picture",
+     "purposes": [
+      "image"
+     ]
+    },
+    {
+     "src": "images",
+     "id": "images",
+     "zh": "多張圖片",
+     "en": "Images",
+     "keywords": "相簿 gallery",
+     "purposes": [
+      "image"
+     ]
+    },
+    {
+     "src": "gallery-thumbnails",
+     "id": "gallery",
+     "zh": "相簿縮圖",
+     "en": "Gallery",
+     "keywords": "相簿 圖庫",
+     "purposes": [
+      "image"
+     ]
+    },
+    {
+     "src": "camera",
+     "id": "camera",
+     "zh": "相機",
+     "en": "Camera",
+     "keywords": "拍照 photo",
+     "purposes": [
+      "image"
+     ]
+    },
+    {
+     "src": "video",
+     "id": "video",
+     "zh": "影片",
+     "en": "Video",
+     "keywords": "影音 movie",
+     "purposes": [
+      "image"
+     ]
+    },
+    {
+     "src": "clapperboard",
+     "id": "clapperboard",
+     "zh": "場記板",
+     "en": "Clapperboard",
+     "keywords": "電影 拍攝",
+     "purposes": [
+      "image"
+     ]
+    },
+    {
+     "src": "frame",
+     "id": "frame",
+     "zh": "相框",
+     "en": "Frame",
+     "keywords": "畫框",
+     "purposes": [
+      "image"
+     ]
+    },
+    {
+     "src": "presentation",
+     "id": "presentation",
+     "zh": "簡報",
+     "en": "Presentation",
+     "keywords": "投影片 slides",
+     "purposes": [
+      "image"
+     ]
+    },
+    {
+     "src": "projector",
+     "id": "projector",
+     "zh": "投影機",
+     "en": "Projector",
+     "keywords": "放映",
+     "purposes": [
+      "image"
+     ]
+    },
+    {
+     "src": "colors-swatch",
+     "id": "color-swatch",
+     "zh": "色票",
+     "en": "Color swatch",
+     "keywords": "顏色 調色 palette",
+     "purposes": [
+      "image",
+      "tool"
+     ]
+    },
+    {
+     "src": "brush",
+     "id": "brush",
+     "zh": "畫筆",
+     "en": "Brush",
+     "keywords": "繪畫 paint",
+     "purposes": [
+      "image",
+      "tool"
+     ]
+    },
+    {
+     "src": "spray-can",
+     "id": "spray-can",
+     "zh": "噴漆",
+     "en": "Spray can",
+     "keywords": "塗鴉 graffiti",
+     "purposes": [
+      "image"
+     ]
+    },
+    {
+     "src": "eraser",
+     "id": "eraser",
+     "zh": "橡皮擦",
+     "en": "Eraser",
+     "keywords": "擦掉",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "shapes",
+     "id": "shapes",
+     "zh": "形狀",
+     "en": "Shapes",
+     "keywords": "圖形 幾何",
+     "purposes": [
+      "image"
+     ]
+    },
+    {
+     "src": "sparkles",
+     "id": "sparkles",
+     "zh": "閃亮",
+     "en": "Sparkles",
+     "keywords": "星光 特效",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "music",
+     "id": "music",
+     "zh": "音樂",
+     "en": "Music",
+     "keywords": "音符 note song",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "album",
+     "id": "album",
+     "zh": "專輯",
+     "en": "Album",
+     "keywords": "唱片 cd",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "headphone",
+     "id": "headphone",
+     "zh": "耳機",
+     "en": "Headphones",
+     "keywords": "聽音樂 listen",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "drum",
+     "id": "drum",
+     "zh": "鼓",
+     "en": "Drum",
+     "keywords": "樂器 instrument",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "volume-2",
+     "id": "volume",
+     "zh": "音量",
+     "en": "Volume",
+     "keywords": "喇叭 聲音 speaker",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "volume-x",
+     "id": "volume-mute",
+     "zh": "靜音",
+     "en": "Mute",
+     "keywords": "喇叭 靜音",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "mic",
+     "id": "microphone",
+     "zh": "麥克風",
+     "en": "Microphone",
+     "keywords": "錄音 mic",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "radio",
+     "id": "radio",
+     "zh": "收音機",
+     "en": "Radio",
+     "keywords": "廣播",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "play",
+     "id": "play",
+     "zh": "播放",
+     "en": "Play",
+     "keywords": "開始 start",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "pause",
+     "id": "pause",
+     "zh": "暫停",
+     "en": "Pause",
+     "keywords": "停止",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "keyboard-music",
+     "id": "keyboard-music",
+     "zh": "電子琴",
+     "en": "Keyboard instrument",
+     "keywords": "鋼琴 piano",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "audio-waveform",
+     "id": "waveform",
+     "zh": "音訊波形",
+     "en": "Waveform",
+     "keywords": "聲波",
+     "purposes": [
+      "music"
+     ]
+    },
+    {
+     "src": "human",
+     "id": "human",
+     "zh": "人",
+     "en": "Human",
+     "keywords": "人物 角色 person",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "user",
+     "id": "user",
+     "zh": "使用者",
+     "en": "User",
+     "keywords": "帳號 人物 account",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "users",
+     "id": "users",
+     "zh": "多位使用者",
+     "en": "Users",
+     "keywords": "群組 團隊 group",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "user-plus",
+     "id": "user-plus",
+     "zh": "新增使用者",
+     "en": "Add user",
+     "keywords": "新增 加入",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "avatar-circle",
+     "id": "avatar-circle",
+     "zh": "圓形頭像",
+     "en": "Round avatar",
+     "keywords": "頭像 大頭貼",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "avatar-square",
+     "id": "avatar-square",
+     "zh": "方形頭像",
+     "en": "Square avatar",
+     "keywords": "頭像 大頭貼",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "contact",
+     "id": "contact",
+     "zh": "聯絡人",
+     "en": "Contact",
+     "keywords": "通訊錄 名片",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "membercard",
+     "id": "member-card",
+     "zh": "會員卡",
+     "en": "Member card",
+     "keywords": "名片 卡片",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "robot",
+     "id": "robot",
+     "zh": "機器人",
+     "en": "Robot",
+     "keywords": "ai 機械",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "robot-face",
+     "id": "robot-face",
+     "zh": "機器人臉",
+     "en": "Robot face",
+     "keywords": "ai 機械",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "smile",
+     "id": "smile",
+     "zh": "微笑",
+     "en": "Smile",
+     "keywords": "開心 表情",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "laugh",
+     "id": "laugh",
+     "zh": "大笑",
+     "en": "Laugh",
+     "keywords": "開心 表情",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "frown",
+     "id": "frown",
+     "zh": "皺眉",
+     "en": "Frown",
+     "keywords": "難過 表情",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "meh",
+     "id": "meh",
+     "zh": "無感",
+     "en": "Meh",
+     "keywords": "表情 普通",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "angry",
+     "id": "angry",
+     "zh": "生氣",
+     "en": "Angry",
+     "keywords": "憤怒 表情",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "alien",
+     "id": "alien",
+     "zh": "外星人",
+     "en": "Alien",
+     "keywords": "ufo 太空",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "human-arms-up",
+     "id": "human-arms-up",
+     "zh": "舉手",
+     "en": "Arms up",
+     "keywords": "人物 歡呼",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "calculator",
+     "id": "calculator",
+     "zh": "計算機",
+     "en": "Calculator",
+     "keywords": "數學 math",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "clock",
+     "id": "clock",
+     "zh": "時鐘",
+     "en": "Clock",
+     "keywords": "時間 time",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "alarm-clock",
+     "id": "alarm-clock",
+     "zh": "鬧鐘",
+     "en": "Alarm clock",
+     "keywords": "提醒 alarm",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "hourglass",
+     "id": "hourglass",
+     "zh": "沙漏",
+     "en": "Hourglass",
+     "keywords": "等待 time",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "terminal",
+     "id": "terminal",
+     "zh": "終端機",
+     "en": "Terminal",
+     "keywords": "指令 console",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "code",
+     "id": "code",
+     "zh": "程式碼",
+     "en": "Code",
+     "keywords": "開發 dev",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "settings-cog",
+     "id": "settings",
+     "zh": "設定",
+     "en": "Settings",
+     "keywords": "設定 齒輪 config",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "gear",
+     "id": "gear",
+     "zh": "齒輪",
+     "en": "Gear",
+     "keywords": "設定",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "sliders",
+     "id": "sliders",
+     "zh": "滑桿",
+     "en": "Sliders",
+     "keywords": "調整 設定",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "search",
+     "id": "search",
+     "zh": "搜尋",
+     "en": "Search",
+     "keywords": "尋找 放大鏡 find",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "zoom-in",
+     "id": "zoom-in",
+     "zh": "放大",
+     "en": "Zoom in",
+     "keywords": "放大鏡",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "zoom-out",
+     "id": "zoom-out",
+     "zh": "縮小",
+     "en": "Zoom out",
+     "keywords": "放大鏡",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "filter",
+     "id": "filter",
+     "zh": "篩選",
+     "en": "Filter",
+     "keywords": "過濾",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "scissors",
+     "id": "scissors",
+     "zh": "剪刀",
+     "en": "Scissors",
+     "keywords": "剪下 cut",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "copy",
+     "id": "copy",
+     "zh": "複製",
+     "en": "Copy",
+     "keywords": "拷貝",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "tools",
+     "id": "tools",
+     "zh": "工具",
+     "en": "Tools",
+     "keywords": "扳手 螺絲",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "tool-case",
+     "id": "toolbox",
+     "zh": "工具箱",
+     "en": "Toolbox",
+     "keywords": "工具 工具包",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "key",
+     "id": "key",
+     "zh": "鑰匙",
+     "en": "Key",
+     "keywords": "密碼 鎖",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "lock",
+     "id": "lock",
+     "zh": "鎖",
+     "en": "Lock",
+     "keywords": "安全 密碼",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "unlock",
+     "id": "unlock",
+     "zh": "解鎖",
+     "en": "Unlock",
+     "keywords": "開鎖",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "shield",
+     "id": "shield",
+     "zh": "盾牌",
+     "en": "Shield",
+     "keywords": "防護 安全",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "link",
+     "id": "link",
+     "zh": "連結",
+     "en": "Link",
+     "keywords": "網址 url",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "share",
+     "id": "share",
+     "zh": "分享",
+     "en": "Share",
+     "keywords": "傳送",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "download",
+     "id": "download",
+     "zh": "下載",
+     "en": "Download",
+     "keywords": "下載",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "upload",
+     "id": "upload",
+     "zh": "上傳",
+     "en": "Upload",
+     "keywords": "上傳",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "send",
+     "id": "send",
+     "zh": "傳送",
+     "en": "Send",
+     "keywords": "寄送",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "mail",
+     "id": "mail",
+     "zh": "信件",
+     "en": "Mail",
+     "keywords": "郵件 email",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "mail-open",
+     "id": "mail-open",
+     "zh": "打開的信",
+     "en": "Open mail",
+     "keywords": "郵件 email",
+     "purposes": [
+      "document"
+     ]
+    },
+    {
+     "src": "message",
+     "id": "message",
+     "zh": "訊息",
+     "en": "Message",
+     "keywords": "對話 聊天",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "comment",
+     "id": "comment",
+     "zh": "留言",
+     "en": "Comment",
+     "keywords": "評論 對話",
+     "purposes": [
+      "person"
+     ]
+    },
+    {
+     "src": "phone",
+     "id": "phone",
+     "zh": "電話",
+     "en": "Phone",
+     "keywords": "通話 call",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "smartphone",
+     "id": "smartphone",
+     "zh": "智慧型手機",
+     "en": "Smartphone",
+     "keywords": "手機 mobile",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "laptop",
+     "id": "laptop",
+     "zh": "筆電",
+     "en": "Laptop",
+     "keywords": "電腦 computer",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "computer",
+     "id": "computer",
+     "zh": "電腦",
+     "en": "Computer",
+     "keywords": "桌機 pc",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "monitor",
+     "id": "monitor",
+     "zh": "螢幕",
+     "en": "Monitor",
+     "keywords": "顯示器 screen",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "server",
+     "id": "server",
+     "zh": "伺服器",
+     "en": "Server",
+     "keywords": "主機",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "database",
+     "id": "database",
+     "zh": "資料庫",
+     "en": "Database",
+     "keywords": "資料 db",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "keyboard",
+     "id": "keyboard",
+     "zh": "鍵盤",
+     "en": "Keyboard",
+     "keywords": "打字",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "mouse",
+     "id": "mouse",
+     "zh": "滑鼠",
+     "en": "Mouse",
+     "keywords": "游標",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "printer",
+     "id": "printer",
+     "zh": "印表機",
+     "en": "Printer",
+     "keywords": "列印",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "webcam",
+     "id": "webcam",
+     "zh": "網路攝影機",
+     "en": "Webcam",
+     "keywords": "視訊 camera",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "qr-code",
+     "id": "qr-code",
+     "zh": "QR 碼",
+     "en": "QR code",
+     "keywords": "條碼 scan",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "wifi",
+     "id": "wifi",
+     "zh": "無線網路",
+     "en": "Wi-Fi",
+     "keywords": "網路 訊號",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "plug",
+     "id": "plug",
+     "zh": "插頭",
+     "en": "Plug",
+     "keywords": "電源",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "power",
+     "id": "power",
+     "zh": "電源",
+     "en": "Power",
+     "keywords": "開關",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "lightbulb",
+     "id": "lightbulb",
+     "zh": "燈泡",
+     "en": "Light bulb",
+     "keywords": "點子 想法 idea",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "wand",
+     "id": "wand",
+     "zh": "魔杖",
+     "en": "Wand",
+     "keywords": "魔法 magic",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "trash",
+     "id": "trash",
+     "zh": "垃圾桶",
+     "en": "Trash",
+     "keywords": "刪除 delete",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "undo",
+     "id": "undo",
+     "zh": "復原",
+     "en": "Undo",
+     "keywords": "上一步",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "redo",
+     "id": "redo",
+     "zh": "重做",
+     "en": "Redo",
+     "keywords": "下一步",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "refresh",
+     "id": "refresh",
+     "zh": "重新整理",
+     "en": "Refresh",
+     "keywords": "刷新 reload",
+     "purposes": [
+      "tool"
+     ]
+    },
+    {
+     "src": "home",
+     "id": "home",
+     "zh": "首頁",
+     "en": "Home",
+     "keywords": "家 house",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "building",
+     "id": "building",
+     "zh": "建築",
+     "en": "Building",
+     "keywords": "大樓",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "castle",
+     "id": "castle",
+     "zh": "城堡",
+     "en": "Castle",
+     "keywords": "遊戲 奇幻 fantasy",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "store",
+     "id": "store",
+     "zh": "商店",
+     "en": "Store",
+     "keywords": "店 shop",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "shopping-cart",
+     "id": "shopping-cart",
+     "zh": "購物車",
+     "en": "Shopping cart",
+     "keywords": "購物 buy",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "shopping-bag",
+     "id": "shopping-bag",
+     "zh": "購物袋",
+     "en": "Shopping bag",
+     "keywords": "購物 buy",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "gift",
+     "id": "gift",
+     "zh": "禮物",
+     "en": "Gift",
+     "keywords": "送禮 present",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "cake",
+     "id": "cake",
+     "zh": "蛋糕",
+     "en": "Cake",
+     "keywords": "生日 甜點",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "balloon",
+     "id": "balloon",
+     "zh": "氣球",
+     "en": "Balloon",
+     "keywords": "派對 party",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "party-popper",
+     "id": "party-popper",
+     "zh": "拉炮",
+     "en": "Party popper",
+     "keywords": "慶祝 party",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "trophy",
+     "id": "trophy",
+     "zh": "獎盃",
+     "en": "Trophy",
+     "keywords": "冠軍 獎勵",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "crown",
+     "id": "crown",
+     "zh": "皇冠",
+     "en": "Crown",
+     "keywords": "王 king",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "diamond-gem",
+     "id": "gem",
+     "zh": "寶石",
+     "en": "Gem",
+     "keywords": "鑽石 珠寶",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "heart",
+     "id": "heart",
+     "zh": "愛心",
+     "en": "Heart",
+     "keywords": "喜歡 愛 love",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "flag",
+     "id": "flag",
+     "zh": "旗子",
+     "en": "Flag",
+     "keywords": "旗幟",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "map",
+     "id": "map",
+     "zh": "地圖",
+     "en": "Map",
+     "keywords": "導航",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "map-pin",
+     "id": "map-pin",
+     "zh": "地圖標記",
+     "en": "Map pin",
+     "keywords": "位置 地點",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "compass",
+     "id": "compass",
+     "zh": "指南針",
+     "en": "Compass",
+     "keywords": "方向 導航",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "earth",
+     "id": "earth",
+     "zh": "地球",
+     "en": "Earth",
+     "keywords": "世界 world",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "globe",
+     "id": "globe",
+     "zh": "地球儀",
+     "en": "Globe",
+     "keywords": "世界 world",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "sun",
+     "id": "sun",
+     "zh": "太陽",
+     "en": "Sun",
+     "keywords": "晴天 weather",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "moon",
+     "id": "moon",
+     "zh": "月亮",
+     "en": "Moon",
+     "keywords": "夜晚 night",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "cloud",
+     "id": "cloud",
+     "zh": "雲",
+     "en": "Cloud",
+     "keywords": "天氣 weather",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "snowflake",
+     "id": "snowflake",
+     "zh": "雪花",
+     "en": "Snowflake",
+     "keywords": "冬天 snow",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "leaf",
+     "id": "leaf",
+     "zh": "葉子",
+     "en": "Leaf",
+     "keywords": "植物 plant",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "tree",
+     "id": "tree",
+     "zh": "樹",
+     "en": "Tree",
+     "keywords": "植物 plant",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "tree-pine",
+     "id": "tree-pine",
+     "zh": "松樹",
+     "en": "Pine tree",
+     "keywords": "植物 plant",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "fish",
+     "id": "fish",
+     "zh": "魚",
+     "en": "Fish",
+     "keywords": "動物 animal",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "dog",
+     "id": "dog",
+     "zh": "狗",
+     "en": "Dog",
+     "keywords": "動物 animal pet",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "snail",
+     "id": "snail",
+     "zh": "蝸牛",
+     "en": "Snail",
+     "keywords": "動物 animal",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "snake",
+     "id": "snake",
+     "zh": "蛇",
+     "en": "Snake",
+     "keywords": "動物 animal",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "t-rex",
+     "id": "t-rex",
+     "zh": "暴龍",
+     "en": "T-Rex",
+     "keywords": "恐龍 dinosaur",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "bug",
+     "id": "bug",
+     "zh": "蟲",
+     "en": "Bug",
+     "keywords": "昆蟲 insect",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "coffee",
+     "id": "coffee",
+     "zh": "咖啡",
+     "en": "Coffee",
+     "keywords": "飲料 drink",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "mug",
+     "id": "mug",
+     "zh": "馬克杯",
+     "en": "Mug",
+     "keywords": "杯子 cup",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "tea",
+     "id": "tea",
+     "zh": "茶",
+     "en": "Tea",
+     "keywords": "飲料 drink",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "bed",
+     "id": "bed",
+     "zh": "床",
+     "en": "Bed",
+     "keywords": "睡覺 sleep",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "sofa",
+     "id": "sofa",
+     "zh": "沙發",
+     "en": "Sofa",
+     "keywords": "家具 furniture",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "car",
+     "id": "car",
+     "zh": "汽車",
+     "en": "Car",
+     "keywords": "交通 vehicle",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "bus",
+     "id": "bus",
+     "zh": "公車",
+     "en": "Bus",
+     "keywords": "交通 vehicle",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "ship",
+     "id": "ship",
+     "zh": "船",
+     "en": "Ship",
+     "keywords": "交通 vehicle",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "helicopter",
+     "id": "helicopter",
+     "zh": "直升機",
+     "en": "Helicopter",
+     "keywords": "交通 vehicle",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "truck",
+     "id": "truck",
+     "zh": "卡車",
+     "en": "Truck",
+     "keywords": "交通 vehicle",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "gamepad",
+     "id": "gamepad",
+     "zh": "遊戲手把",
+     "en": "Gamepad",
+     "keywords": "遊戲 game",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "joystick",
+     "id": "joystick",
+     "zh": "搖桿",
+     "en": "Joystick",
+     "keywords": "遊戲 game",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "chess",
+     "id": "chess",
+     "zh": "西洋棋",
+     "en": "Chess",
+     "keywords": "遊戲 game",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "bell",
+     "id": "bell",
+     "zh": "鈴鐺",
+     "en": "Bell",
+     "keywords": "通知 notification",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "fire",
+     "id": "fire",
+     "zh": "火",
+     "en": "Fire",
+     "keywords": "火焰 hot",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "zap",
+     "id": "zap",
+     "zh": "閃電",
+     "en": "Lightning",
+     "keywords": "電 power",
+     "purposes": [
+      "other"
+     ]
+    },
+    {
+     "src": "smart-home",
+     "id": "smart-home",
+     "zh": "智慧家庭",
+     "en": "Smart home",
+     "keywords": "家 home",
+     "purposes": [
+      "other"
+     ]
+    }
+   ]
+  }
+ },
+ "excluded": [
+  {
+   "set": "haiku",
+   "reason": "Third-party brand logos and applications: App_Firefox, App_VLC, App_LibreOffice, App_Dropbox, App_Transmission, App_VirtualBox, App_NetSurf, App_Lazarus, App_Links2, Misc_Facebook, Misc_YouTube, Misc_FreeBSD, Misc_TARDIS, Misc_iMac, Misc_ClassicMacintosh, Misc_Atari*, Misc_NintendoGamecube, Overlay_google, Overlay_python, Overlay_Be*, Overlay_Zeta"
+  },
+  {
+   "set": "haiku",
+   "reason": "Haiku, Inc. trademarks and Haiku-branded art: HaikuDepot_*, Folder_haiku, Misc_HaikuBook, anything under data/artwork outside icons/ (HAIKU logo, Leaf, Background Leaf)"
+  },
+  {
+   "set": "haiku",
+   "reason": "Microsoft Office document marks: File_Text_MS_Word, File_Chart_MS_PowerPoint, File_Spreadsheet_MS_Excel, File_Database_MS_Access, File_Diagram_MS_Visio"
+  },
+  {
+   "set": "haiku",
+   "reason": "Not icons or not general purpose: Color_* swatches, flags/*, Deskbar_*, Overlay_*, Server_*, Tray_*, Website_*, other app-specific icons not reviewed yet (reviewed in later batches)"
+  },
+  {
+   "set": "pixelart",
+   "reason": "Brand and operating-system logos: amiga, android, apple, arduino, beos, bsd, commodore-ring, commodore-tool, facebook, github, haiku, macos, mswindows, ms-dos, nasa, raspberrypi, tiktok, tux, twitter, youtube, coke"
+  },
+  {
+   "set": "pixelart",
+   "reason": "Fictional characters and pop-culture references: hulk, zorro, ghost, bluepill, redpill, sponge, ace, piracy"
+  },
+  {
+   "set": "pixelart",
+   "reason": "Weapons, tobacco, alcohol and similar: gun, katana, explosive, tnt, cigarette, poison, wine, ill, mask"
+  },
+  {
+   "set": "pixelart",
+   "reason": "Cursor sprites, tiny 16px duplicates and aseprite/ico sources are not used; only the 32px PNG is bundled"
+  },
+  {
+   "set": "pixelarticons",
+   "reason": "Brand-logo icons that ship in the free set: android, apple, bluesky, deno, discord, docker, facebook, figma, github, gitlab, gmail, google, google-chrome, instagram, linkedin, linux, mastodon, netlify, npm, pnpm, react, slack, telegram, tiktok, twitter-bird, vercel, whatsapp, x, youtube"
+  },
+  {
+   "set": "pixelarticons",
+   "reason": "-sharp variants (visual duplicates of the rounded icons), -solid variants and glyph duplicates are skipped to avoid doubling the catalog; layout, alignment, arrow and letter icons are UI glyphs, not user-choosable desktop icons in this batch"
+  },
+  {
+   "set": "pixelarticons",
+   "reason": "Pro, Mini and Prime series (different terms) are not part of the free svg/ directory and are never imported"
+  }
+ ]
+}

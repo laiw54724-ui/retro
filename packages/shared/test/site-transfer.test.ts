@@ -56,4 +56,117 @@ describe("Retro JSON export/import", () => {
     oversized.mediaManifest.items = Array.from({ length: 2001 }, (_, index) => ({ ...result.value.mediaManifest.items[0], id: `m${index}` }));
     expect(inspectRetroImport(oversized)).toMatchObject({ ok: false, code: "unsupported_format" });
   });
+
+  it("keeps library icon ids (windows, links and explorer items) through export and import without upstream URLs", () => {
+    const legacy = createStarterDocument("Icons", "classic98", "instagram");
+    legacy.windows[0].icon = "haiku:folder";
+    const explorer = makeWindow("explorer");
+    if (explorer.type !== "explorer") throw new Error("fixture explorer missing");
+    explorer.content = { folders: [{ id: "f1", parentId: null, name: "相片", order: 0, visibility: "published", icon: "pixelart:calendar" }], shortcuts: [] };
+    legacy.windows.push(explorer);
+    const migrated = migrateSiteDocumentV2(legacy, { siteId: "site-a" });
+    if (!migrated.ok) throw new Error("migration failed");
+    const exported = createRetroExport({ scope: "owner-backup", siteId: "site-a", username: "alice", siteName: "Icons", document: migrated.document });
+    expect(exported.ok).toBe(true);
+    if (!exported.ok) return;
+    const text = JSON.stringify(exported.value);
+    expect(text).toContain("haiku:folder");
+    expect(text).toContain("pixelart:calendar");
+    expect(text).not.toContain("github.com");
+    const imported = inspectRetroImport(JSON.parse(text));
+    expect(imported.ok).toBe(true);
+    if (!imported.ok) return;
+    expect(imported.value.document.windows[0].icon).toBe("haiku:folder");
+    const importedExplorer = imported.value.document.windows.find((window) => window.type === "explorer");
+    expect(importedExplorer?.type === "explorer" && importedExplorer.content.folders[0].icon).toBe("pixelart:calendar");
+  });
+});
+
+
+describe("legacy local-reference portability", () => {
+  function legacy() {
+    const document = createStarterDocument("Legacy desk", "classic98", "blank");
+    const gallery = makeWindow("gallery", 0);
+    gallery.id = "gallery";
+    const explorer = makeWindow("explorer", 1);
+    if (explorer.type !== "explorer") throw new Error("Explorer fixture");
+    explorer.id = "explorer";
+    explorer.content.shortcuts = [{ id: "link", label: "Gallery", icon: "haiku:folder", parentId: null, order: 0, visibility: "published", target: { kind: "window", id: gallery.id, siteId: "site-a" } }];
+    document.windows = [gallery, explorer];
+    return document;
+  }
+
+  it("remaps v1 local references on export and accepts old coherent v1 packages without losing icons", () => {
+    const original = legacy();
+    const exported = createRetroExport({ scope: "owner-backup", siteId: "site-a", username: "demo", siteName: original.siteName, document: original });
+    if (!exported.ok) throw new Error("export");
+    expect(validateSiteDocumentScope(exported.value.document, EXPORT_SITE_ID)).toEqual([]);
+    const old = structuredClone(exported.value);
+    old.document = remapDocumentSiteId(old.document, EXPORT_SITE_ID, "site-a");
+    const imported = inspectRetroImport(old);
+    if (!imported.ok) throw new Error("legacy import");
+    expect(imported.value.document.schemaVersion).toBe(1);
+    expect(imported.value.document).toEqual(exported.value.document);
+    const rebound = remapDocumentSiteId(imported.value.document, EXPORT_SITE_ID, "site-new");
+    expect(validateSiteDocumentScope(rebound, "site-new")).toEqual([]);
+    expect(migrateSiteDocumentV2(rebound, { siteId: "site-new" })).toMatchObject({ ok: true });
+    expect(original).toEqual(legacy());
+  });
+
+  it.each([1, 2])("rejects a foreign Explorer scope even with no OC entities in v%s", (version) => {
+    const original = legacy();
+    const migrated = migrateSiteDocumentV2(original, { siteId: "site-a" });
+    if (!migrated.ok) throw new Error("migration");
+    const document = version === 1 ? original : migrated.document;
+    expect(validateSiteDocumentScope(document, "site-b")).toEqual(expect.arrayContaining([expect.objectContaining({ code: "cross_site" })]));
+    expect(createRetroExport({ scope: "owner-backup", siteId: "site-b", username: "demo", siteName: document.siteName, document })).toMatchObject({ ok: false, code: "invalid_document" });
+  });
+
+  it("rejects dangling legacy targets rather than accepting a lossy import", () => {
+    const original = legacy();
+    const exported = createRetroExport({ scope: "owner-backup", siteId: "site-a", username: "demo", siteName: original.siteName, document: original });
+    if (!exported.ok) throw new Error("export");
+    exported.value.document = remapDocumentSiteId(exported.value.document, EXPORT_SITE_ID, "site-a");
+    exported.value.document.windows = exported.value.document.windows.filter((window) => window.id !== "gallery");
+    expect(inspectRetroImport(exported.value)).toMatchObject({ ok: false, code: "invalid_package" });
+  });
+});
+
+
+describe("uploaded icon transfer notices", () => {
+  it.each([1, 2])("derives missing icon bytes from v%s data even when its manifest omits them", (version) => {
+    const legacy = createStarterDocument("Uploaded icons", "classic98", "blank");
+    const links = makeWindow("links", 0);
+    const explorer = makeWindow("explorer", 1);
+    if (links.type !== "links" || explorer.type !== "explorer") throw new Error("icon fixture types");
+    const privateIcon = "retro-asset:22222222-2222-4222-8222-222222222222";
+    links.icon = privateIcon;
+    links.content.links[0].icon = privateIcon;
+    explorer.content.folders = [
+      { id: "own", parentId: null, name: "Own icon", icon: privateIcon, order: 0, visibility: "published" },
+      { id: "bundled", parentId: null, name: "Bundled icon", icon: "haiku:folder", order: 1, visibility: "published" },
+    ];
+    legacy.windows = [links, explorer];
+    const migrated = migrateSiteDocumentV2(legacy, { siteId: "site-a" });
+    if (!migrated.ok) throw new Error("fixture migration");
+    const document = version === 1 ? legacy : migrated.document;
+    const exported = createRetroExport({ scope: "owner-backup", siteId: "site-a", username: "icons", siteName: "Icons", document });
+    if (!exported.ok) throw new Error("icon export");
+    expect(exported.value.mediaManifest.missing).toHaveLength(3);
+    expect(exported.value.mediaManifest.items.filter((item) => item.source === privateIcon)).toHaveLength(3);
+    expect(exported.value.mediaManifest.items.some((item) => item.source === "haiku:folder")).toBe(false);
+    const supplied = structuredClone(exported.value);
+    supplied.mediaManifest.items = [];
+    supplied.mediaManifest.missing = [];
+    const imported = inspectRetroImport(supplied);
+    if (!imported.ok) throw new Error("icon import");
+    expect(imported.preview.missingMedia.map((item) => item.documentPath).sort()).toEqual([
+      "/windows/0/content/links/0/icon", "/windows/0/icon", "/windows/1/content/folders/0/icon",
+    ]);
+    expect(imported.preview.mediaCount).toBe(3);
+    expect(imported.value.document).toEqual(exported.value.document);
+    // Do not mutate or erase the supplied provenance just to repair preview notices.
+    expect(imported.value.mediaManifest).toEqual(supplied.mediaManifest);
+    expect(supplied.mediaManifest.missing).toEqual([]);
+  });
 });
