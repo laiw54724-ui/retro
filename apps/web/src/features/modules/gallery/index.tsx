@@ -5,6 +5,7 @@ import { moveById, patchById, safeHref, type ModuleProps } from "../types";
 import { useWindowMedia, UploadTaskList } from "../../media/editorMedia";
 import { insertInSelectionOrder } from "../../media/uploadTasks";
 import { Lightbox } from "./Lightbox";
+import { restoreFocusUnlessMoved } from "../../../lib/restoreFocus";
 import "./editor.css";
 
 export function GalleryView({ window, ctx }: ModuleProps<"gallery">) {
@@ -16,10 +17,7 @@ export function GalleryView({ window, ctx }: ModuleProps<"gallery">) {
   const columns = ctx.mobile ? 2 : window.content.columns;
   const close = () => {
     setOpen(-1);
-    requestAnimationFrame(() => {
-      const target = opener.current?.isConnected ? opener.current : grid.current?.querySelector<HTMLButtonElement>(".gal-item");
-      target?.focus();
-    });
+    restoreFocusUnlessMoved(() => opener.current?.isConnected ? opener.current : grid.current?.querySelector<HTMLButtonElement>(".gal-item"));
   };
   if (!images.length) return <div className="empty-module">還沒有圖片</div>;
   return (

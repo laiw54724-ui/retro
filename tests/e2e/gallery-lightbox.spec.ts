@@ -196,3 +196,85 @@ test("lightbox stays above other windows and the visitor preview overlay inside 
   await expect(page.locator(".lb-root")).toHaveCount(0);
   await expect(preview).toBeVisible();
 });
+
+// ---- focus return after closing must never cover a window the user picked next ----
+function overlappedDoc(): SiteDocument {
+  const notes = makeWindow("document", 1);
+  if (notes.type !== "document") throw new Error("document fixture mismatch");
+  notes.id = "notes";
+  notes.title = "Notes.txt";
+  notes.defaultOpen = true;
+  notes.layout.desktop = { ...notes.layout.desktop, x: 300, y: 100, w: 420, h: 300, z: 1 }; // centre is under the gallery, right side stays visible
+  const doc = galleryDoc([{ title: "Tall", src: "https://img.test/tall.svg" }], [notes]);
+  doc.windows[0].layout.desktop.z = 2;
+  return doc;
+}
+
+const topmost = (page: Page, name: string) => page.getByRole("dialog", { name }).evaluate((win) => {
+  const r = win.getBoundingClientRect();
+  const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+  return !!hit && win.contains(hit);
+});
+
+async function closeLightboxAndWaitForUi(page: Page) {
+  const lightbox = page.getByRole("dialog", { name: "圖片檢視" });
+  await page.keyboard.press("Escape");
+  await expect(lightbox).toHaveCount(0); // removed from the DOM, not merely hidden
+  await expect(page.locator("#root")).not.toHaveAttribute("inert", ""); // explicit state: the page is interactive again
+}
+
+// A real pointer click on a part of `name` that is actually visible, at coordinates found from the page.
+async function clickVisiblePart(page: Page, name: string) {
+  const point = await page.getByRole("dialog", { name }).evaluate((win) => {
+    const r = win.getBoundingClientRect();
+    for (let y = r.top + 8; y < r.bottom - 8; y += 10) for (let x = r.right - 10; x > r.left + 10; x -= 10) {
+      const hit = document.elementFromPoint(x, y);
+      if (hit && win.contains(hit) && !hit.closest("button, input, a")) return { x, y };
+    }
+    return null;
+  });
+  expect(point).not.toBeNull();
+  await page.mouse.click(point!.x, point!.y);
+}
+
+const nextFrames = (page: Page, count = 2) => page.evaluate((n) => new Promise<void>((resolve) => { const step = (left: number) => left === 0 ? resolve() : requestAnimationFrame(() => step(left - 1)); step(n); }), count);
+
+test("after the lightbox closes, an immediate ordinary click on another window keeps that window in front", async ({ page }) => {
+  await openPublic(page, overlappedDoc(), { width: 1280, height: 800 });
+  expect(await topmost(page, "Notes.txt")).toBe(false); // the gallery covers it at first
+  await openFirst(page, "放大 Tall");
+  await closeLightboxAndWaitForUi(page);
+  await clickVisiblePart(page, "Notes.txt"); // no delay: as soon as the UI says the lightbox is gone
+  await nextFrames(page, 3); // let every pending frame callback run, deterministically
+  expect(await topmost(page, "Notes.txt")).toBe(true); // the click took effect and nothing covered it again
+  expect(await topmost(page, "Gallery.exe")).toBe(false);
+});
+
+test("a slow frame cannot move focus back to the gallery after the user already chose another window", async ({ page }) => {
+  // Hold animation-frame callbacks so the close handler's deferred focus runs only after the user's click.
+  await page.addInitScript(() => {
+    const w = window as unknown as { __hold: boolean; __held: FrameRequestCallback[]; __release: () => void };
+    w.__hold = false; w.__held = [];
+    const raf = window.requestAnimationFrame.bind(window);
+    window.requestAnimationFrame = (callback: FrameRequestCallback) => { if (w.__hold) { w.__held.push(callback); return 0; } return raf(callback); };
+    w.__release = () => { w.__hold = false; const queued = w.__held.splice(0); queued.forEach((cb) => raf(cb)); };
+  });
+  await openPublic(page, overlappedDoc(), { width: 1280, height: 800 });
+  await openFirst(page, "放大 Tall");
+  await page.evaluate(() => { (window as unknown as { __hold: boolean }).__hold = true; });
+  await closeLightboxAndWaitForUi(page);
+  await clickVisiblePart(page, "Notes.txt");
+  expect(await topmost(page, "Notes.txt")).toBe(true); // the click took effect
+  await page.evaluate(() => (window as unknown as { __release: () => void }).__release());
+  await nextFrames(page, 3);
+  expect(await topmost(page, "Notes.txt")).toBe(true); // and the late focus restore did not cover it again
+  expect(await page.evaluate(() => !!document.activeElement?.closest(".gal-wrap"))).toBe(false);
+});
+
+test("with no other interaction, closing the lightbox still returns focus to the thumbnail that opened it", async ({ page }) => {
+  await openPublic(page, overlappedDoc(), { width: 1280, height: 800 });
+  const opener = page.getByRole("dialog", { name: "Gallery.exe" }).getByRole("button", { name: "放大 Tall" });
+  await opener.click();
+  await closeLightboxAndWaitForUi(page);
+  await expect(opener).toBeFocused();
+});
