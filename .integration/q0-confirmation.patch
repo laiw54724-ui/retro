@@ -1,0 +1,52 @@
+diff --git a/apps/web/src/features/editor/store.test.ts b/apps/web/src/features/editor/store.test.ts
+index 27d7f73a72cb997e59a9c734da4461af5ab099ac..d2a76d9b1f737460ad783c374e7a2e6481725eb9 100644
+--- a/apps/web/src/features/editor/store.test.ts
++++ b/apps/web/src/features/editor/store.test.ts
+@@ -115,6 +115,12 @@ describe("editor canonical history", () => {
+     store.setVersionedDocument(migrated.document);
+     store.deleteWindow(target.id);
+ 
++    const beforeConfirmation = useEditorStore.getState();
++    expect(beforeConfirmation.pendingIntegrity?.impacts.map((item) => item.shortcutId)).toEqual(["target-shortcut"]);
++    expect(beforeConfirmation.document?.windows.some((window) => window.id === target.id)).toBe(true);
++    expect(beforeConfirmation.past).toHaveLength(0);
++    beforeConfirmation.confirmIntegrity();
++
+     const afterDelete = useEditorStore.getState();
+     expect(afterDelete.document?.windows.some((window) => window.id === target.id)).toBe(false);
+     const legacyExplorer = afterDelete.document?.windows.find((window) => window.id === explorer.id);
+diff --git a/apps/web/src/features/editor/store.ts b/apps/web/src/features/editor/store.ts
+index 5b00ca3d2678ddd7bfe36641b4de5ce226fdb4c7..3fcc5fbe7822dba93715eae7389fc6ff94241ee5 100644
+--- a/apps/web/src/features/editor/store.ts
++++ b/apps/web/src/features/editor/store.ts
+@@ -380,12 +380,9 @@ export const useEditorStore = create<EditorState>((set) => ({
+     if (!state.document) return {};
+     const windows = state.document.windows
+       .filter((window) => window.id !== id)
+-      .map((window, index) => {
+-        const next = window.type === "explorer"
+-          ? { ...window, content: { ...window.content, shortcuts: window.content.shortcuts.filter((shortcut) => !(shortcut.target.kind === "window" && shortcut.target.id === id)) } }
+-          : window;
+-        return { ...next, layout: { ...next.layout, mobile: { order: index } } };
+-      });
++      // Leave references intact until withHistory can show the affected shortcuts.
++      // confirmIntegrity removes the target and those references in one undo step.
++      .map((window, index) => ({ ...window, layout: { ...window.layout, mobile: { order: index } } }));
+     return withHistory(
+       state,
+       { ...state.document, windows },
+diff --git a/tests/e2e/explorer.spec.ts b/tests/e2e/explorer.spec.ts
+index 503123316f36b707de883c55983145d7d5de39b4..d6b8bbcf0d8ab2e4753b93184651911d178634c7 100644
+--- a/tests/e2e/explorer.spec.ts
++++ b/tests/e2e/explorer.spec.ts
+@@ -459,6 +459,10 @@ test("deleting a shortcut target cleans the canonical draft before save, reload
+   const { saves } = await openEditor(page, document);
+   await expect(page.locator("#editor-right-panel").getByText("角色設定.txt", { exact: true })).toBeVisible();
+   await page.locator("#editor-right-panel").getByRole("button", { name: "刪除視窗" }).click();
++  const confirmation = page.getByRole("dialog", { name: "這項刪除會影響 1 個捷徑" });
++  await expect(confirmation.getByRole("list", { name: "受影響的捷徑" })).toContainText("主角設定");
++  await confirmation.getByRole("button", { name: "刪除並移除 1 個捷徑" }).click();
++  await expect(confirmation).toBeHidden();
+ 
+   await expect.poll(() => {
+     const saved = saves.at(-1)?.document;
