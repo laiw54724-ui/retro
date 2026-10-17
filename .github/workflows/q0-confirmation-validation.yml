@@ -1,4 +1,4 @@
-name: Q0 confirmed deletion and final verification
+name: Q0 corrected browser fixtures and final verification
 on:
   push:
     branches: [chore/retro-direct-workbench]
@@ -25,20 +25,20 @@ jobs:
       - name: Apply only the reviewed three-file correction
         id: commit
         env:
-          EXPECTED_PARENT: 6d8247a0844a515190bb61f10e76c218188c7c49
-          EXPECTED_TREE: 5b784ad576960cbdb589914ec40489036e5c667c
+          EXPECTED_PARENT: da011a92baa10cb0fea0d83b655afbd2c7dac5c6
+          EXPECTED_TREE: aa7ec66d4309a161450ff35d51c4b07ef748b370
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          cp .integration/q0-confirmation.patch "$RUNNER_TEMP/q0-confirmation.patch"
-          printf 'cedc6a561b969308f43952f1018350fc71e2a6526d9f037f2449ab9e653aad0a  %s\n' "$RUNNER_TEMP/q0-confirmation.patch" | sha256sum --check
+          cp .integration/q0-browser-fixtures.patch "$RUNNER_TEMP/q0-browser-fixtures.patch"
+          printf '595dd66e96af80643bee862a27e866d47352d61eb7ba16b70ada5eda1223942f  %s\n' "$RUNNER_TEMP/q0-browser-fixtures.patch" | sha256sum --check
           git worktree add --detach "$RUNNER_TEMP/q0-confirmed" "$EXPECTED_PARENT"
           cd "$RUNNER_TEMP/q0-confirmed"
-          git apply --index --check "$RUNNER_TEMP/q0-confirmation.patch"
-          git apply --index "$RUNNER_TEMP/q0-confirmation.patch"
+          git apply --index --check "$RUNNER_TEMP/q0-browser-fixtures.patch"
+          git apply --index "$RUNNER_TEMP/q0-browser-fixtures.patch"
           git diff --cached --check
           test "$(git write-tree)" = "$EXPECTED_TREE"
-          git -c user.name='Retro integration' -c user.email='integration@users.noreply.github.com' commit -m 'fix(editor): require confirmation before removing referenced windows'
+          git -c user.name='Retro integration' -c user.email='integration@users.noreply.github.com' commit -m 'test(integration): align icon previews, autosave and valid media fixtures'
           sha="$(git rev-parse HEAD)"
           test "$(git show -s --format=%P HEAD)" = "$EXPECTED_PARENT"
           test "$(git ls-remote https://github.com/laiw54724-ui/retro.git refs/heads/integration/retro-q0-validation | cut -f1)" = "$EXPECTED_PARENT"
@@ -75,6 +75,11 @@ jobs:
           test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
           mkdir -p .candidate-evidence
           { git rev-parse HEAD; git rev-parse HEAD^{tree}; sha256sum pnpm-lock.yaml; node --version; pnpm --version; pnpm exec playwright --version; } | tee .candidate-evidence/identity.txt
+      - name: Confirm the diagnosed browser corrections before another full gate
+        run: |
+          set -euo pipefail
+          trap 'if [ -d test-results ]; then cp -a test-results .candidate-evidence/focused-test-results; fi' EXIT
+          pnpm exec playwright test tests/e2e/icon-picker.spec.ts tests/e2e/media-tasks.spec.ts tests/e2e/music-sources.spec.ts --grep 'private uploaded icons|window icon upload changes only|no hidden player keeps|only one platform or native source' --project=chromium --workers=1 --retries=0 2>&1 | tee .candidate-evidence/focused.log
       - name: Lint the final commit
         run: |
           set -euo pipefail
