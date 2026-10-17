@@ -24,8 +24,23 @@ const TOGGLES: Array<[keyof Profile, string]> = [
 
 const today = () => { const d = new Date(); return `${d.getMonth() + 1}月${d.getDate()}日`; };
 
-export function IgEditForm({ window, ctx, update, children }: ModuleProps<"instagram"> & { children?: ReactNode }) {
+type FormSection = "all" | "profile" | "interaction" | "appearance";
+const IDENTITY_KEYS: Array<keyof Profile> = ["username", "name"];
+const SOCIAL_KEYS: Array<keyof Profile> = ["followers", "following", "followedBy"];
+const INTERACTION_KEYS: Array<keyof Profile> = ["allowLikes", "allowComments"];
+
+export function IgEditForm({ window, ctx, update, children, section = "all" }: ModuleProps<"instagram"> & { children?: ReactNode; section?: FormSection }) {
   const { profile, images: posts } = window.content;
+  const canonicalProfile = !!(ctx.onProfileChange && ctx.profiles?.some((item) => item.id === ctx.profileId));
+  const showProfile = section === "all" || section === "profile";
+  const showInteraction = section === "all" || section === "interaction";
+  const showAppearance = section === "all" || section === "appearance";
+  const showIdentity = showProfile && !canonicalProfile;
+  const textFields = TEXT_FIELDS.filter((field) => {
+    if (IDENTITY_KEYS.includes(field.key)) return showIdentity;
+    return SOCIAL_KEYS.includes(field.key) ? showInteraction : showProfile;
+  });
+  const toggles = TOGGLES.filter(([key]) => INTERACTION_KEYS.includes(key) ? showInteraction : showAppearance);
   const [open, setOpen] = useState<string | null>(null);
   const [newUrl, setNewUrl] = useState("");
   const [newUrlError, setNewUrlError] = useState("");
@@ -67,34 +82,34 @@ export function IgEditForm({ window, ctx, update, children }: ModuleProps<"insta
 
   return (
     <div className="ig-edit w98-scroll">
-      <fieldset className="w98-fieldset"><legend>帳號資料</legend>
-        <div className="ig-edit-avatar">
+      {showProfile || showInteraction ? <fieldset className="w98-fieldset"><legend>{section === "interaction" ? "舊版統計與互動文字" : canonicalProfile ? "連結與補充資料" : "帳號資料"}</legend>
+        {showIdentity ? <div className="ig-edit-avatar">
           <span className="ig-thumb round ph">{profile.avatar ? <SafeImg src={profile.avatar} alt="" compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : null}</span>
           <div className="ig-col">
             <FilePick onFiles={async (files) => { const url = await upload(files[0]); if (url) setProfile({ avatar: url, avatarUrl: "", avatarCrop: undefined }); }}>上傳頭像…</FilePick>
             <ImageUrlField raw={profile.avatarUrl} label="頭像網址" placeholder="或貼上圖片網址 / Google 雲端連結" className="w98-input compact" onCommit={(raw, src) => setProfile({ avatarUrl: raw, avatar: src, avatarCrop: undefined })} />
           </div>
-        </div>
+        </div> : null}
         <div className="ig-fields">
-          {TEXT_FIELDS.map((field) => (
+          {textFields.map((field) => (
             <label key={field.key} className="w98-field" style={{ gridColumn: field.wide ? "1 / -1" : undefined }}>
               <span className="w98-hint">{field.label}</span>
               <input className="w98-input compact" value={String(profile[field.key] ?? "")} placeholder={field.placeholder} onChange={(event) => setProfile({ [field.key]: event.target.value } as Partial<Profile>, "p" + field.key)} />
             </label>
           ))}
         </div>
-        <label className="w98-field"><span className="w98-hint">簡介</span><textarea className="w98-textarea" rows={3} value={profile.bio} onChange={(event) => setProfile({ bio: event.target.value }, "pbio")} /></label>
-      </fieldset>
+        {showIdentity ? <label className="w98-field"><span className="w98-hint">簡介</span><textarea className="w98-textarea" rows={3} value={profile.bio} onChange={(event) => setProfile({ bio: event.target.value }, "pbio")} /></label> : null}
+      </fieldset> : null}
 
-      <fieldset className="w98-fieldset"><legend>顯示與互動</legend>
+      {toggles.length ? <fieldset className="w98-fieldset"><legend>{section === "appearance" ? "顯示內容" : section === "interaction" ? "訪客互動" : "顯示與互動"}</legend>
         <div className="ig-toggles">
-          {TOGGLES.map(([key, label]) => (
+          {toggles.map(([key, label]) => (
             <label key={key} className="check-row"><input type="checkbox" checked={Boolean(profile[key])} onChange={(event) => setProfile({ [key]: event.target.checked } as Partial<Profile>)} />{label}</label>
           ))}
         </div>
-      </fieldset>
+      </fieldset> : null}
 
-      {!ctx.updateContent ? <fieldset className="w98-fieldset"><legend>精選動態</legend>
+      {section === "all" && !ctx.updateContent ? <fieldset className="w98-fieldset"><legend>精選動態</legend>
         {profile.highlights.map((highlight) => (
           <div key={highlight.id} className="ig-hl-edit">
             <span className="ig-thumb round ph">{highlight.src ? <SafeImg src={highlight.src} alt="" compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : null}</span>
@@ -111,7 +126,7 @@ export function IgEditForm({ window, ctx, update, children }: ModuleProps<"insta
         <button type="button" className="w98-btn small" onClick={() => setProfile({ highlights: [...profile.highlights, makeIgHighlight()] })}>＋ 新增精選</button>
       </fieldset> : null}
 
-      {!ctx.updateContent ? <fieldset className="w98-fieldset"><legend>貼文（{posts.length}）</legend>
+      {section === "all" && !ctx.updateContent ? <fieldset className="w98-fieldset"><legend>貼文（{posts.length}）</legend>
         <div className="ie-row">
           <FilePick multiple className="w98-btn small" onFiles={(files) => void addPosts(files)}><b>上傳照片（可多選）</b></FilePick>
           <input className="w98-input compact grow" value={newUrl} placeholder="或貼上圖片網址" aria-label="新貼文圖片網址" onChange={(event) => { setNewUrl(event.target.value); setNewUrlError(""); }} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addPostUrl(); } }} />
