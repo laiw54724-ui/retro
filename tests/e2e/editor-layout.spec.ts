@@ -187,6 +187,38 @@ test("desktop and mobile add surfaces share the registry modules", async ({ page
   await expect.poll(() => saves.at(-1)?.document.windows.some((window) => window.type === "document")).toBe(true);
 });
 
+test("left module catalog scrolls without shrinking or overlapping cards", async ({ page }) => {
+  await openEditor(page);
+  const panel = page.locator("#editor-left-panel .panel-scroll");
+  const cards = panel.locator(".add-card");
+
+  await expect.poll(() => cards.evaluateAll((elements) => elements.every((element) => element.scrollHeight <= element.clientHeight + 1))).toBe(true);
+  await expect.poll(() => panel.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
+
+  await panel.evaluate((element) => { element.scrollTop = element.scrollHeight; });
+  await expect(panel.getByText("即將推出")).toBeInViewport();
+});
+
+test("selected window gets a non-blocking desktop focus scrim", async ({ page }) => {
+  await openEditor(page);
+  const canvas = page.locator(".desktop-canvas");
+  const about = page.getByRole("dialog", { name: "About.exe" }).locator("xpath=ancestor::div[contains(@class,'canvas-window')]");
+  const scrim = page.locator(".selection-scrim");
+
+  await about.locator(".retro-titlebar").click();
+  await expect(scrim).toBeVisible();
+  await expect(about).toHaveClass(/selected/);
+  expect(Number(await about.evaluate((element) => getComputedStyle(element).zIndex)))
+    .toBeGreaterThan(Number(await scrim.evaluate((element) => getComputedStyle(element).zIndex)));
+  await expect(scrim).toHaveCSS("pointer-events", "none");
+
+  await canvas.locator(".icon-layer").click({ position: { x: 600, y: 440 } });
+  await expect(scrim).toHaveCount(0);
+
+  await page.getByRole("button", { name: "▦ 進入桌面排版模式" }).click();
+  await expect(scrim).toHaveCount(0);
+});
+
 test("desktop sidebars collapse independently and remember their state", async ({ page }) => {
   await openEditor(page);
   const stage = page.locator(".editor-stage2");

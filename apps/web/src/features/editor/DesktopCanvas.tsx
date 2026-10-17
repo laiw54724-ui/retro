@@ -12,6 +12,8 @@ import { musicPlayback, useMusicPlayback } from "../modules/music/audioCoordinat
 const TASKBAR_H = 36;
 const GRID = 8;
 const KEEP_VISIBLE = 80;
+const FOCUS_SCRIM_Z = 90_000;
+const FOCUS_WINDOW_Z = FOCUS_SCRIM_Z + 1;
 
 type Gesture =
   | { kind: "move" | "resize"; id: string; startX: number; startY: number; x: number; y: number; w: number; h: number }
@@ -182,7 +184,18 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
 
   const rows = () => Math.max(1, Math.floor((bounds().height - 20) / 94));
   const topZ = Math.max(0, ...document.windows.map((w) => w.layout.desktop.z));
+  const topVisibleZ = Math.max(0, ...document.windows
+    .filter((window) => view[window.id] !== "min" && view[window.id] !== "closed")
+    .map((window) => window.layout.desktop.z));
   const selected = document.windows.find((w) => w.id === selectedId);
+  const selectedView = selected ? view[selected.id] : null;
+  const focusSelected = Boolean(
+    selected
+    && !layoutMode
+    && selectedView !== "min"
+    && selectedView !== "closed"
+    && selected.layout.desktop.z === topVisibleZ,
+  );
   return (
     <div
       ref={canvasRef}
@@ -228,6 +241,8 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
         </div>
       ) : null}
 
+      {focusSelected ? <div aria-hidden="true" className="selection-scrim" /> : null}
+
       {document.windows.map((win) => {
         const layout = win.layout.desktop;
         const state = view[win.id];
@@ -239,8 +254,8 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
             key={win.id}
             className={`canvas-window ${isSel ? "selected" : ""}`}
             style={maximized
-              ? { width: "calc(100% - 8px)", height: `calc(100% - ${TASKBAR_H + 8}px)`, transform: "translate(4px, 4px)", zIndex: layout.z }
-              : { width: layout.w, height: layout.h, transform: `translate(${layout.x}px, ${layout.y}px)`, zIndex: layout.z }}
+              ? { width: "calc(100% - 8px)", height: `calc(100% - ${TASKBAR_H + 8}px)`, transform: "translate(4px, 4px)", zIndex: focusSelected && isSel ? FOCUS_WINDOW_Z : layout.z }
+              : { width: layout.w, height: layout.h, transform: `translate(${layout.x}px, ${layout.y}px)`, zIndex: focusSelected && isSel ? FOCUS_WINDOW_Z : layout.z }}
             onPointerDown={(event) => windowPointerDown(event, win)}
             onPointerMove={windowPointerMove}
             onPointerUp={windowPointerUp}
