@@ -40,7 +40,10 @@ async function expectContained(surface: Locator) {
 async function expectLastControlAboveDone(dialog: Locator, control: Locator) {
   await dialog.locator(".m-win-body").evaluate((element) => { element.scrollTop = element.scrollHeight; });
   const controlBox = await control.boundingBox();
-  const doneBox = await dialog.getByRole("button", { name: "完成編輯", exact: true }).boundingBox();
+  // The editor-owned action is a sibling of the shared WindowChrome dialog.
+  const done = dialog.locator("..").getByRole("button", { name: "完成編輯", exact: true });
+  await expect(done).toBeVisible();
+  const doneBox = await done.boundingBox();
   if (!controlBox || !doneBox) throw new Error("mobile control is missing");
   expect(controlBox.y + controlBox.height).toBeLessThanOrEqual(doneBox.y);
 }
@@ -146,7 +149,7 @@ test("link settings show invalid and empty destinations while retaining each tar
   await expect(card.getByLabel("站內視窗", { exact: true })).toHaveValue("about");
 });
 
-for (const width of [320, 375, 430]) {
+for (const width of [320, 375, 390, 430]) {
   test(`about and links groups contain long text in a ${width}px mobile editor`, async ({ page }) => {
     const document = editorDocument();
     const about = document.windows[0];
@@ -162,7 +165,7 @@ for (const width of [320, 375, 430]) {
     await mockEditor(page, document, width);
     await page.locator(".m-icon").getByText("About.exe", { exact: true }).click();
     const aboutDialog = page.getByRole("dialog", { name: "About.exe", exact: true });
-    const editAbout = page.getByRole("button", { name: "編輯此視窗", exact: true });
+    const editAbout = aboutDialog.locator("..").getByRole("button", { name: "編輯此視窗", exact: true });
     await expect(editAbout).toBeVisible();
     await editAbout.click();
     await expectContained(aboutDialog.locator(".about-editor"));
@@ -171,12 +174,12 @@ for (const width of [320, 375, 430]) {
     await expectContained(aboutDialog.locator(".about-editor"));
     await expectContained(aboutDialog.locator(".m-win-body"));
     await expectLastControlAboveDone(aboutDialog, aboutDialog.getByRole("button", { name: "新增社群" }));
-    await aboutDialog.getByRole("button", { name: "完成編輯", exact: true }).click();
+    await aboutDialog.locator("..").getByRole("button", { name: "完成編輯", exact: true }).click();
     await expectContained(aboutDialog.locator(".about-view"));
     await aboutDialog.getByRole("button", { name: "關閉", exact: true }).click();
     await page.locator(".m-icon").getByText("Links.exe", { exact: true }).click();
     const linksDialog = page.getByRole("dialog", { name: "Links.exe", exact: true });
-    const editLinks = page.getByRole("button", { name: "編輯此視窗", exact: true });
+    const editLinks = linksDialog.locator("..").getByRole("button", { name: "編輯此視窗", exact: true });
     await expect(editLinks).toBeVisible();
     await editLinks.click();
     await linksDialog.getByRole("button", { name: /^設定連結/ }).click();
