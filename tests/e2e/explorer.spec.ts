@@ -459,6 +459,10 @@ test("deleting a shortcut target cleans the canonical draft before save, reload 
   const { saves } = await openEditor(page, document);
   await expect(page.locator("#editor-right-panel").getByText("角色設定.txt", { exact: true })).toBeVisible();
   await page.locator("#editor-right-panel").getByRole("button", { name: "刪除視窗" }).click();
+  const confirmation = page.getByRole("dialog", { name: "這項刪除會影響 1 個捷徑" });
+  await expect(confirmation.getByRole("list", { name: "受影響的捷徑" })).toContainText("主角設定");
+  await confirmation.getByRole("button", { name: "刪除並移除 1 個捷徑" }).click();
+  await expect(confirmation).toBeHidden();
 
   await expect.poll(() => {
     const saved = saves.at(-1)?.document;

@@ -115,6 +115,12 @@ describe("editor canonical history", () => {
     store.setVersionedDocument(migrated.document);
     store.deleteWindow(target.id);
 
+    const beforeConfirmation = useEditorStore.getState();
+    expect(beforeConfirmation.pendingIntegrity?.impacts.map((item) => item.shortcutId)).toEqual(["target-shortcut"]);
+    expect(beforeConfirmation.document?.windows.some((window) => window.id === target.id)).toBe(true);
+    expect(beforeConfirmation.past).toHaveLength(0);
+    beforeConfirmation.confirmIntegrity();
+
     const afterDelete = useEditorStore.getState();
     expect(afterDelete.document?.windows.some((window) => window.id === target.id)).toBe(false);
     const legacyExplorer = afterDelete.document?.windows.find((window) => window.id === explorer.id);
