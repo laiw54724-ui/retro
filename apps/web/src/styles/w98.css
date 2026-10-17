@@ -639,3 +639,6 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 .modal-card { max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); display: flex; flex-direction: column; color: #000; font-size: 14px; }
 .modal-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; overflow: auto; min-height: 0; line-height: 1.5; }
 .modal-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 0 14px 14px; }
+.integrity-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; max-height: 40vh; overflow-y: auto; }
+.integrity-list li { display: flex; flex-direction: column; gap: 2px; padding: 6px 8px; background: #fff; box-shadow: var(--w98-sunken); overflow-wrap: anywhere; }
+.integrity-list small { font-size: 12px; color: #333; }

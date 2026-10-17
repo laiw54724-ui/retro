@@ -47,6 +47,34 @@ Pages deployment (see the staging check script described in the PR notes).
 Retro's own `X-Frame-Options`/`frame-ancestors` are about who may frame *Retro*; they do not control whether a
 third-party site allows being framed, and must not be relaxed to "fix" an embed.
 
+## Effective settings and why (no `unsafe-eval`, no wildcard)
+
+| Setting | Value | Reason |
+| --- | --- | --- |
+| `media-src` | `'self' blob: https:` | Native `<audio>` for uploaded (signed/proxied, same-origin or blob) and HTTPS audio-file sources. Platform pages are never put here. |
+| `frame-src` | `https://open.spotify.com https://www.youtube-nocookie.com` | Exactly the two official embed origins. No `https:` wildcard, no other host can be framed. |
+| `script-src` | `'self'` | Unchanged. The platform iframe APIs are not loaded, so no third-party script origin is needed. `'unsafe-eval'` is **not** allowed. |
+| iframe `sandbox` | `allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox` | `allow-scripts` + `allow-same-origin` are required for the players to run on their own origin (it is a different origin from Retro, so this does not give them access to Retro). `allow-popups(-to-escape-sandbox)` lets "open on Spotify/YouTube" links leave the sandbox. Deliberately **not** granted: `allow-top-navigation`, `allow-forms`, `allow-modals`, `allow-downloads`, `allow-pointer-lock`. |
+| iframe `allow` | per provider (`encrypted-media`, `autoplay`, `fullscreen`, ...) | Minimum the provider needs for DRM playback; camera/microphone/geolocation are denied site-wide by `Permissions-Policy`. |
+| `referrerpolicy` | `strict-origin-when-cross-origin` | YouTube refuses embeds without a referrer; no path/query leaks cross-origin. |
+
+A harmless `script-src` report mentioning `eval` comes from the zod schema library compiling validators in the browser
+(seen on staging). It is a report, not a block, and is intentionally **not** "fixed" by adding `unsafe-eval`.
+
+### Failure and blocking behaviour (covered by `tests/e2e/music-sources.spec.ts`)
+
+- Platform unreachable, aborted, or answering with `X-Frame-Options: DENY`: the explanation text and the
+  "在 Spotify/YouTube 開啟 ↗" button stay visible and open the original URL; no frame or timer keeps running after
+  "關閉播放器".
+- Platform never answers: after 8 s a status line tells the visitor to use the original-site button.
+- Switching source, starting native audio, minimizing or closing the window leaves **no** playing media element
+  (attached or detached) and no iframe; the CSS-hidden second tree on the public page never mounts a second player.
+
+### Still unverified (by design not claimed)
+
+Real iOS/Android devices, logged-in Spotify full-length playback, and third-party cookie behaviour in each browser.
+Staging checks used logged-out desktop Chromium only.
+
 ## Adding a provider
 
 1. Extend `resolveEmbedUrl` with exact hosts/paths and spoofing tests (hosts with suffixes, `@` credentials, ports, encoded paths).

@@ -18,6 +18,7 @@ import { collaborationActions } from "../lib/collaboration";
 import { CollaborationDialog } from "../features/collaboration/CollaborationDialog";
 import { SidebarToggle } from "../features/editor/SidebarToggle";
 import { TransferDialog } from "../features/transfer/TransferDialog";
+import { IntegrityDialog } from "../features/editor/IntegrityDialog";
 
 
 
@@ -122,6 +123,12 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     versionedDraftRef.current = next;
     setVersionedDraft(next);
     store.replaceDocument(projected.document, historyKey, next);
+    // An edit that would orphan Explorer shortcuts waits for confirmation; keep the draft in step with the store.
+    const held = useEditorStore.getState();
+    if (held.pendingIntegrity && held.versionedDocument) {
+      versionedDraftRef.current = held.versionedDocument;
+      setVersionedDraft(held.versionedDocument);
+    }
   }
 
   function updateContent(recipe: (document: SiteDocumentV2Input) => SiteDocumentV2Input, historyKey?: string) {
@@ -650,6 +657,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       </footer>
 
       {preview ? <VisitorPreview document={store.document} username={store.username} published={!!store.publishedDocument && !hasUnpublishedChanges} onClose={() => setPreview(false)} /> : null}
+      <IntegrityDialog />
       {collaborationOpen ? <CollaborationDialog siteId={siteId} onClose={closeCollaboration} /> : null}
       {transferOpen ? <TransferDialog siteId={siteId} username={store.username} published={!!store.publishedDocument} onClose={() => setTransferOpen(false)} onImported={(newSiteId) => navigate(`/editor/${newSiteId}`)} /> : null}
 

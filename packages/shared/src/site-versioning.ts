@@ -684,6 +684,7 @@ export function deleteOrRetargetProfile(document: SiteDocumentV2Input, profileId
   const next = structuredClone(document);
   if (options.retargetProfileId) {
     next.windows = next.windows.map((window) => {
+      if (window.type === "explorer") return { ...window, content: { ...window.content, shortcuts: window.content.shortcuts.map((shortcut) => shortcut.target.kind === "profile" && shortcut.target.id === profileId ? { ...shortcut, target: { ...shortcut.target, id: options.retargetProfileId! } } : shortcut) } };
       if (window.type === "instagram" && window.content.profileRef.id === profileId) return { ...window, content: { ...window.content, profileRef: { ...window.content.profileRef, id: options.retargetProfileId! } } };
       if (window.type === "music") return { ...window, content: { ...window.content, tracks: window.content.tracks.map((track) => track.characterRef?.id === profileId ? { ...track, characterRef: { ...track.characterRef, id: options.retargetProfileId! } } : track) } };
       return window;

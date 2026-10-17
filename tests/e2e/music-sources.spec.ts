@@ -201,6 +201,69 @@ test.describe("visitor: official platform players", () => {
     expect((await popup).url()).toBe(SPOTIFY);
   });
 
+  test("a blocked or failing platform leaves the original link working and never leaves a frame running", async ({ page }) => {
+    // 1) the network refuses the connection; 2) the platform answers but forbids framing
+    for (const mode of ["abort", "deny-framing"] as const) {
+      await page.unroute(/https:\/\/(open\.spotify\.com|www\.youtube-nocookie\.com)\/.*/).catch(() => undefined);
+      await page.route(/https:\/\/(open\.spotify\.com|www\.youtube-nocookie\.com)\/.*/, (route) => mode === "abort"
+        ? route.abort("blockedbyclient")
+        : route.fulfill({ status: 200, contentType: "text/html", headers: { "X-Frame-Options": "DENY", "Content-Security-Policy": "frame-ancestors 'none'" }, body: "<p>no framing</p>" }));
+      const popupTarget = page.context().waitForEvent("page");
+      const player = await openPublic(page, doc(musicWindow("Music.exe", [spotify])));
+      await player.getByRole("button", { name: "載入 Spotify 播放器" }).click();
+      // whatever the frame shows, the explanation and the original-site button stay reachable
+      await expect(player.getByRole("button", { name: "在 Spotify 開啟 ↗" })).toBeVisible();
+      await expect(player.getByText("能否完整播放取決於你的 Spotify 帳號")).toBeVisible();
+      await player.getByRole("button", { name: "在 Spotify 開啟 ↗" }).click();
+      expect((await popupTarget).url()).toBe(SPOTIFY);
+      await player.getByRole("button", { name: "關閉播放器" }).click();
+      await expect(page.locator("iframe")).toHaveCount(0);
+      await page.goto("about:blank");
+    }
+  });
+
+  test("no hidden player keeps sound going after switching source, minimizing or closing", async ({ page }) => {
+    await stubPlatforms(page);
+    await page.route("https://media.example.com/**", (route) => route.fulfill({ contentType: "audio/mpeg", body: Buffer.alloc(64) }));
+    await page.addInitScript(() => {
+      (window as unknown as { __playing: Set<HTMLMediaElement> }).__playing = new Set();
+      Object.defineProperty(HTMLMediaElement.prototype, "duration", { configurable: true, get: () => 90 });
+      Object.defineProperty(HTMLMediaElement.prototype, "seekable", { configurable: true, get: () => ({ length: 1, start: () => 0, end: () => 90 }) });
+      HTMLMediaElement.prototype.load = function () {};
+      HTMLMediaElement.prototype.pause = function () { (window as unknown as { __playing: Set<HTMLMediaElement> }).__playing.delete(this); this.dispatchEvent(new Event("pause")); };
+      HTMLMediaElement.prototype.play = function () { (window as unknown as { __playing: Set<HTMLMediaElement> }).__playing.add(this); this.dispatchEvent(new Event("loadedmetadata")); this.dispatchEvent(new Event("playing")); return Promise.resolve(); };
+    });
+    const sound = () => page.evaluate(() => ({
+      // any element still playing counts, attached to the page or not
+      audible: (window as unknown as { __playing: Set<HTMLMediaElement> }).__playing.size,
+      frames: document.querySelectorAll("iframe").length
+    }));
+    const player = await openPublic(page, doc(musicWindow("Music.exe", [spotify, youtube, native])));
+
+    await player.getByRole("button", { name: "選擇 Native Song" }).click();
+    await player.getByRole("button", { name: "播放" }).click();
+    await expect.poll(async () => (await sound()).audible).toBe(1);
+    // switching to a platform source stops the native track
+    await player.getByRole("button", { name: "選擇 Spotify Song" }).click();
+    await player.getByRole("button", { name: "載入 Spotify 播放器" }).click();
+    expect(await sound()).toEqual({ audible: 0, frames: 1 });
+    // and starting native audio unmounts the platform frame
+    await player.getByRole("button", { name: "選擇 Native Song" }).click();
+    await player.getByRole("button", { name: "播放" }).click();
+    await expect.poll(sound).toEqual({ audible: 1, frames: 0 });
+    // minimizing the window stops native audio too
+    await player.getByRole("button", { name: "最小化" }).click();
+    expect(await sound()).toMatchObject({ audible: 0, frames: 0 });
+    await page.locator(".visitor-task-buttons").getByRole("button", { name: /Music\.exe/ }).click();
+    expect(await sound()).toMatchObject({ audible: 0, frames: 0 });
+    // closing with a platform frame active
+    await player.getByRole("button", { name: "選擇 YouTube Song" }).click();
+    await player.getByRole("button", { name: "載入 YouTube 播放器" }).click();
+    expect((await sound()).frames).toBe(1);
+    await player.getByRole("button", { name: "關閉", exact: true }).click();
+    expect(await sound()).toEqual({ audible: 0, frames: 0 });
+  });
+
   test("a platform link saved as a direct audio file shows why it cannot play and offers the original", async ({ page }) => {
     const player = await openPublic(page, doc(musicWindow("Music.exe", [track("bad", "Bad", { kind: "audioUrl", url: SPOTIFY })])));
     await expect(player.getByRole("note")).toContainText("Spotify 的網頁連結，不是音訊檔");

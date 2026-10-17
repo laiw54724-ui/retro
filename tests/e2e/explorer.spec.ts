@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
-import { makeWindow, type SiteDocument } from "@retrodesk/shared";
+import { makeWindow, migrateSiteDocumentV2, type SiteDocument } from "@retrodesk/shared";
 import { documentFixture } from "./fixture";
+import { igWindow } from "./ig-fixture";
 
 const session = { access_token: "a.b.c", refresh_token: "r", expires_at: 4102444800, expires_in: 3600, token_type: "bearer", user: { id: "u", email: "x@y.z", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01" } };
 
@@ -191,40 +192,114 @@ test("keyboard: F2 renames, Escape cancels, Delete removes a shortcut, Enter ope
   await expect(dialog.getByRole("navigation", { name: "資料夾路徑" })).toContainText("角色");
 });
 
-test("deleting a shortcut's target flags it as broken in the editor; it can be repaired or removed and saving resumes", async ({ page }) => {
-  const document = withContent([], [S("link", null, "主角設定")]);
+async function deleteLoreWindow(page: Page) {
+  await page.getByRole("tab", { name: "視窗" }).click();
+  await page.locator(".layer").filter({ hasText: "角色設定.txt" }).getByRole("button", { name: /角色設定\.txt/ }).click();
+  await page.getByRole("button", { name: "刪除視窗" }).click();
+}
+
+test("deleting a target lists the affected shortcuts first; cancel changes nothing and never blocks saving", async ({ page }) => {
+  const document = withContent([F("chars", null, "角色")], [S("link", "chars", "主角設定"), S("other", null, "備用", "spare")]);
   const spare = makeWindow("document", 2);
   spare.id = "spare"; spare.title = "備用設定.txt"; spare.defaultOpen = false;
   document.windows.push(spare);
   const { dialog, saves } = await openEditor(page, document);
-  // delete the shortcut's target from the layers list + inspector
-  await page.getByRole("tab", { name: "視窗" }).click();
-  await page.locator(".layer").filter({ hasText: "角色設定.txt" }).getByRole("button", { name: /角色設定\.txt/ }).click();
-  await page.getByRole("button", { name: "刪除視窗" }).click();
-  const tile = dialog.locator(".explorer-item").filter({ hasText: "主角設定" });
-  await expect(tile).toContainText("目標已失效");
-  await expect(page.locator(".save-text")).toContainText(/有欄位未完成|儲存/); // an invalid draft is not saved
-
-  await dialog.getByRole("button", { name: "主角設定", exact: true }).click();
-  await dialog.getByRole("button", { name: "修復目標…" }).click();
-  const picker = page.getByRole("dialog", { name: "修復捷徑「主角設定」" });
-  await expect(picker.getByRole("option", { name: "角色設定.txt" })).toHaveCount(0); // the deleted window is gone from the list
-  await picker.getByRole("option", { name: "備用設定.txt" }).click();
-  await picker.getByRole("button", { name: "改指向這個" }).click();
-  await expect(tile).toContainText("視窗：備用設定.txt");
-  await expect(tile).not.toContainText("目標已失效");
-  await expect.poll(() => explorerContent(saves)?.shortcuts[0]).toMatchObject({ label: "主角設定", target: { id: "spare", kind: "window" } });
+  await deleteLoreWindow(page);
+  const confirm = page.getByRole("dialog", { name: "這項刪除會影響 1 個捷徑" });
+  await expect(confirm).toBeVisible();
+  const list = confirm.getByRole("list", { name: "受影響的捷徑" });
+  await expect(list).toContainText("主角設定");
+  await expect(list).toContainText("World.exe / 桌面 / 角色");
+  await expect(list).toContainText("視窗：角色設定.txt");
+  await expect(list).not.toContainText("備用");
+  await confirm.getByRole("button", { name: "取消" }).click();
+  await expect(confirm).toBeHidden();
+  // nothing was deleted or marked broken; the draft is still valid and savable
+  await expect(page.locator(".layer").filter({ hasText: "角色設定.txt" })).toHaveCount(1);
+  await expect(page.locator(".save-text")).not.toContainText("有欄位未完成");
+  void dialog;
+  expect(saves.every((save) => save.document.windows.some((window) => window.id === "lore"))).toBe(true);
 });
 
-test("a broken shortcut can also simply be removed", async ({ page }) => {
-  const { dialog, saves } = await openEditor(page, withContent([], [S("link", null, "主角設定")]));
+test("confirming removes the target and exactly its shortcuts in one step, saves a valid draft, survives reload, and undo restores both", async ({ page }) => {
+  const document = withContent([F("chars", null, "角色")], [S("link", "chars", "主角設定"), S("other", null, "備用", "spare")]);
+  const spare = makeWindow("document", 2);
+  spare.id = "spare"; spare.title = "備用設定.txt"; spare.defaultOpen = false;
+  document.windows.push(spare);
+  const { dialog, saves } = await openEditor(page, document);
+  await deleteLoreWindow(page);
+  const confirm = page.getByRole("dialog", { name: "這項刪除會影響 1 個捷徑" });
+  await confirm.getByRole("button", { name: "刪除並移除 1 個捷徑" }).click();
+  await expect(confirm).toBeHidden();
+  await expect.poll(() => saves.at(-1)?.document.windows.map((window) => window.id)).toEqual(["explorer", "spare"]);
+  const content = explorerContent(saves)!;
+  expect(content.shortcuts.map((shortcut) => shortcut.id)).toEqual(["other"]); // only the dangling one was removed
+  expect(content.folders.map((folder) => folder.id)).toEqual(["chars"]); // its folder stays
+  await expect(page.locator(".save-text")).not.toContainText("有欄位未完成");
+
+  // undo brings the window and its shortcut back together; redo removes them together again
+  await page.getByRole("button", { name: "復原" }).click();
+  await expect.poll(() => saves.at(-1)?.document.windows.map((window) => window.id).sort()).toEqual(["explorer", "lore", "spare"]);
+  expect(explorerContent(saves)!.shortcuts.map((shortcut) => shortcut.id).sort()).toEqual(["link", "other"]);
+  await page.getByRole("button", { name: "重做" }).click();
+  await expect.poll(() => saves.at(-1)?.document.windows.map((window) => window.id)).toEqual(["explorer", "spare"]);
+  expect(explorerContent(saves)!.shortcuts.map((shortcut) => shortcut.id)).toEqual(["other"]);
+
+  await page.reload();
+  const reloaded = page.getByRole("dialog", { name: "World.exe" });
+  await expect(reloaded).toBeVisible();
+  await expect(reloaded.locator(".explorer-item").filter({ hasText: "備用" })).toContainText("視窗：備用設定.txt");
+  await expect(reloaded.getByRole("button", { name: "角色", exact: true })).toBeVisible();
+  void dialog;
+});
+
+test("shortcuts in other Explorer windows are listed and removed too, and unrelated shortcuts survive", async ({ page }) => {
+  const document = withContent([], [S("a", null, "甲")]);
+  const archive = makeWindow("explorer", 3);
+  archive.id = "archive"; archive.title = "Archive.exe";
+  if (archive.type !== "explorer") throw new Error("explorer fixture mismatch");
+  archive.content = { folders: [F("deep", null, "舊檔")], shortcuts: [S("b", "deep", "乙"), S("keep", null, "留著", "explorer")] };
+  document.windows.push(archive);
+  await openEditor(page, document);
+  await deleteLoreWindow(page);
+  const confirm = page.getByRole("dialog", { name: "這項刪除會影響 2 個捷徑" });
+  const list = confirm.getByRole("list", { name: "受影響的捷徑" });
+  await expect(list).toContainText("World.exe / 桌面");
+  await expect(list).toContainText("Archive.exe / 桌面 / 舊檔");
+  await expect(list).not.toContainText("留著");
+  await confirm.getByRole("button", { name: "刪除並移除 2 個捷徑" }).click();
+  await expect(confirm).toBeHidden();
   await page.getByRole("tab", { name: "視窗" }).click();
-  await page.locator(".layer").filter({ hasText: "角色設定.txt" }).getByRole("button", { name: /角色設定\.txt/ }).click();
-  await page.getByRole("button", { name: "刪除視窗" }).click();
-  await expect(dialog.locator(".explorer-item").filter({ hasText: "主角設定" })).toContainText("目標已失效");
-  await dialog.getByRole("button", { name: "主角設定", exact: true }).click();
-  await dialog.getByRole("button", { name: "刪除", exact: true }).click();
-  await expect.poll(() => { const c = explorerContent(saves); return c ? c.shortcuts.length : null; }).toBe(0);
+  await expect(page.locator(".layer").filter({ hasText: "角色設定.txt" })).toHaveCount(0);
+  await expect(page.locator(".layer").filter({ hasText: "Archive.exe" })).toHaveCount(1);
+});
+
+test("deleting a window that no shortcut points at needs no extra confirmation", async ({ page }) => {
+  const document = withContent([], [S("a", null, "甲", "explorer")]);
+  await openEditor(page, document);
+  await deleteLoreWindow(page);
+  await expect(page.getByRole("dialog", { name: /這項刪除會影響/ })).toHaveCount(0);
+  await expect(page.locator(".layer").filter({ hasText: "角色設定.txt" })).toHaveCount(0);
+});
+
+test("the saved result renders on the public page with no broken shortcuts", async ({ page }) => {
+  const document = withContent([], [S("link", null, "主角設定"), S("other", null, "備用", "spare")]);
+  const spare = makeWindow("document", 2);
+  spare.id = "spare"; spare.title = "備用設定.txt"; spare.defaultOpen = false;
+  document.windows.push(spare);
+  const { saves } = await openEditor(page, document);
+  await deleteLoreWindow(page);
+  await page.getByRole("button", { name: /刪除並移除 1 個捷徑/ }).click();
+  await expect.poll(() => saves.at(-1)?.document.windows.length).toBe(2);
+  const saved = saves.at(-1)!.document;
+  const visitor = await page.context().newPage();
+  await visitor.route("**/api/public/sites/demo", (route) => route.fulfill({ json: { site: { id: "site-1", username: "demo", site_name: "Demo Desk", published_document: { ...saved, windows: saved.windows.map((window) => window.id === "explorer" ? { ...window, defaultOpen: true } : window) }, published_version: 1, published_at: "2026-10-17T00:00:00Z" } } }));
+  await visitor.setViewportSize({ width: 1440, height: 900 });
+  await visitor.goto("/@demo");
+  const win = visitor.getByRole("dialog", { name: "World.exe" });
+  await expect(win.locator(".explorer-item")).toHaveCount(1);
+  await expect(win.locator(".explorer-item").first()).toContainText("視窗：備用設定.txt");
+  await expect(win).not.toContainText("目標已失效");
 });
 
 test("visitor: a single tap opens folders and shortcuts, broken shortcuts explain themselves, and mobile has no horizontal overflow", async ({ page }) => {
@@ -299,4 +374,76 @@ test("desktop visitor: shortcuts to windows are not flagged broken and open the 
   await dialog.getByRole("button", { name: "主角完整設定", exact: true }).click();
   await expect(page.getByRole("dialog", { name: "角色設定.txt" })).toBeVisible();
   await expect(dialog.getByRole("status")).toBeHidden();
+});
+
+function socialExplorerDocument() {
+  const explorer = makeWindow("explorer", 3);
+  if (explorer.type !== "explorer") throw new Error("explorer fixture mismatch");
+  explorer.id = "explorer"; explorer.title = "World.exe"; explorer.layout.desktop = { ...explorer.layout.desktop, x: 520, y: 30, w: 600, h: 520, z: 3 };
+  const legacy = { ...structuredClone(documentFixture), windows: [igWindow(), explorer] };
+  const migrated = migrateSiteDocumentV2(legacy, { siteId: "site-1" });
+  if (!migrated.ok) throw new Error("fixture migration failed");
+  const document = migrated.document;
+  const profile = document.entities.profiles[0];
+  const [post, other] = document.entities.posts;
+  const world = document.windows.find((window) => window.type === "explorer");
+  if (!world || world.type !== "explorer") throw new Error("explorer missing");
+  world.content = {
+    folders: [F("fans", null, "粉絲")],
+    shortcuts: [
+      { id: "to-post", parentId: "fans", label: "第一篇", order: 0, visibility: "published", target: { siteId: "site-1", id: post.id, kind: "post" } },
+      { id: "to-other", parentId: null, label: "第二篇", order: 1, visibility: "published", target: { siteId: "site-1", id: other.id, kind: "post" } },
+      { id: "to-profile", parentId: null, label: "主角", order: 2, visibility: "published", target: { siteId: "site-1", id: profile.id, kind: "profile" } }
+    ]
+  };
+  return { document, postTitle: post.title };
+}
+
+test("deleting a post that shortcuts point at lists them, removes only those on confirm, and undo restores both", async ({ page }) => {
+  const { document, postTitle } = socialExplorerDocument();
+  const { saves } = await openEditor(page, document as unknown as SiteDocument);
+  const ig = page.getByRole("dialog", { name: "Instagram.exe" });
+  await ig.getByRole("tab", { name: "編輯" }).click();
+  await ig.getByRole("button", { name: "刪除貼文" }).first().click();
+  const confirm = page.getByRole("dialog", { name: "這項刪除會影響 1 個捷徑" });
+  await expect(confirm).toBeVisible();
+  await expect(confirm.getByRole("list", { name: "受影響的捷徑" })).toContainText("第一篇");
+  await expect(confirm.getByRole("list", { name: "受影響的捷徑" })).toContainText(`貼文：${postTitle}`);
+  await expect(confirm.getByRole("list", { name: "受影響的捷徑" })).toContainText("World.exe / 桌面 / 粉絲");
+  await confirm.getByRole("button", { name: "取消" }).click();
+  expect(saves.every((save) => (save.document as unknown as { entities: { posts: unknown[] } }).entities.posts.length === 2)).toBe(true);
+
+  await ig.getByRole("button", { name: "刪除貼文" }).first().click();
+  await page.getByRole("button", { name: "刪除並移除 1 個捷徑" }).click();
+  const latest = () => saves.at(-1)?.document as unknown as { entities: { posts: Array<{ id: string }> }; windows: Array<{ type: string; content: { shortcuts?: Array<{ id: string }> } }> };
+  await expect.poll(() => latest()?.entities.posts.length).toBe(1);
+  expect(latest().windows.find((window) => window.type === "explorer")!.content.shortcuts!.map((shortcut) => shortcut.id)).toEqual(["to-other", "to-profile"]);
+  await page.getByRole("button", { name: "復原" }).click();
+  await expect.poll(() => latest()?.entities.posts.length).toBe(2);
+  expect(latest().windows.find((window) => window.type === "explorer")!.content.shortcuts!.map((shortcut) => shortcut.id).sort()).toEqual(["to-other", "to-post", "to-profile"]);
+});
+
+test("phone editor: deleting a window that shortcuts point at asks first and fits at 390px", async ({ page }) => {
+  const document = withContent([], [S("link", null, "主角設定")]);
+  await page.addInitScript((value) => localStorage.setItem("sb-example-auth-token", JSON.stringify(value)), session);
+  const site = { id: "site-1", username: "demo", site_name: "Demo Desk", draft_document: document, draft_version: 1, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-17T00:00:00.000Z", access_role: "owner" };
+  const saves: Array<{ document: SiteDocument }> = [];
+  await page.route("**/api/sites/site-1/assets**", (route) => route.fulfill({ json: { assets: [] } }));
+  await page.route("**/api/sites/site-1/draft", (route) => { saves.push(route.request().postDataJSON()); return route.fulfill({ json: { version: 2, updatedAt: "2026-10-17T00:01:00.000Z" } }); });
+  await page.route("**/api/sites/site-1", (route) => route.fulfill({ json: { site } }));
+  await page.setViewportSize({ width: 390, height: 800 });
+  await page.goto("/editor/site-1");
+  await page.getByRole("button", { name: "角色設定.txt", exact: true }).click();
+  await page.getByRole("button", { name: "編輯此視窗" }).click();
+  await page.getByRole("button", { name: "完成編輯" }).click();
+  await page.locator(".m-toolbar").getByRole("button", { name: "編輯" }).click();
+  await page.getByRole("button", { name: "刪除", exact: true }).click();
+  const confirm = page.getByRole("dialog", { name: "這項刪除會影響 1 個捷徑" });
+  await expect(confirm).toBeVisible();
+  const box = await confirm.boundingBox();
+  expect(box!.x).toBeGreaterThanOrEqual(0);
+  expect(box!.x + box!.width).toBeLessThanOrEqual(391);
+  await confirm.getByRole("button", { name: "刪除並移除 1 個捷徑" }).click();
+  await expect.poll(() => saves.at(-1)?.document.windows.map((window) => window.id)).toEqual(["explorer"]);
+  expect(explorerContent(saves)!.shortcuts).toEqual([]);
 });
