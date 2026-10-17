@@ -1,0 +1,77 @@
+{
+  "app": {
+    "name": "Retro Desktop",
+    "loading": "デスクトップを読み込み中…",
+    "loadingAccount": "アカウントを読み込み中…",
+    "loadingSite": "サイトを読み込み中…",
+    "notFoundTitle": "ページが見つかりません",
+    "notFoundDescription": "ページが削除されたか、アドレスが間違っている可能性があります。",
+    "home": "ホームへ戻る"
+  },
+  "actions": {
+    "close": "閉じる",
+    "home": "ホーム"
+  },
+  "language": {
+    "label": "表示言語",
+    "partialNote": "現在は基本的な画面のみ翻訳しています。一部の編集ツールは繁体字中国語で表示されます。キャラクターや作品の内容は自動翻訳されません。",
+    "zhHansNote": "簡体字中国語は未対応です。簡体字中国語の設定は繁体字中国語で表示されます。",
+    "beta": "ベータ版",
+    "changing": "言語を切り替え中…",
+    "betaNote": "日本語と韓国語の翻訳はベータ版です。ネイティブ話者による確認はまだ完了していません。"
+  },
+  "desktop": {
+    "start": "スタート",
+    "startMenu": "スタートメニュー",
+    "empty": "デスクトップに項目がありません",
+    "clockLabel": "現在時刻 {{time}}",
+    "credit": "Retro Desktop で作成"
+  },
+  "landing": {
+    "title": "Retro Desktop.exe へようこそ",
+    "signedIn": "{{email}} でログイン中",
+    "eyebrow": "コード不要の自分だけのデスクトップ",
+    "headline": "あなたの小さな世界を、\nレトロなパソコンの中に。",
+    "description": "ウィンドウを動かして画像やリンクを追加するだけ。デジタル名刺、OC 展示ページ、ポートフォリオを手軽に作れます。コード不要で、スマートフォンでも快適に見られます。",
+    "myDesktop": "自分のデスクトップへ →",
+    "createDesktop": "デスクトップを作成 →",
+    "examples": "作成例",
+    "browseExamples": "作成例を見る",
+    "openExample": "操作できる作成例を開く →",
+    "demoCard": "プロフィールカード",
+    "demoGallery": "アルバム",
+    "demoLinks": "リンク",
+    "steps": {
+      "choose": {
+        "title": "アドレスとテーマを選ぶ",
+        "description": "自分のアドレスとレトロな配色を選びます。"
+      },
+      "add": {
+        "title": "ウィンドウを追加",
+        "description": "文書、アルバム、リンク、自己紹介を好きな位置に配置します。"
+      },
+      "publish": {
+        "title": "公開してシェア",
+        "description": "パソコン版とモバイル版をプレビューして、公開後にアドレスをシェアします。"
+      }
+    },
+    "examplesList": {
+      "card": {
+        "name": "デジタル名刺 — Mochi",
+        "description": "プロフィール項目、自己紹介、SNS リンク、バナー。"
+      },
+      "ig": {
+        "name": "レトロ IG — pixel 日記",
+        "description": "フォロワー数、自己紹介、投稿グリッドを 2000 年代風に。"
+      },
+      "oc": {
+        "name": "OC 展示ページ — 月面圖書館",
+        "description": "キャラクター紹介、設定画アルバム、世界観の資料。"
+      },
+      "portfolio": {
+        "name": "ポートフォリオ — Ren",
+        "description": "自己紹介、作品グリッド、連絡先。"
+      }
+    }
+  }
+}

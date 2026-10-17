@@ -1,0 +1,77 @@
+{
+  "app": {
+    "name": "Retro Desktop",
+    "loading": "正在載入桌面…",
+    "loadingAccount": "正在載入帳號…",
+    "loadingSite": "正在載入網站…",
+    "notFoundTitle": "找不到這個頁面",
+    "notFoundDescription": "這個頁面可能已移除，或網址有誤。",
+    "home": "回到首頁"
+  },
+  "actions": {
+    "close": "關閉",
+    "home": "首頁"
+  },
+  "language": {
+    "label": "介面語言",
+    "partialNote": "目前僅翻譯核心介面；部分編輯工具仍顯示繁體中文。你的角色與作品內容不會自動翻譯。",
+    "zhHansNote": "尚未提供簡體中文；偵測到簡體中文偏好時會使用繁體中文。",
+    "beta": "測試版",
+    "changing": "正在切換語言…",
+    "betaNote": "日文與韓文目前為測試翻譯，仍待母語使用者校對。"
+  },
+  "desktop": {
+    "start": "開始",
+    "startMenu": "開始功能表",
+    "empty": "目前沒有桌面項目",
+    "clockLabel": "目前時間 {{time}}",
+    "credit": "使用 Retro Desktop 製作"
+  },
+  "landing": {
+    "title": "歡迎使用 Retro Desktop.exe",
+    "signedIn": "已登入：{{email}}",
+    "eyebrow": "免寫程式的個人桌面",
+    "headline": "把你的小宇宙，\n裝進一台復古電腦。",
+    "description": "拖拉視窗、放上圖片和連結，幾分鐘就能做出電子名片、OC 展示頁或作品集。不用寫程式，手機也能好好瀏覽。",
+    "myDesktop": "進入我的桌面 →",
+    "createDesktop": "開始建立我的桌面 →",
+    "examples": "範例作品",
+    "browseExamples": "看看範例",
+    "openExample": "開啟互動範例 →",
+    "demoCard": "名片",
+    "demoGallery": "相簿",
+    "demoLinks": "連結",
+    "steps": {
+      "choose": {
+        "title": "選網址與主題",
+        "description": "取一個個人網址，挑一套復古配色。"
+      },
+      "add": {
+        "title": "新增視窗",
+        "description": "文件、相簿、連結、關於我——拖到想要的位置。"
+      },
+      "publish": {
+        "title": "發布分享",
+        "description": "預覽桌面與手機版，一鍵發布後分享網址。"
+      }
+    },
+    "examplesList": {
+      "card": {
+        "name": "電子名片 — Mochi",
+        "description": "檔案欄位、簡介、社群選單與橫幅。"
+      },
+      "ig": {
+        "name": "復古 IG — pixel 日記",
+        "description": "追蹤數、簡介與貼文格狀，像 2000 年的 IG。"
+      },
+      "oc": {
+        "name": "OC 展示頁 — 月面圖書館",
+        "description": "角色檔案、設定圖相簿和世界觀文件。"
+      },
+      "portfolio": {
+        "name": "作品集 — Ren",
+        "description": "自我介紹、作品網格與聯絡方式。"
+      }
+    }
+  }
+}

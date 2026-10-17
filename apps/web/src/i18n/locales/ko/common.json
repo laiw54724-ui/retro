@@ -1,0 +1,77 @@
+{
+  "app": {
+    "name": "Retro Desktop",
+    "loading": "데스크톱을 불러오는 중…",
+    "loadingAccount": "계정을 불러오는 중…",
+    "loadingSite": "사이트를 불러오는 중…",
+    "notFoundTitle": "페이지를 찾을 수 없습니다",
+    "notFoundDescription": "페이지가 삭제되었거나 주소가 잘못되었을 수 있습니다.",
+    "home": "홈으로 돌아가기"
+  },
+  "actions": {
+    "close": "닫기",
+    "home": "홈"
+  },
+  "language": {
+    "label": "인터페이스 언어",
+    "partialNote": "현재 기본 인터페이스만 번역되어 있습니다. 일부 편집 도구는 번체 중국어로 표시됩니다. 캐릭터와 작품 내용은 자동으로 번역되지 않습니다.",
+    "zhHansNote": "간체 중국어는 아직 지원하지 않습니다. 간체 중국어 설정에는 번체 중국어가 표시됩니다.",
+    "beta": "베타",
+    "changing": "언어를 변경하는 중…",
+    "betaNote": "일본어와 한국어 번역은 베타 버전이며 아직 원어민 검토가 필요합니다."
+  },
+  "desktop": {
+    "start": "시작",
+    "startMenu": "시작 메뉴",
+    "empty": "아직 데스크톱 항목이 없습니다",
+    "clockLabel": "현재 시각 {{time}}",
+    "credit": "Retro Desktop으로 제작"
+  },
+  "landing": {
+    "title": "Retro Desktop.exe에 오신 것을 환영합니다",
+    "signedIn": "{{email}} 계정으로 로그인됨",
+    "eyebrow": "코딩 없이 만드는 나만의 데스크톱",
+    "headline": "나만의 작은 세계를\n레트로 컴퓨터 안에.",
+    "description": "창을 끌어 옮기고 이미지와 링크를 추가해 디지털 명함, OC 전시 페이지, 포트폴리오를 간편하게 만들어 보세요. 코딩 없이 만들 수 있고 휴대폰에서도 편하게 볼 수 있습니다.",
+    "myDesktop": "내 데스크톱으로 →",
+    "createDesktop": "내 데스크톱 만들기 →",
+    "examples": "예시 작품",
+    "browseExamples": "예시 둘러보기",
+    "openExample": "직접 체험해 보기 →",
+    "demoCard": "프로필 카드",
+    "demoGallery": "갤러리",
+    "demoLinks": "링크",
+    "steps": {
+      "choose": {
+        "title": "주소와 테마 선택",
+        "description": "나만의 주소와 레트로 색상을 골라 보세요."
+      },
+      "add": {
+        "title": "창 추가",
+        "description": "문서, 갤러리, 링크, 자기소개를 추가하고 원하는 위치에 놓으세요."
+      },
+      "publish": {
+        "title": "게시하고 공유",
+        "description": "데스크톱과 모바일 화면을 미리 보고 게시한 뒤 주소를 공유하세요."
+      }
+    },
+    "examplesList": {
+      "card": {
+        "name": "디지털 명함 — Mochi",
+        "description": "프로필 항목, 소개, 소셜 링크, 배너."
+      },
+      "ig": {
+        "name": "레트로 IG — pixel 日記",
+        "description": "팔로워 수, 소개, 게시물 그리드를 2000년대 감성으로."
+      },
+      "oc": {
+        "name": "OC 전시 페이지 — 月面圖書館",
+        "description": "캐릭터 프로필, 설정화 갤러리, 세계관 문서."
+      },
+      "portfolio": {
+        "name": "포트폴리오 — Ren",
+        "description": "자기소개, 작품 그리드, 연락처."
+      }
+    }
+  }
+}

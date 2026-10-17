@@ -1,66 +1,73 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { createDemoDocument, DEMO_EXAMPLES, type DemoKind } from "@retrodesk/shared";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../app/AuthProvider";
 import { RetroButton } from "../components/RetroButton";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { VisitorPreview } from "../features/editor/VisitorPreview";
+import { useLocaleFormatting } from "../i18n/format";
 
 export function LandingPage() {
+  const { t } = useTranslation("common");
+  const { fontFamily } = useLocaleFormatting();
   const { user } = useAuth();
   const [demo, setDemo] = useState<DemoKind | null>(null);
+  const demoDocument = useMemo(() => demo ? createDemoDocument(demo) : null, [demo]);
   return (
-    <main className="landing-shell">
+    <main className="landing-shell" style={{ fontFamily }}>
       <section className="landing-window retro-panel">
-        <header className="landing-titlebar">歡迎使用 Retro Desktop.exe</header>
-        {user ? <p className="info-box">已登入：{user.email}</p> : null}
+        <header className="landing-titlebar">{t("landing.title")}</header>
+        <div style={{ padding: "12px 16px 0" }}><LanguageSwitcher /></div>
+        {user ? <p className="info-box">{t("landing.signedIn", { email: user.email })}</p> : null}
         <div className="landing-hero">
           <div className="landing-copy">
-            <span className="eyebrow">NO-CODE PERSONAL DESKTOP</span>
-            <h1>把你的小宇宙，<br />裝進一台復古電腦。</h1>
-            <p>拖拉視窗、放上圖片和連結，幾分鐘就能做出電子名片、OC 展示頁或作品集。不用寫程式，手機也能好好瀏覽。</p>
+            <span className="eyebrow" style={{ fontFamily }}>{t("landing.eyebrow")}</span>
+            <h1 style={{ fontFamily, whiteSpace: "pre-line", overflowWrap: "anywhere" }}>{t("landing.headline")}</h1>
+            <p>{t("landing.description")}</p>
             <div className="button-row">
-              <Link className="retro-link primary" to="/auth">{user ? "進入我的桌面 →" : "開始建立我的桌面 →"}</Link>
-              <a className="retro-link" href="#examples">看看範例</a>
+              <Link className="retro-link primary" to="/auth">{t(user ? "landing.myDesktop" : "landing.createDesktop")}</Link>
+              <a className="retro-link" href="#examples">{t("landing.browseExamples")}</a>
             </div>
           </div>
           <div className="hero-demo">
             <div className="demo-desktop">
-              <div className="desktop-icons-demo"><span>名片</span><span>相簿</span><span>連結</span></div>
-              <div className="demo-win one"><b>名片.exe</b><div className="demo-card-lines"><i /><strong>Mochi 麻糬</strong><i /><i /></div></div>
-              <div className="demo-win two"><b>相簿</b><div className="demo-grid">{Array.from({ length: 6 }).map((_, index) => <i key={index} />)}</div></div>
-              <div className="demo-taskbar"><RetroButton>開始</RetroButton></div>
+              <div className="desktop-icons-demo"><span>{t("landing.demoCard")}</span><span>{t("landing.demoGallery")}</span><span>{t("landing.demoLinks")}</span></div>
+              <div className="demo-win one"><b>{t("landing.demoCard")}.exe</b><div className="demo-card-lines"><i /><strong>Mochi 麻糬</strong><i /><i /></div></div>
+              <div className="demo-win two"><b>{t("landing.demoGallery")}</b><div className="demo-grid">{Array.from({ length: 6 }).map((_, index) => <i key={index} />)}</div></div>
+              <div className="demo-taskbar"><RetroButton>{t("desktop.start")}</RetroButton></div>
             </div>
           </div>
         </div>
       </section>
 
       <section className="steps-grid">
-        {[
-          ["01", "選網址與主題", "取一個個人網址，挑一套復古配色。"],
-          ["02", "新增視窗", "文件、相簿、連結、關於我——拖到想要的位置。"],
-          ["03", "發布分享", "預覽桌面與手機版，一鍵發布後分享網址。"]
-        ].map(([n, title, description]) => (
+        {([
+          ["01", "choose"],
+          ["02", "add"],
+          ["03", "publish"]
+        ] as const).map(([n, step]) => (
           <article className="retro-panel step-card" key={n}>
             <span>{n}</span>
-            <div><strong>{title}</strong><p>{description}</p></div>
+            <div><strong>{t(`landing.steps.${step}.title`)}</strong><p>{t(`landing.steps.${step}.description`)}</p></div>
           </article>
         ))}
       </section>
 
       <section id="examples" className="retro-panel examples">
-        <header className="landing-titlebar">範例作品</header>
+        <header className="landing-titlebar">{t("landing.examples")}</header>
         <div className="example-grid">
           {DEMO_EXAMPLES.map((example) => (
             <button type="button" className="example-card" key={example.kind} onClick={() => setDemo(example.kind)}>
               <div className="example-thumb"><div /><div /></div>
-              <strong>{example.name}</strong>
-              <p>{example.desc}</p>
-              <span>開啟互動範例 →</span>
+              <strong>{t(`landing.examplesList.${example.kind}.name`)}</strong>
+              <p>{t(`landing.examplesList.${example.kind}.description`)}</p>
+              <span>{t("landing.openExample")}</span>
             </button>
           ))}
         </div>
       </section>
-      {demo ? <VisitorPreview document={createDemoDocument(demo)} username={`demo-${demo}`} published onClose={() => setDemo(null)} /> : null}
+      {demoDocument ? <VisitorPreview document={demoDocument} username={`demo-${demo}`} published onClose={() => setDemo(null)} /> : null}
     </main>
   );
 }

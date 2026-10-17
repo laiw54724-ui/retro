@@ -1,7 +1,10 @@
 import { useEffect, useId, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { DesktopWindow, SiteDocument } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { useThemeView } from "../../lib/themeView";
+import { LanguageSwitcher } from "../../components/LanguageSwitcher";
+import { useLocaleFormatting } from "../../i18n/format";
 
 export type DesktopTask = {
   window: DesktopWindow;
@@ -18,17 +21,17 @@ type Props = {
   visitor?: boolean;
 };
 
-const formatClock = () => new Date().toTimeString().slice(0, 5);
+const readClock = () => new Date();
 
 function useLocalClock() {
-  const [clock, setClock] = useState(formatClock);
+  const [clock, setClock] = useState(readClock);
 
   useEffect(() => {
     let timeout = 0;
     const schedule = () => {
       const delay = 60_000 - (Date.now() % 60_000) + 50;
       timeout = window.setTimeout(() => {
-        setClock(formatClock());
+        setClock(readClock());
         schedule();
       }, delay);
     };
@@ -40,11 +43,14 @@ function useLocalClock() {
 }
 
 export function DesktopTaskbar({ document, tasks, onOpen, onToggle, visitor = false }: Props) {
+  const { t } = useTranslation("common");
+  const { formatDate, formatTime, fontFamily } = useLocaleFormatting();
   const [startOpen, setStartOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const startButtonRef = useRef<HTMLButtonElement | null>(null);
   const menuId = `desktop-start-${useId().replaceAll(":", "")}`;
-  const clock = useLocalClock();
+  const now = useLocalClock();
+  const clock = formatTime(now, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
   const tv = useThemeView(document.theme);
 
   useEffect(() => {
@@ -73,26 +79,31 @@ export function DesktopTaskbar({ document, tasks, onOpen, onToggle, visitor = fa
   }
 
   return (
-    <div ref={rootRef} className="desktop-chrome">
+    <div ref={rootRef} className="desktop-chrome" style={{ fontFamily }}>
       {startOpen ? (
-        <div id={menuId} className="start-menu" role="menu" aria-label="開始功能表" style={{ background: tv.face, boxShadow: tv.bevel }}>
+        <div id={menuId} className="start-menu" style={{ background: tv.face, boxShadow: tv.bevel, width: "min(320px, calc(100vw - 12px))", maxHeight: "70vh", overflowY: "auto" }}>
           <div className="start-brand" aria-hidden="true" style={{ background: tv.titleBgV, color: tv.titleText }}>{document.siteName}</div>
           <div className="start-items">
-            {document.windows.length ? document.windows.map((desktopWindow) => (
-              <button
-                key={desktopWindow.id}
-                type="button"
-                role="menuitem"
-                className="start-item"
-                style={{ color: tv.text }}
-                onClick={() => chooseWindow(desktopWindow.id)}
-              >
-                <Icon name={desktopWindow.icon} size={22} />
-                <span>{desktopWindow.title}</span>
-              </button>
-            )) : <span className="start-empty">目前沒有桌面項目</span>}
+            {document.windows.length ? (
+              <div role="menu" aria-label={t("desktop.startMenu")}>
+                {document.windows.map((desktopWindow) => (
+                  <button
+                    key={desktopWindow.id}
+                    type="button"
+                    role="menuitem"
+                    className="start-item"
+                    style={{ color: tv.text, width: "100%" }}
+                    onClick={() => chooseWindow(desktopWindow.id)}
+                  >
+                    <Icon name={desktopWindow.icon} size={22} />
+                    <span>{desktopWindow.title}</span>
+                  </button>
+                ))}
+              </div>
+            ) : <span className="start-empty">{t("desktop.empty")}</span>}
             <div className="w98-sep" />
-            <small className="start-credit">Made with Retro Desktop</small>
+            <div style={{ padding: "4px 8px" }}><LanguageSwitcher /></div>
+            <small className="start-credit">{t("desktop.credit")}</small>
           </div>
         </div>
       ) : null}
@@ -107,7 +118,7 @@ export function DesktopTaskbar({ document, tasks, onOpen, onToggle, visitor = fa
           aria-controls={menuId}
           onClick={() => setStartOpen((open) => !open)}
         >
-          <Icon name="computer" size={18} />開始
+          <Icon name="computer" size={18} />{t("desktop.start")}
         </button>
         <span className="tb-sep" aria-hidden="true" style={{ borderLeft: `1px solid ${tv.shadow}` }} />
         <div className={`task-items${visitor ? " visitor-task-buttons" : ""}`}>
@@ -124,7 +135,7 @@ export function DesktopTaskbar({ document, tasks, onOpen, onToggle, visitor = fa
             </button>
           ))}
         </div>
-        <time className="clock taskbar-clock visitor-clock" dateTime={clock} aria-label={`目前時間 ${clock}`} style={{ color: tv.taskbarText, boxShadow: `inset -1px -1px #ffffff, inset 1px 1px ${tv.shadow}` }}>{clock}</time>
+        <time className="clock taskbar-clock visitor-clock" dateTime={now.toISOString()} title={formatDate(now, { dateStyle: "full" })} aria-label={t("desktop.clockLabel", { time: clock })} style={{ color: tv.taskbarText, boxShadow: `inset -1px -1px #ffffff, inset 1px 1px ${tv.shadow}` }}>{clock}</time>
       </div>
     </div>
   );

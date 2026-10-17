@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 import { LandingPage } from "../pages/LandingPage";
@@ -9,9 +10,10 @@ import { PublicSitePage } from "../pages/PublicSitePage";
 import { InvitePage } from "../pages/InvitePage";
 
 function RequireAuth({ children }: { children: ReactNode }) {
+  const { t } = useTranslation("common");
   const { loading, user } = useAuth();
   const location = useLocation();
-  if (loading) return <div className="boot-screen">Loading Retro Desktop...</div>;
+  if (loading) return <div className="boot-screen" role="status">{t("app.loadingAccount")}</div>;
   if (!user) return <Navigate to={`/auth${location.search}${location.hash}`} replace />;
   return children;
 }
