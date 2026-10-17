@@ -3,8 +3,10 @@ import { type CollectionEntityV2, type DesktopWindow, type PostEntityV2, type Pr
 import { Icon } from "../../components/Icon";
 import { IconPicker } from "../modules/links/IconPicker";
 import { useThemeView } from "../../lib/themeView";
-import { resolveWindowAppearance } from "../../lib/windowAppearance";
+import { RetroWindow } from "../../components/RetroWindow";
+import { WindowChromeButton } from "../../components/window-chrome";
 import { WindowAppearanceEditor } from "../editor/WindowAppearanceEditor";
+import { WindowChromeEditor } from "../editor/WindowChromeEditor";
 import { ThemeAppearanceEditor } from "../editor/ThemeAppearanceEditor";
 import { moduleDefinitions } from "../modules/registry";
 import { useEditorStore } from "../editor/store";
@@ -56,7 +58,6 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const music = useMusicPlayback();
   const ordered = useMemo(() => [...document.windows].sort((a, b) => a.layout.mobile.order - b.layout.mobile.order), [document.windows]);
   const openWindow = ordered.find((window) => window.id === openId) ?? null;
-  const openTitle = resolveWindowAppearance(document.theme, openWindow?.appearance);
   const selected = document.windows.find((window) => window.id === store.selectedId) ?? null;
 
   useEffect(() => () => musicPlayback.stopAll(), []);
@@ -95,14 +96,18 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
         </div>
 
         {openWindow ? (
-          <div role="dialog" aria-label={openWindow.title} className="m-window" style={{ background: tv.face, boxShadow: tv.bevel }}>
-            <div className="m-win-title" style={{ background: openTitle.titleBackground, color: openTitle.titleColor }}>
-              <button type="button" className="m-btn m-back" style={btn} onClick={back}>‹ 桌面</button>
-              <Icon name={openWindow.icon} size={18} />
-              <span className="m-win-name">{openWindow.title}</span>
-              <button type="button" className="m-btn sq" style={btn} aria-label="關閉" onClick={back}>×</button>
-            </div>
-            <div className="m-win-body" style={{ boxShadow: tv.sunken }}>
+          <div style={{ position: "absolute", inset: 0, zIndex: 5 }}>
+            <RetroWindow
+              title={openWindow.title}
+              icon={openWindow.icon}
+              theme={document.theme}
+              appearance={openWindow.appearance}
+              chrome={openWindow.chrome}
+              presentation="mobile"
+              interactiveControls
+              onClose={back}
+              titleBarLeading={<WindowChromeButton className="m-btn m-back" onClick={back}>‹ 桌面</WindowChromeButton>}
+            >
               <WindowRenderer
                 window={openWindow}
                 theme={document.theme}
@@ -131,7 +136,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
                 publicShareBaseUrl={publicShareBaseUrl}
                 siteHandle={siteHandle}
               />
-            </div>
+            </RetroWindow>
             {editor ? <button type="button" className="m-fab" onClick={() => setInlineEdit(!inlineEdit)}>{inlineEdit ? "完成編輯" : "編輯此視窗"}</button> : null}
           </div>
         ) : null}
@@ -196,6 +201,7 @@ function MobileEdit({ theme, window, count, siteId, upload }: { theme: SiteDocum
   return (
     <>
       <label className="w98-field"><span className="w98-hint">視窗標題</span><input className="w98-input m-input" value={window.title} onChange={(event) => patch({ title: event.target.value }, "mt" + window.id)} /></label>
+      <WindowChromeEditor theme={theme} window={window} onChange={(chrome) => patch({ chrome })} />
       <WindowAppearanceEditor theme={theme} window={window} onChange={(appearance, historyKey) => patch({ appearance }, historyKey)} />
       <span className="w98-hint">圖示</span>
       <IconPicker siteId={siteId} value={window.icon} upload={upload} size={28} onChange={(icon) => patch({ icon })} />

@@ -1,0 +1,4 @@
+/* Keep the existing layout gesture overlay below enlarged touch title controls. */
+@media (pointer: coarse) {
+  .layoutVeil:global(.layout-veil) { top: 52px; }
+}

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { AssetReferenceSchema } from "./asset-reference";
+import { WindowChromeSchema } from "./window-chrome";
 
 export const usernamePattern = /^[a-z0-9](?:[a-z0-9-]{1,18}[a-z0-9])?$/;
 export const reservedUsernames = new Set([
@@ -291,7 +292,8 @@ export const BaseWindowSchema = z.object({
   icon: z.string().min(1).max(500),
   layout: WindowLayoutSchema,
   defaultOpen: z.boolean(),
-  appearance: WindowAppearanceSchema.optional()
+  appearance: WindowAppearanceSchema.optional(),
+  chrome: WindowChromeSchema.optional()
 });
 
 export const DesktopWindowSchema = z.discriminatedUnion("type", [
