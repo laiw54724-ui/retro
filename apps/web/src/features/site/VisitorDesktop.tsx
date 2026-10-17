@@ -77,6 +77,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
   }
 
   function minimize(id: string) {
+    musicPlayback.stopWindow(id);
     setRuntime((current) => current[id] ? { ...current, [id]: { ...current[id], status: "minimized" } } : current);
   }
 

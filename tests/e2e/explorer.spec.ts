@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { makeWindow, type SiteDocument } from "@retrodesk/shared";
+import { makeWindow, projectPublicSiteDocument, type SiteDocument } from "@retrodesk/shared";
 import { documentFixture } from "./fixture";
 
 const session = { access_token: "a.b.c", refresh_token: "r", expires_at: 4102444800, expires_in: 3600, token_type: "bearer", user: { id: "u", email: "x@y.z", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01" } };
@@ -84,4 +84,40 @@ test("folder deletion is confirmed, keeps target content, and can be undone", as
     const current = saves.at(-1)?.document.windows.find((window) => window.type === "explorer");
     return current?.type === "explorer" ? [current.content.folders.length, current.content.shortcuts.length] : [];
   }).toEqual([1, 1]);
+});
+
+test("deleting a shortcut target cleans the canonical draft before save, reload and public projection", async ({ page }) => {
+  const document = explorerDocument();
+  const explorer = document.windows.find((window) => window.type === "explorer");
+  if (!explorer || explorer.type !== "explorer") throw new Error("explorer fixture mismatch");
+  explorer.content.shortcuts = [{ id: "lore-link", parentId: null, label: "主角設定", order: 0, visibility: "published", target: { siteId: "site-1", id: "lore", kind: "window" } }];
+
+  const { saves } = await openEditor(page, document);
+  await expect(page.locator("#editor-right-panel").getByText("角色設定.txt", { exact: true })).toBeVisible();
+  await page.locator("#editor-right-panel").getByRole("button", { name: "刪除視窗" }).click();
+
+  await expect.poll(() => {
+    const saved = saves.at(-1)?.document;
+    const savedExplorer = saved?.windows.find((window) => window.type === "explorer");
+    return {
+      hasTarget: saved?.windows.some((window) => window.id === "lore") ?? true,
+      shortcuts: savedExplorer?.type === "explorer" ? savedExplorer.content.shortcuts.length : -1
+    };
+  }).toEqual({ hasTarget: false, shortcuts: 0 });
+
+  const saved = saves.at(-1)?.document;
+  if (!saved) throw new Error("expected an autosaved document");
+  const projection = projectPublicSiteDocument(saved, "site-1");
+  if (!projection.ok) throw new Error(`public projection failed: ${projection.code}`);
+
+  await page.reload();
+  const reloaded = page.getByRole("dialog", { name: "World.exe" });
+  await expect(reloaded).toBeVisible();
+  await expect(reloaded.getByRole("button", { name: /主角設定/ })).toHaveCount(0);
+
+  await page.route("**/api/public/sites/demo", (route) => route.fulfill({ json: { site: { username: "demo", site_name: "Demo Desk", published_document: projection.document, published_version: projection.version, published_at: "2026-10-17T00:02:00.000Z" } } }));
+  await page.goto("/@demo");
+  const publicExplorer = page.locator(".visitor-desktop").getByRole("dialog", { name: "World.exe" });
+  await expect(publicExplorer).toBeVisible();
+  await expect(publicExplorer.getByRole("button", { name: /主角設定/ })).toHaveCount(0);
 });

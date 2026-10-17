@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createStarterDocument, migrateSiteDocumentV2, projectV2ToLegacyDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
+import { createStarterDocument, makeWindow, migrateSiteDocumentV2, parseSiteDocument, projectV2ToLegacyDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { useEditorStore } from "./store";
 
 function profileFixture() {
@@ -86,6 +86,49 @@ describe("editor canonical history", () => {
     expect(useEditorStore.getState().accessRole).toBe("owner");
   });
 
+
+  it("removes Explorer shortcuts to a deleted window and restores them through undo", () => {
+    const source = createStarterDocument("Desk", "classic98", "about");
+    const target = makeWindow("document", source.windows.length);
+    target.id = "target-window";
+    target.title = "Target.exe";
+    const explorer = makeWindow("explorer", source.windows.length + 1);
+    explorer.id = "world-explorer";
+    if (explorer.type !== "explorer") throw new Error("explorer fixture mismatch");
+    explorer.content.shortcuts = [{
+      id: "target-shortcut",
+      parentId: null,
+      label: "Target",
+      order: 0,
+      visibility: "published",
+      target: { siteId: "site-a", id: target.id, kind: "window" }
+    }];
+    source.windows.push(target, explorer);
+
+    const migrated = migrateSiteDocumentV2(source, { siteId: "site-a" });
+    if (!migrated.ok || migrated.version !== 2) throw new Error("fixture migration failed");
+    const projected = projectV2ToLegacyDocument(migrated.document);
+    if (!projected.ok) throw new Error("fixture projection failed");
+
+    const store = useEditorStore.getState();
+    store.setSite("site-a", "alice", projected.document, 1, null, null, "owner");
+    store.setVersionedDocument(migrated.document);
+    store.deleteWindow(target.id);
+
+    const afterDelete = useEditorStore.getState();
+    expect(afterDelete.document?.windows.some((window) => window.id === target.id)).toBe(false);
+    const legacyExplorer = afterDelete.document?.windows.find((window) => window.id === explorer.id);
+    expect(legacyExplorer?.type === "explorer" ? legacyExplorer.content.shortcuts : null).toEqual([]);
+    const canonicalExplorer = afterDelete.versionedDocument?.windows.find((window) => window.id === explorer.id);
+    expect(canonicalExplorer?.type === "explorer" ? canonicalExplorer.content.shortcuts : null).toEqual([]);
+    expect(parseSiteDocument(afterDelete.versionedDocument).ok).toBe(true);
+
+    store.undo();
+    const restored = useEditorStore.getState();
+    expect(restored.document?.windows.some((window) => window.id === target.id)).toBe(true);
+    const restoredExplorer = restored.versionedDocument?.windows.find((window) => window.id === explorer.id);
+    expect(restoredExplorer?.type === "explorer" ? restoredExplorer.content.shortcuts.map((shortcut) => shortcut.id) : null).toEqual(["target-shortcut"]);
+  });
   it("stores indexing in canonical v2 history without changing the legacy renderer", () => {
     const { legacy, versioned } = profileFixture();
     const store = useEditorStore.getState();

@@ -272,7 +272,7 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
               active={isSel || layout.z === topZ}
               interactiveControls
               maximized={maximized}
-              onMinimize={() => store().setViewState(win.id, "min")}
+              onMinimize={() => { musicPlayback.stopWindow(win.id); store().setViewState(win.id, "min"); }}
               onMaximize={() => store().setViewState(win.id, maximized ? null : "max")}
               onClose={() => { musicPlayback.stopWindow(win.id); store().setViewState(win.id, "closed"); }}
               titleBarProps={{ onDoubleClick: () => store().setViewState(win.id, maximized ? null : "max"), style: { cursor: layoutMode ? "move" : "default", touchAction: "none" } }}

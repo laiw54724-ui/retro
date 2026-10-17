@@ -340,7 +340,12 @@ export const useEditorStore = create<EditorState>((set) => ({
     if (!state.document) return {};
     const windows = state.document.windows
       .filter((window) => window.id !== id)
-      .map((window, index) => ({ ...window, layout: { ...window.layout, mobile: { order: index } } }));
+      .map((window, index) => {
+        const next = window.type === "explorer"
+          ? { ...window, content: { ...window.content, shortcuts: window.content.shortcuts.filter((shortcut) => !(shortcut.target.kind === "window" && shortcut.target.id === id)) } }
+          : window;
+        return { ...next, layout: { ...next.layout, mobile: { order: index } } };
+      });
     return withHistory(
       state,
       { ...state.document, windows },
