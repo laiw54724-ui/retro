@@ -123,8 +123,8 @@ update them merely to make integration green. Public/editor/preview behavior,
 
 ## API-first staging rollout and rollback
 
-No new SQL migration or schemaVersion bump is introduced in Q0. Compatible
-readers still must precede writers for these additive strict fields:
+No new SQL migration or schemaVersion bump is introduced. These additive fields are **strict** in every reader that
+predates them:
 
 | Field | Required preservation |
 | --- | --- |
@@ -134,39 +134,84 @@ readers still must precede writers for these additive strict fields:
 | Explorer folder/shortcut `icon?` | Missing uses semantic default; stable set:name IDs survive |
 | `providerEmbed` source | Validated provider/type/ID and original URL; never arbitrary iframe HTML |
 
+### Read -> edit something else -> save (verified, no loss and no noise)
+
+- `tests/e2e/compat-roundtrip.spec.ts` loads a legacy v1 document and a canonical v2 document that carry **every**
+  field above through the real editor, renames an unrelated window, waits for the autosave, and compares the saved
+  body with the source: only the rename (and the selection's z-order raise) differs. A third case loads an *old*
+  document that has none of the fields and asserts the save adds none of them (no `chrome`, no `providerEmbed`, no
+  library icon ids), so an old document is never made unreadable for an old reader by merely opening and saving it.
+- `apps/api/test/draft-validation.test.ts` asserts the API stores the submitted v1 and v2 drafts unchanged.
+- `packages/shared/test/additive-fields-public.test.ts` asserts the public projection keeps the fields.
+- `packages/shared/test/site-transfer.test.ts`, `tests/e2e/transfer.spec.ts`: export/import keep them.
+
+### Compatible versions and rollback targets (explicit)
+
+| Component | Compatible reader/writer (target after rollout) | Valid rollback target |
+| --- | --- | --- |
+| API Worker | the Worker built from the final candidate SHA; the version id must be recorded at deploy time | **none older than itself** once any document with a new field was saved |
+| Web | the Pages build of the same SHA | **none older than itself**, same condition |
+| previously recorded staging versions (Worker `ca4cf50c-f3fc-4ad1-9376-b2d7583e38bf`, Pages `5205e370-f4f4-4b83-99cc-80b5bdb42917`, built before the icon library/integration) | not compatible readers | valid **only before** any new-field document exists, and only after the scan below finds none |
+
+Older strict readers reject (API) or fail to load (Web) a document containing any of the fields. Therefore a previous
+deployment is **not** a rollback target after new writes. Deleting user fields is not an acceptable default, and
+nothing here strips them.
+
+Before any rollback to an older build, run this read-only check on the staging database (it only counts):
+
+```sql
+select count(*) as docs_with_additive_fields
+from sites
+where draft_document::text ~ '"(chrome|providerEmbed)"|"icon": ?"[a-z0-9]+:[a-z0-9-]+"'
+   or published_document::text ~ '"(chrome|providerEmbed)"|"icon": ?"[a-z0-9]+:[a-z0-9-]+"';
+```
+
+The pattern is deliberately conservative (it also counts window/link icons using library ids, which older readers would
+actually accept). A non-zero count (or unknown) means: roll forward to a fixed build of this line instead. Caption/alt are not caught by
+that pattern because an old document may legitimately contain `alt`; they are covered by the strictness table above.
+
+**Blocker for production, not for disposable staging:** there is no emergency "tolerant older reader" build. If a
+rollback target older than this line is required before production, it must be created first as a separate, reviewed
+change (a build of the previous line whose schemas accept and preserve these fields), then verified with the
+round-trip spec above. Until then the staging acceptance must use disposable sites only, and an incident response is
+"roll forward", never "roll back".
+
+### Rollout order
+
 After the same commit's full checks and review succeed:
 
-1. Record the CURRENT Worker deployment/version and Pages deployment/source SHA
-   separately; back up disposable acceptance-site documents.
-2. Deploy the compatible API Worker first. Confirm health, old/new v1/v2 read,
-   draft save with all fields, reload, publish projection and cross-site rejection.
-   The production account/project/bucket are not part of this rollout.
-3. Only then deploy Web built with matching staging configuration and exact
-   source commit. Check the real Pages CSP, public module/asset paths and loaded
-   bundle identity. Vite tests alone do not apply Pages `_headers`.
-4. On a disposable authenticated site test create/edit/upload/partial retry,
-   save/reload, publish and anonymous desktop/mobile access. Check unauthorized
-   users cannot read drafts/private assets or mutate other sites.
+1. Record the CURRENT Worker deployment/version and Pages deployment/source SHA separately; back up disposable
+   acceptance-site documents.
+2. Deploy the **compatible API Worker** (final candidate SHA) first. Confirm health; read old and new v1/v2 documents;
+   save an old document and a document with every additive field; reload both; publish projection; cross-site
+   rejection. The production account/project/bucket are not part of this rollout.
+3. Only then deploy the **Web** built from the same SHA with matching staging configuration. Check the real Pages CSP,
+   public module/asset paths and loaded bundle identity. Vite tests alone do not apply Pages `_headers`.
+4. Smoke on a disposable authenticated site: edit, publish and anonymous public page on desktop and phone; create/edit/
+   upload/partial retry; unauthorized users cannot read drafts/private assets or mutate other sites.
+5. Record the new Worker version id and Pages deployment id as the compatible rollback target.
 
-Once new fields are saved, reverting API OR Web to a pre-compatible strict reader
-can make documents unreadable or unsavable. Keep compatible readers and roll
-forward; stopping a new writer alone does not make an old reader safe. Never
-silently strip fields or overwrite a cloud conflict to force rollback. Legacy
-transfer repair does not migrate stored sites automatically; it normalizes the
-previewed import package and requires the same digest on confirm.
+Legacy transfer repair does not migrate stored sites automatically; it normalizes the previewed import package and
+requires the same digest on confirm.
 
 ## Staging status and genuine blocker
 
-A read-only `staging` environment preflight was actually run:
-https://github.com/laiw54724-ui/retro/actions/runs/39048081647
+A read-only `staging` preflight was run: https://github.com/laiw54724-ui/retro/actions/runs/39048081647. It stopped
+because `CLOUDFLARE_API_TOKEN` was not available to the workflow.
 
-It stopped at prerequisites because `secrets.CLOUDFLARE_API_TOKEN` was unavailable
-to that workflow. Account ID, API/Web origins and Supabase client configuration
-were present. No token value was printed, no security setting was changed, and no
-API or Web deployment was attempted. Therefore current Worker/Pages versions are
-**not verified**. The older versions quoted by source PRs are historical evidence,
-not a current alias/version assertion. Configure the scoped token through GitHub
-Secrets (never chat or git) before proceeding with the guarded API-first rollout.
+Non-sensitive inspection of the repository (names only, nothing printed or changed):
+
+- GitHub environment `staging` exists (no protection rules). Its **secrets** are `CLOUDFLARE_ACCOUNT_ID` and
+  `SUPABASE_ANON_KEY`; **`CLOUDFLARE_API_TOKEN` is not defined** in `staging` (or at repository level, where no secrets
+  exist). Its variables are `API_URL`, `ASSET_BASE_URL`, `DEPLOY_ENABLED`, `SUPABASE_URL`, `WEB_ORIGIN`;
+  `DEPLOY_ENABLED` is `false`, so pushes to `main` do not deploy.
+- `.github/workflows/deploy-staging.yml` and the preflight read the token as `secrets.CLOUDFLARE_API_TOKEN` inside
+  `environment: staging`, so it must be created as a **staging environment secret** with that exact name.
+- No `production` environment exists; production is not part of this rollout.
+
+Current Worker/Pages versions therefore remain **unverified by CI**. Minimum maintainer steps: create a Cloudflare API
+token scoped to this account with Workers Scripts: Edit, Pages: Edit and R2: Edit, store it as the `staging`
+environment secret `CLOUDFLARE_API_TOKEN` (never in chat or git), then run the staging preflight again.
 
 ## Exclusions, manual acceptance and issue closure
 

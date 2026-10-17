@@ -285,6 +285,30 @@ test.describe("visitor: official platform players", () => {
     expect(await sound()).toEqual({ audible: 0, frames: 0 });
   });
 
+  test("native audio does not keep playing in a hidden tree when the viewport switches between desktop and phone", async ({ page }) => {
+    await page.route("https://media.example.com/**", (route) => route.fulfill({ contentType: "audio/mpeg", body: Buffer.alloc(64) }));
+    await page.addInitScript(() => {
+      type W = { __playing: Set<HTMLMediaElement> };
+      (window as unknown as W).__playing = new Set();
+      Object.defineProperty(HTMLMediaElement.prototype, "duration", { configurable: true, get: () => 90 });
+      Object.defineProperty(HTMLMediaElement.prototype, "seekable", { configurable: true, get: () => ({ length: 1, start: () => 0, end: () => 90 }) });
+      HTMLMediaElement.prototype.load = function () {};
+      HTMLMediaElement.prototype.pause = function () { (window as unknown as W).__playing.delete(this); this.dispatchEvent(new Event("pause")); };
+      HTMLMediaElement.prototype.play = function () { (window as unknown as W).__playing.add(this); this.dispatchEvent(new Event("loadedmetadata")); this.dispatchEvent(new Event("playing")); return Promise.resolve(); };
+    });
+    const playing = () => page.evaluate(() => (window as unknown as { __playing: Set<HTMLMediaElement> }).__playing.size);
+    const player = await openPublic(page, doc(musicWindow("Music.exe", [spotify, native])));
+    await player.getByRole("button", { name: "選擇 Native Song" }).click();
+    await player.getByRole("button", { name: "播放" }).click();
+    await expect.poll(playing).toBe(1);
+    await page.setViewportSize({ width: 390, height: 840 }); // desktop host unmounts, phone host mounts
+    await expect(page.locator(".visitor-desktop")).toHaveCount(0);
+    await expect.poll(playing).toBe(0);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expect(page.locator(".visitor-mobile")).toHaveCount(0);
+    await expect.poll(playing).toBe(0);
+  });
+
   test("a platform link saved as a direct audio file shows why it cannot play and offers the original", async ({ page }) => {
     const player = await openPublic(page, doc(musicWindow("Music.exe", [track("bad", "Bad", { kind: "audioUrl", url: SPOTIFY })])));
     await expect(player.getByRole("note")).toContainText("Spotify 的網頁連結，不是音訊檔");

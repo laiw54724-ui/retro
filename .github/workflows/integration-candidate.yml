@@ -5,6 +5,7 @@ on:
     branches:
       - integration/retro-usability-release
       - integration/retro-q0-validation
+      - claude/retro-release-candidate
   workflow_dispatch:
 
 permissions:
