@@ -29,10 +29,10 @@ jobs:
           set -e
           printf '%s\n' "$status" > .integration-merge-status
           git diff --name-only --diff-filter=U > .integration-conflicts
-          tar --exclude=.git --exclude=node_modules --exclude=merge-worktree.tar.gz -czf merge-worktree.tar.gz .
+          tar --exclude=.git --exclude=node_modules -czf "$RUNNER_TEMP/merge-worktree.tar.gz" .
       - uses: actions/upload-artifact@v4
         with:
           name: integration-merge-worktree
-          path: merge-worktree.tar.gz
+          path: ${{ runner.temp }}/merge-worktree.tar.gz
           if-no-files-found: error
           retention-days: 3
