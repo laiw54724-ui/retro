@@ -1,9 +1,9 @@
 import { useSyncExternalStore } from "react";
 import { musicPlayback } from "./audioCoordinator";
 
-export type EmbedSnapshot = { windowId: string | null; trackId: string | null };
+export type EmbedSnapshot = { windowId: string | null; trackId: string | null; instanceId: string | null };
 
-const idle: EmbedSnapshot = { windowId: null, trackId: null };
+const idle: EmbedSnapshot = { windowId: null, trackId: null, instanceId: null };
 
 /**
  * Tracks the single platform player (iframe) that is currently mounted.
@@ -17,15 +17,21 @@ export function createEmbedSession(stopNative: () => void) {
   const listeners = new Set<() => void>();
   const emit = (next: EmbedSnapshot) => { snapshot = next; for (const listener of listeners) listener(); };
   return {
-    activate(windowId: string, trackId: string) {
+    /**
+     * `instanceId` identifies the mounted player component. The public page mounts both a desktop
+     * tree and a (CSS-hidden) phone tree with the same window and track ids, and only the player
+     * the visitor actually clicked may create an iframe.
+     */
+    activate(windowId: string, trackId: string, instanceId: string) {
       stopNative();
-      emit({ windowId, trackId });
+      emit({ windowId, trackId, instanceId });
     },
     /** With no arguments disposes any active embed; with ids only if that exact embed is active. */
-    dispose(windowId?: string, trackId?: string) {
+    dispose(windowId?: string, trackId?: string, instanceId?: string) {
       if (snapshot.windowId === null) return;
       if (windowId !== undefined && snapshot.windowId !== windowId) return;
       if (trackId !== undefined && snapshot.trackId !== trackId) return;
+      if (instanceId !== undefined && snapshot.instanceId !== instanceId) return;
       emit(idle);
     },
     getSnapshot: () => snapshot,

@@ -214,6 +214,9 @@ test.describe("visitor: official platform players", () => {
     const dialog = page.locator(".visitor-mobile").getByRole("dialog", { name: "Music.exe" });
     await dialog.getByRole("button", { name: "載入 Spotify 播放器" }).click();
     await expect(dialog.locator("iframe")).toHaveCount(1);
+    // the public page also mounts a CSS-hidden desktop tree: it must not create a second, silent player
+    await expect(page.locator("iframe")).toHaveCount(1);
+    expect(await page.locator("iframe").evaluate((node) => { const r = node.getBoundingClientRect(); return r.width > 0 && r.height > 0; })).toBe(true);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow).toBeLessThanOrEqual(1);
     const load = await dialog.getByRole("button", { name: "關閉播放器" }).boundingBox();

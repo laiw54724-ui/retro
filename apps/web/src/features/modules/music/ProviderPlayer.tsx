@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { PLATFORM_LABELS, embedUrlFor, type MusicTrack } from "@retrodesk/shared";
 import { embedSession, useActiveEmbed } from "./mediaSession";
 
@@ -31,7 +31,8 @@ type Props = {
 export function ProviderPlayer({ source, title, windowId, trackId, onOpenOriginal }: Props) {
   const label = PLATFORM_LABELS[source.provider];
   const active = useActiveEmbed();
-  const isActive = active.windowId === windowId && active.trackId === trackId;
+  const instanceId = useId();
+  const isActive = active.windowId === windowId && active.trackId === trackId && active.instanceId === instanceId;
   const src = embedUrlFor(source.provider, source.resourceType, source.resourceId);
   const [loaded, setLoaded] = useState(false);
   const [slow, setSlow] = useState(false);
@@ -45,7 +46,7 @@ export function ProviderPlayer({ source, title, windowId, trackId, onOpenOrigina
   }, [isActive, src]);
 
   // Unmounting the frame is the only reliable way to stop a platform player, so tie it to this view's lifetime.
-  useEffect(() => () => embedSession.dispose(windowId, trackId), [windowId, trackId]);
+  useEffect(() => () => embedSession.dispose(windowId, trackId, instanceId), [windowId, trackId, instanceId]);
 
   const tall = source.provider === "spotify" && source.resourceType !== "track";
   const frameStyle = source.provider === "spotify"
@@ -77,8 +78,8 @@ export function ProviderPlayer({ source, title, windowId, trackId, onOpenOrigina
       )}
       <div className="music-embed-actions">
         {isActive
-          ? <button type="button" className="w98-btn" onClick={() => embedSession.dispose(windowId, trackId)}>關閉播放器</button>
-          : <button type="button" className="w98-btn primary" disabled={!src} onClick={() => embedSession.activate(windowId, trackId)}>載入 {label} 播放器</button>}
+          ? <button type="button" className="w98-btn" onClick={() => embedSession.dispose(windowId, trackId, instanceId)}>關閉播放器</button>
+          : <button type="button" className="w98-btn primary" disabled={!src} onClick={() => embedSession.activate(windowId, trackId, instanceId)}>載入 {label} 播放器</button>}
         <button type="button" className="w98-btn music-open" onClick={onOpenOriginal}>在 {label} 開啟 ↗</button>
       </div>
       <small className="music-embed-note">{NOTE[source.provider]}</small>
