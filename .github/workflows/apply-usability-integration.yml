@@ -1,0 +1,143 @@
+name: Apply usability integration
+
+on:
+  push:
+    branches:
+      - integration/merge-usability-probe
+    paths:
+      - .github/workflows/apply-usability-integration.yml
+      - .integration/usability-resolution.patch.gz.b64.part*
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-retro-usability-integration
+  cancel-in-progress: false
+
+jobs:
+  merge-verify-and-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      EXPECTED_CANDIDATE: 61aa099fd78204e15d9968f8d47d73addcf6a364
+      EXPECTED_SOURCE: 3cbfc2c9f2e4e4927c1300381a2ba3e5b4ee10ef
+      PROBE_REF: integration/merge-usability-probe
+    steps:
+      - name: Check out the pinned candidate
+        uses: actions/checkout@v4
+        with:
+          ref: integration/retro-usability-release
+          fetch-depth: 0
+
+      - name: Recreate and resolve the real three-way merge
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin \
+            +refs/heads/integration/retro-usability-release:refs/remotes/origin/integration/retro-usability-release \
+            +refs/heads/claude/usability-batch1:refs/remotes/origin/claude/usability-batch1 \
+            +refs/heads/${PROBE_REF}:refs/remotes/origin/${PROBE_REF}
+
+          test "$(git rev-parse HEAD)" = "$EXPECTED_CANDIDATE"
+          test "$(git rev-parse refs/remotes/origin/claude/usability-batch1)" = "$EXPECTED_SOURCE"
+          test "$(git rev-parse refs/remotes/origin/integration/retro-usability-release)" = "$EXPECTED_CANDIDATE"
+
+          for part in 01 02 03; do
+            git show "refs/remotes/origin/${PROBE_REF}:.integration/usability-resolution.patch.gz.b64.part${part}"
+          done > "$RUNNER_TEMP/usability-resolution.patch.gz.b64"
+          base64 --decode "$RUNNER_TEMP/usability-resolution.patch.gz.b64" > "$RUNNER_TEMP/usability-resolution.patch.gz"
+          gzip -dc "$RUNNER_TEMP/usability-resolution.patch.gz" > "$RUNNER_TEMP/usability-resolution.patch"
+          sha256sum "$RUNNER_TEMP/usability-resolution.patch" | tee "$RUNNER_TEMP/resolution-sha256.txt"
+
+          git config user.name "Retro integration"
+          git config user.email "actions@users.noreply.github.com"
+          set +e
+          git merge --no-commit --no-ff "$EXPECTED_SOURCE"
+          merge_status=$?
+          set -e
+          test "$merge_status" -eq 1
+          test "$(git rev-parse MERGE_HEAD)" = "$EXPECTED_SOURCE"
+
+          patch --batch --forward -p1 < "$RUNNER_TEMP/usability-resolution.patch"
+          git add -A
+
+          if test -n "$(git ls-files -u)"; then
+            echo "Unresolved merge entries remain" >&2
+            git ls-files -u
+            exit 1
+          fi
+          if git grep -n -E '^(<<<<<<< |=======|>>>>>>> )' -- .; then
+            echo "Conflict markers remain" >&2
+            exit 1
+          fi
+          git diff --cached --check
+
+          mkdir -p "$RUNNER_TEMP/integration-evidence"
+          git status --short | tee "$RUNNER_TEMP/integration-evidence/status-before-commit.txt"
+          git diff --cached --stat | tee "$RUNNER_TEMP/integration-evidence/merge-stat.txt"
+          cp "$RUNNER_TEMP/resolution-sha256.txt" "$RUNNER_TEMP/integration-evidence/"
+
+          git commit -m "chore(integration): merge usability batch 1"
+          final_sha="$(git rev-parse HEAD)"
+          parents="$(git show -s --format=%P HEAD)"
+          test "$parents" = "$EXPECTED_CANDIDATE $EXPECTED_SOURCE"
+          printf 'final_sha=%s\nparents=%s\n' "$final_sha" "$parents" | tee "$RUNNER_TEMP/integration-evidence/commit.txt"
+          echo "FINAL_SHA=$final_sha" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.3
+
+      - name: Enable pnpm
+        run: corepack enable && corepack prepare pnpm@10.18.2 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium webkit
+
+      - name: Run integration-boundary tests first
+        run: >-
+          pnpm exec playwright test
+          tests/e2e/media-tasks.spec.ts
+          tests/e2e/editor-media.spec.ts
+          tests/e2e/gallery-lightbox.spec.ts
+          tests/e2e/icon-picker.spec.ts
+          tests/e2e/explorer.spec.ts
+          tests/e2e/music-sources.spec.ts
+          tests/e2e/about-links-ux.spec.ts
+
+      - name: Lint the exact final commit
+        run: pnpm lint
+
+      - name: Complete contributor gate on the same commit
+        run: pnpm verify:contributor
+
+      - name: WindowChrome Chromium baselines
+        run: pnpm exec playwright test --config=playwright.chrome.config.ts --project=chrome-linux --workers=1
+
+      - name: WindowChrome WebKit smoke
+        run: pnpm exec playwright test --config=playwright.chrome.config.ts --project=chrome-webkit --workers=1
+
+      - name: Fast-forward the candidate branch under lease
+        shell: bash
+        run: |
+          set -euo pipefail
+          remote_head="$(git ls-remote origin refs/heads/integration/retro-usability-release | cut -f1)"
+          test "$remote_head" = "$EXPECTED_CANDIDATE"
+          test "$(git rev-parse HEAD)" = "$FINAL_SHA"
+          git push origin HEAD:refs/heads/integration/retro-usability-release
+
+      - name: Upload merge and Playwright evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: usability-integration-${{ env.FINAL_SHA || github.sha }}
+          path: |
+            ${{ runner.temp }}/integration-evidence
+            playwright-report
+            test-results
+          if-no-files-found: ignore
+          retention-days: 7
