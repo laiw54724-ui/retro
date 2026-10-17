@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { parseSiteDocument, validateSiteDocumentScope, type VersionedSiteDocument } from "./site-versioning";
+import { migrateSiteDocumentV2, parseSiteDocument, validateSiteDocumentScope, type VersionedSiteDocument } from "./site-versioning";
 import { projectPublicSiteDocument } from "./public-projection";
 
 export const EXPORT_SITE_ID = "export:site";
@@ -109,8 +109,8 @@ export function createRetroExport(input: { scope: "public" | "owner-backup"; sit
   const stripped = cloneWithoutRawAuthoringUrls(projected.document);
   const diagnostics = sensitiveStrings(stripped);
   if (diagnostics.length) return { ok: false, code: "sensitive_content", diagnostics };
-  const exportedDocument = stripped.schemaVersion === 2 ? remapDocumentSiteId(stripped, input.siteId, EXPORT_SITE_ID) : stripped;
-  const scopeDiagnostics = exportedDocument.schemaVersion === 2 ? validateSiteDocumentScope(exportedDocument, EXPORT_SITE_ID) : [];
+  const exportedDocument = remapDocumentSiteId(stripped, input.siteId, EXPORT_SITE_ID);
+  const scopeDiagnostics = validateSiteDocumentScope(exportedDocument, EXPORT_SITE_ID);
   if (scopeDiagnostics.length) return { ok: false, code: "invalid_document", diagnostics: scopeDiagnostics.map((item) => ({ path: pointer(item.path), message: item.message })) };
   const mediaManifest = collectMedia(exportedDocument);
   const value = {
@@ -129,9 +129,26 @@ export function createRetroExport(input: { scope: "public" | "owner-backup"; sit
 export function inspectRetroImport(raw: unknown): { ok: true; value: RetroExportPackage; preview: ImportPreview } | { ok: false; code: "unsupported_format" | "invalid_package"; diagnostics: TransferDiagnostic[] } {
   const parsed = RetroExportPackageSchema.safeParse(raw);
   if (!parsed.success) return { ok: false, code: "unsupported_format", diagnostics: parsed.error.issues.slice(0, 20).map((item) => ({ path: pointer(item.path.map((part) => typeof part === "symbol" ? String(part) : part)), message: item.message })) };
-  const document = parseSiteDocument(parsed.data.document);
+  let document = parseSiteDocument(parsed.data.document);
   if (!document.ok) return { ok: false, code: "invalid_package", diagnostics: [{ path: "/document", message: "Exported document is invalid or unsupported" }] };
-  const scopeDiagnostics = document.version === 2 ? validateSiteDocumentScope(document.document, EXPORT_SITE_ID) : [];
+  // Older v1 exporters left one source-site scope on local Explorer/music refs.
+  // Repair only a single coherent scope whose targets survive semantic migration.
+  // Mixed scopes or dangling targets are rejected, never silently removed.
+  if (document.version === 1) {
+    const scopes = new Set<string>();
+    for (const window of document.document.windows) {
+      if (window.type === "explorer") for (const shortcut of window.content.shortcuts) scopes.add(shortcut.target.siteId);
+      if (window.type === "music") for (const track of window.content.tracks) if (track.characterRef) scopes.add(track.characterRef.siteId);
+    }
+    const oldScope = [...scopes][0];
+    if (scopes.size === 1 && oldScope !== EXPORT_SITE_ID) {
+      const candidate = remapDocumentSiteId(document.document, oldScope, EXPORT_SITE_ID);
+      const semantic = migrateSiteDocumentV2(candidate, { siteId: EXPORT_SITE_ID });
+      if (!semantic.ok) return { ok: false, code: "invalid_package", diagnostics: [{ path: "/document/windows", message: "Legacy references cannot be safely remapped; repair the targets and export again." }] };
+      document = { ...document, document: candidate };
+    }
+  }
+  const scopeDiagnostics = validateSiteDocumentScope(document.document, EXPORT_SITE_ID);
   if (scopeDiagnostics.length) return { ok: false, code: "invalid_package", diagnostics: scopeDiagnostics.slice(0, 20).map((item) => ({ path: pointer(item.path), message: item.message })) };
   const value = { ...parsed.data, document: document.document } as RetroExportPackage;
   return {

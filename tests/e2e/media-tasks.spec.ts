@@ -145,7 +145,9 @@ test("five-file batch keeps four successes, retries only the failure in its sele
   await expect(publicGallery.locator(".gal-item")).toHaveCount(5);
   await expect(publicGallery.locator(".gal-item").nth(2).locator("img")).toHaveAttribute("alt", "獨立替代文字");
   await publicGallery.getByRole("button", { name: "放大 3", exact: true }).click();
-  await expect(publicGallery.getByRole("dialog", { name: "圖片檢視" })).toContainText("成功項的說明保留");
+  const lightbox = page.getByRole("dialog", { name: "圖片檢視" });
+  await expect(lightbox).toContainText("成功項的說明保留");
+  await expect(lightbox.locator("img")).toHaveAttribute("alt", "獨立替代文字");
 });
 
 test("switching to another gallery does not redirect a late upload or overwrite its data", async ({ page }) => {
@@ -175,17 +177,49 @@ test("undo while upload is in flight discards its late result without replaying 
   expect(site.images()).toHaveLength(0);
 });
 
-test("window icon uploads remain attached to the original window when the inspector is reused", async ({ page }) => {
+test("window icon upload changes only its original window after explicit preview and apply", async ({ page }) => {
   const site = await mockMedia(page, { hold: "icon.png" });
+  const originalOtherIcon = site.saved().windows.find((window) => window.id === "gallery-b")!.icon;
   await page.getByRole("tab", { name: "圖示", exact: true }).click();
   const inspector = page.getByRole("complementary", { name: "屬性面板" });
-  await inspector.getByLabel("上傳單張…", { exact: true }).setInputFiles(pickedFile("icon.png"));
+  await inspector.getByRole("button", { name: "更換圖示…", exact: true }).click();
+  let dialog = page.getByRole("dialog", { name: "選擇圖示" });
+  await dialog.getByLabel("上傳單張…", { exact: true }).setInputFiles(pickedFile("icon.png"));
   await expect.poll(() => site.calls).toEqual(["icon.png"]);
-  await page.locator(".task-items").getByRole("button", { name: "Gallery B", exact: true }).click();
-  await inspector.getByRole("button", { name: "圖示 folder", exact: true }).click();
   site.release("icon.png");
+  await expect(dialog.locator('[data-upload-state="completed"]')).toHaveCount(1);
+  await expect(dialog.getByText("已上傳並選取圖示，按「套用」後生效", { exact: true })).toBeVisible();
+  expect(site.saved().windows.find((window) => window.id === "gallery-a")!.icon).not.toMatch(/^retro-asset:/);
+  await dialog.getByRole("button", { name: "套用", exact: true }).click();
   await expect.poll(() => site.saved().windows.find((window) => window.id === "gallery-a")?.icon).toMatch(/^retro-asset:/);
+
+  await page.locator(".task-items").getByRole("button", { name: "Gallery B", exact: true }).click();
+  await inspector.getByRole("button", { name: "更換圖示…", exact: true }).click();
+  dialog = page.getByRole("dialog", { name: "選擇圖示" });
+  await dialog.getByRole("button", { name: "資料夾（內建）", exact: true }).click();
+  await dialog.getByRole("button", { name: "套用", exact: true }).click();
   expect(site.saved().windows.find((window) => window.id === "gallery-b")?.icon).toBe("folder");
+  expect(site.saved().windows.find((window) => window.id === "gallery-b")?.icon).not.toBe(originalOtherIcon);
+  expect(site.saved().windows.find((window) => window.id === "gallery-a")?.icon).toMatch(/^retro-asset:/);
+});
+
+test("closing the icon picker discards an in-flight result before another window is selected", async ({ page }) => {
+  const site = await mockMedia(page, { hold: "icon.png" });
+  const originalA = site.saved().windows.find((window) => window.id === "gallery-a")!.icon;
+  const originalB = site.saved().windows.find((window) => window.id === "gallery-b")!.icon;
+  await page.getByRole("tab", { name: "圖示", exact: true }).click();
+  const inspector = page.getByRole("complementary", { name: "屬性面板" });
+  await inspector.getByRole("button", { name: "更換圖示…", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "選擇圖示" });
+  await dialog.getByLabel("上傳單張…", { exact: true }).setInputFiles(pickedFile("icon.png"));
+  await expect.poll(() => site.calls).toEqual(["icon.png"]);
+  await dialog.getByRole("button", { name: "取消", exact: true }).click();
+  await expect(dialog).toBeHidden();
+  await page.locator(".task-items").getByRole("button", { name: "Gallery B", exact: true }).click();
+  site.release("icon.png");
+  await expect.poll(() => site.assets.length).toBe(1);
+  expect(site.saved().windows.find((window) => window.id === "gallery-a")?.icon).toBe(originalA);
+  expect(site.saved().windows.find((window) => window.id === "gallery-b")?.icon).toBe(originalB);
 });
 
 test("retrying an earlier image cannot unmount the currently edited image URL", async ({ page }) => {
@@ -288,12 +322,16 @@ test("explicitly reselecting the current icon supersedes a pending upload", asyn
   const originalIcon = site.saved().windows.find((window) => window.id === "gallery-a")!.icon;
   await page.getByRole("tab", { name: "圖示", exact: true }).click();
   const inspector = page.getByRole("complementary", { name: "屬性面板" });
-  await inspector.getByLabel("上傳單張…", { exact: true }).setInputFiles(pickedFile("icon.png"));
+  await inspector.getByRole("button", { name: "更換圖示…", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "選擇圖示" });
+  await dialog.getByLabel("上傳單張…", { exact: true }).setInputFiles(pickedFile("icon.png"));
   await expect.poll(() => site.calls).toEqual(["icon.png"]);
-  await inspector.locator('.icon-grid button[aria-pressed="true"]').click();
-  await expect(inspector.locator('[data-upload-state="failed"]')).toContainText("已選擇其他圖示");
+  await dialog.locator(`.ilib-grid [data-icon="${originalIcon}"]`).click();
+  await expect(dialog.locator('[data-upload-state="failed"]')).toContainText("已選擇其他圖示");
   site.release("icon.png");
   await expect.poll(() => site.assets.length).toBe(1);
+  await expect(dialog.getByRole("button", { name: "套用", exact: true })).toBeDisabled();
+  await dialog.getByRole("button", { name: "取消", exact: true }).click();
   expect(site.saved().windows.find((window) => window.id === "gallery-a")!.icon).toBe(originalIcon);
 });
 

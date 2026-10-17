@@ -4,9 +4,8 @@ on:
   push:
     branches:
       - integration/retro-usability-release
-  pull_request:
-    branches:
-      - main
+      - integration/retro-q0-validation
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -22,7 +21,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.sha }}
           fetch-depth: 0
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:
@@ -37,17 +38,43 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium webkit
 
+      - name: Record exact source identity
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          mkdir -p .candidate-evidence
+          { git rev-parse HEAD; git rev-parse HEAD^{tree}; sha256sum pnpm-lock.yaml; node --version; pnpm --version; pnpm exec playwright --version; } | tee .candidate-evidence/identity.txt
+
       - name: Lint the final commit
-        run: pnpm lint
+        run: |
+          set -euo pipefail
+          pnpm lint 2>&1 | tee .candidate-evidence/lint.log
 
       - name: Complete contributor gate on the same commit
-        run: pnpm verify:contributor
+        run: |
+          set -euo pipefail
+          trap 'if [ -d test-results ]; then cp -a test-results .candidate-evidence/contributor-test-results; fi' EXIT
+          pnpm verify:contributor 2>&1 | tee .candidate-evidence/contributor.log
 
       - name: Window chrome Chromium baselines
-        run: pnpm exec playwright test --config=playwright.chrome.config.ts --project=chrome-linux --workers=1
+        run: |
+          set -euo pipefail
+          pnpm exec playwright test --config=playwright.chrome.config.ts --project=chrome-linux --workers=1 2>&1 | tee .candidate-evidence/chrome-linux.log
 
       - name: Window chrome WebKit smoke
-        run: pnpm exec playwright test --config=playwright.chrome.config.ts --project=chrome-webkit --workers=1
+        run: |
+          set -euo pipefail
+          pnpm exec playwright test --config=playwright.chrome.config.ts --project=chrome-webkit --workers=1 2>&1 | tee .candidate-evidence/chrome-webkit.log
+
+      - name: Confirm unchanged source
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          git diff --exit-code
+          git diff --cached --exit-code
 
       - name: Upload Playwright diagnostics
         if: always()
@@ -55,7 +82,9 @@ jobs:
         with:
           name: integration-candidate-playwright-${{ github.sha }}
           path: |
+            .candidate-evidence
             playwright-report
             test-results
-          if-no-files-found: ignore
+          include-hidden-files: true
+          if-no-files-found: error
           retention-days: 7

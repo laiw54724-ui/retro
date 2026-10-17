@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { loadVersionedSiteDocument, makeWindow, normalizeDocument, projectPublicSiteDocument, projectV2ToLegacyDocument, ProfileEntityV2Schema, type ProfileEntityV2, type SiteDocument, type SiteDocumentV2 } from "@retrodesk/shared";
 import { Navigate, useParams } from "react-router-dom";
 import { api } from "../lib/api";
+import { useMobileViewport } from "../lib/useMobileViewport";
 import { useThemeView } from "../lib/themeView";
 import { MobileScreen } from "../features/site/MobileScreen";
 import { VisitorDesktop } from "../features/site/VisitorDesktop";
@@ -30,7 +31,7 @@ export function PublicSitePage() {
         let publicV2: SiteDocumentV2 | null = null;
         if (loaded.version === 1 && (profileId || postId)) throw new Error("找不到公開內容");
         if (loaded.version === 2) {
-          const scope = loaded.document.entities.profiles[0]?.siteId ?? loaded.document.windows.find((window) => window.type === "instagram")?.content.profileRef.siteId ?? "public-site";
+          const scope = loaded.document.entities.profiles[0]?.siteId ?? loaded.document.windows.find((window) => window.type === "instagram")?.content.profileRef.siteId ?? loaded.document.windows.flatMap((window) => window.type === "explorer" ? window.content.shortcuts : [])[0]?.target.siteId ?? "public-site";
           const projected = projectPublicSiteDocument(loaded.document, scope);
           if (!projected.ok || projected.version !== 2 || projected.document.schemaVersion !== 2) throw new Error("公開角色投影無效");
           publicV2 = projected.document;
@@ -81,6 +82,7 @@ export function PublicSitePage() {
 }
 
 function PublishedDesktop({ document, profiles, profileIdsByWindow, profileDirectory, initialTarget, shareBaseUrl, siteHandle }: { document: SiteDocument; profiles: ProfileEntityV2[]; profileIdsByWindow: Record<string, string>; profileDirectory: ReturnType<typeof buildProfileDirectory>; initialTarget: { windowId: string; postId?: string } | null; shareBaseUrl: string; siteHandle: string }) {
+  const mobile = useMobileViewport();
   const theme = document.theme;
   const tv = useThemeView(theme);
   const imageWallpaper = theme.pattern === "image" && !!theme.wallImage;
@@ -95,9 +97,11 @@ function PublishedDesktop({ document, profiles, profileIdsByWindow, profileDirec
         backgroundRepeat: imageWallpaper ? "no-repeat" : "repeat"
       }}
     >
-      <VisitorDesktop document={document} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialOpenId={initialTarget?.windowId} initialPostId={initialTarget?.postId} publicShareBaseUrl={shareBaseUrl} siteHandle={siteHandle} />
-
-      <MobileScreen document={document} mode="visitor" profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialOpenId={initialTarget?.windowId} initialPostId={initialTarget?.postId} publicShareBaseUrl={shareBaseUrl} siteHandle={siteHandle} />
+      {mobile ? (
+        <MobileScreen document={document} mode="visitor" profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialOpenId={initialTarget?.windowId} initialPostId={initialTarget?.postId} publicShareBaseUrl={shareBaseUrl} siteHandle={siteHandle} />
+      ) : (
+        <VisitorDesktop document={document} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialOpenId={initialTarget?.windowId} initialPostId={initialTarget?.postId} publicShareBaseUrl={shareBaseUrl} siteHandle={siteHandle} />
+      )}
     </main>
   );
 }

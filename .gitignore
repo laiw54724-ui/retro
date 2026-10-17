@@ -21,3 +21,4 @@ supabase/.temp/
 # MIT source distribution or default build.
 apps/web/public/windows-icons/
 apps/web/public/win98-icons/
+tests/tmp/

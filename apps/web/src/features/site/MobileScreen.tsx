@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { type CollectionEntityV2, type DesktopWindow, type PostEntityV2, type ProfileEntityV2, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
+import { makeWindow, type CollectionEntityV2, type DesktopWindow, type PostEntityV2, type ProfileEntityV2, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { IconPicker } from "../modules/links/IconPicker";
 import { useThemeView } from "../../lib/themeView";
@@ -12,7 +12,8 @@ import { moduleDefinitions } from "../modules/registry";
 import { useEditorStore } from "../editor/store";
 import { WindowRenderer } from "./WindowRenderer";
 import type { ProfileDirectoryEntry } from "../modules/types";
-import { musicPlayback, useMusicPlayback } from "../modules/music/audioCoordinator";
+import { useMusicPlayback } from "../modules/music/audioCoordinator";
+import { stopAllMedia, stopWindowMedia } from "../modules/music/mediaSession";
 
 type Sheet = "add" | "edit" | "theme" | null;
 
@@ -60,9 +61,9 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const openWindow = ordered.find((window) => window.id === openId) ?? null;
   const selected = document.windows.find((window) => window.id === store.selectedId) ?? null;
 
-  useEffect(() => () => musicPlayback.stopAll(), []);
-  const open = (id: string) => { if (openId && openId !== id) musicPlayback.stopWindow(openId); setOpenId(id); setInlineEdit(false); if (editor) store.select(id); };
-  const back = () => { const closingId = openId; if (closingId) musicPlayback.stopWindow(closingId); setOpenId(null); setInlineEdit(false); if (closingId) requestAnimationFrame(() => iconRefs.current.get(closingId)?.focus()); };
+  useEffect(() => () => stopAllMedia(), []);
+  const open = (id: string) => { if (openId && openId !== id) stopWindowMedia(openId); setOpenId(id); setInlineEdit(false); if (editor) store.select(id); };
+  const back = () => { const closingId = openId; if (closingId) stopWindowMedia(closingId); setOpenId(null); setInlineEdit(false); if (closingId) requestAnimationFrame(() => iconRefs.current.get(closingId)?.focus()); };
   useEffect(() => {
     if (!openId) return;
     const escape = (event: KeyboardEvent) => { if (event.key === "Escape") back(); };
@@ -204,7 +205,7 @@ function MobileEdit({ theme, window, count, siteId, upload }: { theme: SiteDocum
       <WindowChromeEditor theme={theme} window={window} onChange={(chrome) => patch({ chrome })} />
       <WindowAppearanceEditor theme={theme} window={window} onChange={(appearance, historyKey) => patch({ appearance }, historyKey)} />
       <span className="w98-hint">圖示</span>
-      <IconPicker key={window.id} siteId={siteId} value={window.icon} upload={upload} mediaTarget={{ windowId: window.id, windowType: window.type }} size={28} onChange={(icon) => patch({ icon })} />
+      <IconPicker key={window.id} siteId={siteId} value={window.icon} upload={upload} mediaTarget={{ windowId: window.id, windowType: window.type }} size={28} label={window.title} defaultValue={makeWindow(window.type).icon} onChange={(icon) => patch({ icon })} />
       <label className="check-row m-check"><input type="checkbox" checked={window.defaultOpen} onChange={(event) => patch({ defaultOpen: event.target.checked })} />訪客進站時自動開啟</label>
       <div className="m-actions">
         <button type="button" className="w98-btn" disabled={window.layout.mobile.order === 0} onClick={() => store.reorderMobile(window.id, -1)}>▲ 圖示往前</button>

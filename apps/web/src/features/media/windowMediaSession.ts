@@ -2,7 +2,7 @@ import type { DesktopWindow, SiteDocument, SiteDocumentV2Input } from "@retrodes
 import type { WindowOf } from "../modules/types";
 import { UploadTaskQueue, type UploadKind } from "./uploadTasks";
 
-type EditorSnapshot = {
+export type EditorSnapshot = {
   siteId: string | null;
   accessRole: "owner" | "editor" | "viewer";
   document: SiteDocument | null;
@@ -60,6 +60,16 @@ export function enqueueWindowUpload<T extends DesktopWindow["type"]>(queue: Uplo
   });
 }
 
+/** History travel and reload end a media-editing epoch, even if values happen to match. */
+export function didMediaHistoryChange(state: EditorSnapshot, previous: EditorSnapshot): boolean {
+  const undo = state.past.length < previous.past.length;
+  const redo = state.future.length < previous.future.length && previous.future.length > 0 &&
+    (state.document === previous.future[0] || (!!state.versionedDocument && state.versionedDocument === previous.versionedFuture[0]));
+  const reload = state.document === state.lastSavedDocument && state.versionedDocument === null &&
+    state.saveStatus === "saved" && state.past.length === 0 && state.past !== previous.past;
+  return undo || redo || reload;
+}
+
 /** Invalidate pending work on history travel/reload, without changing history or
  * storing queue metadata. Ordinary typing, focus changes and autosaves continue. */
 export function observeEditorMedia(queue: UploadTaskQueue, store: MediaEditorStore, siteId: string) {
@@ -68,12 +78,7 @@ export function observeEditorMedia(queue: UploadTaskQueue, store: MediaEditorSto
       queue.invalidate("已離開原網站或失去編輯權限，未套用這次上傳。");
       return;
     }
-    const undo = state.past.length < previous.past.length;
-    const redo = state.future.length < previous.future.length && previous.future.length > 0 &&
-      (state.document === previous.future[0] || (!!state.versionedDocument && state.versionedDocument === previous.versionedFuture[0]));
-    const reload = state.document === state.lastSavedDocument && state.versionedDocument === null &&
-      state.saveStatus === "saved" && state.past.length === 0 && state.past !== previous.past;
-    if (undo || redo || reload) {
+    if (didMediaHistoryChange(state, previous)) {
       queue.invalidate("已復原、重做或重新載入內容，未套用尚未完成的上傳。請重新選擇檔案。");
     } else {
       queue.invalidateStale();

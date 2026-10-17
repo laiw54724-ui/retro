@@ -13,3 +13,5 @@ export * from "./highlight-operations";
 export * from "./collection-operations";
 export * from "./social-selectors";
 export * from "./social-operations";
+export * from "./embed-provider";
+export * from "./explorer-integrity";

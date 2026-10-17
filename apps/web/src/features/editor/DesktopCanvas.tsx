@@ -7,7 +7,8 @@ import { WindowRenderer } from "../site/WindowRenderer";
 import { DesktopTaskbar } from "../site/DesktopTaskbar";
 import { useEditorStore } from "./store";
 import type { ProfileDirectoryEntry } from "../modules/types";
-import { musicPlayback, useMusicPlayback } from "../modules/music/audioCoordinator";
+import { useMusicPlayback } from "../modules/music/audioCoordinator";
+import { stopAllMedia, stopWindowMedia } from "../modules/music/mediaSession";
 import styles from "./DesktopCanvas.module.css";
 
 const TASKBAR_H = 36;
@@ -86,7 +87,7 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
     return () => globalThis.removeEventListener("keydown", onKey);
   }, [store]);
 
-  useEffect(() => () => musicPlayback.stopAll(), []);
+  useEffect(() => () => stopAllMedia(), []);
 
   // ----- window gestures -----
   function windowPointerDown(event: PointerEvent<HTMLDivElement>, win: DesktopWindow) {
@@ -272,9 +273,9 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
               active={isSel || layout.z === topZ}
               interactiveControls
               maximized={maximized}
-              onMinimize={() => { musicPlayback.stopWindow(win.id); store().setViewState(win.id, "min"); }}
+              onMinimize={() => { stopWindowMedia(win.id); store().setViewState(win.id, "min"); }}
               onMaximize={() => store().setViewState(win.id, maximized ? null : "max")}
-              onClose={() => { musicPlayback.stopWindow(win.id); store().setViewState(win.id, "closed"); }}
+              onClose={() => { stopWindowMedia(win.id); store().setViewState(win.id, "closed"); }}
               titleBarProps={{ onDoubleClick: () => store().setViewState(win.id, maximized ? null : "max"), style: { cursor: layoutMode ? "move" : "default", touchAction: "none" } }}
               style={{ height: "100%" }}
               bodyStyle={{ padding: 0 }}

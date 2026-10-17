@@ -4,6 +4,7 @@ import {
   createStarterDocument,
   makeBlock,
   makeGalleryImage,
+  makeWindow,
   migrateSiteDocumentV2
 } from "@retrodesk/shared";
 
@@ -51,6 +52,15 @@ function mediaAndChromeV1() {
   documentWindow.chrome = WindowChromeSchema.parse({ preset: "classic-95", controls: ["close"] });
   documentWindow.content.blocks.push({ ...makeBlock("image"), alt: "Portrait alternative", caption: "Visible portrait caption" });
   galleryWindow.content.images.push(makeGalleryImage({ title: "Portrait", caption: "Visible gallery caption", alt: "Independent gallery alternative" }));
+  galleryWindow.icon = "haiku:folder";
+  const explorer = makeWindow("explorer", document.windows.length);
+  const music = makeWindow("music", document.windows.length + 1);
+  if (explorer.type !== "explorer" || music.type !== "music") throw new Error("integration fixture types");
+  explorer.content.folders = [{ id: "icons-folder", parentId: null, name: "Icons", icon: "pixelart:heart", order: 0, visibility: "published" }];
+  explorer.content.shortcuts = [{ id: "gallery-shortcut", parentId: "icons-folder", label: "Gallery", icon: "pixelarticons:image", order: 0, visibility: "published", target: { siteId: "site-a", id: galleryWindow.id, kind: "window" } }];
+  music.content.tracks = [{ id: "spotify-track", title: "Official player", artist: "", cover: null, coverUrl: "", lyrics: "", rightsNote: "", source: { kind: "providerEmbed", provider: "spotify", resourceType: "track", resourceId: "50q2aUjWoTn6CJIfSPRJQA", canonicalUrl: "https://open.spotify.com/track/50q2aUjWoTn6CJIfSPRJQA", originalUrl: "https://open.spotify.com/track/50q2aUjWoTn6CJIfSPRJQA" } }];
+  music.content.playlist.trackIds = ["spotify-track"];
+  document.windows.push(explorer, music);
   return document;
 }
 
@@ -120,6 +130,12 @@ describe("draft route semantic validation", () => {
       caption: "Visible gallery caption",
       alt: "Independent gallery alternative"
     });
+    expect(galleryWindow.icon).toBe("haiku:folder");
+    const explorer = saved.windows.find((window) => window.type === "explorer");
+    const music = saved.windows.find((window) => window.type === "music");
+    expect(explorer?.content.folders[0].icon).toBe("pixelart:heart");
+    expect(explorer?.content.shortcuts[0].icon).toBe("pixelarticons:image");
+    expect(music?.content.tracks[0].source).toMatchObject({ kind: "providerEmbed", provider: "spotify" });
   });
 
 });
