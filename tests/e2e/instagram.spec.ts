@@ -20,14 +20,14 @@ async function openEditor(page: Page, profile: Record<string, unknown> = {}) {
   // v1 fixtures trigger a one-time migration autosave. Wait for it before
   // interacting so the editor rerender cannot detach the Instagram dialog.
   await expect.poll(() => saves.at(-1)?.document.schemaVersion).toBe(2);
-  await expect(page.getByRole("status")).toHaveText("已儲存");
+  await expect(page.getByRole("status").filter({ hasText: /^已儲存$/ })).toBeVisible();
   return { win, saves };
 }
 
 test("edit tab changes the profile and the preview tab reflects it", async ({ page }) => {
   const { win, saves } = await openEditor(page);
   await expect(win.getByRole("tab", { name: "✎ 編輯內容" })).toHaveAttribute("aria-selected", "true");
-  await win.getByLabel("帳號", { exact: true }).fill("newname");
+  await win.getByRole("textbox", { name: "Handle", exact: true }).fill("newname");
   await win.getByRole("tab", { name: "▶ 預覽互動" }).click();
   await expect(win.locator(".ig-title strong")).toHaveText("newname");
   await expect.poll(() => saves.at(-1)?.document.entities?.profiles[0]?.handle).toBe("newname");
@@ -133,6 +133,7 @@ test("desktop Instagram window owns wheel and keyboard scrolling", async ({ page
 
 test("desktop Instagram editor owns wheel and keyboard scrolling", async ({ page }) => {
   const { win } = await openEditor(page);
+  await win.getByRole("tablist", { name: "OC 編輯分組" }).getByRole("tab", { name: "貼文", exact: true }).click();
   const scroll = win.locator(".ig-edit-scroll");
   await expect.poll(() => scroll.evaluate((node) => node.scrollHeight > node.clientHeight)).toBe(true);
 
@@ -162,12 +163,16 @@ test("Win98 keeps window chrome square and OC media circular", async ({ page }) 
 
 test("legacy Instagram defaults to Win98 and can switch to Modern", async ({ page }) => {
   const { win, saves } = await openEditor(page);
+  await win.getByRole("tablist", { name: "OC 編輯分組" }).getByRole("tab", { name: "外觀", exact: true }).click();
   await expect(win.getByRole("button", { name: "Win98" })).toHaveAttribute("aria-pressed", "true");
   await win.getByRole("tab", { name: "▶ 預覽互動" }).click();
   await expect(win.locator(".ig-app")).toHaveClass(/ig-skin-win98/);
   await expect(win.locator(".ig-title strong")).toHaveCSS("font-family", /Cubic 11/);
 
+  await win.getByRole("tab", { name: "✎ 編輯內容" }).click();
+  await win.getByRole("tablist", { name: "OC 編輯分組" }).getByRole("tab", { name: "外觀", exact: true }).click();
   await win.getByRole("button", { name: "現代" }).click();
+  await win.getByRole("tab", { name: "▶ 預覽互動" }).click();
   await expect(win.locator(".ig-app")).toHaveClass(/ig-skin-modern/);
   await expect.poll(() => saves.at(-1)?.document.windows[0]?.content.skin).toBe("modern");
 });
