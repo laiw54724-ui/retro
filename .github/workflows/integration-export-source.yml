@@ -1,0 +1,26 @@
+name: Integration source export
+
+on:
+  push:
+    branches:
+      - integration/retro-usability-release
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Pack checked-out source
+        run: tar --exclude=.git -czf retro-source.tgz .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: retro-integration-source
+          path: retro-source.tgz
+          if-no-files-found: error
+          retention-days: 1
