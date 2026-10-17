@@ -43,7 +43,7 @@ export type ImportPreview = {
 };
 
 const rawAuthoringKeys = new Set(["srcUrl", "avatarUrl", "coverUrl", "coverSrcUrl", "imageUrl", "iconUrl"]);
-const mediaKeys = new Set(["src", "avatar", "cover", "coverSrc", "image", "wallImage", "asset"]);
+const mediaKeys = new Set(["src", "avatar", "cover", "coverSrc", "image", "wallImage", "asset", "icon"]);
 const sensitiveQueryKeys = /^(?:token|access_token|auth|authorization|signature|sig|expires|policy|key-pair-id|x-amz-.+|x-goog-.+)$/i;
 const tokenShape = /(?:\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b|\bgh[pousr]_[A-Za-z0-9]{30,}\b|\bsb_secret_[A-Za-z0-9_-]{20,}\b)/;
 const pointer = (segments: Array<string | number>) => `/${segments.map((part) => String(part).replace(/~/g, "~0").replace(/\//g, "~1")).join("/")}`;
@@ -151,6 +151,12 @@ export function inspectRetroImport(raw: unknown): { ok: true; value: RetroExport
   const scopeDiagnostics = validateSiteDocumentScope(document.document, EXPORT_SITE_ID);
   if (scopeDiagnostics.length) return { ok: false, code: "invalid_package", diagnostics: scopeDiagnostics.slice(0, 20).map((item) => ({ path: pointer(item.path), message: item.message })) };
   const value = { ...parsed.data, document: document.document } as RetroExportPackage;
+  // A package manifest is descriptive metadata, not authority to omit warnings.
+  // Older exporters did not list uploaded icons; derive required re-upload notices
+  // from the validated document while preserving supplied provenance in the package.
+  const actualMedia = collectMedia(document.document);
+  const missingByPath = new Map([...parsed.data.mediaManifest.missing, ...actualMedia.missing]
+    .map((item) => [item.documentPath, item]));
   return {
     ok: true,
     value,
@@ -162,8 +168,8 @@ export function inspectRetroImport(raw: unknown): { ok: true; value: RetroExport
       windowCount: document.document.windows.length,
       profileCount: document.version === 2 ? document.document.entities.profiles.length : 0,
       postCount: document.version === 2 ? document.document.entities.posts.length : 0,
-      mediaCount: parsed.data.mediaManifest.items.length,
-      missingMedia: parsed.data.mediaManifest.missing,
+      mediaCount: actualMedia.items.length,
+      missingMedia: [...missingByPath.values()],
     },
   };
 }

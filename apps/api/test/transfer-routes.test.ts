@@ -89,6 +89,28 @@ describe("export and controlled import routes", () => {
     expect(migrateSiteDocumentV2(inserted?.draft_document, { siteId: inserted?.id })).toMatchObject({ ok: true });
   });
 
+  it("requires re-upload acknowledgement for private icons even when the package hides missing media", async () => {
+    const value = structuredClone(exported.value);
+    const reference = "retro-asset:22222222-2222-4222-8222-222222222222";
+    value.document.windows[0].icon = reference;
+    value.mediaManifest.items = [];
+    value.mediaManifest.missing = [];
+    const response = await jsonRequest("/imports/preview", value);
+    expect(response.status).toBe(200);
+    const preview = await response.json() as { digest: string; preview: { missingMedia: unknown[] } };
+    expect(preview.preview.missingMedia).toHaveLength(1);
+    const url = `/imports/confirm?digest=${preview.digest}&username=icon-copy&siteName=Icons`;
+    const denied = await jsonRequest(url, value);
+    expect(denied.status).toBe(409);
+    expect(await denied.json()).toMatchObject({ error: { code: "missing_media_confirmation" } });
+    expect(inserted).toBeNull();
+    const accepted = await jsonRequest(`${url}&allowMissingMedia=true`, value);
+    expect(accepted.status).toBe(201);
+    expect(inserted?.draft_document.windows[0].icon).toBe(reference);
+    // Confirmation acknowledges missing bytes; it never copies or publishes a private asset.
+    expect(inserted?.published_document).toBeUndefined();
+  });
+
   it("rejects archives and declared oversized bodies before parsing", async () => {
     const archive = await transfer.request("/imports/preview", { method: "POST", headers: { "Content-Type": "application/zip" }, body: "PK" }, env);
     expect(archive.status).toBe(415);

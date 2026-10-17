@@ -78,6 +78,12 @@ branch protection or deployment configuration was reset or overwritten.
 6. Retain #63 mobile sibling-FAB targeting and geometry assertions. Preserve
    existing tests while adjusting selectors to the actual portal/dialog layout.
 
+7. Uploaded window/link/Explorer icons are included in transfer media notices.
+   Import preview derives missing private bytes from the validated document, not
+   merely a user-supplied manifest. Older or edited manifests cannot omit the
+   required re-upload acknowledgement; supplied provenance remains unchanged and
+   no private asset bytes are copied or published by acknowledging the warning.
+
 ## Verification strategy and reproduction
 
 During development only focused typechecking, media/music/icon/reference tests

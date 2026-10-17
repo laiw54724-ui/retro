@@ -131,3 +131,42 @@ describe("legacy local-reference portability", () => {
     expect(inspectRetroImport(exported.value)).toMatchObject({ ok: false, code: "invalid_package" });
   });
 });
+
+
+describe("uploaded icon transfer notices", () => {
+  it.each([1, 2])("derives missing icon bytes from v%s data even when its manifest omits them", (version) => {
+    const legacy = createStarterDocument("Uploaded icons", "classic98", "blank");
+    const links = makeWindow("links", 0);
+    const explorer = makeWindow("explorer", 1);
+    if (links.type !== "links" || explorer.type !== "explorer") throw new Error("icon fixture types");
+    const privateIcon = "retro-asset:22222222-2222-4222-8222-222222222222";
+    links.icon = privateIcon;
+    links.content.links[0].icon = privateIcon;
+    explorer.content.folders = [
+      { id: "own", parentId: null, name: "Own icon", icon: privateIcon, order: 0, visibility: "published" },
+      { id: "bundled", parentId: null, name: "Bundled icon", icon: "haiku:folder", order: 1, visibility: "published" },
+    ];
+    legacy.windows = [links, explorer];
+    const migrated = migrateSiteDocumentV2(legacy, { siteId: "site-a" });
+    if (!migrated.ok) throw new Error("fixture migration");
+    const document = version === 1 ? legacy : migrated.document;
+    const exported = createRetroExport({ scope: "owner-backup", siteId: "site-a", username: "icons", siteName: "Icons", document });
+    if (!exported.ok) throw new Error("icon export");
+    expect(exported.value.mediaManifest.missing).toHaveLength(3);
+    expect(exported.value.mediaManifest.items.filter((item) => item.source === privateIcon)).toHaveLength(3);
+    expect(exported.value.mediaManifest.items.some((item) => item.source === "haiku:folder")).toBe(false);
+    const supplied = structuredClone(exported.value);
+    supplied.mediaManifest.items = [];
+    supplied.mediaManifest.missing = [];
+    const imported = inspectRetroImport(supplied);
+    if (!imported.ok) throw new Error("icon import");
+    expect(imported.preview.missingMedia.map((item) => item.documentPath).sort()).toEqual([
+      "/windows/0/content/links/0/icon", "/windows/0/icon", "/windows/1/content/folders/0/icon",
+    ]);
+    expect(imported.preview.mediaCount).toBe(3);
+    expect(imported.value.document).toEqual(exported.value.document);
+    // Do not mutate or erase the supplied provenance just to repair preview notices.
+    expect(imported.value.mediaManifest).toEqual(supplied.mediaManifest);
+    expect(supplied.mediaManifest.missing).toEqual([]);
+  });
+});
