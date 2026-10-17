@@ -58,7 +58,9 @@ jobs:
           test -z "$(git diff --name-only --diff-filter=U)"
           git commit -m "merge: integrate shared media editor and preserve gallery accessibility (#43, #47)"
 
-          gzip -dc .integration/final.patch.gz > "$RUNNER_TEMP/final.patch"
+          cat .integration/final.patch.gz.part-* > "$RUNNER_TEMP/final.patch.gz"
+          echo "34a69940da66b519900c3079c36429fe19f48faede9fd101d485f899e4ebd5db  $RUNNER_TEMP/final.patch.gz" | sha256sum --check -
+          gzip -dc "$RUNNER_TEMP/final.patch.gz" > "$RUNNER_TEMP/final.patch"
           git apply --index --3way "$RUNNER_TEMP/final.patch"
           rm -rf .integration .github/workflows/integration-assemble.yml
           git add -A
