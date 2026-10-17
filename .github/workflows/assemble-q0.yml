@@ -1,0 +1,123 @@
+name: Assemble reviewed Q0 candidate
+on:
+  push:
+    branches: [chore/retro-direct-workbench]
+    paths: [.github/workflows/assemble-q0.yml]
+permissions:
+  contents: write
+concurrency:
+  group: retro-direct-q0-assembly
+  cancel-in-progress: false
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PARENT: bdc50f55d2507dd9a734c0413e8e3fba45e8d013
+      SOURCE: 3cbfc2c9f2e4e4927c1300381a2ba3e5b4ee10ef
+      OVERLAY_REF: 39bcea65aa2bf23a3b928e9641cc1e35fa95440e
+      BASELINE_TREE: 472a6af10c7ce14af1df41176acb942a3ba574fc
+      REVIEWED_TREE: 489faa99673b4165bc522d995f19260264eb43ed
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify immutable review inputs
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/q0-input" "$RUNNER_TEMP/q0-evidence"
+          cp .integration/q0-code-*.patch .integration/q0-release-note.md "$RUNNER_TEMP/q0-input/"
+          # Repair one transport-only leading space on a patch header. The canonical
+          # checksum below still must match the exact locally reviewed patch bytes.
+          python3 - <<'PY'
+          import os, pathlib
+          p = pathlib.Path(os.environ['RUNNER_TEMP'])/'q0-input/q0-code-0.patch'
+          p.write_bytes(p.read_bytes().replace(b'\n diff --git ', b'\ndiff --git '))
+          PY
+          for part in 00 01 02 03 04; do
+            git show "$OVERLAY_REF:.integration/usability-resolution-overlay.tar.gz.b64.part$part"
+          done | base64 --decode > "$RUNNER_TEMP/q0-input/overlay.tar.gz"
+          cd "$RUNNER_TEMP/q0-input"
+          cat > SHA256SUMS <<'EOF'
+          81d5d2c033ba68f9ba0b4a4382c45292f50500b997977decff81ef0d5d5f0eb7  q0-code-0.patch
+          5aa036c9b2a05f87400731fde02e47959712ffdc5c21a9fa52cf665e5a827d13  q0-code-1.patch
+          8914346dfcef562a93fe134645ec27ae8ad43362b04b473c4837885420980fb6  q0-code-2.patch
+          14617d2d032d2b5b3c317a96b4087b44a6fdaac76e23623ea78d7b229c11c344  q0-release-note.md
+          a0c9e1b485ea6508c1945b83f449a65be3889b92c6e9c3a407cf419eb3432985  overlay.tar.gz
+          EOF
+          sha256sum --check SHA256SUMS | tee "$RUNNER_TEMP/q0-evidence/input-checksums.txt"
+      - name: Reproduce real merge in an independent worktree
+        run: |
+          set -euo pipefail
+          git config user.name 'Retro integration'
+          git config user.email 'integration@users.noreply.github.com'
+          git worktree add --detach "$RUNNER_TEMP/q0-candidate" "$PARENT"
+          cd "$RUNNER_TEMP/q0-candidate"
+          for ancestor in aa8b75a8a0b90ffc530b3b2d109804070f35d9d2 2fc71457e2ffab6dea9ec1d7e8b9c0e8c878bf2d 7998764bf4e4917d50a76ec8a44907a3b85da115; do git merge-base --is-ancestor "$ancestor" HEAD; done
+          for ancestor in d47e798bd6cc5bff8f8776748be663b32b058332 653357373e28dac518d7cb522b497c70cc2e2bc3; do git merge-base --is-ancestor "$ancestor" HEAD; git merge-base --is-ancestor "$ancestor" "$SOURCE"; done
+          set +e
+          git merge --no-commit --no-ff "$SOURCE"
+          result=$?
+          set -e
+          test "$result" -eq 1
+          test "$(git rev-parse MERGE_HEAD)" = "$SOURCE"
+          git diff --name-only --diff-filter=U | tee "$RUNNER_TEMP/q0-evidence/conflicts.txt"
+          python3 - <<'PY'
+          import os, pathlib, tarfile
+          allowed = [
+            'apps/web/src/features/editor/RightPanel.tsx',
+            'apps/web/src/features/modules/gallery/index.tsx',
+            'apps/web/src/features/modules/gallery/Lightbox.tsx',
+            'apps/web/src/features/modules/links/IconPicker.tsx',
+            'apps/web/src/features/modules/links/index.tsx',
+            'apps/web/src/features/site/MobileScreen.tsx',
+            'apps/web/src/features/site/VisitorDesktop.tsx',
+            'apps/web/src/pages/EditorPage.tsx',
+            'tests/e2e/editor-media.spec.ts',
+            'tests/e2e/explorer.spec.ts',
+            'tests/e2e/media-tasks.spec.ts',
+          ]
+          with tarfile.open(pathlib.Path(os.environ['RUNNER_TEMP'])/'q0-input/overlay.tar.gz') as archive:
+            for name in allowed:
+              member = archive.getmember(name)
+              if not member.isfile() or member.size > 1000000: raise RuntimeError('Unexpected overlay member')
+              data = archive.extractfile(member).read()
+              target = pathlib.Path(name)
+              target.parent.mkdir(parents=True, exist_ok=True)
+              target.write_bytes(data)
+          PY
+          git add -A
+          test -z "$(git ls-files -u)"
+          test "$(git write-tree)" = "$BASELINE_TREE"
+          for number in 0 1 2; do
+            git apply --index --check "$RUNNER_TEMP/q0-input/q0-code-$number.patch"
+            git apply --index "$RUNNER_TEMP/q0-input/q0-code-$number.patch"
+          done
+          cp "$RUNNER_TEMP/q0-input/q0-release-note.md" docs/releases/2026-10-17-retro-usability-release-candidate.md
+          git add docs/releases/2026-10-17-retro-usability-release-candidate.md
+          git diff --cached --check
+          test "$(git write-tree)" = "$REVIEWED_TREE"
+          git commit -m 'fix(integration): combine usability, media, chrome and safe session lifecycles'
+          test "$(git show -s --format=%P HEAD)" = "$PARENT $SOURCE"
+          { git rev-parse HEAD; git rev-parse HEAD^{tree}; git show -s --format=%P HEAD; } | tee "$RUNNER_TEMP/q0-evidence/identity.txt"
+          git diff --stat "$PARENT" HEAD > "$RUNNER_TEMP/q0-evidence/changes.txt"
+      - name: Publish only the new isolated candidate branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/q0-candidate"
+          test "$(git rev-parse HEAD^{tree})" = "$REVIEWED_TREE"
+          test -z "$(git ls-remote https://github.com/laiw54724-ui/retro.git refs/heads/integration/retro-q0-validation)"
+          header="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c "http.https://github.com/.extraheader=$header" push https://github.com/laiw54724-ui/retro.git HEAD:refs/heads/integration/retro-q0-validation
+          printf 'published=true\n' >> "$RUNNER_TEMP/q0-evidence/identity.txt"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: q0-assembly-identity
+          path: ${{ runner.temp }}/q0-evidence
+          if-no-files-found: error
+          retention-days: 7
