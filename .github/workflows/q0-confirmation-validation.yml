@@ -1,0 +1,111 @@
+name: Q0 confirmed deletion and final verification
+on:
+  push:
+    branches: [chore/retro-direct-workbench]
+    paths: [.github/workflows/q0-confirmation-validation.yml]
+permissions:
+  contents: read
+concurrency:
+  group: retro-q0-confirmation-validation
+  cancel-in-progress: false
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    outputs:
+      sha: ${{ steps.commit.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Apply only the reviewed three-file correction
+        id: commit
+        env:
+          EXPECTED_PARENT: 6d8247a0844a515190bb61f10e76c218188c7c49
+          EXPECTED_TREE: 5b784ad576960cbdb589914ec40489036e5c667c
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cp .integration/q0-confirmation.patch "$RUNNER_TEMP/q0-confirmation.patch"
+          printf 'cedc6a561b969308f43952f1018350fc71e2a6526d9f037f2449ab9e653aad0a  %s\n' "$RUNNER_TEMP/q0-confirmation.patch" | sha256sum --check
+          git worktree add --detach "$RUNNER_TEMP/q0-confirmed" "$EXPECTED_PARENT"
+          cd "$RUNNER_TEMP/q0-confirmed"
+          git apply --index --check "$RUNNER_TEMP/q0-confirmation.patch"
+          git apply --index "$RUNNER_TEMP/q0-confirmation.patch"
+          git diff --cached --check
+          test "$(git write-tree)" = "$EXPECTED_TREE"
+          git -c user.name='Retro integration' -c user.email='integration@users.noreply.github.com' commit -m 'fix(editor): require confirmation before removing referenced windows'
+          sha="$(git rev-parse HEAD)"
+          test "$(git show -s --format=%P HEAD)" = "$EXPECTED_PARENT"
+          test "$(git ls-remote https://github.com/laiw54724-ui/retro.git refs/heads/integration/retro-q0-validation | cut -f1)" = "$EXPECTED_PARENT"
+          header="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c "http.https://github.com/.extraheader=$header" push https://github.com/laiw54724-ui/retro.git HEAD:refs/heads/integration/retro-q0-validation
+          printf 'sha=%s\n' "$sha" >> "$GITHUB_OUTPUT"
+          printf 'Verified candidate SHA: %s\nVerified tree: %s\n' "$sha" "$EXPECTED_TREE"
+  verify:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.3
+      - name: Install frozen tooling and pinned browsers
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.18.2 --activate
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium webkit
+      - name: Record exact source identity
+        env:
+          EXPECTED_SHA: ${{ needs.prepare.outputs.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          mkdir -p .candidate-evidence
+          { git rev-parse HEAD; git rev-parse HEAD^{tree}; sha256sum pnpm-lock.yaml; node --version; pnpm --version; pnpm exec playwright --version; } | tee .candidate-evidence/identity.txt
+      - name: Lint the final commit
+        run: |
+          set -euo pipefail
+          pnpm lint 2>&1 | tee .candidate-evidence/lint.log
+      - name: Complete unchanged contributor gate
+        run: |
+          set -euo pipefail
+          trap 'if [ -d test-results ]; then cp -a test-results .candidate-evidence/contributor-test-results; fi' EXIT
+          pnpm verify:contributor 2>&1 | tee .candidate-evidence/contributor.log
+      - name: Linux WindowChrome unchanged baselines
+        run: |
+          set -euo pipefail
+          pnpm exec playwright test --config=playwright.chrome.config.ts --project=chrome-linux --workers=1 2>&1 | tee .candidate-evidence/chrome-linux.log
+      - name: WindowChrome WebKit smoke
+        run: |
+          set -euo pipefail
+          pnpm exec playwright test --config=playwright.chrome.config.ts --project=chrome-webkit --workers=1 2>&1 | tee .candidate-evidence/chrome-webkit.log
+      - name: Confirm source did not change
+        env:
+          EXPECTED_SHA: ${{ needs.prepare.outputs.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          git diff --exit-code
+          git diff --cached --exit-code
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: q0-confirmed-final-${{ needs.prepare.outputs.sha }}
+          path: |
+            .candidate-evidence
+            test-results
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
