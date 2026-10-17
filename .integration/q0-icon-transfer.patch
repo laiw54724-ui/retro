@@ -1,0 +1,134 @@
+diff --git a/apps/api/test/transfer-routes.test.ts b/apps/api/test/transfer-routes.test.ts
+index 578aa19..4a00185 100644
+--- a/apps/api/test/transfer-routes.test.ts
++++ b/apps/api/test/transfer-routes.test.ts
+@@ -89,6 +89,28 @@ describe("export and controlled import routes", () => {
+     expect(migrateSiteDocumentV2(inserted?.draft_document, { siteId: inserted?.id })).toMatchObject({ ok: true });
+   });
+ 
++  it("requires re-upload acknowledgement for private icons even when the package hides missing media", async () => {
++    const value = structuredClone(exported.value);
++    const reference = "retro-asset:22222222-2222-4222-8222-222222222222";
++    value.document.windows[0].icon = reference;
++    value.mediaManifest.items = [];
++    value.mediaManifest.missing = [];
++    const response = await jsonRequest("/imports/preview", value);
++    expect(response.status).toBe(200);
++    const preview = await response.json() as { digest: string; preview: { missingMedia: unknown[] } };
++    expect(preview.preview.missingMedia).toHaveLength(1);
++    const url = `/imports/confirm?digest=${preview.digest}&username=icon-copy&siteName=Icons`;
++    const denied = await jsonRequest(url, value);
++    expect(denied.status).toBe(409);
++    expect(await denied.json()).toMatchObject({ error: { code: "missing_media_confirmation" } });
++    expect(inserted).toBeNull();
++    const accepted = await jsonRequest(`${url}&allowMissingMedia=true`, value);
++    expect(accepted.status).toBe(201);
++    expect(inserted?.draft_document.windows[0].icon).toBe(reference);
++    // Confirmation acknowledges missing bytes; it never copies or publishes a private asset.
++    expect(inserted?.published_document).toBeUndefined();
++  });
++
+   it("rejects archives and declared oversized bodies before parsing", async () => {
+     const archive = await transfer.request("/imports/preview", { method: "POST", headers: { "Content-Type": "application/zip" }, body: "PK" }, env);
+     expect(archive.status).toBe(415);
+diff --git a/docs/releases/2026-10-17-retro-usability-release-candidate.md b/docs/releases/2026-10-17-retro-usability-release-candidate.md
+index 1e4513f..1fba4c5 100644
+--- a/docs/releases/2026-10-17-retro-usability-release-candidate.md
++++ b/docs/releases/2026-10-17-retro-usability-release-candidate.md
+@@ -78,6 +78,12 @@ branch protection or deployment configuration was reset or overwritten.
+ 6. Retain #63 mobile sibling-FAB targeting and geometry assertions. Preserve
+    existing tests while adjusting selectors to the actual portal/dialog layout.
+ 
++7. Uploaded window/link/Explorer icons are included in transfer media notices.
++   Import preview derives missing private bytes from the validated document, not
++   merely a user-supplied manifest. Older or edited manifests cannot omit the
++   required re-upload acknowledgement; supplied provenance remains unchanged and
++   no private asset bytes are copied or published by acknowledging the warning.
++
+ ## Verification strategy and reproduction
+ 
+ During development only focused typechecking, media/music/icon/reference tests
+diff --git a/packages/shared/src/site-transfer.ts b/packages/shared/src/site-transfer.ts
+index d9ac31e..d288096 100644
+--- a/packages/shared/src/site-transfer.ts
++++ b/packages/shared/src/site-transfer.ts
+@@ -43,7 +43,7 @@ export type ImportPreview = {
+ };
+ 
+ const rawAuthoringKeys = new Set(["srcUrl", "avatarUrl", "coverUrl", "coverSrcUrl", "imageUrl", "iconUrl"]);
+-const mediaKeys = new Set(["src", "avatar", "cover", "coverSrc", "image", "wallImage", "asset"]);
++const mediaKeys = new Set(["src", "avatar", "cover", "coverSrc", "image", "wallImage", "asset", "icon"]);
+ const sensitiveQueryKeys = /^(?:token|access_token|auth|authorization|signature|sig|expires|policy|key-pair-id|x-amz-.+|x-goog-.+)$/i;
+ const tokenShape = /(?:\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b|\bgh[pousr]_[A-Za-z0-9]{30,}\b|\bsb_secret_[A-Za-z0-9_-]{20,}\b)/;
+ const pointer = (segments: Array<string | number>) => `/${segments.map((part) => String(part).replace(/~/g, "~0").replace(/\//g, "~1")).join("/")}`;
+@@ -151,6 +151,12 @@ export function inspectRetroImport(raw: unknown): { ok: true; value: RetroExport
+   const scopeDiagnostics = validateSiteDocumentScope(document.document, EXPORT_SITE_ID);
+   if (scopeDiagnostics.length) return { ok: false, code: "invalid_package", diagnostics: scopeDiagnostics.slice(0, 20).map((item) => ({ path: pointer(item.path), message: item.message })) };
+   const value = { ...parsed.data, document: document.document } as RetroExportPackage;
++  // A package manifest is descriptive metadata, not authority to omit warnings.
++  // Older exporters did not list uploaded icons; derive required re-upload notices
++  // from the validated document while preserving supplied provenance in the package.
++  const actualMedia = collectMedia(document.document);
++  const missingByPath = new Map([...parsed.data.mediaManifest.missing, ...actualMedia.missing]
++    .map((item) => [item.documentPath, item]));
+   return {
+     ok: true,
+     value,
+@@ -162,8 +168,8 @@ export function inspectRetroImport(raw: unknown): { ok: true; value: RetroExport
+       windowCount: document.document.windows.length,
+       profileCount: document.version === 2 ? document.document.entities.profiles.length : 0,
+       postCount: document.version === 2 ? document.document.entities.posts.length : 0,
+-      mediaCount: parsed.data.mediaManifest.items.length,
+-      missingMedia: parsed.data.mediaManifest.missing,
++      mediaCount: actualMedia.items.length,
++      missingMedia: [...missingByPath.values()],
+     },
+   };
+ }
+diff --git a/packages/shared/test/site-transfer.test.ts b/packages/shared/test/site-transfer.test.ts
+index 1e80af0..38d01ff 100644
+--- a/packages/shared/test/site-transfer.test.ts
++++ b/packages/shared/test/site-transfer.test.ts
+@@ -131,3 +131,42 @@ describe("legacy local-reference portability", () => {
+     expect(inspectRetroImport(exported.value)).toMatchObject({ ok: false, code: "invalid_package" });
+   });
+ });
++
++
++describe("uploaded icon transfer notices", () => {
++  it.each([1, 2])("derives missing icon bytes from v%s data even when its manifest omits them", (version) => {
++    const legacy = createStarterDocument("Uploaded icons", "classic98", "blank");
++    const links = makeWindow("links", 0);
++    const explorer = makeWindow("explorer", 1);
++    if (links.type !== "links" || explorer.type !== "explorer") throw new Error("icon fixture types");
++    const privateIcon = "retro-asset:22222222-2222-4222-8222-222222222222";
++    links.icon = privateIcon;
++    links.content.links[0].icon = privateIcon;
++    explorer.content.folders = [
++      { id: "own", parentId: null, name: "Own icon", icon: privateIcon, order: 0, visibility: "published" },
++      { id: "bundled", parentId: null, name: "Bundled icon", icon: "haiku:folder", order: 1, visibility: "published" },
++    ];
++    legacy.windows = [links, explorer];
++    const migrated = migrateSiteDocumentV2(legacy, { siteId: "site-a" });
++    if (!migrated.ok) throw new Error("fixture migration");
++    const document = version === 1 ? legacy : migrated.document;
++    const exported = createRetroExport({ scope: "owner-backup", siteId: "site-a", username: "icons", siteName: "Icons", document });
++    if (!exported.ok) throw new Error("icon export");
++    expect(exported.value.mediaManifest.missing).toHaveLength(3);
++    expect(exported.value.mediaManifest.items.filter((item) => item.source === privateIcon)).toHaveLength(3);
++    expect(exported.value.mediaManifest.items.some((item) => item.source === "haiku:folder")).toBe(false);
++    const supplied = structuredClone(exported.value);
++    supplied.mediaManifest.items = [];
++    supplied.mediaManifest.missing = [];
++    const imported = inspectRetroImport(supplied);
++    if (!imported.ok) throw new Error("icon import");
++    expect(imported.preview.missingMedia.map((item) => item.documentPath).sort()).toEqual([
++      "/windows/0/content/links/0/icon", "/windows/0/icon", "/windows/1/content/folders/0/icon",
++    ]);
++    expect(imported.preview.mediaCount).toBe(3);
++    expect(imported.value.document).toEqual(exported.value.document);
++    // Do not mutate or erase the supplied provenance just to repair preview notices.
++    expect(imported.value.mediaManifest).toEqual(supplied.mediaManifest);
++    expect(supplied.mediaManifest.missing).toEqual([]);
++  });
++});
