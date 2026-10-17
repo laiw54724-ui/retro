@@ -1,0 +1,84 @@
+name: Staging readiness (read only)
+on:
+  push:
+    branches: [chore/retro-direct-workbench]
+    paths: [.github/workflows/staging-readiness.yml]
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: staging
+    steps:
+      - name: Check configured prerequisites without revealing credentials
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          API_ORIGIN: ${{ vars.API_URL }}
+          WEB_ORIGIN: ${{ vars.WEB_ORIGIN }}
+          AUTH_ORIGIN: ${{ vars.SUPABASE_URL }}
+          AUTH_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          missing=0
+          for name in CF_TOKEN CF_ACCOUNT API_ORIGIN WEB_ORIGIN AUTH_ORIGIN AUTH_KEY; do
+            if [ -z "${!name}" ]; then echo "::error::Staging prerequisite missing: $name"; missing=1; fi
+          done
+          test "$missing" -eq 0
+      - uses: actions/checkout@v4
+        with:
+          ref: bdc50f55d2507dd9a734c0413e8e3fba45e8d013
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.3
+      - name: Install frozen tooling
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.18.2 --activate
+          pnpm install --frozen-lockfile
+      - name: Read independent deployment versions
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: 'false'
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/staging-readiness"
+          pnpm --filter @retrodesk/api exec wrangler deployments list --env staging --json > "$RUNNER_TEMP/worker-deployments.json"
+          pnpm --filter @retrodesk/web exec wrangler pages deployment list --project-name retrodesk-staging --json > "$RUNNER_TEMP/pages-deployments.json"
+          node <<'JS'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const root = process.env.RUNNER_TEMP;
+          const worker = JSON.parse(fs.readFileSync(path.join(root,'worker-deployments.json'),'utf8'));
+          const pages = JSON.parse(fs.readFileSync(path.join(root,'pages-deployments.json'),'utf8'));
+          const selected = {checkedAt:new Date().toISOString(),worker:worker.map(x=>({id:x.id,created_on:x.created_on,source:x.source,versions:x.versions})),pages:pages.map(x=>({id:x.id,url:x.url,environment:x.environment,created_on:x.created_on,aliases:x.aliases,deployment_trigger:x.deployment_trigger?.metadata,latest_stage:x.latest_stage}))};
+          fs.writeFileSync(path.join(root,'staging-readiness','versions.json'),JSON.stringify(selected,null,2));
+          console.log(JSON.stringify(selected,null,2));
+          JS
+      - name: Read public web and API endpoints
+        env:
+          API_ORIGIN: ${{ vars.API_URL }}
+          WEB_ORIGIN: ${{ vars.WEB_ORIGIN }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/staging-readiness"
+          node -e 'for (const name of ["API_ORIGIN","WEB_ORIGIN"]) { const u=new URL(process.env[name]); if(u.protocol!=="https:"||u.username||u.password) throw new Error("Invalid configured origin"); }'
+          curl --fail --silent --show-error --max-time 30 --proto '=https' "${API_ORIGIN%/}/api/health" > "$RUNNER_TEMP/staging-readiness/health.json"
+          curl --fail --silent --show-error --max-time 30 --proto '=https' -D "$RUNNER_TEMP/web-headers.txt" "${WEB_ORIGIN%/}/" > "$RUNNER_TEMP/web.html"
+          node <<'JS'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const root = process.env.RUNNER_TEMP;
+          const html = fs.readFileSync(path.join(root,'web.html'),'utf8');
+          const headers = fs.readFileSync(path.join(root,'web-headers.txt'),'utf8').split(/\r?\n/).filter(x=>/^(HTTP\/|content-security-policy:|x-frame-options:|referrer-policy:|etag:)/i.test(x));
+          fs.writeFileSync(path.join(root,'staging-readiness','public.json'),JSON.stringify({checkedAt:new Date().toISOString(),webOrigin:process.env.WEB_ORIGIN,apiOrigin:process.env.API_ORIGIN,assets:[...html.matchAll(/(?:src|href)="(\/assets\/[^"<>]+)"/g)].map(x=>x[1]),headers},null,2));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: staging-readiness-no-deployment
+          path: ${{ runner.temp }}/staging-readiness
+          if-no-files-found: ignore
+          retention-days: 7
