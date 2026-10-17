@@ -93,7 +93,8 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
       ...entry.posts.map((post) => ({ kind: "post" as const, id: post.id, label: `${entry.profile.name || entry.profile.username}：${post.title || post.caption || post.id}`, group: "貼文" }))
     ])
   ], [ctx.windows, ctx.profileDirectory, window.id]);
-  const canVerify = { window: true, profile: !!ctx.profileDirectory, post: !!ctx.profileDirectory };
+  // Only call a shortcut broken when the host actually told us what exists; otherwise we cannot know.
+  const canVerify = { window: ctx.windows.length > 0, profile: !!ctx.profileDirectory, post: !!ctx.profileDirectory };
   const statusOf = (shortcut: Shortcut) => targetStatus(shortcut.target, targetOptions, canVerify);
   const folderItemCount = (id: string) => content.folders.filter((folder) => folder.parentId === id).length + content.shortcuts.filter((shortcut) => shortcut.parentId === id).length;
 

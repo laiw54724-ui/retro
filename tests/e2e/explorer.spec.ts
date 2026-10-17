@@ -285,3 +285,18 @@ test("folder depth and the per-window item limits are explained instead of faili
   await dialog.getByRole("button", { name: "新增資料夾" }).click();
   await expect(dialog.getByRole("status")).toContainText("資料夾最多 8 層");
 });
+
+test("desktop visitor: shortcuts to windows are not flagged broken and open the target window", async ({ page }) => {
+  const document = withContent([F("characters", null, "角色設定")], [S("lore-link", null, "主角完整設定"), S("inside", "characters", "資料夾內的捷徑")]);
+  await page.route("**/api/public/sites/demo", (route) => route.fulfill({ json: { site: { username: "demo", site_name: document.siteName, published_document: document, published_version: 1, published_at: "2026-10-17T00:00:00.000Z" } } }));
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/@demo");
+  const dialog = page.getByRole("dialog", { name: "World.exe" });
+  const tile = dialog.locator(".explorer-item").filter({ hasText: "主角完整設定" });
+  await expect(tile).toContainText("視窗：角色設定.txt");
+  await expect(tile).not.toContainText("目標已失效");
+  await expect(page.getByRole("dialog", { name: "角色設定.txt" })).toHaveCount(0); // target starts closed
+  await dialog.getByRole("button", { name: "主角完整設定", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "角色設定.txt" })).toBeVisible();
+  await expect(dialog.getByRole("status")).toBeHidden();
+});
