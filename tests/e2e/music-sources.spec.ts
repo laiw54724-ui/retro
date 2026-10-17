@@ -23,6 +23,16 @@ function musicWindow(title: string, tracks: ReturnType<typeof track>[], index = 
 }
 const doc = (...windows: ReturnType<typeof musicWindow>[]): SiteDocument => ({ ...structuredClone(documentFixture), windows } as SiteDocument);
 
+/** A real, decodable (silent) WAV so a stubbed audio URL never raises a media error that would race the fake player. */
+function silentWav(): Buffer {
+  const samples = 800;
+  const header = Buffer.alloc(44);
+  header.write("RIFF", 0); header.writeUInt32LE(36 + samples, 4); header.write("WAVE", 8); header.write("fmt ", 12);
+  header.writeUInt32LE(16, 16); header.writeUInt16LE(1, 20); header.writeUInt16LE(1, 22); header.writeUInt32LE(8000, 24);
+  header.writeUInt32LE(8000, 28); header.writeUInt16LE(1, 32); header.writeUInt16LE(8, 34); header.write("data", 36); header.writeUInt32LE(samples, 40);
+  return Buffer.concat([header, Buffer.alloc(samples, 128)]);
+}
+
 async function stubPlatforms(page: Page, opts: { hang?: boolean } = {}) {
   await page.route(/https:\/\/(open\.spotify\.com|www\.youtube-nocookie\.com)\/.*/, (route) => {
     if (opts.hang) return; // never answers
@@ -286,7 +296,7 @@ test.describe("visitor: official platform players", () => {
   });
 
   test("native audio does not keep playing in a hidden tree when the viewport switches between desktop and phone", async ({ page }) => {
-    await page.route("https://media.example.com/**", (route) => route.fulfill({ contentType: "audio/mpeg", body: Buffer.alloc(64) }));
+    await page.route("https://media.example.com/**", (route) => route.fulfill({ contentType: "audio/wav", body: silentWav() }));
     await page.addInitScript(() => {
       type W = { __playing: Set<HTMLMediaElement> };
       (window as unknown as W).__playing = new Set();
