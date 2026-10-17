@@ -198,7 +198,7 @@ async function deleteLoreWindow(page: Page) {
   await page.getByRole("button", { name: "刪除視窗" }).click();
 }
 
-test("deleting a target lists the affected shortcuts first; cancel changes nothing and never blocks saving", async ({ page }) => {
+test("deleting a target lists the affected shortcuts first; cancel changes nothing and never blocks saving", async ({ page }, testInfo) => {
   const document = withContent([F("chars", null, "角色")], [S("link", "chars", "主角設定"), S("other", null, "備用", "spare")]);
   const spare = makeWindow("document", 2);
   spare.id = "spare"; spare.title = "備用設定.txt"; spare.defaultOpen = false;
@@ -212,6 +212,7 @@ test("deleting a target lists the affected shortcuts first; cancel changes nothi
   await expect(list).toContainText("World.exe / 桌面 / 角色");
   await expect(list).toContainText("視窗：角色設定.txt");
   await expect(list).not.toContainText("備用");
+  await page.screenshot({ path: testInfo.outputPath("integrity-dialog-desktop.png") });
   await confirm.getByRole("button", { name: "取消" }).click();
   await expect(confirm).toBeHidden();
   // nothing was deleted or marked broken; the draft is still valid and savable
@@ -423,7 +424,7 @@ test("deleting a post that shortcuts point at lists them, removes only those on 
   expect(latest().windows.find((window) => window.type === "explorer")!.content.shortcuts!.map((shortcut) => shortcut.id).sort()).toEqual(["to-other", "to-post", "to-profile"]);
 });
 
-test("phone editor: deleting a window that shortcuts point at asks first and fits at 390px", async ({ page }) => {
+test("phone editor: deleting a window that shortcuts point at asks first and fits at 390px", async ({ page }, testInfo) => {
   const document = withContent([], [S("link", null, "主角設定")]);
   await page.addInitScript((value) => localStorage.setItem("sb-example-auth-token", JSON.stringify(value)), session);
   const site = { id: "site-1", username: "demo", site_name: "Demo Desk", draft_document: document, draft_version: 1, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-17T00:00:00.000Z", access_role: "owner" };
@@ -443,6 +444,7 @@ test("phone editor: deleting a window that shortcuts point at asks first and fit
   const box = await confirm.boundingBox();
   expect(box!.x).toBeGreaterThanOrEqual(0);
   expect(box!.x + box!.width).toBeLessThanOrEqual(391);
+  await page.screenshot({ path: testInfo.outputPath("integrity-dialog-phone-390.png") });
   await confirm.getByRole("button", { name: "刪除並移除 1 個捷徑" }).click();
   await expect.poll(() => saves.at(-1)?.document.windows.map((window) => window.id)).toEqual(["explorer"]);
   expect(explorerContent(saves)!.shortcuts).toEqual([]);
