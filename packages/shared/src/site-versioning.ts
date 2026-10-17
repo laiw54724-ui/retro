@@ -46,7 +46,7 @@ export type EntityRef = z.infer<typeof EntityRefSchema>;
 const StrictDocumentBlockSchema = z.discriminatedUnion("kind", [
   z.object({ id: BoundedId, kind: z.literal("heading"), text: z.string().max(500) }).strict(),
   z.object({ id: BoundedId, kind: z.literal("text"), text: z.string().max(10_000), align: z.enum(["left", "center", "right"]).default("left"), bold: z.boolean().default(false), italic: z.boolean().default(false) }).strict(),
-  z.object({ id: BoundedId, kind: z.literal("image"), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default(""), alt: z.string().max(300).default("") }).strict(),
+  z.object({ id: BoundedId, kind: z.literal("image"), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default(""), alt: z.string().max(300).default(""), caption: z.string().max(300).optional() }).strict(),
   z.object({ id: BoundedId, kind: z.literal("button"), text: z.string().max(200), url: SafeUrlSchema }).strict(),
   z.object({ id: BoundedId, kind: z.literal("link"), text: z.string().max(500), url: SafeUrlSchema }).strict(),
   z.object({ id: BoundedId, kind: z.literal("list"), text: z.string().max(10_000) }).strict(),

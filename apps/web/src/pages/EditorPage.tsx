@@ -18,6 +18,7 @@ import { collaborationActions } from "../lib/collaboration";
 import { CollaborationDialog } from "../features/collaboration/CollaborationDialog";
 import { SidebarToggle } from "../features/editor/SidebarToggle";
 import { TransferDialog } from "../features/transfer/TransferDialog";
+import { EditorMediaProvider } from "../features/media/editorMedia";
 
 
 
@@ -505,6 +506,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
   return (
     <AssetSourceProvider siteId={siteId}>
+    <EditorMediaProvider key={siteId} siteId={siteId}>
     <main className="editor-app">
       <header className="editor-topbar">
         <Link to="/auth" className="brand" title="回到我的桌面"><Icon name="computer" size={22} />Retro Desktop</Link>
@@ -714,6 +716,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         </div>
       ) : null}
     </main>
+    </EditorMediaProvider>
     </AssetSourceProvider>
   );
 }

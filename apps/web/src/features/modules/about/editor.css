@@ -1,0 +1,180 @@
+.about-view,
+.about-editor {
+  width: 100%;
+  min-width: 0;
+  container-type: inline-size;
+  overflow-wrap: anywhere;
+}
+
+.about-view .about-main {
+  grid-template-columns: minmax(110px, 38%) minmax(0, 1fr);
+}
+
+.about-view[data-mobile="true"] .about-main {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.about-view .about-socials a,
+.about-view .about-avatar,
+.about-view .about-banner,
+.about-view .about-bar {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.about-view .about-bar {
+  flex-wrap: wrap;
+}
+
+.about-view .about-nickname {
+  flex: 1 1 100px;
+  min-width: 0;
+}
+
+.about-view .about-time {
+  flex-shrink: 0;
+}
+
+.about-editor {
+  gap: 8px;
+  padding: 10px;
+}
+
+/* Keep the final control above the phone editor's floating Done button. */
+.m-win-body .about-editor {
+  padding-bottom: 76px;
+}
+
+.about-editor-intro,
+.about-editor-hint,
+.about-editor-empty {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #404040;
+}
+
+.about-editor-section {
+  min-width: 0;
+  border: 1px solid #808080;
+  background: #f4f4f4;
+  color: #111;
+}
+
+.about-editor-section > summary {
+  padding: 9px;
+  min-height: 38px;
+  cursor: pointer;
+  font-weight: 700;
+  background: #dfdfdf;
+  box-shadow: inset 1px 1px #fff;
+}
+
+.about-editor-section > summary:focus-visible {
+  outline: 2px solid #000080;
+  outline-offset: -3px;
+}
+
+.about-editor-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  min-width: 0;
+}
+
+.about-editor-basics {
+  display: grid;
+  grid-template-columns: minmax(112px, 30%) minmax(0, 1fr);
+  gap: 14px;
+}
+
+.about-editor .about-avatar {
+  width: min(160px, 100%);
+  align-self: center;
+  display: grid;
+  place-items: center;
+}
+
+.about-avatar-empty {
+  padding: 8px;
+  font-size: 12px;
+  text-align: center;
+  background: #ffffffcc;
+}
+
+.about-editor label:not(.mini-btn),
+.about-editor-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.about-editor label > span {
+  font-size: 12px;
+  color: #404040;
+}
+
+.about-editor .ie {
+  min-height: 32px;
+  padding: 5px 7px;
+  font-size: 14px;
+}
+
+.about-editor textarea.ie {
+  max-height: 220px;
+  overflow: auto;
+}
+
+.about-editor .mini-btn,
+.about-editor .ie-add {
+  min-height: 32px;
+  height: auto;
+  font-size: 12px;
+}
+
+.about-editor .mini-btn[aria-pressed="true"] {
+  box-shadow: var(--w98-pressed);
+  font-weight: 700;
+}
+
+.about-editor-item {
+  margin: 0;
+  padding: 8px;
+  border: 1px solid #aaa;
+  background: #fff;
+}
+
+.about-editor-item > legend {
+  padding: 0 4px;
+  color: #404040;
+  font-size: 12px;
+}
+
+.about-editor-item > .mini-btn {
+  align-self: flex-end;
+}
+
+.about-editor .ie-add:disabled {
+  color: #666;
+  cursor: not-allowed;
+}
+
+@container (max-width: 460px) {
+  .about-view .about-main,
+  .about-editor-basics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .about-view .about-avatar {
+    width: min(200px, 100%);
+    justify-self: center;
+  }
+
+  .about-editor .mini-btn,
+  .about-editor .ie-add,
+  .about-editor-section > summary {
+    min-height: 44px;
+  }
+}

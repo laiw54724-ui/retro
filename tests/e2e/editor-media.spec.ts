@@ -72,8 +72,12 @@ test("uses an installed optional icon pack and leaves removed legacy PNGs unavai
   const result = page.locator(".win98-icon-grid button").first();
   await expect(result).toBeVisible();
   await result.click();
-  // The first save may be the v1-to-v2 migration; wait for this icon edit itself.
-  await expect.poll(() => (saves.at(-1) as { document?: typeof draft } | undefined)?.document?.windows[0].icon).toMatch(/^\/windows-icons\/[A-Za-z0-9._-]+\.(?:ico|png)$/);
+  // Loading a v1 fixture can save its v2 migration before the icon edit.
+  // Wait for the authored About window value, not an unrelated earlier save.
+  await expect.poll(() => {
+    const saved = saves.at(-1) as { document: typeof draft } | undefined;
+    return saved?.document.windows.find((window) => window.id === "about")?.icon;
+  }).toMatch(/^\/windows-icons\/[A-Za-z0-9._-]+\.(?:ico|png)$/);
   draft = (saves.at(-1) as { document: typeof draft }).document;
   const selectedPath = draft.windows[0].icon;
   expect(selectedPath).toMatch(/^\/windows-icons\/[A-Za-z0-9._-]+\.(?:ico|png)$/);

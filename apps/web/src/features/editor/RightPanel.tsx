@@ -75,7 +75,7 @@ export function RightPanel({ document, selected, siteId, upload, onUpdate, onDel
         {tab === "icon" ? (
           <>
             <span className="w98-hint">桌面與工作列上的圖示。</span>
-            <IconPicker siteId={siteId} value={selected.icon} upload={upload} size={28} onChange={(icon) => onUpdate((window) => ({ ...window, icon }))} />
+            <IconPicker key={selected.id} siteId={siteId} value={selected.icon} upload={upload} mediaTarget={{ windowId: selected.id, windowType: selected.type }} size={28} onChange={(icon) => onUpdate((window) => ({ ...window, icon }))} />
           </>
         ) : null}
         {tab === "layout" ? (

@@ -240,7 +240,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
               titleBarProps={{ onDoubleClick: () => toggleMaximize(window.id), style: { touchAction: "none" } }}
               style={{ height: "100%" }}
             >
-              <WindowRenderer window={window} theme={document.theme} onOpenWindow={openWindow} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialPostId={window.id === initialOpenId ? initialPostId : undefined} publicShareBaseUrl={publicShareBaseUrl} siteHandle={siteHandle} />
+              <WindowRenderer window={window} theme={document.theme} allWindows={document.windows} onOpenWindow={openWindow} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialPostId={window.id === initialOpenId ? initialPostId : undefined} publicShareBaseUrl={publicShareBaseUrl} siteHandle={siteHandle} />
             </RetroWindow>
             {!state.maximized ? <span className="window-resize-handle" aria-hidden="true" /> : null}
           </div>

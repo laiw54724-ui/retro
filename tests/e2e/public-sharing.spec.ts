@@ -49,7 +49,7 @@ test("missing or draft entity links use a generic public not-found response", as
   await expect(page.getByText("Retro User")).toHaveCount(0);
 });
 
-test("clipboard rejection shows the real URL for manual copy instead of fake success", async ({ page }) => {
+test("clipboard rejection shows the real URL for manual copy instead of fake success", async ({ page, baseURL }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, "share", { configurable: true, value: undefined });
     Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: () => Promise.reject(new Error("denied")) } });
