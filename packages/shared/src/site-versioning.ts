@@ -19,6 +19,8 @@ import {
   SafeUrlSchema,
   ImageUrlSchema,
   HttpsAudioUrlSchema,
+  providerEmbedSourceShape,
+  checkProviderEmbed,
   WebUrlSchema,
   SocialLinkSchema,
   ThemeSchema,
@@ -68,7 +70,8 @@ const StrictMusicCharacterRefSchema = z.object({ siteId: BoundedId, id: BoundedI
 const StrictMusicSourceSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("audioUrl"), url: HttpsAudioUrlSchema }).strict(),
   z.object({ kind: z.literal("uploadedAudio"), asset: z.union([AssetReferenceSchema, HttpsAudioUrlSchema]) }).strict(),
-  z.object({ kind: z.literal("externalLink"), url: WebUrlSchema }).strict()
+  z.object({ kind: z.literal("externalLink"), url: WebUrlSchema }).strict(),
+  z.object(providerEmbedSourceShape).strict().superRefine(checkProviderEmbed)
 ]);
 const StrictMusicTrackSchema = z.object({
   id: BoundedId, title: z.string().max(200), artist: z.string().max(200), cover: ImageUrlSchema.nullable(), coverUrl: z.string().max(2048).default(""),
@@ -681,6 +684,7 @@ export function deleteOrRetargetProfile(document: SiteDocumentV2Input, profileId
   const next = structuredClone(document);
   if (options.retargetProfileId) {
     next.windows = next.windows.map((window) => {
+      if (window.type === "explorer") return { ...window, content: { ...window.content, shortcuts: window.content.shortcuts.map((shortcut) => shortcut.target.kind === "profile" && shortcut.target.id === profileId ? { ...shortcut, target: { ...shortcut.target, id: options.retargetProfileId! } } : shortcut) } };
       if (window.type === "instagram" && window.content.profileRef.id === profileId) return { ...window, content: { ...window.content, profileRef: { ...window.content.profileRef, id: options.retargetProfileId! } } };
       if (window.type === "music") return { ...window, content: { ...window.content, tracks: window.content.tracks.map((track) => track.characterRef?.id === profileId ? { ...track, characterRef: { ...track.characterRef, id: options.retargetProfileId! } } : track) } };
       return window;

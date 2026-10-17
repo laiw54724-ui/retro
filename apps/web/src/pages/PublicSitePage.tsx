@@ -30,7 +30,7 @@ export function PublicSitePage() {
         let publicV2: SiteDocumentV2 | null = null;
         if (loaded.version === 1 && (profileId || postId)) throw new Error("找不到公開內容");
         if (loaded.version === 2) {
-          const scope = loaded.document.entities.profiles[0]?.siteId ?? loaded.document.windows.find((window) => window.type === "instagram")?.content.profileRef.siteId ?? "public-site";
+          const scope = loaded.document.entities.profiles[0]?.siteId ?? loaded.document.windows.find((window) => window.type === "instagram")?.content.profileRef.siteId ?? loaded.document.windows.flatMap((window) => window.type === "explorer" ? window.content.shortcuts : [])[0]?.target.siteId ?? "public-site";
           const projected = projectPublicSiteDocument(loaded.document, scope);
           if (!projected.ok || projected.version !== 2 || projected.document.schemaVersion !== 2) throw new Error("公開角色投影無效");
           publicV2 = projected.document;

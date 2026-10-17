@@ -1,45 +1,35 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { makeGalleryImage, normalizeImageUrl, type GalleryImage } from "@retrodesk/shared";
 import { FilePick, ImageUrlField, MiniBtn, SafeImg } from "../ui";
 import { moveById, patchById, type ModuleProps } from "../types";
-
-function Lightbox({ images, index, onIndex, onClose, ctx }: { images: GalleryImage[]; index: number; onIndex: (i: number) => void; onClose: () => void; ctx: ModuleProps<"gallery">["ctx"] }) {
-  const image = images[index];
-  const { tv } = ctx;
-  const n = images.length;
-  const btn = { background: tv.face, color: tv.text, boxShadow: tv.bevel };
-  return (
-    <div className="lightbox" role="dialog" aria-label="圖片檢視" onKeyDown={(event) => { if (event.key === "Escape") onClose(); }}>
-      <div className="ie-row"><span style={{ flex: 1 }}>{index + 1} / {n}</span><button type="button" className="lb-btn sq32" style={btn} aria-label="關閉" onClick={onClose} autoFocus>×</button></div>
-      <div className="lb-stage">{image.src ? <SafeImg src={image.src} alt={image.caption || image.title} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} /> : <div className="ph" style={{ width: "70%", aspectRatio: "1", maxHeight: "100%" }} />}</div>
-      <div className="ie-row lb-foot">
-        <button type="button" className="lb-btn sq36" style={btn} aria-label="上一張" onClick={() => onIndex((index - 1 + n) % n)}>‹</button>
-        <div className="lb-cap"><strong>{image.title}</strong><span>{image.caption}</span>
-          {image.href ? <button type="button" className="lb-btn" style={btn} onClick={() => ctx.onLink({ target: "url", url: image.href, label: image.title })}>開啟連結 ↗</button> : null}
-        </div>
-        <button type="button" className="lb-btn sq36" style={btn} aria-label="下一張" onClick={() => onIndex((index + 1) % n)}>›</button>
-      </div>
-    </div>
-  );
-}
+import { Lightbox } from "./Lightbox";
 
 export function GalleryView({ window, ctx }: ModuleProps<"gallery">) {
   const { tv } = ctx;
   const [open, setOpen] = useState(-1);
+  const opener = useRef<HTMLButtonElement | null>(null);
+  const grid = useRef<HTMLDivElement | null>(null);
   const images = window.content.images;
   const columns = ctx.mobile ? 2 : window.content.columns;
+  const close = () => {
+    setOpen(-1);
+    requestAnimationFrame(() => {
+      const target = opener.current?.isConnected ? opener.current : grid.current?.querySelector<HTMLButtonElement>(".gal-item");
+      target?.focus();
+    });
+  };
   if (!images.length) return <div className="empty-module">還沒有圖片</div>;
   return (
     <div className="gal-wrap">
-      <div className="gal-grid" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
+      <div ref={grid} className="gal-grid" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
         {images.map((image, index) => (
-          <button type="button" key={image.id} className="gal-item" aria-label={`放大 ${image.title || "圖片"}`} onClick={() => setOpen(index)}>
+          <button type="button" key={image.id} className="gal-item" aria-label={`放大 ${image.title || "圖片"}`} onClick={(event) => { opener.current = event.currentTarget; setOpen(index); }}>
             <span className="gal-thumb" style={{ boxShadow: tv.sunken }}>{image.src ? <SafeImg src={image.src} alt={image.caption || image.title} compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : <span className="ph gal-ph" />}</span>
             <span className="gal-title">{image.title}</span>
           </button>
         ))}
       </div>
-      {open >= 0 && images[open] ? <Lightbox images={images} index={open} onIndex={setOpen} onClose={() => setOpen(-1)} ctx={ctx} /> : null}
+      {open >= 0 && images[open] ? <Lightbox images={images} index={open} onIndex={setOpen} onClose={close} ctx={ctx} /> : null}
     </div>
   );
 }

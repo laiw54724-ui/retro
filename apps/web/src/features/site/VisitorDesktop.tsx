@@ -236,7 +236,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
               onClose={() => close(window.id)}
               style={{ height: "100%" }}
             >
-              <WindowRenderer window={window} theme={document.theme} onOpenWindow={openWindow} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialPostId={window.id === initialOpenId ? initialPostId : undefined} publicShareBaseUrl={publicShareBaseUrl} siteHandle={siteHandle} />
+              <WindowRenderer window={window} theme={document.theme} onOpenWindow={openWindow} allWindows={document.windows} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialPostId={window.id === initialOpenId ? initialPostId : undefined} publicShareBaseUrl={publicShareBaseUrl} siteHandle={siteHandle} />
             </RetroWindow>
             {!state.maximized ? <span className="window-resize-handle" aria-hidden="true" /> : null}
           </div>
