@@ -62,12 +62,14 @@ jobs:
           echo "34a69940da66b519900c3079c36429fe19f48faede9fd101d485f899e4ebd5db  $RUNNER_TEMP/final.patch.gz" | sha256sum --check -
           gzip -dc "$RUNNER_TEMP/final.patch.gz" > "$RUNNER_TEMP/final.patch"
           git apply --index --3way "$RUNNER_TEMP/final.patch"
-          rm -rf .integration .github/workflows/integration-assemble.yml
-          git add -A
-          git commit -m "fix(integration): finalize usability release candidate"
 
-          expected_tree="006f897819141b8dbad7cb5d25cca3c5de600bbf"
-          actual_tree="$(git rev-parse HEAD^{tree})"
-          test "$actual_tree" = "$expected_tree"
+          # GitHub Actions may not create or delete workflow files with its token.
+          # Keep the bootstrap payload unchanged here; the integration owner removes it
+          # and installs the final verification workflow in the next, exact-tree commit.
+          git restore --source=HEAD --staged --worktree .github/workflows .integration
+          git add -A
+          git commit -m "fix(integration): assemble usability release candidate sources"
+
+          git diff --exit-code HEAD^ -- .github/workflows .integration
           git diff --check HEAD^
           git push origin HEAD:integration/retro-usability-release
