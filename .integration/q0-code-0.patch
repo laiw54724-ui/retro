@@ -1,0 +1,370 @@
+diff --git a/.github/workflows/integration-candidate.yml b/.github/workflows/integration-candidate.yml
+index fa76f581ac5e03681af91be99434b23ba9e0e5fc..45524cecbe22974ef029262ab49d0b01dd74106a 100644
+--- a/.github/workflows/integration-candidate.yml
++++ b/.github/workflows/integration-candidate.yml
+@@ -6,5 +6,4 @@ on:
+       - integration/retro-usability-release
+-  pull_request:
+-    branches:
+-      - main
++      - integration/retro-q0-validation
++  workflow_dispatch:
+ 
+@@ -24,3 +23,5 @@ jobs:
+         with:
++          ref: ${{ github.sha }}
+           fetch-depth: 0
++          persist-credentials: false
+ 
+@@ -39,13 +40,39 @@ jobs:
+ 
++      - name: Record exact source identity
++        env:
++          EXPECTED_SHA: ${{ github.sha }}
++        run: |
++          set -euo pipefail
++          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
++          mkdir -p .candidate-evidence
++          { git rev-parse HEAD; git rev-parse HEAD^{tree}; sha256sum pnpm-lock.yaml; node --version; pnpm --version; pnpm exec playwright --version; } | tee .candidate-evidence/identity.txt
++
+       - name: Lint the final commit
+-        run: pnpm lint
++        run: |
++          set -euo pipefail
++          pnpm lint 2>&1 | tee .candidate-evidence/lint.log
+ 
+       - name: Complete contributor gate on the same commit
+-        run: pnpm verify:contributor
++        run: |
++          set -euo pipefail
++          trap 'if [ -d test-results ]; then cp -a test-results .candidate-evidence/contributor-test-results; fi' EXIT
++          pnpm verify:contributor 2>&1 | tee .candidate-evidence/contributor.log
+ 
+       - name: Window chrome Chromium baselines
+-        run: pnpm exec playwright test --config=playwright.chrome.config.ts --project=chrome-linux --workers=1
++        run: |
++          set -euo pipefail
++          pnpm exec playwright test --config=playwright.chrome.config.ts --project=chrome-linux --workers=1 2>&1 | tee .candidate-evidence/chrome-linux.log
+ 
+       - name: Window chrome WebKit smoke
+-        run: pnpm exec playwright test --config=playwright.chrome.config.ts --project=chrome-webkit --workers=1
++        run: |
++          set -euo pipefail
++          pnpm exec playwright test --config=playwright.chrome.config.ts --project=chrome-webkit --workers=1 2>&1 | tee .candidate-evidence/chrome-webkit.log
++
++      - name: Confirm unchanged source
++        env:
++          EXPECTED_SHA: ${{ github.sha }}
++        run: |
++          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
++          git diff --exit-code
++          git diff --cached --exit-code
+ 
+@@ -57,5 +84,7 @@ jobs:
+           path: |
++            .candidate-evidence
+             playwright-report
+             test-results
+-          if-no-files-found: ignore
++          include-hidden-files: true
++          if-no-files-found: error
+           retention-days: 7
+ diff --git a/apps/api/src/routes/transfer.ts b/apps/api/src/routes/transfer.ts
+index f95b43f22252e550cbb4c99be3f3b65079cfd008..110b48ad5e79d1a8238cc0a41dd8184c67fc476d 100644
+--- a/apps/api/src/routes/transfer.ts
++++ b/apps/api/src/routes/transfer.ts
+@@ -87,3 +87,3 @@ transfer.post("/imports/confirm", async (c) => {
+   const siteId = crypto.randomUUID();
+-  const document = inspected.value.document.schemaVersion === 2 ? remapDocumentSiteId(inspected.value.document, EXPORT_SITE_ID, siteId) : inspected.value.document;
++  const document = remapDocumentSiteId(inspected.value.document, EXPORT_SITE_ID, siteId);
+   document.siteName = siteName;
+diff --git a/apps/api/test/draft-validation.test.ts b/apps/api/test/draft-validation.test.ts
+index 3f4e5c3fd0ec69d888fc7cf469e5d04f31a09be7..26f4a6eb4a13b0569357a77ba2ac57d7b8d1ddb5 100644
+--- a/apps/api/test/draft-validation.test.ts
++++ b/apps/api/test/draft-validation.test.ts
+@@ -6,2 +6,3 @@ import {
+   makeGalleryImage,
++  makeWindow,
+   migrateSiteDocumentV2
+@@ -53,2 +54,11 @@ function mediaAndChromeV1() {
+   galleryWindow.content.images.push(makeGalleryImage({ title: "Portrait", caption: "Visible gallery caption", alt: "Independent gallery alternative" }));
++  galleryWindow.icon = "haiku:folder";
++  const explorer = makeWindow("explorer", document.windows.length);
++  const music = makeWindow("music", document.windows.length + 1);
++  if (explorer.type !== "explorer" || music.type !== "music") throw new Error("integration fixture types");
++  explorer.content.folders = [{ id: "icons-folder", parentId: null, name: "Icons", icon: "pixelart:heart", order: 0, visibility: "published" }];
++  explorer.content.shortcuts = [{ id: "gallery-shortcut", parentId: "icons-folder", label: "Gallery", icon: "pixelarticons:image", order: 0, visibility: "published", target: { siteId: "site-a", id: galleryWindow.id, kind: "window" } }];
++  music.content.tracks = [{ id: "spotify-track", title: "Official player", artist: "", cover: null, coverUrl: "", lyrics: "", rightsNote: "", source: { kind: "providerEmbed", provider: "spotify", resourceType: "track", resourceId: "50q2aUjWoTn6CJIfSPRJQA", canonicalUrl: "https://open.spotify.com/track/50q2aUjWoTn6CJIfSPRJQA", originalUrl: "https://open.spotify.com/track/50q2aUjWoTn6CJIfSPRJQA" } }];
++  music.content.playlist.trackIds = ["spotify-track"];
++  document.windows.push(explorer, music);
+   return document;
+@@ -122,2 +132,8 @@ describe("draft route semantic validation", () => {
+     });
++    expect(galleryWindow.icon).toBe("haiku:folder");
++    const explorer = saved.windows.find((window) => window.type === "explorer");
++    const music = saved.windows.find((window) => window.type === "music");
++    expect(explorer?.content.folders[0].icon).toBe("pixelart:heart");
++    expect(explorer?.content.shortcuts[0].icon).toBe("pixelarticons:image");
++    expect(music?.content.tracks[0].source).toMatchObject({ kind: "providerEmbed", provider: "spotify" });
+   });
+diff --git a/apps/api/test/transfer-routes.test.ts b/apps/api/test/transfer-routes.test.ts
+index 3c53bac163d9e82ff11a18863c3e33f2009aba8d..578aa199d4fd685f0544fa5aa97cd832f486a713 100644
+--- a/apps/api/test/transfer-routes.test.ts
++++ b/apps/api/test/transfer-routes.test.ts
+@@ -1,3 +1,3 @@
+ import { beforeEach, describe, expect, it, vi } from "vitest";
+-import { createRetroExport, createStarterDocument, migrateSiteDocumentV2, validateSiteDocumentScope } from "@retrodesk/shared";
++import { createRetroExport, createStarterDocument, makeWindow, migrateSiteDocumentV2, validateSiteDocumentScope } from "@retrodesk/shared";
+ 
+@@ -72,2 +72,21 @@ describe("export and controlled import routes", () => {
+ 
++  it("rebinds legacy Explorer shortcuts to the new imported site before migration", async () => {
++    const legacy = createStarterDocument("Legacy", "classic98", "blank");
++    const gallery = makeWindow("gallery", 0);
++    const explorer = makeWindow("explorer", 1);
++    if (explorer.type !== "explorer") throw new Error("Explorer fixture");
++    explorer.content.shortcuts = [{ id: "shortcut", label: "Gallery", icon: "pixelart:heart", parentId: null, order: 0, visibility: "published", target: { siteId: "site-a", kind: "window", id: gallery.id } }];
++    legacy.windows = [gallery, explorer];
++    const packageResult = createRetroExport({ scope: "owner-backup", siteId: "site-a", username: "demo", siteName: "Legacy", document: legacy });
++    if (!packageResult.ok) throw new Error("legacy export");
++    const previewResponse = await jsonRequest("/imports/preview", packageResult.value);
++    expect(previewResponse.status).toBe(200);
++    const preview = await previewResponse.json() as { digest: string };
++    const confirmed = await jsonRequest(`/imports/confirm?digest=${preview.digest}&username=legacy-copy&siteName=Copy`, packageResult.value);
++    expect(confirmed.status).toBe(201);
++    expect(inserted?.draft_document.windows[1].content.shortcuts[0]).toMatchObject({ icon: "pixelart:heart", target: { siteId: inserted?.id, id: gallery.id } });
++    expect(validateSiteDocumentScope(inserted?.draft_document, inserted?.id)).toEqual([]);
++    expect(migrateSiteDocumentV2(inserted?.draft_document, { siteId: inserted?.id })).toMatchObject({ ok: true });
++  });
++
+   it("rejects archives and declared oversized bodies before parsing", async () => {
+diff --git a/apps/web/src/components/Icon.tsx b/apps/web/src/components/Icon.tsx
+index 5b601a950a88a5568898f12bc9c2405a457d6e09..dc1717a188d4c1e6e0a5ca43d06a345e9d98d6bd 100644
+--- a/apps/web/src/components/Icon.tsx
++++ b/apps/web/src/components/Icon.tsx
+@@ -2,2 +2,3 @@ import { useEffect, useState, type CSSProperties } from "react";
+ import { fallbackIconKey, iconBackground, iconImageRendering, isImageIcon } from "../lib/icons";
++import { resolveLibraryIcon, libraryNameOf } from "../lib/iconLibrary/library";
+ import { useAssetSource } from "../lib/assetSource";
+@@ -7,5 +8,7 @@ export function Icon({ name, size = 32, style, className }: { name?: string | nu
+   const [failed, setFailed] = useState(false);
+-  const image = !!name && isImageIcon(name);
+-  const resolved = useAssetSource(image ? name : null);
++  const library = resolveLibraryIcon(name);
++  const image = !!name && (isImageIcon(name) || !!library);
++  const resolved = useAssetSource(image ? library?.url ?? name : null);
+   useEffect(() => setFailed(false), [name, resolved]);
++  const showImage = image && !!resolved && !failed;
+   return (
+@@ -14,5 +17,5 @@ export function Icon({ name, size = 32, style, className }: { name?: string | nu
+       className={"w98-icon " + (className ?? "")}
+-      style={{ width: size, height: size, background: image && !failed ? "none" : iconBackground(image ? fallbackIconKey(name) : name), imageRendering: iconImageRendering(name), ...style }}
++      style={{ width: size, height: size, background: showImage ? "none" : iconBackground(image ? fallbackIconKey(library ? libraryNameOf(library.id) : name) : name), imageRendering: iconImageRendering(name), ...style }}
+     >
+-      {image && resolved && !failed ? <img src={resolved} alt="" draggable={false} onError={() => setFailed(true)} /> : null}
++      {showImage && resolved ? <img src={resolved} alt="" draggable={false} loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={() => setFailed(true)} /> : null}
+     </span>
+diff --git a/apps/web/src/features/editor/DesktopCanvas.tsx b/apps/web/src/features/editor/DesktopCanvas.tsx
+index b335e1bd07ef375603c25e9c54db9e44bcc20d08..302a9b8f74bbaec7cf3a8844ab4beb5e757140ba 100644
+--- a/apps/web/src/features/editor/DesktopCanvas.tsx
++++ b/apps/web/src/features/editor/DesktopCanvas.tsx
+@@ -9,3 +9,4 @@ import { useEditorStore } from "./store";
+ import type { ProfileDirectoryEntry } from "../modules/types";
+-import { musicPlayback, useMusicPlayback } from "../modules/music/audioCoordinator";
++import { useMusicPlayback } from "../modules/music/audioCoordinator";
++import { stopAllMedia, stopWindowMedia } from "../modules/music/mediaSession";
+ import styles from "./DesktopCanvas.module.css";
+@@ -88,3 +89,3 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
+ 
+-  useEffect(() => () => musicPlayback.stopAll(), []);
++  useEffect(() => () => stopAllMedia(), []);
+ 
+@@ -274,5 +275,5 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
+               maximized={maximized}
+-              onMinimize={() => { musicPlayback.stopWindow(win.id); store().setViewState(win.id, "min"); }}
++              onMinimize={() => { stopWindowMedia(win.id); store().setViewState(win.id, "min"); }}
+               onMaximize={() => store().setViewState(win.id, maximized ? null : "max")}
+-              onClose={() => { musicPlayback.stopWindow(win.id); store().setViewState(win.id, "closed"); }}
++              onClose={() => { stopWindowMedia(win.id); store().setViewState(win.id, "closed"); }}
+               titleBarProps={{ onDoubleClick: () => store().setViewState(win.id, maximized ? null : "max"), style: { cursor: layoutMode ? "move" : "default", touchAction: "none" } }}
+diff --git a/apps/web/src/features/media/iconSelectionSession.test.ts b/apps/web/src/features/media/iconSelectionSession.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..bddf2fb41aa6e70f4dc59d92fc71d0697fbe68ed
+--- /dev/null
++++ b/apps/web/src/features/media/iconSelectionSession.test.ts
+@@ -0,0 +1,71 @@
++import { afterEach, describe, expect, it } from "vitest";
++import { createStarterDocument, makeLink, makeWindow } from "@retrodesk/shared";
++import { useEditorStore } from "../editor/store";
++import { observeIconSelection, type IconMediaTarget } from "./iconSelectionSession";
++
++const cleanup: Array<() => void> = [];
++afterEach(() => { for (const stop of cleanup.splice(0)) stop(); });
++function setup() {
++  const document = createStarterDocument("Icons", "classic98", "blank");
++  const links = makeWindow("links");
++  const explorer = makeWindow("explorer");
++  if (links.type !== "links" || explorer.type !== "explorer") throw new Error("fixture types");
++  links.id = "links"; links.icon = "doc";
++  links.content.links = [makeLink({ id: "same-id", icon: "heart" })];
++  explorer.id = "explorer";
++  explorer.content.folders = [{ id: "same-id", parentId: null, name: "Folder", order: 0, visibility: "published" }];
++  explorer.content.shortcuts = [{ id: "shortcut", parentId: null, label: "Links", order: 0, visibility: "published", target: { siteId: "site", id: "links", kind: "window" } }];
++  document.windows = [links, explorer];
++  useEditorStore.getState().setSite("site", "icons", document, 1, null, null, "owner");
++  return document;
++}
++function observe(target: IconMediaTarget, value: string) {
++  const guard = observeIconSelection(useEditorStore, "site", target, value);
++  cleanup.push(guard.dispose);
++  return guard;
++}
++
++describe("staged icon selection identity", () => {
++  it("retains a window preview through unrelated typing and selecting another window", () => {
++    setup();
++    const guard = observe({ windowId: "links", windowType: "links" }, "doc");
++    useEditorStore.getState().select("explorer");
++    useEditorStore.getState().setSiteName("Other title");
++    expect(guard.isCurrent()).toBe(true);
++  });
++  it.each(["folder", "shortcut"] as const)("accepts an explicit default icon on an Explorer %s", (kind) => {
++    setup();
++    const guard = observe({ windowId: "explorer", windowType: "explorer", itemId: kind === "folder" ? "same-id" : "shortcut", itemKind: kind }, "");
++    expect(guard.isCurrent()).toBe(true);
++  });
++  it("distinguishes link, folder and missing targets with the same item ID", () => {
++    setup();
++    expect(observe({ windowId: "links", windowType: "links", itemId: "same-id" }, "heart").isCurrent()).toBe(true);
++    expect(observe({ windowId: "explorer", windowType: "explorer", itemId: "same-id", itemKind: "folder" }, "").isCurrent()).toBe(true);
++    expect(observe({ windowId: "explorer", windowType: "explorer", itemId: "same-id", itemKind: "shortcut" }, "").isCurrent()).toBe(false);
++  });
++  it("cannot apply to a deleted and recreated folder with the same ID", () => {
++    setup();
++    const guard = observe({ windowId: "explorer", windowType: "explorer", itemId: "same-id", itemKind: "folder" }, "");
++    const old = useEditorStore.getState().document!.windows.find((w) => w.id === "explorer")!;
++    useEditorStore.getState().updateWindow("explorer", (w) => w.type === "explorer" ? { ...w, content: { ...w.content, folders: [] } } : w);
++    useEditorStore.getState().updateWindow("explorer", () => old);
++    expect(guard.isCurrent()).toBe(false);
++  });
++  it.each(["undo", "reload", "permission", "icon"] as const)("invalidates even a completed preview after %s", (change) => {
++    const document = setup();
++    useEditorStore.getState().setSiteName("New title");
++    const guard = observe({ windowId: "links", windowType: "links" }, "doc");
++    if (change === "undo") useEditorStore.getState().undo();
++    if (change === "reload") useEditorStore.getState().setSite("site", "icons", document, 1, null, null, "owner");
++    if (change === "permission") useEditorStore.setState({ accessRole: "viewer" });
++    if (change === "icon") useEditorStore.getState().updateWindow("links", (w) => ({ ...w, icon: "folder" }));
++    expect(guard.isCurrent()).toBe(false);
++  });
++  it("does not reuse a guard after moving to another site with identical content", () => {
++    const document = setup();
++    const guard = observe({ windowId: "links", windowType: "links" }, "doc");
++    useEditorStore.getState().setSite("other-site", "icons", document, 1, null, null, "owner");
++    expect(guard.isCurrent()).toBe(false);
++  });
++});
+diff --git a/apps/web/src/features/media/iconSelectionSession.ts b/apps/web/src/features/media/iconSelectionSession.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..29c22621370ea2a073f861fd6b1297f0cd6139bf
+--- /dev/null
++++ b/apps/web/src/features/media/iconSelectionSession.ts
+@@ -0,0 +1,46 @@
++import type { DesktopWindow } from "@retrodesk/shared";
++import { didMediaHistoryChange, type MediaEditorStore } from "./windowMediaSession";
++
++export type IconMediaTarget = {
++  windowId: string;
++  windowType: DesktopWindow["type"];
++  itemId?: string;
++  itemKind?: "link" | "folder" | "shortcut";
++};
++
++export function iconTargetKey(target: IconMediaTarget | undefined): string {
++  return JSON.stringify(target ? [target.windowId, target.windowType, target.itemKind ?? "link", target.itemId ?? null] : null);
++}
++
++/** undefined means missing, while an empty Explorer icon means its intentional default. */
++export function readTargetIcon(window: DesktopWindow | undefined, target: IconMediaTarget): string | undefined {
++  if (!window || window.id !== target.windowId || window.type !== target.windowType) return undefined;
++  if (!target.itemId) return window.icon;
++  if (window.type === "links" && (!target.itemKind || target.itemKind === "link")) {
++    return window.content.links.find((item) => item.id === target.itemId)?.icon;
++  }
++  if (window.type === "explorer" && (target.itemKind === "folder" || target.itemKind === "shortcut")) {
++    const list = target.itemKind === "folder" ? window.content.folders : window.content.shortcuts;
++    const item = list.find((item) => item.id === target.itemId);
++    return item ? item.icon ?? "" : undefined;
++  }
++  return undefined;
++}
++
++/** Protects both pending uploads and completed-but-not-yet-applied icon previews. */
++export function observeIconSelection(store: MediaEditorStore, siteId: string, target: IconMediaTarget, initialIcon: string) {
++  const identity = { ...target };
++  const matches = () => {
++    const state = store.getState();
++    return state.siteId === siteId && state.accessRole !== "viewer" &&
++      readTargetIcon(state.document?.windows.find((window) => window.id === identity.windowId), identity) === initialIcon;
++  };
++  let invalidated = !matches();
++  const stop = store.subscribe((state, previous) => {
++    if (didMediaHistoryChange(state, previous) || !matches()) invalidated = true;
++  });
++  return {
++    isCurrent: () => !invalidated && matches(),
++    dispose: () => { invalidated = true; stop(); }
++  };
++}
+diff --git a/apps/web/src/features/media/windowMediaSession.ts b/apps/web/src/features/media/windowMediaSession.ts
+index e4c37d3a1774617ba64ee0d69ba275e89d08d77c..0e961a8c0a05d98f81a4f475d90f904bf07e71d6 100644
+--- a/apps/web/src/features/media/windowMediaSession.ts
++++ b/apps/web/src/features/media/windowMediaSession.ts
+@@ -4,3 +4,3 @@ import { UploadTaskQueue, type UploadKind } from "./uploadTasks";
+ 
+-type EditorSnapshot = {
++export type EditorSnapshot = {
+   siteId: string | null;
+@@ -62,2 +62,12 @@ export function enqueueWindowUpload<T extends DesktopWindow["type"]>(queue: Uplo
+ 
++/** History travel and reload end a media-editing epoch, even if values happen to match. */
++export function didMediaHistoryChange(state: EditorSnapshot, previous: EditorSnapshot): boolean {
++  const undo = state.past.length < previous.past.length;
++  const redo = state.future.length < previous.future.length && previous.future.length > 0 &&
++    (state.document === previous.future[0] || (!!state.versionedDocument && state.versionedDocument === previous.versionedFuture[0]));
++  const reload = state.document === state.lastSavedDocument && state.versionedDocument === null &&
++    state.saveStatus === "saved" && state.past.length === 0 && state.past !== previous.past;
++  return undo || redo || reload;
++}
++
+ /** Invalidate pending work on history travel/reload, without changing history or
+@@ -70,8 +80,3 @@ export function observeEditorMedia(queue: UploadTaskQueue, store: MediaEditorSto
+     }
+-    const undo = state.past.length < previous.past.length;
+-    const redo = state.future.length < previous.future.length && previous.future.length > 0 &&
+-      (state.document === previous.future[0] || (!!state.versionedDocument && state.versionedDocument === previous.versionedFuture[0]));
+-    const reload = state.document === state.lastSavedDocument && state.versionedDocument === null &&
+-      state.saveStatus === "saved" && state.past.length === 0 && state.past !== previous.past;
+-    if (undo || redo || reload) {
++    if (didMediaHistoryChange(state, previous)) {
+       queue.invalidate("已復原、重做或重新載入內容，未套用尚未完成的上傳。請重新選擇檔案。");
+diff --git a/apps/web/src/features/modules/explorer/index.tsx b/apps/web/src/features/modules/explorer/index.tsx
+index f9cd0e94aedc0cbfaeadadfc0cad6b0aff0093fa..3d1a9665542abd063bbc4c568e8bce9e6e263839 100644
+--- a/apps/web/src/features/modules/explorer/index.tsx
++++ b/apps/web/src/features/modules/explorer/index.tsx
+@@ -164,5 +164,8 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
+     const next = icon || undefined;
+-    if (item.kind === "folder") setContent({ ...content, folders: content.folders.map((folder) => folder.id === item.id ? { ...folder, icon: next } : folder) });
+-    else setContent({ ...content, shortcuts: content.shortcuts.map((shortcut) => shortcut.id === item.id ? { ...shortcut, icon: next } : shortcut) });
++    update((current) => ({ ...current, content: item.kind === "folder"
++      ? { ...current.content, folders: current.content.folders.map((folder) => folder.id === item.id ? { ...folder, icon: next } : folder) }
++      : { ...current.content, shortcuts: current.content.shortcuts.map((shortcut) => shortcut.id === item.id ? { ...shortcut, icon: next } : shortcut) }
++    }));
+   }
++
+   function setVisibility(item: Item, visibility: "published" | "draft") {
+@@ -307,3 +310,3 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
+                 <button type="button" className="w98-btn" onClick={() => setRenamingId(selected.id)}>重新命名</button>
+-                <IconPickerAction siteId={ctx.siteId} upload={ctx.upload} value={(selectedFolder ?? selectedShortcut)?.icon ?? ""} defaultValue="" defaultPreview={selectedFolder ? "folder" : "link"} label={selectedFolder?.name ?? selectedShortcut?.label} onChange={(icon) => setIcon(selected, icon)} />
++                <IconPickerAction key={`${window.id}:${selected.kind}:${selected.id}`} mediaTarget={{ windowId: window.id, windowType: "explorer", itemId: selected.id, itemKind: selected.kind }} siteId={ctx.siteId} upload={ctx.upload} value={(selectedFolder ?? selectedShortcut)?.icon ?? ""} defaultValue="" defaultPreview={selectedFolder ? "folder" : "link"} label={selectedFolder?.name ?? selectedShortcut?.label} onChange={(icon) => setIcon(selected, icon)} />
+                 <button type="button" className="w98-btn" onClick={() => setDialog({ type: "move", item: selected })}>移動到…</button>
