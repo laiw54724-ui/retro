@@ -1,0 +1,420 @@
+diff --git a/apps/web/src/features/modules/links/IconPicker.tsx b/apps/web/src/features/modules/links/IconPicker.tsx
+index 7101627e8a46a4b1397fb561edb6d1ed6c4ce2b1..6618d2f2cfc55c5ae2482be0660388a794d128c6 100644
+--- a/apps/web/src/features/modules/links/IconPicker.tsx
++++ b/apps/web/src/features/modules/links/IconPicker.tsx
+@@ -1,5 +1,5 @@
+ import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+-import { normalizeImageUrl, type DesktopWindow } from "@retrodesk/shared";
++import { normalizeImageUrl } from "@retrodesk/shared";
+ import { api, type AssetRecord } from "../../../lib/api";
+-import { BUILTIN_ICON_KEYS, iconBackground, isImageIcon } from "../../../lib/icons";
++import { BUILTIN_ICON_KEYS, isImageIcon } from "../../../lib/icons";
+ import { ICON_LIBRARY_SETS } from "../../../lib/iconLibrary/ids.generated";
+@@ -13,5 +13,5 @@ import { UploadTaskList, useMediaQueue } from "../../media/editorMedia";
+ import { useEditorStore } from "../../editor/store";
++import { iconTargetKey, observeIconSelection, type IconMediaTarget } from "../../media/iconSelectionSession";
+ 
+ type Upload = (file: File, kind?: "image" | "icon" | "audio") => Promise<string | null>;
+-type IconMediaTarget = { windowId: string; windowType: DesktopWindow["type"]; itemId?: string };
+ 
+@@ -110,4 +110,2 @@ export function IconPickerButton({ size = 24, ...props }: CommonProps & { size?:
+ function Tile({ value, name, selected, current, tabbable, onSelect, onRemove, pixel }: { value: string; name: string; selected: boolean; current: boolean; tabbable: boolean; onSelect: () => void; onRemove?: () => void; pixel?: boolean }) {
+-  const resolved = resolveLibraryIcon(value);
+-  const src = resolved?.url ?? (isImageIcon(value) ? value : null);
+   return (
+@@ -115,3 +113,3 @@ function Tile({ value, name, selected, current, tabbable, onSelect, onRemove, pi
+       <button type="button" className={"ilib-tile" + (selected ? " on" : "")} aria-pressed={selected} tabIndex={tabbable ? 0 : -1} aria-label={`${name}${current ? "（目前使用）" : ""}`} data-icon={value} onClick={onSelect}>
+-        {src ? <img src={src} alt="" width={32} height={32} loading="lazy" decoding="async" draggable={false} style={pixel || resolved?.pixel ? { imageRendering: "pixelated" } : undefined} /> : <span className="ilib-builtin" style={{ background: iconBackground(value) }} />}
++        <Icon name={value} size={32} style={pixel ? { imageRendering: "pixelated" } : undefined} />
+         <span className="ilib-name">{name}</span>
+@@ -136,3 +134,6 @@ function IconLibraryDialog({ siteId, value, onChange, upload, defaultValue, defa
+   const { queue, tasks } = useMediaQueue();
+-  const scope = `window:${mediaTarget?.windowId ?? siteId ?? "library"}:icons:${mediaTarget?.itemId ?? "window"}`;
++  const dialogId = useId();
++  const scope = `icons:${siteId ?? "unsaved"}:${iconTargetKey(mediaTarget)}:${dialogId}`;
++  const original = useRef({ siteId, targetKey: iconTargetKey(mediaTarget), value, target: mediaTarget ? { ...mediaTarget } : undefined });
++  const guard = useRef<ReturnType<typeof observeIconSelection> | null>(null);
+   const ownTasks = tasks.filter((task) => task.scope === scope);
+@@ -144,2 +145,10 @@ function IconLibraryDialog({ siteId, value, onChange, upload, defaultValue, defa
+ 
++  useEffect(() => {
++    const initial = original.current;
++    if (!initial.siteId || !initial.target) return;
++    const selection = observeIconSelection(useEditorStore, initial.siteId, initial.target, initial.value);
++    guard.current = selection;
++    return () => { selection.dispose(); guard.current = null; };
++  }, []);
++
+   const loadCatalog = useCallback(() => {
+@@ -209,10 +218,5 @@ function IconLibraryDialog({ siteId, value, onChange, upload, defaultValue, defa
+   const isTargetCurrent = useCallback(() => {
+-    if (!active.current || !siteId) return false;
+-    const state = useEditorStore.getState();
+-    if (state.siteId !== siteId || state.accessRole === "viewer") return false;
+-    if (!mediaTarget) return true;
+-    const target = state.document?.windows.find((window) => window.id === mediaTarget.windowId && window.type === mediaTarget.windowType);
+-    if (!target) return false;
+-    if (!mediaTarget.itemId) return true;
+-    return target.type === "links" && target.content.links.some((link) => link.id === mediaTarget.itemId);
++    if (!active.current || original.current.siteId !== siteId || original.current.targetKey !== iconTargetKey(mediaTarget)) return false;
++    if (!siteId) return !mediaTarget;
++    return guard.current?.isCurrent() ?? false;
+   }, [mediaTarget, siteId]);
+diff --git a/apps/web/src/features/modules/music/audioCoordinator.test.ts b/apps/web/src/features/modules/music/audioCoordinator.test.ts
+index 60857641b31f4b9fc2f0f45c0f19c0a39eb7a5c8..a4496962db533daca4c033932e19012b0366ad05 100644
+--- a/apps/web/src/features/modules/music/audioCoordinator.test.ts
++++ b/apps/web/src/features/modules/music/audioCoordinator.test.ts
+@@ -78 +78,92 @@ describe("music audio coordinator", () => {
+ });
++
++function pending<T>() {
++  let resolve!: (value: T) => void;
++  let reject!: (reason: unknown) => void;
++  const promise = new Promise<T>((yes, no) => { resolve = yes; reject = no; });
++  return { promise, resolve, reject };
++}
++
++describe("integrated protected-media lifecycle", () => {
++  it("plays a resolved private blob without rebuilding the native audio object", async () => {
++    const audio = new FakeAudio();
++    const createAudio = vi.fn(() => audio);
++    const player = createAudioCoordinator({ createAudio });
++    expect(await player.playResolved("w", "private", async () => "blob:https://retro.test/private-audio")).toBe(true);
++    expect(audio.src).toBe("blob:https://retro.test/private-audio");
++    audio.currentTime = 83;
++    await player.play("w", "private", audio.src);
++    expect(createAudio).toHaveBeenCalledTimes(1);
++    expect(audio.currentTime).toBe(83);
++    player.stopAll();
++  });
++
++  it.each(["close", "pause", "switch-native", "switch-platform"] as const)("discards a late asset resolution after %s", async (action) => {
++    const audio = new FakeAudio();
++    const player = createAudioCoordinator({ createAudio: () => audio });
++    const source = pending<string | null>();
++    const attempt = player.playResolved("w", "private", () => source.promise);
++    if (action === "close") player.stopWindow("w");
++    if (action === "pause") player.pause("w");
++    if (action === "switch-native") await player.play("other", "new", "https://example.com/new.mp3");
++    if (action === "switch-platform") player.stopAll(); // the embed session calls this before activation
++    const before = { ...player.getSnapshot() };
++    const calls = audio.play.mock.calls.length;
++    source.resolve("blob:https://retro.test/stale");
++    expect(await attempt).toBe(false);
++    expect(player.getSnapshot()).toEqual(before);
++    expect(audio.play).toHaveBeenCalledTimes(calls);
++    expect(audio.src).not.toBe("blob:https://retro.test/stale");
++    player.stopAll();
++  });
++
++  it("ignores rejection of an older play promise for the same track after its URL changed", async () => {
++    const audio = new FakeAudio();
++    const old = pending<void>();
++    audio.play.mockImplementationOnce(() => old.promise);
++    const player = createAudioCoordinator({ createAudio: () => audio });
++    const attempt = player.play("w", "same", "https://example.com/old.mp3");
++    await player.play("w", "same", "https://example.com/new.mp3");
++    old.reject(new Error("late rejection"));
++    expect(await attempt).toBe(false);
++    expect(player.getSnapshot()).toMatchObject({ status: "playing", url: "https://example.com/new.mp3", error: "" });
++    player.stopAll();
++  });
++
++  it("does not report playing when a paused pending play promise resolves", async () => {
++    const audio = new FakeAudio();
++    const waiting = pending<void>();
++    audio.play.mockImplementationOnce(() => waiting.promise);
++    const player = createAudioCoordinator({ createAudio: () => audio });
++    const attempt = player.play("w", "t", "https://example.com/a.mp3");
++    player.pause("w");
++    waiting.resolve();
++    expect(await attempt).toBe(false);
++    expect(player.getSnapshot().status).toBe("paused");
++    player.stopAll();
++  });
++
++  it("silences an existing native source when the next URL is invalid", async () => {
++    const audio = new FakeAudio();
++    const player = createAudioCoordinator({ createAudio: () => audio });
++    await player.play("w", "t", "https://example.com/a.mp3");
++    expect(await player.play("w", "invalid", "javascript:alert(1)")).toBe(false);
++    expect(audio.paused).toBe(true);
++    expect(audio.src).toBe("");
++    expect(player.getSnapshot().status).toBe("error");
++    player.stopAll();
++  });
++
++  it("times out a protected source and ignores its later result", async () => {
++    let timeout: (() => void) | undefined;
++    const audio = new FakeAudio();
++    const source = pending<string | null>();
++    const player = createAudioCoordinator({ createAudio: () => audio, setTimer: (callback) => { timeout = callback; return 1; }, clearTimer: () => {} });
++    const attempt = player.playResolved("w", "t", () => source.promise);
++    timeout!();
++    expect(player.getSnapshot().status).toBe("error");
++    source.resolve("blob:https://retro.test/too-late");
++    expect(await attempt).toBe(false);
++    expect(audio.play).not.toHaveBeenCalled();
++  });
++});
+diff --git a/apps/web/src/features/modules/music/audioCoordinator.ts b/apps/web/src/features/modules/music/audioCoordinator.ts
+index dc368f6e057f0639a8398aed31d67933ec39a69a..c68b1d2380c4a0f8a2b0d5a5762677953762a061 100644
+--- a/apps/web/src/features/modules/music/audioCoordinator.ts
++++ b/apps/web/src/features/modules/music/audioCoordinator.ts
+@@ -40,4 +40,7 @@ const initialSnapshot = (): MusicPlaybackSnapshot => ({
+ 
+-function playableHttpsUrl(value: string): boolean {
+-  try { return new URL(value).protocol === "https:"; } catch { return false; }
++function playableUrl(value: string): boolean {
++  try {
++    const url = new URL(value);
++    return url.protocol === "https:" || url.protocol === "blob:";
++  } catch { return false; }
+ }
+@@ -46,2 +49,3 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
+   let audio: AudioPort | null = null;
++  let generation = 0;
+   let snapshot = initialSnapshot();
+@@ -62,2 +66,3 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
+   const mediaError = (fallback: string) => {
++    generation += 1;
+     cancelTimeout();
+@@ -67,3 +72,3 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
+   const syncTime = () => {
+-    if (!audio) return;
++    if (!audio || !snapshot.windowId || !snapshot.url) return;
+     const duration = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : null;
+@@ -77,4 +82,6 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
+     audio.addEventListener("durationchange", syncTime);
+-    audio.addEventListener("loadedmetadata", () => { cancelTimeout(); syncTime(); });
+-    audio.addEventListener("playing", () => { cancelTimeout(); emit({ status: "playing", error: "" }); });
++    audio.addEventListener("loadedmetadata", syncTime);
++    audio.addEventListener("playing", () => {
++      if (snapshot.status === "loading" || snapshot.status === "playing") { cancelTimeout(); emit({ status: "playing", error: "" }); }
++    });
+     audio.addEventListener("pause", () => {
+@@ -82,4 +89,4 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
+     });
+-    audio.addEventListener("ended", () => { cancelTimeout(); syncTime(); emit({ status: "paused" }); });
+-    audio.addEventListener("error", () => mediaError("音訊無法載入，請檢查網址、權限或跨站限制。"));
++    audio.addEventListener("ended", () => { if (snapshot.windowId && snapshot.url) { cancelTimeout(); syncTime(); emit({ status: "paused" }); } });
++    audio.addEventListener("error", () => { if (snapshot.windowId && snapshot.url) mediaError("音訊無法載入，請檢查網址、權限或跨站限制。"); });
+     return audio;
+@@ -88,4 +95,6 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
+   async function play(windowId: string, trackId: string, url: string): Promise<boolean> {
+-    if (!playableHttpsUrl(url)) {
+-      emit({ status: "error", windowId, trackId, url, error: "音訊必須使用有效的 HTTPS 直連網址。", currentTime: 0, duration: null, canSeek: false });
++    const request = ++generation;
++    if (!playableUrl(url)) {
++      stopAll();
++      emit({ status: "error", windowId, trackId, url, error: "音訊必須使用有效的 HTTPS 直連網址或已授權的上傳檔案。", currentTime: 0, duration: null, canSeek: false });
+       return false;
+@@ -108,6 +117,26 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
+       await player.play();
+-      if (snapshot.windowId === windowId && snapshot.trackId === trackId) emit({ status: "playing", error: "" });
++      if (generation !== request) return false;
++      cancelTimeout();
++      emit({ status: "playing", error: "" });
+       return true;
+     } catch {
+-      if (snapshot.windowId === windowId && snapshot.trackId === trackId) mediaError("瀏覽器未能播放這個音訊；請再次操作或開啟原連結。");
++      if (generation === request) mediaError("瀏覽器未能播放這個音訊；請再次操作或開啟原連結。");
++      return false;
++    }
++  }
++
++  async function playResolved(windowId: string, trackId: string, resolve: () => Promise<string | null>): Promise<boolean> {
++    stopAll();
++    const request = ++generation;
++    emit({ status: "loading", windowId, trackId, url: "", error: "" });
++    timeoutId = setTimer(() => {
++      if (generation === request) mediaError("音訊載入逾時，請重試或確認素材權限。");
++    }, loadTimeoutMs);
++    try {
++      const url = await resolve();
++      if (generation !== request) return false;
++      if (!url) { mediaError("音訊無法載入，請檢查素材權限並重試。"); return false; }
++      return play(windowId, trackId, url);
++    } catch {
++      if (generation === request) mediaError("音訊無法載入，請檢查素材權限並重試。");
+       return false;
+@@ -118,2 +147,3 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
+     if (windowId && snapshot.windowId !== windowId) return;
++    generation += 1;
+     cancelTimeout();
+@@ -129,2 +159,3 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
+   function stopAll() {
++    generation += 1;
+     cancelTimeout();
+@@ -143,2 +174,3 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
+     if (!audio || snapshot.windowId !== windowId || !snapshot.canSeek || snapshot.duration === null) return;
++    if (!Number.isFinite(seconds)) return;
+     audio.currentTime = Math.max(0, Math.min(snapshot.duration, seconds));
+@@ -148,2 +180,3 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
+   function setVolume(value: number) {
++    if (!Number.isFinite(value)) return;
+     const volume = Math.max(0, Math.min(1, value));
+@@ -154,3 +187,3 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
+   return {
+-    play, pause, stopWindow, stopAll, seek, setVolume,
++    play, playResolved, pause, stopWindow, stopAll, seek, setVolume,
+     getSnapshot: () => snapshot,
+diff --git a/apps/web/src/features/modules/music/index.tsx b/apps/web/src/features/modules/music/index.tsx
+index c1490dfab221dd26f762af947af080a602f89bed..7b2a04108b7d0bd4cadbb9ad509f293b31c42ab3 100644
+--- a/apps/web/src/features/modules/music/index.tsx
++++ b/apps/web/src/features/modules/music/index.tsx
+@@ -5,3 +5,3 @@ import { moveById, type ModuleProps } from "../types";
+ import { musicPlayback, useMusicPlayback } from "./audioCoordinator";
+-import { embedSession, playNative } from "./mediaSession";
++import { embedSession, playNative, playResolvedNative } from "./mediaSession";
+ import { ProviderPlayer } from "./ProviderPlayer";
+@@ -93,5 +93,4 @@ export function MusicView({ window, ctx }: ModuleProps<"music">) {
+     else if (next.source.kind === "uploadedAudio") {
+-      const source = resolveAsset ? await resolveAsset(next.source.asset) : next.source.asset;
+-      if (playableUrl(source)) void playNative(window.id, next.id, source!);
+-      else musicPlayback.stopWindow(window.id);
++      const asset = next.source.asset;
++      void playResolvedNative(window.id, next.id, async () => resolveAsset ? resolveAsset(asset) : asset);
+     } else musicPlayback.stopWindow(window.id);
+diff --git a/apps/web/src/features/modules/music/mediaSession.ts b/apps/web/src/features/modules/music/mediaSession.ts
+index f7693243a63705299c3768f7e68a4b9cf91bc917..7ae35c8e566acca82ccc5af168d941b929ff0bef 100644
+--- a/apps/web/src/features/modules/music/mediaSession.ts
++++ b/apps/web/src/features/modules/music/mediaSession.ts
+@@ -1,2 +1,3 @@
+ import { useSyncExternalStore } from "react";
++import { flushSync } from "react-dom";
+ import { musicPlayback } from "./audioCoordinator";
+@@ -20,5 +21,5 @@ export function createEmbedSession(stopNative: () => void) {
+     /**
+-     * `instanceId` identifies the mounted player component. The public page mounts both a desktop
+-     * tree and a (CSS-hidden) phone tree with the same window and track ids, and only the player
+-     * the visitor actually clicked may create an iframe.
++     * `instanceId` identifies the mounted player component. A preview may use the same window
++     * and track ids as the editor; only the exact instance clicked by the visitor may create
++     * an iframe. Public desktop/mobile hosts are mounted exclusively.
+      */
+@@ -45,3 +46,3 @@ export const embedSession = createEmbedSession(() => musicPlayback.stopAll());
+ export function playNative(windowId: string, trackId: string, url: string) {
+-  embedSession.dispose();
++  flushSync(() => embedSession.dispose());
+   return musicPlayback.play(windowId, trackId, url);
+@@ -52 +53,17 @@ export function useActiveEmbed() {
+ }
++
++/** Source resolution is owned by the coordinator, so closing or another play cancels it. */
++export function playResolvedNative(windowId: string, trackId: string, resolve: () => Promise<string | null>) {
++  flushSync(() => embedSession.dispose());
++  return musicPlayback.playResolved(windowId, trackId, resolve);
++}
++
++export function stopWindowMedia(windowId: string) {
++  embedSession.dispose(windowId);
++  musicPlayback.stopWindow(windowId);
++}
++
++export function stopAllMedia() {
++  embedSession.dispose();
++  musicPlayback.stopAll();
++}
+diff --git a/apps/web/src/features/site/MobileScreen.tsx b/apps/web/src/features/site/MobileScreen.tsx
+index f70496789886c03969ea9588ae8d99e1054b4745..7a8e24aeb8af3a412ea2cf520141989f45279955 100644
+--- a/apps/web/src/features/site/MobileScreen.tsx
++++ b/apps/web/src/features/site/MobileScreen.tsx
+@@ -14,3 +14,4 @@ import { WindowRenderer } from "./WindowRenderer";
+ import type { ProfileDirectoryEntry } from "../modules/types";
+-import { musicPlayback, useMusicPlayback } from "../modules/music/audioCoordinator";
++import { useMusicPlayback } from "../modules/music/audioCoordinator";
++import { stopAllMedia, stopWindowMedia } from "../modules/music/mediaSession";
+ 
+@@ -62,5 +63,5 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
+ 
+-  useEffect(() => () => musicPlayback.stopAll(), []);
+-  const open = (id: string) => { if (openId && openId !== id) musicPlayback.stopWindow(openId); setOpenId(id); setInlineEdit(false); if (editor) store.select(id); };
+-  const back = () => { const closingId = openId; if (closingId) musicPlayback.stopWindow(closingId); setOpenId(null); setInlineEdit(false); if (closingId) requestAnimationFrame(() => iconRefs.current.get(closingId)?.focus()); };
++  useEffect(() => () => stopAllMedia(), []);
++  const open = (id: string) => { if (openId && openId !== id) stopWindowMedia(openId); setOpenId(id); setInlineEdit(false); if (editor) store.select(id); };
++  const back = () => { const closingId = openId; if (closingId) stopWindowMedia(closingId); setOpenId(null); setInlineEdit(false); if (closingId) requestAnimationFrame(() => iconRefs.current.get(closingId)?.focus()); };
+   useEffect(() => {
+diff --git a/apps/web/src/features/site/VisitorDesktop.tsx b/apps/web/src/features/site/VisitorDesktop.tsx
+index e96024a00a3a599afaf7c3ff8cc95dc3313f32e1..e847c43d8df9c0cc33946a47b4cc235a50e64035 100644
+--- a/apps/web/src/features/site/VisitorDesktop.tsx
++++ b/apps/web/src/features/site/VisitorDesktop.tsx
+@@ -8,3 +8,4 @@ import { DesktopTaskbar } from "./DesktopTaskbar";
+ import { WindowRenderer } from "./WindowRenderer";
+-import { musicPlayback, useMusicPlayback } from "../modules/music/audioCoordinator";
++import { useMusicPlayback } from "../modules/music/audioCoordinator";
++import { stopAllMedia, stopWindowMedia } from "../modules/music/mediaSession";
+ 
+@@ -50,3 +51,3 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
+ 
+-  useEffect(() => () => musicPlayback.stopAll(), []);
++  useEffect(() => () => stopAllMedia(), []);
+ 
+@@ -79,3 +80,3 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
+   function minimize(id: string) {
+-    musicPlayback.stopWindow(id);
++    stopWindowMedia(id);
+     setRuntime((current) => current[id] ? { ...current, [id]: { ...current[id], status: "minimized" } } : current);
+@@ -84,3 +85,3 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
+   function close(id: string) {
+-    musicPlayback.stopWindow(id);
++    stopWindowMedia(id);
+     setRuntime((current) => current[id] ? { ...current, [id]: { ...current[id], status: "closed", maximized: false } } : current);
+diff --git a/apps/web/src/lib/useMobileViewport.ts b/apps/web/src/lib/useMobileViewport.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..96ce59169fb33eb1c51bd66b73a094cd25811c0f
+--- /dev/null
++++ b/apps/web/src/lib/useMobileViewport.ts
+@@ -0,0 +1,11 @@
++import { useSyncExternalStore } from "react";
++const query = "(max-width: 767px)";
++const subscribe = (notify: () => void) => {
++  const media = globalThis.matchMedia(query);
++  media.addEventListener("change", notify);
++  return () => media.removeEventListener("change", notify);
++};
++const snapshot = () => globalThis.matchMedia(query).matches;
++export function useMobileViewport(): boolean {
++  return useSyncExternalStore(subscribe, snapshot, () => false);
++}
+diff --git a/apps/web/src/pages/EditorPage.tsx b/apps/web/src/pages/EditorPage.tsx
+index c594727c995f87c92eb3c74947b3b1e93d10ffda..38c1a15e4ba38cb9da23e629744cacfefc041def 100644
+--- a/apps/web/src/pages/EditorPage.tsx
++++ b/apps/web/src/pages/EditorPage.tsx
+@@ -22,2 +22,3 @@ import { EditorMediaProvider } from "../features/media/editorMedia";
+ import { IntegrityDialog } from "../features/editor/IntegrityDialog";
++import { stopAllMedia } from "../features/modules/music/mediaSession";
+ 
+@@ -534,3 +535,3 @@ export function EditorPage({ site }: { site: SiteRecord }) {
+         </div>
+-        <RetroButton onClick={() => setPreview(true)}>▶ 訪客預覽</RetroButton>
++        <RetroButton onClick={() => { stopAllMedia(); setPreview(true); }}>▶ 訪客預覽</RetroButton>
+         {actions.manageMembers ? <RetroButton ref={collaborationButtonRef} onClick={() => setCollaborationOpen(true)}>協作者</RetroButton> : null}
+@@ -629,3 +630,3 @@ export function EditorPage({ site }: { site: SiteRecord }) {
+           ) : (
+-            <MobileScreen document={store.document} mode="editor" framed siteId={siteId} upload={uploadImage} onPreview={() => setPreview(true)} profiles={editorProfiles} posts={editorPosts} collections={editorCollections} profileIdsByWindow={profileIdsByWindow} onProfileSelect={selectProfile} onProfileAdd={addProfile} onProfileDuplicate={duplicateProfileForWindow} onProfileChange={changeProfile} onProfileDelete={deleteProfile} profileDeleteBlocked={selectedProfileReferenced} profileDeleteGuardById={profileDeleteGuardById} profileDirectory={profileDirectory} updateContent={updateContent} socialDocument={versionedDraft ?? undefined} />
++            <MobileScreen document={store.document} mode="editor" framed siteId={siteId} upload={uploadImage} onPreview={() => { stopAllMedia(); setPreview(true); }} profiles={editorProfiles} posts={editorPosts} collections={editorCollections} profileIdsByWindow={profileIdsByWindow} onProfileSelect={selectProfile} onProfileAdd={addProfile} onProfileDuplicate={duplicateProfileForWindow} onProfileChange={changeProfile} onProfileDelete={deleteProfile} profileDeleteBlocked={selectedProfileReferenced} profileDeleteGuardById={profileDeleteGuardById} profileDirectory={profileDirectory} updateContent={updateContent} socialDocument={versionedDraft ?? undefined} />
+           )}
+diff --git a/apps/web/src/pages/PublicSitePage.tsx b/apps/web/src/pages/PublicSitePage.tsx
+index f676cab686cac0f33078e0bb229f9801a1bec0a8..a9a3db5ff1ac8240ed562e5bacce6540a9493b03 100644
+--- a/apps/web/src/pages/PublicSitePage.tsx
++++ b/apps/web/src/pages/PublicSitePage.tsx
+@@ -4,2 +4,3 @@ import { Navigate, useParams } from "react-router-dom";
+ import { api } from "../lib/api";
++import { useMobileViewport } from "../lib/useMobileViewport";
+ import { useThemeView } from "../lib/themeView";
+@@ -83,2 +84,3 @@ export function PublicSitePage() {
+ function PublishedDesktop({ document, profiles, profileIdsByWindow, profileDirectory, initialTarget, shareBaseUrl, siteHandle }: { document: SiteDocument; profiles: ProfileEntityV2[]; profileIdsByWindow: Record<string, string>; profileDirectory: ReturnType<typeof buildProfileDirectory>; initialTarget: { windowId: string; postId?: string } | null; shareBaseUrl: string; siteHandle: string }) {
++  const mobile = useMobileViewport();
+   const theme = document.theme;
+@@ -97,5 +99,7 @@ function PublishedDesktop({ document, profiles, profileIdsByWindow, profileDirec
+     >
+-      <VisitorDesktop document={document} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialOpenId={initialTarget?.windowId} initialPostId={initialTarget?.postId} publicShareBaseUrl={shareBaseUrl} siteHandle={siteHandle} />
+-
+-      <MobileScreen document={document} mode="visitor" profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialOpenId={initialTarget?.windowId} initialPostId={initialTarget?.postId} publicShareBaseUrl={shareBaseUrl} siteHandle={siteHandle} />
++      {mobile ? (
++        <MobileScreen document={document} mode="visitor" profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialOpenId={initialTarget?.windowId} initialPostId={initialTarget?.postId} publicShareBaseUrl={shareBaseUrl} siteHandle={siteHandle} />
++      ) : (
++        <VisitorDesktop document={document} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialOpenId={initialTarget?.windowId} initialPostId={initialTarget?.postId} publicShareBaseUrl={shareBaseUrl} siteHandle={siteHandle} />
++      )}
+     </main>
