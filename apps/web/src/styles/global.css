@@ -182,3 +182,9 @@ select{font:inherit}
 /* Bounded authoring feedback */
 .moodboard-limit-status,.explorer-status{padding:5px;background:#fff7cc;border:1px solid #9c7c00;overflow-wrap:anywhere}
 .moodboard-limit-status{flex-basis:100%}.explorer-status{margin:0}
+
+/* Wide games scroll inside their window while keeping each square usable. */
+.minesweeper-board-scroll{min-width:0;max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:thin}
+.minesweeper-board-scroll .minesweeper-grid{min-width:max-content}
+.minesweeper-scroll-hint{display:none}
+@media(max-width:520px){.minesweeper-scroll-hint{display:block;color:#333;overflow-wrap:anywhere}}
