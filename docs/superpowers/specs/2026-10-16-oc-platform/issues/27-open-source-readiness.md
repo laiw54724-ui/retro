@@ -2,7 +2,7 @@
 
 ## 狀態與查核基準
 
-2026-10-16 規劃更新，原始碼基準 e4d9722。以下清單均為待實作／待驗收，不代表已完成。原始 Issue 需求已保留。
+2026-10-17 決策更新：專案權利人已核准原創程式碼採 MIT；授權不明的 Windows 圖示不隨 repo 或預設發行物散布，改由部署者明確確認後自行安裝可選素材包。原始 Issue 需求已保留。
 
 ## 獨立調查
 
@@ -12,7 +12,7 @@
 
 ## 決定與範圍
 
-把本單從最後一階段提前為所有新套件／素材的選型門檻。自有程式碼建議 MIT；本輪只規劃，不替權利人簽署、不自動重授權第三方內容。正式加 LICENSE 前確認權利人與既有貢獻範圍。
+把本單從最後一階段提前為所有新套件／素材的選型門檻。自有程式碼採 MIT；第三方內容不因此重新授權。
 
 程式碼、字型、圖示、使用者內容四類分開。使用者 OC／作品／音訊預設仍屬原作者；公開瀏覽不是授權他人複製，程式 MIT 不覆蓋這些內容。參考圖不放進公開範例。
 
@@ -20,7 +20,7 @@
 
 建立 third-party manifest，欄位含 path／來源 URL／版本或 commit／hash／作者／license／notice／允許的使用範圍／審核狀態。狀態至少 confirmed、needs-evidence、replace。
 
-以 trapd00r 固定 commit 728a866ad59a54fd4082dbe000e1e62e50bd90e9、WinClassic 頁面、原檔名與 hash 建立 provenance manifest。Windows 圖示維持原權利人素材，不納入 Retro MIT 授權宣告；正式開源發行前明確選擇「repo 內附且附權利聲明」「獨立 asset pack」或「安裝時由使用者取得」。未比對成功者可換成原創 SVG／[Pixelarticons 免費 MIT](https://github.com/halfmage/pixelarticons)。既有 icon ID 要有 fallback 與映射，不讓資產包差異造成桌面空白。
+以 trapd00r 固定 commit 728a866ad59a54fd4082dbe000e1e62e50bd90e9、WinClassic 頁面、原檔名與 hash 建立 provenance manifest。Windows 圖示維持原權利人素材，不納入 Retro MIT 授權宣告；正式開源 repo 與預設發行物不包含圖示 binaries，部署者可明確確認後從固定上游自行安裝。未安裝或舊素材缺檔時使用原創 SVG fallback，不讓既有 icon ID 造成桌面空白。
 
 [Cubic 11](https://github.com/ACh-K/Cubic-11) 保留 OFL、來源與版本，衍生修改另核對保留名稱。背景、demo avatar、貼紙、音樂、歌詞逐項盤點。先不刪使用者資料；若移除發行素材，記錄 exact paths、替代與恢復方式。
 

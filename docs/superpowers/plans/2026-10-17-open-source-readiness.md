@@ -8,8 +8,13 @@
 2. Add contributor, conduct, self-hosting, license-scope, security/takedown, Issue, and PR guidance.
 3. Provide one `verify:contributor` pre-merge gate while retaining focused tests during implementation.
 4. Update architecture and setup docs for multi-desktop collaboration, current apps, all migrations, frozen lockfiles, and the hosted/self-hosted boundary.
-5. Keep the strict asset redistribution gate blocked for the two unresolved Windows icon collections.
+5. Keep the two unresolved Windows icon collections out of Git and default
+   builds; allow an explicitly acknowledged local install while making the
+   strict release gate reject any build that contains it.
 
-## Deliberate blocker
+## Owner decision (resolved 2026-10-17)
 
-Only an authorized repository rights holder may choose and grant the root source-code license. This change records that absence honestly instead of adding an assumed MIT license. Issue #27 cannot be closed as fully open-source-ready until that decision and the icon redistribution/removal decision are complete.
+The authorized repository owner selected MIT for original Retro source and
+selected user-installed optional packaging for Windows icons. The license and
+packaging implementation must preserve the third-party and user-content
+boundaries described in the Issue specification.
