@@ -4,7 +4,7 @@ Generated from the frozen pnpm install by `node scripts/audit-dependency-license
 The report covers the platform-neutral installed dependency graph; host-specific optional native binaries inherit their parent package's role and remain subject to their own package metadata.
 This inventory records upstream declarations and is not legal advice or a relicensing grant.
 
-Packages: **148**
+Packages: **153**
 
 | Package | Version | Declared license | Upstream |
 | --- | --- | --- | --- |
@@ -25,6 +25,7 @@ Packages: **148**
 | @babel/parser | 7.29.9 | MIT | [source](https://github.com/babel/babel) |
 | @babel/plugin-transform-react-jsx-self | 7.29.7 | MIT | [source](https://github.com/babel/babel) |
 | @babel/plugin-transform-react-jsx-source | 7.29.7 | MIT | [source](https://github.com/babel/babel) |
+| @babel/runtime | 7.29.10 | MIT | [source](https://github.com/babel/babel) |
 | @babel/template | 7.29.7 | MIT | [source](https://github.com/babel/babel) |
 | @babel/traverse | 7.29.10 | MIT | [source](https://github.com/babel/babel) |
 | @babel/types | 7.29.8 | MIT | [source](https://github.com/babel/babel) |
@@ -95,6 +96,8 @@ Packages: **148**
 | fdir | 6.5.0 | MIT | [source](https://github.com/thecodrr/fdir) |
 | gensync | 1.0.0-beta.2 | MIT | [source](https://github.com/loganfsmyth/gensync) |
 | hono | 4.13.13 | MIT | [source](https://github.com/honojs/hono) |
+| html-parse-stringify | 4.0.1 | MIT | [source](https://github.com/i18next/html-parse-stringify) |
+| i18next | 26.4.7 | MIT | [source](https://github.com/i18next/i18next) |
 | iceberg-js | 0.8.1 | MIT | [source](https://github.com/supabase/iceberg-js) |
 | js-tokens | 4.0.0 | MIT | [source](lydell/js-tokens) |
 | js-tokens | 9.0.1 | MIT | [source](lydell/js-tokens) |
@@ -117,6 +120,7 @@ Packages: **148**
 | playwright | 1.64.1 | Apache-2.0 | [source](https://github.com/microsoft/playwright) |
 | postcss | 8.5.30 | MIT | [source](postcss/postcss) |
 | react-dom | 19.3.1 | MIT | [source](https://github.com/react/react) |
+| react-i18next | 17.0.20 | MIT | [source](https://github.com/i18next/react-i18next) |
 | react-refresh | 0.18.0 | MIT | [source](https://github.com/facebook/react) |
 | react-router-dom | 7.18.4 | MIT | [source](https://github.com/remix-run/react-router) |
 | react-router | 7.18.4 | MIT | [source](https://github.com/remix-run/react-router) |
@@ -144,6 +148,7 @@ Packages: **148**
 | undici | 7.29.1 | MIT | [source](https://github.com/nodejs/undici) |
 | unenv | 2.0.0-rc.24 | MIT | [source](unjs/unenv) |
 | update-browserslist-db | 1.3.4 | MIT | [source](browserslist/update-db) |
+| use-sync-external-store | 1.7.0 | MIT | [source](https://github.com/react/react) |
 | vite-node | 3.2.4 | MIT | [source](https://github.com/vitest-dev/vitest) |
 | vite | 7.3.7 | MIT | [source](https://github.com/vitejs/vite) |
 | vitest | 3.2.7 | MIT | [source](https://github.com/vitest-dev/vitest) |

@@ -1,0 +1,116 @@
+{
+  "shell": {
+    "backToDesktops": "回到我的桌面",
+    "undo": "復原",
+    "undoTitle": "復原 (Ctrl+Z)",
+    "redo": "重做",
+    "redoTitle": "重做 (Ctrl+Shift+Z)",
+    "unpublished": "尚未發布",
+    "unpublishedChanges": "草稿有未發布的變更",
+    "published": "已發布 v{{version}}",
+    "saveIncomplete": "有欄位未完成，暫不儲存",
+    "saving": "儲存中…",
+    "unsaved": "尚未儲存",
+    "saveFailed": "儲存失敗",
+    "saved": "已儲存",
+    "roleNote": "編輯者 · 只有擁有者可以發布",
+    "roleHint": "只有桌面擁有者可以發布與管理協作者",
+    "device": "裝置",
+    "desktop": "桌面版",
+    "mobile": "手機版",
+    "preview": "訪客預覽",
+    "collaborators": "協作者",
+    "transfer": "匯出／匯入",
+    "openPublished": "開啟已發布網站",
+    "publish": "發布",
+    "republish": "重新發布",
+    "home": "首頁",
+    "signOut": "登出",
+    "layoutMode": "排版模式",
+    "editMode": "編輯模式",
+    "selected": "已選取：{{title}}",
+    "noneSelected": "未選取",
+    "windowsCount_one": "{{formattedCount}} 個視窗",
+    "windowsCount_other": "{{formattedCount}} 個視窗",
+    "loadingError": "無法開啟編輯器",
+    "retrySave": "重試儲存",
+    "closeNotice": "關閉通知",
+    "toolsPanel": "工具面板",
+    "toolsTabs": "編輯工具分類"
+  },
+  "tabs": {
+    "add": "新增",
+    "layers": "視窗",
+    "theme": "主題"
+  },
+  "add": {
+    "heading": "新增視窗",
+    "hint": "點一下就會加到桌面上，並自動建立桌面圖示。",
+    "comingSoon": "即將推出",
+    "diary": "日記",
+    "characterProfile": "角色檔案",
+    "visualNovel": "視覺小說"
+  },
+  "modules": {
+    "document": {
+      "label": "文件視窗",
+      "description": "標題、段落、圖片、按鈕、清單"
+    },
+    "gallery": {
+      "label": "相簿視窗",
+      "description": "多張圖片網格，點擊放大"
+    },
+    "links": {
+      "label": "連結視窗",
+      "description": "社群與外部連結按鈕"
+    },
+    "about": {
+      "label": "名片／關於我",
+      "description": "頭像、檔案欄位、簡介與橫幅"
+    },
+    "instagram": {
+      "label": "復古 IG 個人頁",
+      "description": "帳號、追蹤數、簡介與貼文格狀"
+    },
+    "music": {
+      "label": "音樂播放器",
+      "description": "角色播放清單、原生音訊與作品連結"
+    },
+    "moodboard": {
+      "label": "Moodboard 畫板",
+      "description": "用圖片、文字與色塊組成角色靈感板"
+    },
+    "explorer": {
+      "label": "世界觀資料夾",
+      "description": "用多層資料夾整理桌面視窗與角色設定"
+    },
+    "minesweeper": {
+      "label": "掃雷",
+      "description": "不記分、不上傳的訪客小遊戲"
+    },
+    "character-dialog": {
+      "label": "角色彈窗",
+      "description": "可關閉的角色歡迎訊息"
+    },
+    "guestbook": {
+      "label": "訪客留言簿",
+      "description": "預設待審的公開純文字留言"
+    }
+  },
+  "mobile": {
+    "editing": "編輯中",
+    "emptyTitle": "桌面還空空的",
+    "emptyEditor": "點下方「新增」放上第一個視窗。",
+    "emptyVisitor": "這個桌面還沒有內容。",
+    "desktop": "桌面",
+    "finishEditing": "完成編輯",
+    "editWindow": "編輯此視窗",
+    "toolbar": "手機編輯工具",
+    "add": "新增",
+    "edit": "編輯",
+    "theme": "主題",
+    "preview": "預覽",
+    "addWindow": "新增視窗",
+    "editWindowTitle": "編輯視窗"
+  }
+}
