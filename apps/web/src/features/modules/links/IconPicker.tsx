@@ -99,38 +99,49 @@ export function IconPicker({ siteId, value, onChange, upload, onDone, size = 24 
     </span>
   );
 
+  const windowsSection = packState === "available" ? (
+    <section className="icon-section" aria-label="Windows 圖示">
+      <strong className="icon-picker-h">{search.trim() ? "Windows 搜尋結果" : "Windows 精選"}</strong>
+      <label className="icon-search"><span className="visually-hidden">搜尋 Windows 圖示</span><input className="w98-input" type="search" value={search} placeholder={`搜尋 ${WINDOWS_ICON_RECORDS.length.toLocaleString()} 個 Windows 圖示`} aria-label="搜尋 Windows 圖示" onChange={(event) => setSearch(event.target.value)} /></label>
+      {windows.length ? <div className="icon-grid win98-icon-grid">{windows.map((record) => cell(record.key, record.path, `Windows 圖示 ${record.label}`))}</div> : <span className="w98-hint">找不到相符的 Windows 圖示。</span>}
+      {search.trim() && windows.length === 100 ? <span className="w98-hint">顯示前 100 筆結果，請輸入更多關鍵字縮小範圍。</span> : null}
+      <span className="w98-hint icon-attribution">來源：<a href={WINDOWS_ICON_SOURCE}>{WINDOWS_ICON_SOURCE.replace("https://github.com/", "")}</a>。圖示權利屬各原權利人。</span>
+    </section>
+  ) : null;
+
   return (
     <div className="icon-picker">
-      <strong className="icon-picker-h">內建圖示</strong>
-      <div className="icon-grid">{BUILTIN_ICON_KEYS.map((key) => cell(key, key, `圖示 ${key}`))}</div>
-      <strong className="icon-picker-h">{search.trim() ? "Windows 搜尋結果" : "Windows 精選"}</strong>
-      {packState === "checking" ? <span role="status" className="w98-hint">正在檢查可選圖示包…</span> : null}
-      {packState === "missing" ? (
-        <span role="status" className="w98-hint">未安裝 Windows 可選圖示包。自架者確認上游權利狀態後可執行 <code>{WINDOWS_ICON_PACK_INSTALL_COMMAND}</code>；目前仍可使用內建或自行上傳的圖示。</span>
-      ) : null}
-      {packState === "available" ? (
-        <>
-          <label className="icon-search"><span className="visually-hidden">搜尋 Windows 圖示</span><input className="w98-input" type="search" value={search} placeholder={`搜尋 ${WINDOWS_ICON_RECORDS.length.toLocaleString()} 個 Windows 圖示`} aria-label="搜尋 Windows 圖示" onChange={(event) => setSearch(event.target.value)} /></label>
-          {windows.length ? <div className="icon-grid win98-icon-grid">{windows.map((record) => cell(record.key, record.path, `Windows 圖示 ${record.label}`))}</div> : <span className="w98-hint">找不到相符的 Windows 圖示。</span>}
-          {search.trim() && windows.length === 100 ? <span className="w98-hint">顯示前 100 筆結果，請輸入更多關鍵字縮小範圍。</span> : null}
-        </>
-      ) : null}
-      <span className="w98-hint">來源：<a href={WINDOWS_ICON_SOURCE}>{WINDOWS_ICON_SOURCE.replace("https://github.com/", "")}</a>；上游未宣告授權，圖示權利屬各原權利人，不隨 Retro 發行。</span>
-      {siteId ? (
-        <>
-          <strong className="icon-picker-h">我的圖示</strong>
-          {mine.length ? <div className="icon-grid">{mine.map((asset) => cell(asset.id, asset.url, asset.name || "圖示", () => void remove(asset)))}</div> : <span className="w98-hint">還沒有上傳過圖示。</span>}
-        </>
-      ) : null}
-      <div className="ie-row">
-        {upload ? <FilePick onFiles={(files) => void addFiles(files.slice(0, 1), true)}>上傳單張…</FilePick> : null}
-        {upload ? <FilePick multiple onFiles={(files) => void addFiles(files, false)}>上傳圖示包…</FilePick> : null}
-        {onDone ? <MiniBtn label="完成" className="mini-btn wide" onClick={onDone}>完成</MiniBtn> : null}
-      </div>
-      <div className="ie-row">
-        <input className="ie small" value={url} placeholder="或貼上圖示網址 https://" aria-label="圖示網址" onChange={(event) => setUrl(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); useUrl(); } }} />
-        <MiniBtn label="使用網址" className="mini-btn wide" onClick={useUrl}>使用</MiniBtn>
-      </div>
+      <section className="icon-section" aria-label="內建圖示">
+        <strong className="icon-picker-h">內建圖示</strong>
+        <div className="icon-grid">{BUILTIN_ICON_KEYS.map((key) => cell(key, key, `圖示 ${key}`))}</div>
+      </section>
+
+      <section className="icon-section" aria-label="我的圖示">
+        <strong className="icon-picker-h">我的圖示</strong>
+        {siteId ? (mine.length ? <div className="icon-grid">{mine.map((asset) => cell(asset.id, asset.url, asset.name || "圖示", () => void remove(asset)))}</div> : <span className="w98-hint">還沒有上傳過圖示。上傳後會留在這裡，之後每個視窗都能選。</span>) : <span className="w98-hint">儲存桌面後才能使用「我的圖示」。</span>}
+        <div className="ie-row">
+          {upload ? <FilePick onFiles={(files) => void addFiles(files.slice(0, 1), true)}>上傳單張…</FilePick> : null}
+          {upload ? <FilePick multiple onFiles={(files) => void addFiles(files, false)}>上傳圖示包…</FilePick> : null}
+        </div>
+        <div className="ie-row">
+          <input className="ie small" value={url} placeholder="或貼上圖示網址 https://" aria-label="圖示網址" onChange={(event) => setUrl(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); useUrl(); } }} />
+          <MiniBtn label="使用網址" className="mini-btn wide" onClick={useUrl}>使用</MiniBtn>
+        </div>
+      </section>
+
+      {windowsSection}
+
+      <details className="icon-help">
+        <summary>{packState === "available" ? "Windows 圖示包說明" : packState === "missing" ? "未安裝 Windows 可選圖示包 · 說明" : "Windows 可選圖示包 · 說明"}</summary>
+        <div className="icon-help-body">
+          <p>Windows 圖示是<strong>可選</strong>的：沒有安裝時，內建圖示與你自己上傳的圖示都能正常使用，不影響任何功能。</p>
+          {packState === "missing" ? <p>目前這個環境<strong>沒有</strong>安裝 Windows 圖示包。自架者確認上游權利狀態後，才可以在自己的環境執行：<code>{WINDOWS_ICON_PACK_INSTALL_COMMAND}</code></p> : null}
+          <p>安裝指令只是把圖示檔放進你自己的環境，<strong>不代表取得公開使用權</strong>。上游未宣告授權，圖示權利屬各原權利人，不隨 Retro 發行，Retro 也不會自動下載或安裝。公開網站請優先使用原創或授權明確的圖示。</p>
+          <p>上游專案：<a href={WINDOWS_ICON_SOURCE}>{WINDOWS_ICON_SOURCE.replace("https://github.com/", "")}</a></p>
+        </div>
+      </details>
+
+      {onDone ? <div className="ie-row"><MiniBtn label="完成" className="mini-btn wide" onClick={onDone}>完成</MiniBtn></div> : null}
       <span role="status" className="w98-hint">{busy ? "上傳中…" : status}</span>
     </div>
   );

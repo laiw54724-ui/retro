@@ -112,7 +112,14 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 .icon-search { display: block; }
 .icon-search .w98-input { width: 100%; min-height: 30px; }
 .win98-icon-grid { max-height: 220px; overflow-y: auto; padding: 3px; background: #fff; box-shadow: var(--w98-sunken); }
-.icon-picker-h { font-size: 11px; }
+.icon-picker-h { font-size: 12px; }
+.icon-section { display: flex; flex-direction: column; gap: 6px; }
+.icon-attribution { line-height: 1.4; }
+.icon-help { border-top: 1px solid #808080; padding-top: 4px; font-size: 12px; }
+.icon-help summary { cursor: pointer; min-height: 28px; display: flex; align-items: center; color: #000080; text-decoration: underline; }
+.icon-help-body { display: grid; gap: 6px; padding: 4px 2px; line-height: 1.5; }
+.icon-help-body p { margin: 0; }
+.icon-help-body code { display: block; margin-top: 4px; padding: 4px 6px; background: #fff; box-shadow: var(--w98-sunken); overflow-wrap: anywhere; font-size: 11px; }
 .icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 3px; }
 .icon-cell { position: relative; display: block; }
 .icon-cell > button:first-child { width: 100%; height: 32px; padding: 0; display: grid; place-items: center; border: 0; background: #c0c0c0; box-shadow: var(--w98-raised); cursor: pointer; }
