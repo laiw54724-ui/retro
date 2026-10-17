@@ -1,9 +1,8 @@
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import headers from "../../public/_headers?raw";
 
-const headers = readFileSync(new URL("../../public/_headers", import.meta.url), "utf8");
-const csp = headers.split("\n").find((line) => line.trim().startsWith("Content-Security-Policy:"))?.split(":").slice(1).join(":").trim() ?? "";
-const directives = new Map(csp.split(";").map((part) => part.trim()).filter(Boolean).map((part) => { const [name, ...values] = part.split(/\s+/); return [name, values] as const; }));
+const csp = headers.split("\n").find((line: string) => line.trim().startsWith("Content-Security-Policy:"))?.split(":").slice(1).join(":").trim() ?? "";
+const directives = new Map(csp.split(";").map((part: string) => part.trim()).filter(Boolean).map((part: string) => { const [name, ...values] = part.split(/\s+/); return [name, values] as const; }));
 
 describe("Pages Content-Security-Policy", () => {
   it("allows only the official music embed origins to be framed", () => {
@@ -17,7 +16,7 @@ describe("Pages Content-Security-Policy", () => {
     expect(directives.get("frame-ancestors")).toEqual(["'self'"]);
     expect(directives.get("base-uri")).toEqual(["'self'"]);
     expect(csp).not.toMatch(/unsafe-eval|\*|data:\s*;/);
-    expect(directives.get("script-src")?.some((value) => value.includes("unsafe"))).toBe(false);
+    expect((directives.get("script-src") ?? []).some((value: string) => value.includes("unsafe"))).toBe(false);
   });
 
   it("keeps clickjacking and referrer protections on the Retro pages themselves", () => {
