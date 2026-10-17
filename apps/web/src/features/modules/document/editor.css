@@ -1,0 +1,129 @@
+.document-editor,
+.document-view {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.document-editor > *,
+.document-view > *,
+.document-editor .doc-block,
+.document-editor .doc-fig,
+.document-editor .doc-action-editor,
+.document-editor .doc-block-settings {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.document-editor .document-editor-hint {
+  font-size: 11px;
+  line-height: 1.5;
+  opacity: .8;
+}
+
+.document-editor .doc-block {
+  padding: 4px;
+  border: 1px solid transparent;
+}
+
+.document-editor .doc-block[data-active="true"] {
+  border-color: #8a8ac0;
+}
+
+.document-editor .doc-block:focus-visible {
+  outline: 2px solid #000080;
+  outline-offset: 1px;
+}
+
+.document-editor .doc-block:has(> .doc-divider) {
+  min-height: 28px;
+  justify-content: center;
+}
+
+.document-editor .doc-block-toolbar {
+  gap: 6px;
+  padding-bottom: 4px;
+}
+
+.document-editor .doc-text-format,
+.document-editor .doc-block-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.document-editor .doc-block-actions {
+  margin-left: auto;
+}
+
+.document-editor .mini-btn {
+  min-height: 28px;
+  min-width: 28px;
+  height: auto;
+  padding-block: 4px;
+}
+
+.document-editor label.mini-btn:focus-within {
+  outline: 2px solid #000080;
+  outline-offset: 2px;
+}
+
+.document-editor .doc-block-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 8px;
+  border: 1px dashed #8a8ac0;
+}
+
+.document-editor .doc-block-settings > .mini-btn {
+  align-self: flex-start;
+}
+
+.document-editor .doc-setting-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.document-editor .doc-setting-help {
+  font-size: 11px;
+  line-height: 1.5;
+  opacity: .8;
+}
+
+.document-editor .ie {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-height: 28px;
+}
+
+.document-editor .ie.btn-text,
+.document-editor .ie.link-text {
+  max-width: 100%;
+}
+
+.document-editor .doc-img,
+.document-view .doc-img {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.document-view .doc-button,
+.document-view .doc-link {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+/* Keep the last add controls above MobileScreen's floating Done button. */
+.m-win-body .document-editor {
+  padding-bottom: 76px;
+}

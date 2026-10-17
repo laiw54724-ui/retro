@@ -49,7 +49,7 @@ test("missing or draft entity links use a generic public not-found response", as
   await expect(page.getByText("Retro User")).toHaveCount(0);
 });
 
-test("clipboard rejection shows the real URL for manual copy instead of fake success", async ({ page }) => {
+test("clipboard rejection shows the real URL for manual copy instead of fake success", async ({ page, baseURL }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, "share", { configurable: true, value: undefined });
     Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: () => Promise.reject(new Error("denied")) } });
@@ -61,7 +61,7 @@ test("clipboard rejection shows the real URL for manual copy instead of fake suc
   await dialog.getByRole("button", { name: "分享個人檔案" }).click();
   const fallback = dialog.getByRole("dialog", { name: "手動複製分享連結" });
   await expect(fallback).toBeVisible();
-  await expect(fallback.getByRole("textbox", { name: "分享網址" })).toHaveValue("http://127.0.0.1:5173/@demo/oc/profile%3Aig");
+  await expect(fallback.getByRole("textbox", { name: "分享網址" })).toHaveValue(new URL("/@demo/oc/profile%3Aig", baseURL).href);
   await expect(dialog.getByRole("status")).toHaveCount(0);
 });
 
