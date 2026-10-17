@@ -41,13 +41,13 @@
 3. 加上範圍明確的程式授權與 notices，完成 contributor／security 文件。
 4. 乾淨 clone 以文件步驟安裝、測試與 build；只使用測試素材與測試環境，不動使用者站點。
 
-- [ ] 每個隨發行散布的第三方資產都有來源、權利狀態與必要 notices；「無獨立 license」不得誤標成 MIT。
-- [ ] Windows 圖示能對應 trapd00r 固定 commit 或 WinClassic 條目；未比對素材不進開源發行，舊 icon ID 有可用 fallback。
-- [ ] LICENSE 範圍不誤涵蓋使用者作品、第三方字型與商標。
-- [ ] README 清楚區分 demo／自架／代管，安裝步驟可重現。
-- [ ] 新 contributor 可執行 frozen-lockfile、typecheck、測試及 build，不需讀取生產 secrets。
-- [ ] 完成記錄化的 secret 掃描，發現項目有輪替／處理結果，不只刪工作樹。
-- [ ] 安全回報管道、內容下架／權利說明及貢獻規則存在。
+- [x] 每個隨發行散布的第三方資產都有來源、權利狀態與必要 notices；「無獨立 license」不得誤標成 MIT。
+- [x] Windows 圖示能對應 trapd00r 固定 commit 或 WinClassic 條目；未比對素材不進開源發行，舊 icon ID 有可用 fallback。
+- [x] LICENSE 範圍不誤涵蓋使用者作品、第三方字型與商標。
+- [x] README 清楚區分 demo／自架／代管，安裝步驟可重現。
+- [x] 新 contributor 可執行 frozen-lockfile、typecheck、測試及 build，不需讀取生產 secrets。
+- [x] 完成記錄化的 secret 掃描，發現項目有輪替／處理結果，不只刪工作樹。
+- [x] 安全回報管道、內容下架／權利說明及貢獻規則存在。
 
 ## 依賴與風險
 
