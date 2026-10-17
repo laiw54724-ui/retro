@@ -162,7 +162,9 @@ for (const width of [320, 375, 430]) {
     await mockEditor(page, document, width);
     await page.locator(".m-icon").getByText("About.exe", { exact: true }).click();
     const aboutDialog = page.getByRole("dialog", { name: "About.exe", exact: true });
-    await aboutDialog.getByRole("button", { name: "編輯此視窗", exact: true }).click();
+    const editAbout = page.getByRole("button", { name: "編輯此視窗", exact: true });
+    await expect(editAbout).toBeVisible();
+    await editAbout.click();
     await expectContained(aboutDialog.locator(".about-editor"));
     await aboutDialog.locator("summary").filter({ hasText: "自訂欄位" }).click();
     await aboutDialog.locator("summary").filter({ hasText: "社群連結" }).click();
@@ -174,7 +176,9 @@ for (const width of [320, 375, 430]) {
     await aboutDialog.getByRole("button", { name: "關閉", exact: true }).click();
     await page.locator(".m-icon").getByText("Links.exe", { exact: true }).click();
     const linksDialog = page.getByRole("dialog", { name: "Links.exe", exact: true });
-    await linksDialog.getByRole("button", { name: "編輯此視窗", exact: true }).click();
+    const editLinks = page.getByRole("button", { name: "編輯此視窗", exact: true });
+    await expect(editLinks).toBeVisible();
+    await editLinks.click();
     await linksDialog.getByRole("button", { name: /^設定連結/ }).click();
     await expectContained(linksDialog.locator(".links-editor"));
     await expectContained(linksDialog.locator(".m-win-body"));
