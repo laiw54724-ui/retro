@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { ProfileEntityV2 } from "@retrodesk/shared";
 import { FilePick, ImageUrlField, SafeImg } from "../ui";
 
@@ -11,6 +11,12 @@ type Props = {
 /** Compact-by-default OC authoring form. Advanced legacy presentation fields stay collapsed. */
 export function ProfileEditor({ profile, onChange, upload }: Props) {
   const [advanced, setAdvanced] = useState(false);
+  // Custom fields have no persisted ID. Keep row identity local to this editor
+  // so changing a field name does not remount its input during typing/IME.
+  const fieldRows = useRef<{ profileId: string; ids: string[] }>({ profileId: profile.id, ids: [] });
+  if (fieldRows.current.profileId !== profile.id) fieldRows.current = { profileId: profile.id, ids: [] };
+  while (fieldRows.current.ids.length < profile.customFields.length) fieldRows.current.ids.push(crypto.randomUUID());
+  fieldRows.current.ids.length = profile.customFields.length;
   const set = (key: string, value: unknown, historyKey?: string) => onChange({ [key]: value }, historyKey);
   return (
     <div className="ig-profile-editor">
@@ -29,12 +35,12 @@ export function ProfileEditor({ profile, onChange, upload }: Props) {
       {advanced ? <fieldset className="w98-fieldset"><legend>角色設定</legend>
         <label className="w98-field"><span className="w98-hint">世界標籤（以逗號分隔）</span><input className="w98-input compact" value={profile.worldTags.join(", ")} onChange={(event) => set("worldTags", event.target.value.split(",").map((tag) => tag.trim()).filter(Boolean))} /></label>
         <div className="w98-field"><span className="w98-hint">自訂欄位</span>
-          {profile.customFields.map((field, index) => <div className="ie-row" key={`${field.key}-${index}`}>
+          {profile.customFields.map((field, index) => <div className="ie-row" key={fieldRows.current.ids[index]}>
             <input className="w98-input compact" placeholder="欄位名稱" value={field.key} onChange={(event) => set("customFields", profile.customFields.map((item, i) => i === index ? { ...item, key: event.target.value } : item))} />
             <input className="w98-input compact grow" placeholder="內容" value={field.value} onChange={(event) => set("customFields", profile.customFields.map((item, i) => i === index ? { ...item, value: event.target.value } : item))} />
-            <button type="button" className="w98-btn small" aria-label={`刪除自訂欄位 ${field.key}`} onClick={() => set("customFields", profile.customFields.filter((_, i) => i !== index))}>×</button>
+            <button type="button" className="w98-btn small" aria-label={`刪除自訂欄位 ${field.key}`} onClick={() => { fieldRows.current.ids.splice(index, 1); set("customFields", profile.customFields.filter((_, i) => i !== index)); }}>×</button>
           </div>)}
-          <button type="button" className="w98-btn small" onClick={() => set("customFields", [...profile.customFields, { key: "新欄位", value: "" }])}>＋ 新增欄位</button>
+          <button type="button" className="w98-btn small" onClick={() => { fieldRows.current.ids.push(crypto.randomUUID()); set("customFields", [...profile.customFields, { key: "新欄位", value: "" }]); }}>＋ 新增欄位</button>
         </div>
         <label className="w98-field"><span className="w98-hint">狀態</span><select className="w98-input compact" value={profile.visibility} onChange={(event) => set("visibility", event.target.value)}><option value="draft">草稿</option><option value="published">可發布</option></select></label>
         <label className="check-row"><input type="checkbox" checked={!!profile.themeOverride} onChange={(event) => set("themeOverride", event.target.checked ? { accent: "#000080", background: "#ffffff" } : undefined)} />自訂內容主題（只影響 IG 內容）</label>
