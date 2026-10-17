@@ -1,0 +1,74 @@
+diff --git a/tests/e2e/icon-picker.spec.ts b/tests/e2e/icon-picker.spec.ts
+index bd2019437c01b2a3a3a4da1f4aa74396d1fa867e..6b0f63b43bdf92e736d4501798a91be120735d92 100644
+--- a/tests/e2e/icon-picker.spec.ts
++++ b/tests/e2e/icon-picker.spec.ts
+@@ -360,7 +360,13 @@ test("private uploaded icons resolve authenticated blobs in the library and reta
+   expect(requests.length).toBeGreaterThan(0);
+   expect(requests.every((value) => value === "Bearer a.b.c")).toBe(true);
+   await tile.click();
+-  await expect(dialog.getByTestId("icon-preview").locator("img")).toHaveAttribute("src", /^blob:/);
++  const previews = dialog.getByTestId("icon-preview").locator("img");
++  // Both the desktop shortcut and the taskbar preview must resolve the private asset.
++  await expect(previews).toHaveCount(2);
++  for (const image of await previews.all()) {
++    await expect(image).toHaveAttribute("src", /^blob:/);
++    await expect.poll(() => image.evaluate((node) => (node as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
++  }
+   expect(saves).toHaveLength(0);
+   await dialog.getByRole("button", { name: "套用", exact: true }).click();
+   await expect.poll(() => aboutIcon(saves)).toBe(reference);
+diff --git a/tests/e2e/media-tasks.spec.ts b/tests/e2e/media-tasks.spec.ts
+index 54e4c5a7c7d6c2f74aecb5689d9e83aa8fb601b4..2d9234d8f82c64ee7a6ea8bf48929e57559645d0 100644
+--- a/tests/e2e/media-tasks.spec.ts
++++ b/tests/e2e/media-tasks.spec.ts
+@@ -198,7 +198,7 @@ test("window icon upload changes only its original window after explicit preview
+   dialog = page.getByRole("dialog", { name: "選擇圖示" });
+   await dialog.getByRole("button", { name: "資料夾（內建）", exact: true }).click();
+   await dialog.getByRole("button", { name: "套用", exact: true }).click();
+-  expect(site.saved().windows.find((window) => window.id === "gallery-b")?.icon).toBe("folder");
++  await expect.poll(() => site.saved().windows.find((window) => window.id === "gallery-b")?.icon).toBe("folder");
+   expect(site.saved().windows.find((window) => window.id === "gallery-b")?.icon).not.toBe(originalOtherIcon);
+   expect(site.saved().windows.find((window) => window.id === "gallery-a")?.icon).toMatch(/^retro-asset:/);
+ });
+diff --git a/tests/e2e/music-sources.spec.ts b/tests/e2e/music-sources.spec.ts
+index 6ee88b6c945cdbbe44de83af7d46b500dcdfb7ac..4dea6a43e3ded445ad68e4280fc46eb10b54793b 100644
+--- a/tests/e2e/music-sources.spec.ts
++++ b/tests/e2e/music-sources.spec.ts
+@@ -30,7 +30,28 @@ async function stubPlatforms(page: Page, opts: { hang?: boolean } = {}) {
+   });
+ }
+ 
++/** Valid, self-authored PCM: even a mocked play() must not load a corrupt file. */
++function silentPcmWave() {
++  const sampleRate = 8_000;
++  const dataBytes = sampleRate * 2;
++  const wave = Buffer.alloc(44 + dataBytes);
++  wave.write("RIFF", 0);
++  wave.writeUInt32LE(36 + dataBytes, 4);
++  wave.write("WAVEfmt ", 8);
++  wave.writeUInt32LE(16, 16);
++  wave.writeUInt16LE(1, 20);
++  wave.writeUInt16LE(1, 22);
++  wave.writeUInt32LE(sampleRate, 24);
++  wave.writeUInt32LE(sampleRate * 2, 28);
++  wave.writeUInt16LE(2, 32);
++  wave.writeUInt16LE(16, 34);
++  wave.write("data", 36);
++  wave.writeUInt32LE(dataBytes, 40);
++  return wave;
++}
++
+ async function installFakeMedia(page: Page) {
++  await page.route("https://media.example.com/**", (route) => route.fulfill({ contentType: "audio/wav", body: silentPcmWave() }));
+   await page.addInitScript(() => {
+     Object.defineProperty(HTMLMediaElement.prototype, "duration", { configurable: true, get: () => 90 });
+     Object.defineProperty(HTMLMediaElement.prototype, "seekable", { configurable: true, get: () => ({ length: 1, start: () => 0, end: () => 90 }) });
+@@ -224,7 +245,7 @@ test.describe("visitor: official platform players", () => {
+ 
+   test("no hidden player keeps sound going after switching source, minimizing or closing", async ({ page }) => {
+     await stubPlatforms(page);
+-    await page.route("https://media.example.com/**", (route) => route.fulfill({ contentType: "audio/mpeg", body: Buffer.alloc(64) }));
++    await page.route("https://media.example.com/**", (route) => route.fulfill({ contentType: "audio/wav", body: silentPcmWave() }));
+     await page.addInitScript(() => {
+       (window as unknown as { __playing: Set<HTMLMediaElement> }).__playing = new Set();
+       Object.defineProperty(HTMLMediaElement.prototype, "duration", { configurable: true, get: () => 90 });
