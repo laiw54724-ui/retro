@@ -1,9 +1,8 @@
-import { useState } from "react";
 import { makeLink, type LinkItem } from "@retrodesk/shared";
 import { Icon } from "../../../components/Icon";
 import { readableOn } from "../../../lib/themeView";
 import { MiniBtn } from "../ui";
-import { IconPicker } from "./IconPicker";
+import { IconPickerButton } from "./IconPicker";
 import { moveById, patchById, type ModuleProps } from "../types";
 
 const COLORS = ["#000080", "#5b3fa8", "#1565c0", "#1f7a5c", "#bf360c", "#000000"];
@@ -33,7 +32,6 @@ export function LinksView({ window, ctx }: ModuleProps<"links">) {
 }
 
 export function LinksInlineEditor({ window, ctx, update }: ModuleProps<"links">) {
-  const [picking, setPicking] = useState<string | null>(null);
   const links = window.content.links;
   const setLinks = (recipe: (list: LinkItem[]) => LinkItem[], key?: string) =>
     update((current) => ({ ...current, content: { ...current.content, links: recipe(current.content.links) } }), key);
@@ -47,7 +45,7 @@ export function LinksInlineEditor({ window, ctx, update }: ModuleProps<"links">)
         return (
           <div key={link.id} className="ie-box">
             <div className="link-tile edit" style={{ background: link.color, color: fg, boxShadow: tileShadow }}>
-              <button type="button" className="link-icon btn" aria-label="選擇圖示" aria-expanded={picking === link.id} title="選擇圖示" onClick={() => setPicking(picking === link.id ? null : link.id)}><Icon name={link.icon} size={24} /></button>
+              <IconPickerButton siteId={ctx.siteId} value={link.icon} upload={ctx.upload} label={link.label} defaultValue="link" onChange={(value) => patch(link.id, { icon: value, iconUrl: value.startsWith("http") ? value : "" })} />
               <input className="link-input" value={link.label} aria-label="按鈕文字" style={{ color: fg, outlineColor: fg }} onChange={(event) => patch(link.id, { label: event.target.value }, "ll" + link.id)} />
               <MiniBtn label="上移" disabled={index === 0} onClick={() => setLinks((list) => moveById(list, link.id, -1))}>▲</MiniBtn>
               <MiniBtn label="下移" disabled={index === links.length - 1} onClick={() => setLinks((list) => moveById(list, link.id, 1))}>▼</MiniBtn>
@@ -72,9 +70,6 @@ export function LinksInlineEditor({ window, ctx, update }: ModuleProps<"links">)
                   </select>
                 )}
             </div>
-            {picking === link.id ? (
-              <IconPicker siteId={ctx.siteId} value={link.icon} upload={ctx.upload} onDone={() => setPicking(null)} onChange={(value) => patch(link.id, { icon: value, iconUrl: value.startsWith("http") ? value : "" })} />
-            ) : null}
           </div>
         );
       })}

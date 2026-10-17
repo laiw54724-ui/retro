@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { DesktopWindow, SiteDocument } from "@retrodesk/shared";
+import { makeWindow, type DesktopWindow, type SiteDocument } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { IconPicker } from "../modules/links/IconPicker";
 import { WindowAppearanceEditor } from "./WindowAppearanceEditor";
@@ -74,7 +74,7 @@ export function RightPanel({ document, selected, siteId, upload, onUpdate, onDel
         {tab === "icon" ? (
           <>
             <span className="w98-hint">桌面與工作列上的圖示。</span>
-            <IconPicker siteId={siteId} value={selected.icon} upload={upload} size={28} onChange={(icon) => onUpdate((window) => ({ ...window, icon }))} />
+            <IconPicker siteId={siteId} value={selected.icon} upload={upload} size={28} label={selected.title} defaultValue={makeWindow(selected.type).icon} onChange={(icon) => onUpdate((window) => ({ ...window, icon }))} />
           </>
         ) : null}
         {tab === "layout" ? (

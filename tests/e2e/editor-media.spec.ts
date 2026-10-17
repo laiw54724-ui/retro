@@ -65,21 +65,24 @@ test("uses an installed optional icon pack and leaves removed legacy PNGs unavai
   await page.unroute("**/api/sites/site-1");
   await page.route("**/api/sites/site-1", (route) => route.fulfill({ json: { site: { id: "site-1", username: "demo", site_name: "Demo Desk", draft_document: draft, draft_version: 1, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-15T00:00:00.000Z", access_role: "owner" } } }));
   await page.getByRole("tab", { name: "圖示" }).click();
-  await expect(page.getByText("來源：trapd00r/win95-winxp_icons")).toBeVisible();
-  const search = page.getByLabel("搜尋 Windows 圖示");
-  await expect(search).toHaveAttribute("placeholder", /[0-9,]+/);
+  await page.getByRole("button", { name: "更換圖示…" }).click();
+  const dialog = page.getByRole("dialog", { name: "選擇圖示" });
+  await dialog.getByRole("tab", { name: "Windows（本機）" }).click();
+  await expect(dialog.getByText("來源：trapd00r/win95-winxp_icons")).toBeVisible();
+  const search = dialog.getByLabel("搜尋圖示");
   await search.fill("computer");
-  const result = page.locator(".win98-icon-grid button").first();
+  const result = dialog.locator(".ilib-grid .ilib-tile").first();
   await expect(result).toBeVisible();
   await result.click();
-  await expect.poll(() => saves.length).toBeGreaterThan(0);
+  await dialog.getByRole("button", { name: "套用" }).click();
+  await expect.poll(() => (saves.at(-1) as { document: typeof draft } | undefined)?.document.windows[0].icon).toMatch(/^\/windows-icons\//);
   draft = (saves.at(-1) as { document: typeof draft }).document;
   const selectedPath = draft.windows[0].icon;
   expect(selectedPath).toMatch(/^\/windows-icons\/[A-Za-z0-9._-]+\.(?:ico|png)$/);
   await page.reload();
   await expect(page.getByRole("dialog", { name: "About.exe" })).toBeVisible();
   await page.getByRole("tab", { name: "圖示" }).click();
-  await expect(page.locator(".icon-picker").getByRole("button", { pressed: true })).toHaveCount(1);
+  await expect(page.getByTestId("icon-current-name")).toHaveText("自訂圖片");
 
   const legacy = await page.evaluate(async () => {
     const image = new Image();
@@ -95,6 +98,8 @@ test("uses an installed optional icon pack and leaves removed legacy PNGs unavai
   await page.getByRole("button", { name: "編輯此視窗" }).click();
   await page.getByRole("button", { name: "完成編輯" }).click();
   await page.locator(".m-toolbar").getByRole("button", { name: "編輯" }).click();
-  await expect(page.getByLabel("搜尋 Windows 圖示")).toBeVisible();
-  await expect(page.getByText("來源：trapd00r/win95-winxp_icons")).toBeVisible();
+  await page.getByRole("button", { name: "更換圖示…" }).click();
+  const mobileDialog = page.getByRole("dialog", { name: "選擇圖示" });
+  await mobileDialog.getByRole("tab", { name: "Windows（本機）" }).click();
+  await expect(mobileDialog.getByText("來源：trapd00r/win95-winxp_icons")).toBeVisible();
 });

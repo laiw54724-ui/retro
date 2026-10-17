@@ -3,8 +3,14 @@
   "collections": [
     {
       "id": "cubic-11-font",
-      "paths": ["apps/web/public/fonts/Cubic_11.woff2", "apps/web/public/fonts/OFL.txt"],
-      "source": {"url": "https://github.com/ACh-K/Cubic-11", "revision": "upstream distribution bundled before provenance gate"},
+      "paths": [
+        "apps/web/public/fonts/Cubic_11.woff2",
+        "apps/web/public/fonts/OFL.txt"
+      ],
+      "source": {
+        "url": "https://github.com/ACh-K/Cubic-11",
+        "revision": "upstream distribution bundled before provenance gate"
+      },
       "authorOrRightsHolder": "ACh-K and Cubic 11 contributors",
       "license": "OFL-1.1",
       "notice": "The bundled OFL.txt applies to the font. Reserved names include Cubic and 俐方體.",
@@ -12,13 +18,92 @@
       "reviewStatus": "confirmed",
       "expectedFileCount": 2,
       "treeSha256": "c1a51568f3e876ee98d0d931ba35a778a8b2251d0ce02f427f785c7f68e5f517"
+    },
+    {
+      "id": "retro-original-og-image",
+      "paths": [
+        "apps/web/public/og-default.svg"
+      ],
+      "source": {
+        "url": "https://github.com/LAI-wen/retro",
+        "revision": "first-party"
+      },
+      "authorOrRightsHolder": "Retro project contributors",
+      "license": "MIT",
+      "notice": "Original artwork authored for this repository; covered by the repository MIT License.",
+      "useScope": "Default social-preview image.",
+      "reviewStatus": "confirmed",
+      "expectedFileCount": 1,
+      "treeSha256": "52499493da38a471179b30f3cc22d60308578166d2ecbc5260a98ffba3534d1e"
+    },
+    {
+      "id": "open-icons-haiku",
+      "paths": [
+        "apps/web/public/icon-library/haiku"
+      ],
+      "source": {
+        "url": "https://github.com/haiku/haiku",
+        "revision": "ac9aaea72eb11a8c425dbdd2d1f47fc9761c70c9"
+      },
+      "authorOrRightsHolder": "Haiku, Inc. and the Haiku icon artists",
+      "license": "MIT",
+      "notice": "Icons from the Haiku operating system (https://www.haiku-os.org), MIT license. Per Haiku, Inc. the only provision is to mention the origin. Haiku logo, Leaf and other Haiku, Inc. trademarks, and third-party application logos found in the same directory, are NOT included. License and source record: NOTICE.txt in the same folder.",
+      "useScope": "Bundled as web SVG converted at build time with hvif-tools; only the curated allowlist in docs/assets/open-icon-library.curation.json. Haiku logo, Leaf and other trademarks, and third-party application logos are excluded.",
+      "reviewStatus": "confirmed",
+      "detailManifest": "docs/assets/open-icon-library.provenance.json",
+      "provenanceSet": "haiku",
+      "expectedFileCount": 103,
+      "treeSha256": "8df1531c0a1f46b57a0a70e4a800842d50663fc9225a24787bc87f176f772994"
+    },
+    {
+      "id": "open-icons-pixel-art",
+      "paths": [
+        "apps/web/public/icon-library/pixelart"
+      ],
+      "source": {
+        "url": "https://github.com/tstamborski/pixelart-icons",
+        "revision": "aff260c021f9a8053719de0113cd59e428c87eca"
+      },
+      "authorOrRightsHolder": "Tomasz Stamborski",
+      "license": "CC0-1.0",
+      "notice": "Pixel-Art Icons by Tomasz Stamborski, CC0 1.0 (no attribution required; source kept for provenance). Brand logos, operating-system logos, fictional characters, weapons, tobacco and drug references are NOT included. License and source record: NOTICE.txt in the same folder.",
+      "useScope": "Bundled as the original 32px PNG; only generic objects from the curated allowlist. Brand logos, operating-system logos, characters and weapons are excluded.",
+      "reviewStatus": "confirmed",
+      "detailManifest": "docs/assets/open-icon-library.provenance.json",
+      "provenanceSet": "pixelart",
+      "expectedFileCount": 65,
+      "treeSha256": "cb5d565916a499b6b501cb67f70c4a37d3a17762d2c9a681497dd694897034a6"
+    },
+    {
+      "id": "open-icons-pixelarticons",
+      "paths": [
+        "apps/web/public/icon-library/pixelarticons"
+      ],
+      "source": {
+        "url": "https://github.com/halfmage/pixelarticons",
+        "revision": "c9ecc2da61afde85dbe539025e3d931c6152ad75"
+      },
+      "authorOrRightsHolder": "Gerrit Halfmann",
+      "license": "MIT",
+      "notice": "Pixelarticons (free set) by Gerrit Halfmann, MIT License, Copyright (c) 2019 Gerrit Halfmann. Pro/Mini/Prime series and brand-logo icons are NOT included. License and source record: NOTICE.txt in the same folder.",
+      "useScope": "Bundled as sanitized SVG; free series only (no Pro/Mini/Prime), generic objects only, brand-logo icons excluded.",
+      "reviewStatus": "confirmed",
+      "detailManifest": "docs/assets/open-icon-library.provenance.json",
+      "provenanceSet": "pixelarticons",
+      "expectedFileCount": 166,
+      "treeSha256": "d32acb618b3c1f8d40b7e1cd4c79afd75f117dcaa9ca0233f271158a44e60544"
     }
   ],
   "excludedCollections": [
     {
       "id": "optional-windows-icon-pack",
-      "paths": ["apps/web/public/windows-icons"],
-      "source": {"url": "https://github.com/trapd00r/win95-winxp_icons", "revision": "728a866ad59a54fd4082dbe000e1e62e50bd90e9"},
+      "paths": [
+        "apps/web/public/windows-icons"
+      ],
+      "source": {
+        "url": "https://github.com/trapd00r/win95-winxp_icons",
+        "revision": "728a866ad59a54fd4082dbe000e1e62e50bd90e9"
+      },
       "authorOrRightsHolder": "Microsoft and the respective original icon rightsholders",
       "license": "NOASSERTION",
       "notice": "Not bundled. An operator may explicitly install the pinned upstream collection locally; Retro's MIT License does not cover it.",
@@ -29,8 +114,13 @@
     },
     {
       "id": "legacy-win98-png-library",
-      "paths": ["apps/web/public/win98-icons"],
-      "source": {"url": "local user-supplied windows98-icons archive", "revision": "unversioned"},
+      "paths": [
+        "apps/web/public/win98-icons"
+      ],
+      "source": {
+        "url": "local user-supplied windows98-icons archive",
+        "revision": "unversioned"
+      },
       "authorOrRightsHolder": "Microsoft and the respective original icon rightsholders",
       "license": "NOASSERTION",
       "notice": "Removed from the repository and default build because source and redistribution permission are not established.",

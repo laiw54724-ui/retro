@@ -227,11 +227,14 @@ export const MoodboardContentSchema = z.object({
 
 export const ExplorerFolderSchema = z.object({
   id: z.string().min(1).max(160), parentId: z.string().min(1).max(160).nullable(), name: z.string().trim().min(1).max(120),
-  order: z.number().int().min(0).max(9999), visibility: z.enum(["published", "draft"]).default("published")
+  order: z.number().int().min(0).max(9999), visibility: z.enum(["published", "draft"]).default("published"),
+  /** Appearance only: a built-in key, library id (`haiku:folder`), asset reference or https image. Missing means the default glyph. */
+  icon: z.string().max(500).optional()
 }).strict();
 export const ExplorerShortcutSchema = z.object({
   id: z.string().min(1).max(160), parentId: z.string().min(1).max(160).nullable(), label: z.string().trim().min(1).max(160),
   order: z.number().int().min(0).max(9999), visibility: z.enum(["published", "draft"]).default("published"),
+  icon: z.string().max(500).optional(),
   target: z.discriminatedUnion("kind", [
     z.object({ siteId: z.string().trim().min(1).max(160), id: z.string().trim().min(1).max(160), kind: z.literal("window") }).strict(),
     z.object({ siteId: z.string().trim().min(1).max(160), id: z.string().trim().min(1).max(160), kind: z.literal("profile") }).strict(),

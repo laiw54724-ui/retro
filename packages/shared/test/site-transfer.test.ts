@@ -56,4 +56,28 @@ describe("Retro JSON export/import", () => {
     oversized.mediaManifest.items = Array.from({ length: 2001 }, (_, index) => ({ ...result.value.mediaManifest.items[0], id: `m${index}` }));
     expect(inspectRetroImport(oversized)).toMatchObject({ ok: false, code: "unsupported_format" });
   });
+
+  it("keeps library icon ids (windows, links and explorer items) through export and import without upstream URLs", () => {
+    const legacy = createStarterDocument("Icons", "classic98", "instagram");
+    legacy.windows[0].icon = "haiku:folder";
+    const explorer = makeWindow("explorer");
+    if (explorer.type !== "explorer") throw new Error("fixture explorer missing");
+    explorer.content = { folders: [{ id: "f1", parentId: null, name: "相片", order: 0, visibility: "published", icon: "pixelart:calendar" }], shortcuts: [] };
+    legacy.windows.push(explorer);
+    const migrated = migrateSiteDocumentV2(legacy, { siteId: "site-a" });
+    if (!migrated.ok) throw new Error("migration failed");
+    const exported = createRetroExport({ scope: "owner-backup", siteId: "site-a", username: "alice", siteName: "Icons", document: migrated.document });
+    expect(exported.ok).toBe(true);
+    if (!exported.ok) return;
+    const text = JSON.stringify(exported.value);
+    expect(text).toContain("haiku:folder");
+    expect(text).toContain("pixelart:calendar");
+    expect(text).not.toContain("github.com");
+    const imported = inspectRetroImport(JSON.parse(text));
+    expect(imported.ok).toBe(true);
+    if (!imported.ok) return;
+    expect(imported.value.document.windows[0].icon).toBe("haiku:folder");
+    const importedExplorer = imported.value.document.windows.find((window) => window.type === "explorer");
+    expect(importedExplorer?.type === "explorer" && importedExplorer.content.folders[0].icon).toBe("pixelart:calendar");
+  });
 });
