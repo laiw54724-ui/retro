@@ -1,0 +1,71 @@
+name: Assemble integration candidate
+
+on:
+  push:
+    branches:
+      - integration/retro-usability-release
+
+permissions:
+  contents: write
+
+concurrency:
+  group: assemble-retro-usability-release
+  cancel-in-progress: false
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: integration/retro-usability-release
+
+      - name: Reproduce reviewed integration tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git fetch --no-tags origin \
+            refs/heads/feat/retro-window-chrome:refs/remotes/origin/feat/retro-window-chrome \
+            refs/heads/codex/component-operation-fixes:refs/remotes/origin/codex/component-operation-fixes \
+            refs/heads/feat/retro-media-editor:refs/remotes/origin/feat/retro-media-editor
+
+          git merge --no-ff --no-edit origin/feat/retro-window-chrome
+          git merge --no-ff --no-edit origin/codex/component-operation-fixes
+
+          set +e
+          git merge --no-ff --no-commit origin/feat/retro-media-editor
+          merge_status=$?
+          set -e
+          test "$merge_status" -ne 0
+
+          actual_unmerged="$(git diff --name-only --diff-filter=U | sort)"
+          expected_unmerged="$(printf '%s\n' \
+            'apps/web/src/features/modules/gallery/index.tsx' \
+            'tests/e2e/editor-media.spec.ts' \
+            'tests/e2e/public-sharing.spec.ts')"
+          test "$actual_unmerged" = "$expected_unmerged"
+
+          tar -xzf .integration/conflict-resolutions.tgz
+          git add \
+            apps/web/src/features/modules/gallery/index.tsx \
+            tests/e2e/editor-media.spec.ts \
+            tests/e2e/public-sharing.spec.ts
+          test -z "$(git diff --name-only --diff-filter=U)"
+          git commit -m "merge: integrate shared media editor and preserve gallery accessibility (#43, #47)"
+
+          gzip -dc .integration/final.patch.gz > "$RUNNER_TEMP/final.patch"
+          git apply --index --3way "$RUNNER_TEMP/final.patch"
+          rm -rf .integration .github/workflows/integration-assemble.yml
+          git add -A
+          git commit -m "fix(integration): finalize usability release candidate"
+
+          expected_tree="006f897819141b8dbad7cb5d25cca3c5de600bbf"
+          actual_tree="$(git rev-parse HEAD^{tree})"
+          test "$actual_tree" = "$expected_tree"
+          git diff --check HEAD^
+          git push origin HEAD:integration/retro-usability-release
