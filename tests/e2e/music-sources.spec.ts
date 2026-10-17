@@ -223,3 +223,9 @@ test.describe("visitor: official platform players", () => {
     expect(load!.height).toBeGreaterThanOrEqual(30);
   });
 });
+
+test("track list labels a platform page saved as audio as a web link, not as in-site audio", async ({ page }) => {
+  const player = await openPublic(page, doc(musicWindow("Music.exe", [track("bad", "Bad", { kind: "audioUrl", url: SPOTIFY }), track("ok", "Good", { kind: "audioUrl", url: "https://media.example.com/a.mp3" })])));
+  await expect(player.getByRole("button", { name: "選擇 Bad" })).toContainText("網頁連結（不能站內播放）");
+  await expect(player.getByRole("button", { name: "選擇 Good" })).toContainText("站內播放");
+});

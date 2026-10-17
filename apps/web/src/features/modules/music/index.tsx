@@ -34,7 +34,12 @@ const embedSourceFrom = (raw: string): EmbedSource | null => {
   const embed = insightForUrl(raw).embed;
   return embed ? { kind: "providerEmbed", provider: embed.provider, resourceType: embed.resourceType, resourceId: embed.resourceId, canonicalUrl: embed.canonicalUrl, originalUrl: raw.trim() } : null;
 };
-const kindBadge = (source: TrackSource) => source.kind === "providerEmbed" ? PLATFORM_LABELS[source.provider] : source.kind === "externalLink" ? "外部開啟" : "站內播放";
+const kindBadge = (source: TrackSource) => {
+  if (source.kind === "providerEmbed") return PLATFORM_LABELS[source.provider];
+  if (source.kind === "externalLink") return "外部開啟";
+  if (source.kind === "audioUrl" && insightForUrl(source.url).isPlatformPage) return "網頁連結（不能站內播放）";
+  return "站內播放";
+};
 
 function orderedTracks(window: ModuleProps<"music">["window"]): MusicTrack[] {
   const byId = new Map(window.content.tracks.map((track) => [track.id, track]));
