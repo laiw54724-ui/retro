@@ -23,4 +23,19 @@ describe("window title appearance", () => {
     expect(resolveWindowAppearance(theme, { titleFrom: "#ffffff", titleTo: "#ffffff", titleGradient: false }, false))
       .toEqual({ titleBackground: themeView(theme).inactiveTitle, titleColor: theme.text });
   });
+  it("uses solid Classic 95 defaults for both focus states without changing legacy 98", () => {
+    expect(resolveWindowAppearance(theme, undefined, true, { preset: "classic-95" }))
+      .toEqual({ titleBackground: theme.titleFrom, titleColor: "#ffffff" });
+    expect(resolveWindowAppearance(theme, undefined, false, { preset: "classic-95" }))
+      .toEqual({ titleBackground: theme.shadow, titleColor: "#000000" });
+    for (const preset of ["classic-98", "compact-98"] as const) {
+      expect(resolveWindowAppearance(theme, undefined, true, { preset })).toEqual(resolveWindowAppearance(theme));
+      expect(resolveWindowAppearance(theme, undefined, false, { preset })).toEqual(resolveWindowAppearance(theme, undefined, false));
+    }
+  });
+  it("keeps the author's explicit title appearance above the preset default", () => {
+    const appearance = Object.freeze({ titleFrom: "#001144", titleTo: "#004444", titleGradient: true });
+    expect(resolveWindowAppearance(theme, appearance, true, { preset: "classic-95" }))
+      .toEqual(resolveWindowAppearance(theme, appearance));
+  });
 });

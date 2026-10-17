@@ -1,0 +1,122 @@
+/* Only descendants of this CSS-module frame receive the chrome tokens. */
+.frame {
+  --wc-title-height: 26px;
+  --wc-control-width: 18px;
+  --wc-control-height: 16px;
+  --wc-control-target: 24px;
+  --wc-section-gap: 3px;
+}
+/* Override legacy desktop/mobile frame rules without changing their global CSS. */
+.frame[data-chrome-preset][data-presentation] {
+  min-width: 0;
+  min-height: 0;
+  padding: 3px;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  isolation: isolate;
+  color: var(--wc-text);
+  background: var(--wc-face);
+  box-shadow: var(--wc-raised);
+  font-size: 13px;
+  line-height: 1.35;
+}
+.frame[data-chrome-preset="compact-98"], .frame[data-chrome-density="compact"] {
+  --wc-title-height: 24px;
+  --wc-control-width: 16px;
+  --wc-control-height: 14px;
+  --wc-section-gap: 2px;
+}
+.frame .titleBar {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  min-width: 0;
+  height: var(--wc-title-height);
+  min-height: var(--wc-title-height);
+  padding: 0 1px 0 3px;
+  gap: 4px;
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  background: var(--wc-title-background);
+  color: var(--wc-title-color);
+  user-select: none;
+}
+.frame .titleText { flex: 1 1 0; min-width: 0; font-size: 13px; line-height: 1.2; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.frame[data-chrome-preset="compact-98"] .titleText { font-size: 12px; }
+.titleIcon { display: flex; flex: 0 0 16px; align-items: center; justify-content: center; width: 16px; height: 16px; overflow: hidden; }
+.titleIcon img { max-width: 100%; max-height: 100%; }
+.titleAccessory { display: flex; flex: 0 0 auto; align-items: center; gap: 2px; }
+.frame .controls { display: flex; flex: 0 0 auto; align-items: center; gap: 0; }
+.frame .controls .control { position: relative; display: grid; place-items: center; align-content: center; padding: 0; margin: 0; border: 0; width: var(--wc-control-target); height: var(--wc-control-target); min-width: var(--wc-control-target); min-height: var(--wc-control-target); background: transparent; color: var(--wc-text); cursor: pointer; box-shadow: none; }
+.controlFace { display: grid; place-items: center; width: var(--wc-control-width); height: var(--wc-control-height); background: var(--wc-face); box-shadow: var(--wc-raised); }
+.control:active:not(:disabled) .controlFace { box-shadow: var(--wc-pressed); }
+.control:active:not(:disabled) .glyph { translate: 1px 1px; }
+.control:disabled { cursor: default; }
+.control:disabled .glyph { color: var(--wc-shadow); filter: drop-shadow(1px 1px 0 #fff); }
+.frame .controls .decorativeControl { cursor: default; }
+.control:focus-visible { outline: 1px dotted currentColor; outline-offset: -2px; }
+.frame .control .glyph { display: block; position: relative; width: 10px; height: 10px; border: 0; margin: 0; background: transparent; box-shadow: none; font-style: normal; }
+.minimize::before { content: ""; position: absolute; left: 1px; bottom: 0; width: 7px; height: 2px; background: currentColor; }
+.maximize::before { content: ""; position: absolute; inset: 0; border: 1px solid currentColor; border-top-width: 3px; }
+.restore::before, .restore::after { content: ""; position: absolute; width: 7px; height: 7px; border: 1px solid currentColor; border-top-width: 2px; background: var(--wc-face); }
+.restore::before { top: 0; right: 0; }
+.restore::after { bottom: 0; left: 0; }
+.close::before { content: ""; position: absolute; width: 2px; height: 2px; left: 0; top: 0; background: currentColor; box-shadow: 8px 0 currentColor, 1px 1px currentColor, 7px 1px currentColor, 2px 2px currentColor, 6px 2px currentColor, 3px 3px currentColor, 5px 3px currentColor, 4px 4px currentColor, 3px 5px currentColor, 5px 5px currentColor, 2px 6px currentColor, 6px 6px currentColor, 1px 7px currentColor, 7px 7px currentColor, 0 8px currentColor, 8px 8px currentColor; }
+.frame .content { position: relative; flex: 1 1 auto; height: auto; min-width: 0; min-height: 64px; margin-top: var(--wc-section-gap); padding: 2px; overflow: auto; background: #fff; color: #111; box-shadow: var(--wc-sunken); }
+/* Preserve the original direct-child scroll contract used by Instagram. */
+.frame .content:has(> :global(.module-instagram)) { overflow: hidden; display: flex; flex-direction: column; }
+.slot { min-width: 0; flex: 0 0 auto; }
+.slot[hidden] { display: none; }
+.slot[data-chrome-slot="menuBar"], .slot[data-chrome-slot="toolbar"] { position: relative; z-index: 2; }
+.slot[data-chrome-slot="menuBar"] { z-index: 3; }
+.slot[data-chrome-slot="statusBar"], .slot[data-chrome-slot="footerActions"] { margin-top: var(--wc-section-gap); }
+.content::-webkit-scrollbar, .sunken::-webkit-scrollbar { width: 16px; height: 16px; }
+.content::-webkit-scrollbar-track, .sunken::-webkit-scrollbar-track { background: repeating-conic-gradient(var(--wc-light) 0 25%, #fff 0 50%) 0 / 2px 2px; }
+.content::-webkit-scrollbar-thumb, .sunken::-webkit-scrollbar-thumb { background: var(--wc-face); box-shadow: var(--wc-raised); }
+.content::-webkit-scrollbar-corner, .sunken::-webkit-scrollbar-corner { background: var(--wc-face); }
+.button { min-width: 24px; min-height: 24px; border: 0; padding: 4px 12px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; color: var(--wc-text, #111); background: var(--wc-face, #c0c0c0); box-shadow: var(--wc-raised, var(--w98-raised)); font: inherit; cursor: pointer; }
+.button:active:not(:disabled), .button[aria-pressed="true"] { box-shadow: var(--wc-pressed, var(--w98-pressed)); }
+.button[data-default="true"] { outline: 1px solid var(--wc-dark, #0a0a0a); outline-offset: 1px; }
+.button:focus-visible { outline: 1px dotted currentColor; outline-offset: -4px; }
+.button:disabled { color: var(--wc-shadow, #808080); text-shadow: 1px 1px #fff; cursor: default; }
+.toolbar, .footer { min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 4px; background: var(--wc-face, #c0c0c0); color: var(--wc-text, #111); }
+.toolbar { box-shadow: inset 0 1px #fff, inset 0 -1px var(--wc-shadow, #808080); }
+.toolbar[aria-orientation="vertical"] { flex-direction: column; }
+.footer { justify-content: flex-end; padding: 6px 8px; }
+.footer > button { min-width: 72px; }
+.statusBar { min-width: 0; display: flex; align-items: stretch; gap: 3px; background: var(--wc-face, #c0c0c0); color: var(--wc-text, #111); }
+.statusField { flex: 1 1 0; min-width: 0; padding: 3px 5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; box-shadow: inset 1px 1px var(--wc-shadow, #808080), inset -1px -1px #fff; font-size: 12px; }
+.sunken { min-width: 0; min-height: 0; padding: 2px; overflow: auto; background: #fff; color: #111; box-shadow: var(--wc-sunken, var(--w98-sunken)); }
+.separator { flex: 0 0 auto; height: 2px; min-height: 2px; margin: 3px 0; border: 0; box-shadow: inset 0 1px var(--wc-shadow, #808080), inset 0 -1px #fff; }
+.separator[aria-orientation="vertical"] { height: 22px; min-height: 0; width: 2px; min-width: 2px; margin: 0 3px; box-shadow: inset 1px 0 var(--wc-shadow, #808080), inset -1px 0 #fff; }
+.menuBar { display: flex; align-items: stretch; flex-wrap: wrap; min-width: 0; gap: 0; color: var(--wc-text, #111); background: var(--wc-face, #c0c0c0); }
+.menuTrigger { min-width: 24px; min-height: 24px; padding: 2px 7px; background: transparent; border: 0; color: inherit; font: inherit; cursor: pointer; }
+.menuTrigger:disabled, .menuTrigger[aria-disabled="true"] { color: var(--wc-shadow, #808080); text-shadow: 1px 1px #fff; cursor: default; }
+.menuTrigger:focus-visible { outline: 1px dotted currentColor; outline-offset: -3px; }
+.menuTrigger[aria-expanded="true"]:not([aria-disabled="true"]) { box-shadow: var(--wc-pressed, var(--w98-pressed)); }
+.menuAnchor { position: relative; }
+.menu { position: absolute; top: 100%; left: 0; z-index: 10; width: max-content; min-width: 150px; max-width: min(280px, calc(100vw - 20px)); max-height: 45vh; overflow: auto; padding: 3px; background: var(--wc-face, #c0c0c0); color: var(--wc-text, #111); box-shadow: var(--wc-raised, var(--w98-raised)), 2px 2px 0 var(--wc-dark, #0a0a0a); }
+.menuItem { width: 100%; min-height: 24px; padding: 3px 8px; border: 0; color: inherit; background: transparent; font: inherit; display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer; }
+.menuItem > span:first-child { flex: 1; }
+.menuItem:focus, .menuItem:hover:not([aria-disabled="true"]) { outline: none; color: var(--wc-accent-text, #fff); background: var(--wc-accent, #000080); }
+.menuItem[aria-disabled="true"] { color: var(--wc-shadow, #808080); cursor: default; text-shadow: 1px 1px #fff; }
+.frame[data-presentation="mobile"] { --wc-control-target: 44px; --wc-title-height: 46px; position: absolute; inset: 0; }
+.frame[data-presentation="mobile"] .titleText { font-size: 14px; }
+.frame[data-presentation="mobile"] .titleAccessory button { min-width: 44px; min-height: 44px; padding: 0 8px; }
+.frame[data-presentation="mobile"] .content { /* room to scroll clear of the editor's floating action */ scroll-padding-bottom: 64px; }
+.frame[data-presentation="mobile"] .button, .frame[data-presentation="mobile"] .menuTrigger, .frame[data-presentation="mobile"] .menuItem { min-height: 44px; }
+@media (pointer: coarse) {
+  .frame { --wc-control-target: 44px; --wc-title-height: 46px; }
+  .frame[data-chrome-preset="compact-98"], .frame[data-chrome-density="compact"] { --wc-title-height: 46px; }
+  .button, .menuTrigger, .menuItem { min-height: 44px; }
+}
+@media (forced-colors: active) {
+  .frame, .content, .controlFace, .button, .sunken, .statusField, .menu { border: 1px solid CanvasText; box-shadow: none; }
+  .frame .titleBar { background: Highlight !important; color: HighlightText !important; }
+  .frame[data-active="false"] .titleBar { background: Canvas !important; color: CanvasText !important; }
+  .glyph { color: ButtonText; }
+  .control:disabled .glyph { color: GrayText; filter: none; }
+  .button[aria-pressed="true"], .menuTrigger[aria-expanded="true"], .menuItem:focus { outline: 2px solid Highlight; }
+}

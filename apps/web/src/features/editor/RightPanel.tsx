@@ -3,6 +3,7 @@ import type { DesktopWindow, SiteDocument } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { IconPicker } from "../modules/links/IconPicker";
 import { WindowAppearanceEditor } from "./WindowAppearanceEditor";
+import { WindowChromeEditor } from "./WindowChromeEditor";
 
 type Tab = "general" | "icon" | "layout";
 
@@ -79,6 +80,7 @@ export function RightPanel({ document, selected, siteId, upload, onUpdate, onDel
         ) : null}
         {tab === "layout" ? (
           <>
+            <WindowChromeEditor key={selected.id} theme={document.theme} window={selected} onChange={(chrome) => onUpdate((window) => ({ ...window, chrome }))} />
             <WindowAppearanceEditor key={selected.id} theme={document.theme} window={selected} onChange={(appearance, historyKey) => onUpdate((window) => ({ ...window, appearance }), historyKey)} />
             <div className="w98-sep" />
             <div className="geometry-grid">
