@@ -1,3 +1,17 @@
+import type { Page } from "@playwright/test";
+
+export async function mockWindowsIconPack(page: Page) {
+  await page.route("**/windows-icons/.retro-icon-pack.json", (route) => route.fulfill({
+    json: {
+      schemaVersion: 1,
+      source: "https://github.com/trapd00r/win95-winxp_icons",
+      commit: "728a866ad59a54fd4082dbe000e1e62e50bd90e9",
+      fileCount: 1193,
+      license: "NOASSERTION",
+    },
+  }));
+}
+
 export const documentFixture = {
   schemaVersion: 1,
   siteName: "Demo Desk",

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import type { VersionedSiteDocumentInput } from "@retrodesk/shared";
-import { documentFixture } from "./fixture";
+import { documentFixture, mockWindowsIconPack } from "./fixture";
 
 async function openEditor(page: Page) {
   const session = { access_token: "a.b.c", refresh_token: "r", expires_at: 4102444800, expires_in: 3600, token_type: "bearer", user: { id: "u", email: "x@y.z", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01" } };
@@ -152,6 +152,7 @@ test("one window can override, flatten and reset its title bar", async ({ page }
 });
 
 test("Windows icon picker offers curated icons and searchable full library", async ({ page }) => {
+  await mockWindowsIconPack(page);
   const saves = await openEditor(page);
   await page.getByRole("tab", { name: "圖示" }).click();
   await expect(page.getByText("Windows 精選")).toBeVisible();
@@ -160,6 +161,14 @@ test("Windows icon picker offers curated icons and searchable full library", asy
   await expect(result).toBeVisible();
   await result.click();
   await expect.poll(() => saves.at(-1)?.document.windows.find((window) => window.id === "about")?.icon).toMatch(/^\/windows-icons\/[A-Za-z0-9._-]+\.(?:ico|png)$/);
+});
+
+test("clean release explains the optional Windows icon pack", async ({ page }) => {
+  await openEditor(page);
+  await page.getByRole("tab", { name: "圖示" }).click();
+  await expect(page.getByText("未安裝 Windows 可選圖示包", { exact: false })).toBeVisible();
+  await expect(page.getByLabel("搜尋 Windows 圖示")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "圖示 camera" })).toBeVisible();
 });
 
 test("desktop and mobile add surfaces share the registry modules", async ({ page }) => {

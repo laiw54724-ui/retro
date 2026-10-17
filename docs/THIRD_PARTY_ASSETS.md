@@ -1,20 +1,17 @@
 # Third-party assets and licensing
 
-Any future Retro source-code license can cover only original Retro source the
-granting rights holder controls. It cannot relicense user content or
+Retro's MIT License covers only original Retro source and documentation the
+granting rights holder controls. It does not relicense user content or
 third-party assets. Each asset remains subject to the terms, rights, and
-restrictions of its owner or upstream source.
-
-No root source-code license has been granted yet. The intended separation is
-documented in [`LICENSE_SCOPE.md`](LICENSE_SCOPE.md); that document is not a
-substitute for an owner-authorized `LICENSE`.
+restrictions of its owner or upstream source. See [`LICENSE_SCOPE.md`](LICENSE_SCOPE.md)
+and the root [`THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md).
 
 The machine-readable inventory is
 [`docs/assets/third-party-assets.manifest.json`](assets/third-party-assets.manifest.json).
-Run `pnpm assets:audit` to verify that every bundled media/font file is covered
-and unchanged. This is an inventory/integrity check, not a license grant.
-`pnpm assets:audit:release` is the stricter redistribution gate and remains
-blocked while any collection is marked `needs-evidence` or `replace`.
+Run `pnpm assets:audit` to verify every bundled media/font file and any locally
+installed optional pack. This is an inventory/integrity check, not a license
+grant. `pnpm assets:audit:release` additionally proves excluded icon-pack
+directories are absent from the build.
 
 ## Windows 95–XP icons
 
@@ -36,16 +33,26 @@ icon rights remain with their respective owners and are not included in the
 Retro code license. Review applicable upstream and owner terms before any
 redistribution.
 
-The generated `/windows-icons/` collection is currently `needs-evidence`:
-source and hashes are confirmed, redistribution permission is not. The older
-`/win98-icons/` PNG collection is `replace` and remains read-only only so
-existing saved desktops do not break. New picker choices use the pinned
-`/windows-icons/` manifest instead.
+The image binaries are not committed or included in the default build. The
+generated catalog and provenance metadata remain so the optional installer can
+verify the exact pinned source. An operator who has reviewed the rights status
+may explicitly opt in:
+
+```bash
+pnpm icons:install -- --acknowledge-third-party-rights
+```
+
+The command fetches the pinned upstream revision directly and writes ignored
+files under `/windows-icons/`. `pnpm icons:remove` restores the clean state.
+The older `/win98-icons/` PNG collection had no reproducible source and was
+removed without an installer. Existing documents keep their saved IDs and use
+semantic built-in SVG fallbacks when either collection is absent.
 
 The importer requires an exact checkout of the pinned commit and records the
 upstream path, generated output path, SHA-256 hash, and byte count for every
 supported file. `.ani` and `.icl` files are inventory-only and are not copied
-to the web output.
+to the web output. A local pack is accepted by the development audit but is
+always rejected by the strict redistribution audit.
 
 ## Cubic 11 font
 

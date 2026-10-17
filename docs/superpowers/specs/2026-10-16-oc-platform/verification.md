@@ -270,4 +270,16 @@
 - staging Worker：`https://retrodesk-api-staging.beibeiz.workers.dev`，version `932c605a-ac39-4a03-b2b1-c664688e6fb8`。
 - Cloudflare Pages staging deployment：`44e0047e`。canonical：https://retrodesk-staging.pages.dev；immutable：https://44e0047e.retrodesk-staging.pages.dev；bundle `index-CcbCNO-G.js`／`index-Do4PNGk_.css`。
 - live smoke：API health `200`；未登入 import preview `401`；`/@beibei` 首份 HTML `200`、`no-store`、`published:10` ETag、正確 title／OG／robots。公開 JSON export `200`、attachment header、`scope=public`、0 missing private media、無 `retro-asset:`／owner 欄位；未啟用留言簿明確回 `guestbook_disabled`。實際瀏覽器成功載入 canonical `bei — Retro Desktop` 與公開桌面按鈕。
-- 正式開源發行阻塞：`assets:audit:release` 依設計拒絕 `pinned-windows-icon-library (needs-evidence)` 與 `legacy-win98-png-compatibility-library (replace)`；根目錄 LICENSE 也需權利人決定程式碼授權。這不阻塞 staging 測試，但在來源證據／替換與授權選擇完成前，不宣稱 #27 完成、不發布正式開源包。
+- #27 開源發行阻塞已於 2026-10-17 解除：權利人核准原創程式碼採 MIT；2,950 個授權未明的 Windows 圖示 binaries 已從 repo 與預設發行物移除，改為使用者明確確認後自行安裝的可選包。固定上游 commit、1,193 筆輸出 hash 與 catalog metadata 保留，舊 icon ID 缺檔時使用原創 SVG fallback。
+
+## #27 MIT release and optional Windows icon pack closure
+
+驗證日期：2026-10-17（Asia/Singapore）。
+
+- 授權邊界：根目錄 `LICENSE` 為 MIT；`THIRD_PARTY_NOTICES.md`、`docs/LICENSE_SCOPE.md` 與 `docs/THIRD_PARTY_ASSETS.md` 明確排除使用者內容、Cubic 11、Windows 圖示與第三方商標。
+- 發行素材：`pnpm assets:audit:release` 通過，僅 2 個已確認 OFL 字型檔隨發行散布；`apps/web/public/windows-icons` 與 `apps/web/public/win98-icons` 都不在 clean release。開發模式曾完整驗證可選包安裝、1,193 個檔案 hash、release gate 拒絕已安裝包、移除後恢復通過。
+- 依賴授權：`pnpm licenses:audit` 對 frozen install 的 148 個 platform-neutral packages 全數取得 asserted license，版本清單固定於 `docs/DEPENDENCY_LICENSES.md`。
+- fallback／UI：缺少可選包時 picker 清楚說明安裝方式，仍保留內建與使用者上傳圖示；既有 `/windows-icons/` 或 `/win98-icons/` 值載入失敗時改用語意 SVG，不顯示破圖。已安裝包仍可使用精選與搜尋。
+- 一次完整 pre-merge gate：secret audit 檢查 310 個 worktree paths、2,700 個 reachable Git objects 與 build 後 14 個 artifacts；typecheck／build 全過；unit 238 passed（shared 74 + API 106 + web 58）；E2E 116 passed。
+- 乾淨 clone：`pnpm install --frozen-lockfile` 成功，接著 release asset audit、dependency license audit、typecheck 與 build 全過；未讀取生產 secrets，也未下載可選 Windows 圖示。
+- 非阻斷訊息僅有既有 Wrangler multi-environment、Zod annotation 與 bundle-size warning；沒有未解品質或授權阻斷項。

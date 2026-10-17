@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "collections": [
     {
       "id": "cubic-11-font",
@@ -12,31 +12,30 @@
       "reviewStatus": "confirmed",
       "expectedFileCount": 2,
       "treeSha256": "c1a51568f3e876ee98d0d931ba35a778a8b2251d0ce02f427f785c7f68e5f517"
-    },
+    }
+  ],
+  "excludedCollections": [
     {
-      "id": "pinned-windows-icon-library",
+      "id": "optional-windows-icon-pack",
       "paths": ["apps/web/public/windows-icons"],
       "source": {"url": "https://github.com/trapd00r/win95-winxp_icons", "revision": "728a866ad59a54fd4082dbe000e1e62e50bd90e9"},
       "authorOrRightsHolder": "Microsoft and the respective original icon rightsholders",
       "license": "NOASSERTION",
-      "notice": "Source and per-file hashes are recorded, but the upstream collection declares no redistribution license. These files are not covered by Retro's code license.",
-      "useScope": "Compatibility and product evaluation only until a redistribution decision is documented.",
-      "reviewStatus": "needs-evidence",
-      "expectedFileCount": 1193,
-      "treeSha256": "fb5ecd3d02fe2eafb489d23647b30642ccd76f837f7b467038ed84f51e79b4d5",
+      "notice": "Not bundled. An operator may explicitly install the pinned upstream collection locally; Retro's MIT License does not cover it.",
+      "useScope": "User-installed optional pack only; excluded from source and redistributable builds.",
+      "resolution": "user-installed-optional",
+      "expectedAssetFileCount": 1193,
       "detailManifest": "docs/assets/windows-icons.provenance.json"
     },
     {
-      "id": "legacy-win98-png-compatibility-library",
+      "id": "legacy-win98-png-library",
       "paths": ["apps/web/public/win98-icons"],
-      "source": {"url": "local user-supplied windows98-icons archive", "revision": "unversioned archive imported by apps/web/scripts/import-win98-icons.mjs"},
+      "source": {"url": "local user-supplied windows98-icons archive", "revision": "unversioned"},
       "authorOrRightsHolder": "Microsoft and the respective original icon rightsholders",
       "license": "NOASSERTION",
-      "notice": "Retained read-only so existing saved desktops do not lose icons. Exact upstream/version and redistribution permission are not established; do not describe this collection as MIT.",
-      "useScope": "Legacy document compatibility only; no new picker choices are sourced from this namespace.",
-      "reviewStatus": "replace",
-      "expectedFileCount": 1757,
-      "treeSha256": "09859b21f1dd1111b56e780593a9c557c40103b7fbd510e31adf055f321fa82f"
+      "notice": "Removed from the repository and default build because source and redistribution permission are not established.",
+      "useScope": "No distribution; old saved paths render built-in fallbacks.",
+      "resolution": "removed-no-installer"
     }
   ]
 }
