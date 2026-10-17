@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createRetroExport, createStarterDocument, migrateSiteDocumentV2, validateSiteDocumentScope } from "@retrodesk/shared";
+import { createRetroExport, createStarterDocument, makeWindow, migrateSiteDocumentV2, validateSiteDocumentScope } from "@retrodesk/shared";
 
 const migrated = migrateSiteDocumentV2(createStarterDocument("Demo", "classic98", "instagram"), { siteId: "site-a" });
 if (!migrated.ok || migrated.version !== 2) throw new Error("fixture migration failed");
@@ -68,6 +68,47 @@ describe("export and controlled import routes", () => {
     expect(inserted?.owner_id).toBe("user-a");
     expect(inserted?.draft_version).toBe(1);
     expect(validateSiteDocumentScope(inserted?.draft_document, inserted?.id)).toEqual([]);
+  });
+
+  it("rebinds legacy Explorer shortcuts to the new imported site before migration", async () => {
+    const legacy = createStarterDocument("Legacy", "classic98", "blank");
+    const gallery = makeWindow("gallery", 0);
+    const explorer = makeWindow("explorer", 1);
+    if (explorer.type !== "explorer") throw new Error("Explorer fixture");
+    explorer.content.shortcuts = [{ id: "shortcut", label: "Gallery", icon: "pixelart:heart", parentId: null, order: 0, visibility: "published", target: { siteId: "site-a", kind: "window", id: gallery.id } }];
+    legacy.windows = [gallery, explorer];
+    const packageResult = createRetroExport({ scope: "owner-backup", siteId: "site-a", username: "demo", siteName: "Legacy", document: legacy });
+    if (!packageResult.ok) throw new Error("legacy export");
+    const previewResponse = await jsonRequest("/imports/preview", packageResult.value);
+    expect(previewResponse.status).toBe(200);
+    const preview = await previewResponse.json() as { digest: string };
+    const confirmed = await jsonRequest(`/imports/confirm?digest=${preview.digest}&username=legacy-copy&siteName=Copy`, packageResult.value);
+    expect(confirmed.status).toBe(201);
+    expect(inserted?.draft_document.windows[1].content.shortcuts[0]).toMatchObject({ icon: "pixelart:heart", target: { siteId: inserted?.id, id: gallery.id } });
+    expect(validateSiteDocumentScope(inserted?.draft_document, inserted?.id)).toEqual([]);
+    expect(migrateSiteDocumentV2(inserted?.draft_document, { siteId: inserted?.id })).toMatchObject({ ok: true });
+  });
+
+  it("requires re-upload acknowledgement for private icons even when the package hides missing media", async () => {
+    const value = structuredClone(exported.value);
+    const reference = "retro-asset:22222222-2222-4222-8222-222222222222";
+    value.document.windows[0].icon = reference;
+    value.mediaManifest.items = [];
+    value.mediaManifest.missing = [];
+    const response = await jsonRequest("/imports/preview", value);
+    expect(response.status).toBe(200);
+    const preview = await response.json() as { digest: string; preview: { missingMedia: unknown[] } };
+    expect(preview.preview.missingMedia).toHaveLength(1);
+    const url = `/imports/confirm?digest=${preview.digest}&username=icon-copy&siteName=Icons`;
+    const denied = await jsonRequest(url, value);
+    expect(denied.status).toBe(409);
+    expect(await denied.json()).toMatchObject({ error: { code: "missing_media_confirmation" } });
+    expect(inserted).toBeNull();
+    const accepted = await jsonRequest(`${url}&allowMissingMedia=true`, value);
+    expect(accepted.status).toBe(201);
+    expect(inserted?.draft_document.windows[0].icon).toBe(reference);
+    // Confirmation acknowledges missing bytes; it never copies or publishes a private asset.
+    expect(inserted?.published_document).toBeUndefined();
   });
 
   it("rejects archives and declared oversized bodies before parsing", async () => {

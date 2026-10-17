@@ -85,7 +85,7 @@ transfer.post("/imports/confirm", async (c) => {
   const siteName = (c.req.query("siteName") ?? inspected.preview.siteName).trim();
   if (!username.success || !siteName || siteName.length > 120) return jsonError(c, 400, "invalid_site", "Choose a valid new URL and desktop name");
   const siteId = crypto.randomUUID();
-  const document = inspected.value.document.schemaVersion === 2 ? remapDocumentSiteId(inspected.value.document, EXPORT_SITE_ID, siteId) : inspected.value.document;
+  const document = remapDocumentSiteId(inspected.value.document, EXPORT_SITE_ID, siteId);
   document.siteName = siteName;
   const supabase = serviceClient(c.env);
   const { data, error } = await supabase.from("sites").insert({ id: siteId, owner_id: user.id, username: username.data, site_name: siteName, draft_document: document, draft_version: 1 }).select("id,username,site_name,draft_version").single();

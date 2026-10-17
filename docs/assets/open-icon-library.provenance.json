@@ -1,0 +1,2693 @@
+{
+ "schemaVersion": 1,
+ "generatedBy": "scripts/import-open-icons.mjs",
+ "sets": {
+  "haiku": {
+   "source": {
+    "url": "https://github.com/haiku/haiku",
+    "path": "data/artwork/icons",
+    "revision": "ac9aaea72eb11a8c425dbdd2d1f47fc9761c70c9"
+   },
+   "license": "MIT",
+   "licenseUrl": "https://www.haiku-inc.org/trademarks/haiku_icons/",
+   "authorOrRightsHolder": "Haiku, Inc. and the Haiku icon artists",
+   "count": 102,
+   "outputs": [
+    {
+     "id": "haiku:folder",
+     "path": "apps/web/public/icon-library/haiku/folder.svg",
+     "sourcePath": "data/artwork/icons/Folder_generic",
+     "sourceSha256": "0a799c54b7cca81a9f8e769c61d94bb5f01698b7281a68968dac0d0185301d43",
+     "bytes": 3055,
+     "sha256": "a7aa8306b51ef0dc8a671b0f294a526a7bfd7c0582fc412d817003b36310ad0c"
+    },
+    {
+     "id": "haiku:folder-home",
+     "path": "apps/web/public/icon-library/haiku/folder-home.svg",
+     "sourcePath": "data/artwork/icons/Folder_home",
+     "sourceSha256": "98ab4b83d9682890586ddea8c3ebd2a4d2fd93d806b84d72ced838f95ae9cdd8",
+     "bytes": 5040,
+     "sha256": "75948f98d486f78e9ad9c75e12f5b02ac94a507f3355759541f24bccc162846b"
+    },
+    {
+     "id": "haiku:folder-download",
+     "path": "apps/web/public/icon-library/haiku/folder-download.svg",
+     "sourcePath": "data/artwork/icons/Folder_download",
+     "sourceSha256": "8a9e6c2bc2c3d0617e97768a13a214f335b7e8fc7c3ed98cfe2c19c3956120e1",
+     "bytes": 5660,
+     "sha256": "58a8f7d719bfbab7f6aa29a00708e572c2855c7c23dbb480e06f968cea036415"
+    },
+    {
+     "id": "haiku:folder-apps",
+     "path": "apps/web/public/icon-library/haiku/folder-apps.svg",
+     "sourcePath": "data/artwork/icons/Folder_apps",
+     "sourceSha256": "22f1aacefd4432e456acf5f72dd925ebb684fdfbf574a6650250c098049ee91a",
+     "bytes": 5488,
+     "sha256": "ecccccd6c333837192fceb2b569a1d751f5a6fe3cd4d7e5c940ee19e4f56212d"
+    },
+    {
+     "id": "haiku:folder-config",
+     "path": "apps/web/public/icon-library/haiku/folder-config.svg",
+     "sourcePath": "data/artwork/icons/Folder_config",
+     "sourceSha256": "8fce30f5fd642beb66bcb0c3205b3ce0797c025257f7183a63c09efe2944a3cf",
+     "bytes": 7041,
+     "sha256": "b3fe273ecf8ffb3c1a1702b0925b4a0fd928f69db08cbc5901e946f548ada887"
+    },
+    {
+     "id": "haiku:folder-dev",
+     "path": "apps/web/public/icon-library/haiku/folder-dev.svg",
+     "sourcePath": "data/artwork/icons/Folder_development",
+     "sourceSha256": "eaeefd6987e947407b7e17c8ae4c9be8037bb86777a1bb55d7ea959c99105e47",
+     "bytes": 4808,
+     "sha256": "18a09abeabc72ce075c251b09d13cfb5f52df17ea0e7968cd6058c1cfc99ed22"
+    },
+    {
+     "id": "haiku:folder-fonts",
+     "path": "apps/web/public/icon-library/haiku/folder-fonts.svg",
+     "sourcePath": "data/artwork/icons/Folder_fonts",
+     "sourceSha256": "81c3056bebc0fa808dd2830a2873f634e945dabcc671e380e2dd9cbd23258783",
+     "bytes": 4293,
+     "sha256": "e39374cff6109019b02db0e6658c3b36133f015eaf4956fc5239e6937b64c586"
+    },
+    {
+     "id": "haiku:folder-mail",
+     "path": "apps/web/public/icon-library/haiku/folder-mail.svg",
+     "sourcePath": "data/artwork/icons/Folder_mail",
+     "sourceSha256": "0d16eae1c9fd8cd1d16ee2e6bfe66c97a097038f592068fd880f74c112041506",
+     "bytes": 4236,
+     "sha256": "1548abf0ca992839136999245080aff2fec18651362da59a25ba1ab01ee2b12b"
+    },
+    {
+     "id": "haiku:folder-people",
+     "path": "apps/web/public/icon-library/haiku/folder-people.svg",
+     "sourcePath": "data/artwork/icons/Folder_people",
+     "sourceSha256": "916326b856ca7fa04edcf024f67fc8077b3b6880793ad5435397ca10d53539e8",
+     "bytes": 4939,
+     "sha256": "d541d6b69715903c37f61b3771abe74399a75772edd23bcf4fb3c9ca8c720c3a"
+    },
+    {
+     "id": "haiku:folder-prefs",
+     "path": "apps/web/public/icon-library/haiku/folder-prefs.svg",
+     "sourcePath": "data/artwork/icons/Folder_prefs",
+     "sourceSha256": "6c254372728fdbc77a5a6a5baae3971dd335b7690fe0aa8330077a608a1cdd90",
+     "bytes": 4441,
+     "sha256": "ba27b8e1ca663389dd9e1a85cf7f07ce5d7aee94223caf7f1711bc75c41703d7"
+    },
+    {
+     "id": "haiku:file",
+     "path": "apps/web/public/icon-library/haiku/file.svg",
+     "sourcePath": "data/artwork/icons/File_Generic",
+     "sourceSha256": "0cddaa59dd32a845a159fc7408c1c30c9bb160b7550c1764957ab3abb04263e8",
+     "bytes": 2599,
+     "sha256": "9a5a64dee0cd009b046b36f570b4847e55c95c46d10f2e8c776f6a00791269dc"
+    },
+    {
+     "id": "haiku:text-file",
+     "path": "apps/web/public/icon-library/haiku/text-file.svg",
+     "sourcePath": "data/artwork/icons/File_Text",
+     "sourceSha256": "d13f4c4160546dff042987f2c4ee9c76da17b0629b039b9315da58f31b8e06da",
+     "bytes": 3810,
+     "sha256": "a6b3af33574bbf2f61396259bf35b12028c0f107f060d3f5fd0bf8e34949ddc9"
+    },
+    {
+     "id": "haiku:text-file-open",
+     "path": "apps/web/public/icon-library/haiku/text-file-open.svg",
+     "sourcePath": "data/artwork/icons/File_Text_Open",
+     "sourceSha256": "27d073a84b62eb1c87f5acb8326312a6b77196777d0ff4bb6149b32a8b0a8be1",
+     "bytes": 5652,
+     "sha256": "65ead9044a85060751e7f0983727fee2c0d80e9489302cef3f0e4fb93f791e61"
+    },
+    {
+     "id": "haiku:pdf",
+     "path": "apps/web/public/icon-library/haiku/pdf.svg",
+     "sourcePath": "data/artwork/icons/File_PDF",
+     "sourceSha256": "a0f4f841315d62a8911841eeb29d93118873377baf239087f919a9947b761a9b",
+     "bytes": 5835,
+     "sha256": "7aa2ad5dc5fb5613eb0754c2088d9b8414eb8a656ff76d5be43ec298de8220b0"
+    },
+    {
+     "id": "haiku:html",
+     "path": "apps/web/public/icon-library/haiku/html.svg",
+     "sourcePath": "data/artwork/icons/File_HTML",
+     "sourceSha256": "2293969c6d23b20489505af7479f8fea6c8494abb4d0c329c74152c212d874fa",
+     "bytes": 19282,
+     "sha256": "c6de8cc036c86b5d49f08910c4bc73dca36223d1b05050e132d3dd5e4a2cab2c"
+    },
+    {
+     "id": "haiku:source-code",
+     "path": "apps/web/public/icon-library/haiku/source-code.svg",
+     "sourcePath": "data/artwork/icons/File_SourceCode",
+     "sourceSha256": "d83d5271c31f98626d4057f8806e224d6b58a487a5a10d4eeeb93f8d3b1f3b05",
+     "bytes": 4399,
+     "sha256": "3e051c8cd017b3da3df337642e2f4bb3515dbaf5bc90bef8d632d79881c800ff"
+    },
+    {
+     "id": "haiku:archive",
+     "path": "apps/web/public/icon-library/haiku/archive.svg",
+     "sourcePath": "data/artwork/icons/File_Archive",
+     "sourceSha256": "bb8416f5c0919de7e54f9db8172bdde25826801b8c5d7f45e9869bdc03b9b858",
+     "bytes": 6537,
+     "sha256": "e3ca87c86b7e8a7ec82e7400ce086f6f099bd26d146700fc735fb32b7499e92f"
+    },
+    {
+     "id": "haiku:zip",
+     "path": "apps/web/public/icon-library/haiku/zip.svg",
+     "sourcePath": "data/artwork/icons/File_Archive_ZIP",
+     "sourceSha256": "66ea807d05286171bccfa1711390fc133793eecbefbcc6c7febfd001c6970c79",
+     "bytes": 7968,
+     "sha256": "d17e605be298ef615793688e51819a1fb879636a65b4cd46f74db9f03a868fca"
+    },
+    {
+     "id": "haiku:bookmark-file",
+     "path": "apps/web/public/icon-library/haiku/bookmark-file.svg",
+     "sourcePath": "data/artwork/icons/File_Bookmark",
+     "sourceSha256": "487b2e38ded1adb22d4727f1d224187db1d2b79ea0d145bff731100cce2ba282",
+     "bytes": 5693,
+     "sha256": "13cc76a0ddd760f5f18b8a2f91ee030f46cafadacbb37b6a680cd02ef1a40c37"
+    },
+    {
+     "id": "haiku:task",
+     "path": "apps/web/public/icon-library/haiku/task.svg",
+     "sourcePath": "data/artwork/icons/File_Task",
+     "sourceSha256": "1cd85c388a6cb3fe789459266b859c90dbd95eb14b4cccd45d4afd9a78b3f2c8",
+     "bytes": 2552,
+     "sha256": "08b21c8824f7c37ffa95eb5a6617d482afc255fbd100b1a041e03590733a0b9f"
+    },
+    {
+     "id": "haiku:mail-file",
+     "path": "apps/web/public/icon-library/haiku/mail-file.svg",
+     "sourcePath": "data/artwork/icons/File_Mail",
+     "sourceSha256": "4184f02a75391e54af8b4f65abcbbc5622e4caa38c85115fc22a36614a307db8",
+     "bytes": 3421,
+     "sha256": "02c07edd801015cbaf4a47d171c182f899e3b2626ec15068c40f18800eb7a82f"
+    },
+    {
+     "id": "haiku:chart-file",
+     "path": "apps/web/public/icon-library/haiku/chart-file.svg",
+     "sourcePath": "data/artwork/icons/File_Chart_Open",
+     "sourceSha256": "bd54a1ad38522497a80a76c0c815e4484f58a2906c8c7ecb197830be07b842bc",
+     "bytes": 9500,
+     "sha256": "3874e7041555ce864cca6536fd48dbdf57de32fa03f6f94deca4104adaef0b52"
+    },
+    {
+     "id": "haiku:spreadsheet",
+     "path": "apps/web/public/icon-library/haiku/spreadsheet.svg",
+     "sourcePath": "data/artwork/icons/File_Spreadsheet_Open",
+     "sourceSha256": "793eab4f12fe937a331d600a915555a57bcb9dbb76b550312c72aa08b3ec0608",
+     "bytes": 5929,
+     "sha256": "0219517121da8dd3775d9d6a953d7396fba6acdc320c10b801677760d923230f"
+    },
+    {
+     "id": "haiku:database",
+     "path": "apps/web/public/icon-library/haiku/database.svg",
+     "sourcePath": "data/artwork/icons/File_Database_Open",
+     "sourceSha256": "22563524c75b5a7704ec6dabab3ad708db535ade385301ad6bc208d4521bc55b",
+     "bytes": 9808,
+     "sha256": "ccdd35f04b311b8ba22c668b9fde9db4d021a4050f5de5c95a27859e82426261"
+    },
+    {
+     "id": "haiku:image-1",
+     "path": "apps/web/public/icon-library/haiku/image-1.svg",
+     "sourcePath": "data/artwork/icons/File_Image_1",
+     "sourceSha256": "00d96f07cbbd721bacd24871efa5b185a1ac8a44d9fdce66b17af348c71d9f0b",
+     "bytes": 3125,
+     "sha256": "44f2f87cca2d0f7b277c7a33c8bf8fe687d252fc71aa187e74fabc0ae0f3c2c2"
+    },
+    {
+     "id": "haiku:image-2",
+     "path": "apps/web/public/icon-library/haiku/image-2.svg",
+     "sourcePath": "data/artwork/icons/File_Image_2",
+     "sourceSha256": "65072ad5589e573a50c48bdb1e21afba03dc1a164292a8548ce54d0924999d53",
+     "bytes": 4528,
+     "sha256": "694bdd5e635c8c8ad87fd9c067959d81a8a4992793cb89915d68028e70bac0ae"
+    },
+    {
+     "id": "haiku:graphics",
+     "path": "apps/web/public/icon-library/haiku/graphics.svg",
+     "sourcePath": "data/artwork/icons/File_Graphics_Open",
+     "sourceSha256": "63beb107c40e25a1058713d6a623fa9f865316875c7a93cf3c0d8eeb275bf5a4",
+     "bytes": 4965,
+     "sha256": "7551f00e3aba89e9f6bd00cd0089bb6196c0cb6376adc58ce9a925aa608f420a"
+    },
+    {
+     "id": "haiku:video",
+     "path": "apps/web/public/icon-library/haiku/video.svg",
+     "sourcePath": "data/artwork/icons/File_Video",
+     "sourceSha256": "0451ae4563ec6c038653da350a4553510885e4c5a0da2ed62f53a3571ebba0ea",
+     "bytes": 4866,
+     "sha256": "5c692c72f86423e2709ccd710319ece82ae3391633065c8949f51e5d5134de68"
+    },
+    {
+     "id": "haiku:image-viewer",
+     "path": "apps/web/public/icon-library/haiku/image-viewer.svg",
+     "sourcePath": "data/artwork/icons/App_ShowImage",
+     "sourceSha256": "7a60d55186619951477e3cdefebf62c8a977724800b2003ecf17e1dd36e0a834",
+     "bytes": 6039,
+     "sha256": "b3740a1cf07cca8708c3dfa25daf3d9ce302401671c6683e1fe8fb04166a86c1"
+    },
+    {
+     "id": "haiku:screenshot",
+     "path": "apps/web/public/icon-library/haiku/screenshot.svg",
+     "sourcePath": "data/artwork/icons/App_Screenshot",
+     "sourceSha256": "a2a80093e83e89a65bff06b6f7a38c72476019b3ca34deb227672d84db583528",
+     "bytes": 8056,
+     "sha256": "c2fe3ac392d2e3ba174103aea93419ad594bb2b48f5f0679b29e7bbb6e34524f"
+    },
+    {
+     "id": "haiku:audio-file",
+     "path": "apps/web/public/icon-library/haiku/audio-file.svg",
+     "sourcePath": "data/artwork/icons/File_Audio",
+     "sourceSha256": "093a51dc88901dc45065cc2a394fb940982bfdcc99bc72a3424e8acbed3292ec",
+     "bytes": 3950,
+     "sha256": "edd06ca50cb510656ada235e82ba3e94cb4b12bcddd48b911ac174105d147403"
+    },
+    {
+     "id": "haiku:music-file",
+     "path": "apps/web/public/icon-library/haiku/music-file.svg",
+     "sourcePath": "data/artwork/icons/File_Audio_2",
+     "sourceSha256": "9f431d21333bfc8e0eb71e863b689c4a5282bed4b15cc0ca11e592b2bf1984be",
+     "bytes": 3934,
+     "sha256": "fcdc7bf68a1321a8509110f83da9fab53a1d4074dca7c13e34b8c42eeb712a12"
+    },
+    {
+     "id": "haiku:playlist",
+     "path": "apps/web/public/icon-library/haiku/playlist.svg",
+     "sourcePath": "data/artwork/icons/File_Playlist",
+     "sourceSha256": "7f1454bbf99f753951f29b36925a08469e6672d9e774c0562650626641b6e6b5",
+     "bytes": 4669,
+     "sha256": "49eed450fe6b0e43ab14006bcde78bb2436f9cae81c93d883a5312d8ada13980"
+    },
+    {
+     "id": "haiku:media-player",
+     "path": "apps/web/public/icon-library/haiku/media-player.svg",
+     "sourcePath": "data/artwork/icons/App_MediaPlayer",
+     "sourceSha256": "de08ea0a109b3f3e9f21430fcc61d0faaaecf7363ae9351a21f79a7c9e67e069",
+     "bytes": 5629,
+     "sha256": "149239e5f417843bac197aba4758065e4f0e8ef35e2d966203804b4a0c10ef5c"
+    },
+    {
+     "id": "haiku:midi-player",
+     "path": "apps/web/public/icon-library/haiku/midi-player.svg",
+     "sourcePath": "data/artwork/icons/App_MidiPlayer",
+     "sourceSha256": "05f43fdbecf84bf68dad49db966ee1ebf8bf6d54181b5e032627e92ca258b474",
+     "bytes": 8097,
+     "sha256": "2421705da4a0738578fcee8a7ec22c5315ea7fd3cb821d2ff124b4c07137e37f"
+    },
+    {
+     "id": "haiku:sound-recorder",
+     "path": "apps/web/public/icon-library/haiku/sound-recorder.svg",
+     "sourcePath": "data/artwork/icons/App_SoundRecorder",
+     "sourceSha256": "a1db44e27ff4cf926546e1b20f11b1657b71bdb3a85c6b13b1baea8749334b67",
+     "bytes": 11425,
+     "sha256": "4a8c369f2798913e5bc2c6a7f3c9f54f17d30d6aa316fcd63213dd4a3b2f69db"
+    },
+    {
+     "id": "haiku:cd-player",
+     "path": "apps/web/public/icon-library/haiku/cd-player.svg",
+     "sourcePath": "data/artwork/icons/App_CDPlayer",
+     "sourceSha256": "084d8d144f83cbbe45313b8152a413130eb06ba77dae3bb7c74435fb1a7e39e9",
+     "bytes": 7837,
+     "sha256": "7b92135f610faa8527db524cc5f1611bb1fddef445c3a8bce08125756451b77f"
+    },
+    {
+     "id": "haiku:cd",
+     "path": "apps/web/public/icon-library/haiku/cd.svg",
+     "sourcePath": "data/artwork/icons/Device_CD",
+     "sourceSha256": "9d8cfc62cb381cca96df0ded3b768c38e031f48753573b101b49abd00fb74855",
+     "bytes": 2375,
+     "sha256": "dffc7bbb21ca0e7bc0d54b405620d9ba76cc5b5b85795da681d3a924b3eddc7b"
+    },
+    {
+     "id": "haiku:speaker",
+     "path": "apps/web/public/icon-library/haiku/speaker.svg",
+     "sourcePath": "data/artwork/icons/Misc_Speaker",
+     "sourceSha256": "356de2025a68e37965ff7b44dcbad09029f9686c78b0557522f1869608033947",
+     "bytes": 2723,
+     "sha256": "4f6d42c225382e566e5d56a6186239ddc69d81017e7faca9bbd42e669c7a2f90"
+    },
+    {
+     "id": "haiku:speaker-muted",
+     "path": "apps/web/public/icon-library/haiku/speaker-muted.svg",
+     "sourcePath": "data/artwork/icons/Misc_Speaker_Muted",
+     "sourceSha256": "88835dbb9739d894d0c69178421308a27d35f68982d7c09f487633082b84ba6b",
+     "bytes": 3967,
+     "sha256": "505345d3d5bd36e94515a35eb79e922cf099b652fe15c3db0867fc89428e131e"
+    },
+    {
+     "id": "haiku:sounds",
+     "path": "apps/web/public/icon-library/haiku/sounds.svg",
+     "sourcePath": "data/artwork/icons/Prefs_Sounds",
+     "sourceSha256": "347316c3408ea428bf1095958d4122aabcd9bac525fd76806f845a9bf4e3cc55",
+     "bytes": 5426,
+     "sha256": "e94d4bb876d90a70b42adc1667d18b52bfa72b22c8803a36d2d647d98f779672"
+    },
+    {
+     "id": "haiku:people",
+     "path": "apps/web/public/icon-library/haiku/people.svg",
+     "sourcePath": "data/artwork/icons/App_People",
+     "sourceSha256": "c8ad40333d7386f52a83b7a3408c14711871dc41737c3b99afedc3e7b6a6b3e4",
+     "bytes": 13277,
+     "sha256": "4ca447f63d090b9e2542eb42cf1da31c75f274002579cd5b6d7613ea5ab783a2"
+    },
+    {
+     "id": "haiku:person",
+     "path": "apps/web/public/icon-library/haiku/person.svg",
+     "sourcePath": "data/artwork/icons/File_Person",
+     "sourceSha256": "a72860ace82685eefea5fe3a9112fdee1c79a7baef53b69a757d93427102402b",
+     "bytes": 4877,
+     "sha256": "73d16d1fc790125133d0c1aee16da64685f6afe014a3cd8cf38ac96d2b417e55"
+    },
+    {
+     "id": "haiku:phonebook",
+     "path": "apps/web/public/icon-library/haiku/phonebook.svg",
+     "sourcePath": "data/artwork/icons/Misc_Phonebook",
+     "sourceSha256": "aaf55718f05749f10c37e1e939b1580d0b79347857164106a8b10ec2fab72960",
+     "bytes": 5053,
+     "sha256": "c85b25da8767ce89157d0b64b9a111266bdc3e8e97d7da0d8ae1e428dfd09a87"
+    },
+    {
+     "id": "haiku:chat",
+     "path": "apps/web/public/icon-library/haiku/chat.svg",
+     "sourcePath": "data/artwork/icons/App_Chat",
+     "sourceSha256": "37a2153c27462037a4c7842fa15d9c6c2279ea0a6ece819735ffa4a6a0cabb1b",
+     "bytes": 3544,
+     "sha256": "a8d0105efa3929aaf062d74076d94cb619df4b049c5cdb5491068e040607a917"
+    },
+    {
+     "id": "haiku:calculator",
+     "path": "apps/web/public/icon-library/haiku/calculator.svg",
+     "sourcePath": "data/artwork/icons/App_Calculator",
+     "sourceSha256": "4bd8ea50d49974fcb64ca5b2b8391614fa09744b743b138f5e4d2ba38ebc996b",
+     "bytes": 4396,
+     "sha256": "4b10964fc7a5892991ab360846210ac846e2402320671a63a62908772fb57d23"
+    },
+    {
+     "id": "haiku:clock",
+     "path": "apps/web/public/icon-library/haiku/clock.svg",
+     "sourcePath": "data/artwork/icons/App_Clock",
+     "sourceSha256": "7aa68e0b08e53ecdc3b5592846de0ffce62dcd266e8f759fb2f12e05abf63602",
+     "bytes": 5725,
+     "sha256": "bddb1581a1c8f7fbece76ebd562f21f69a1a47fe981bf45a269f380dfedccae3"
+    },
+    {
+     "id": "haiku:terminal",
+     "path": "apps/web/public/icon-library/haiku/terminal.svg",
+     "sourcePath": "data/artwork/icons/App_Terminal",
+     "sourceSha256": "d5ae5678af091c82da91e95f423f6a1212777799d50c12a70fb99cd484193f5d",
+     "bytes": 15005,
+     "sha256": "eee032a7e3b887c0a00de9adc93508b2bea4931e5dc3829e01d8fd1803aaf9c1"
+    },
+    {
+     "id": "haiku:character-map",
+     "path": "apps/web/public/icon-library/haiku/character-map.svg",
+     "sourcePath": "data/artwork/icons/App_CharacterMap",
+     "sourceSha256": "dab9d4b6ad30a9e65be04ef8704ce94b43a60319ef9370b0b1177b4bb0c748e0",
+     "bytes": 9613,
+     "sha256": "935ac545d5f7a5bf7e49582d8f228f06aa49bdffa4a9c2b90d1b7255914dd563"
+    },
+    {
+     "id": "haiku:magnify",
+     "path": "apps/web/public/icon-library/haiku/magnify.svg",
+     "sourcePath": "data/artwork/icons/App_Magnify",
+     "sourceSha256": "0c42ceea0c84e045372d888a651f78fc64b84c77d14d9275bec52bd981591a08",
+     "bytes": 5033,
+     "sha256": "2037b09cba1ab5d2a0091f7e071eaa848d2569fde80fc38f00544f5b7e1b1e6a"
+    },
+    {
+     "id": "haiku:text-editor",
+     "path": "apps/web/public/icon-library/haiku/text-editor.svg",
+     "sourcePath": "data/artwork/icons/App_StyledEdit",
+     "sourceSha256": "70ccb038f1ef6e94ffe741ef89fd04b2765c8e0940c25c110981b4babda8c09f",
+     "bytes": 9190,
+     "sha256": "c70318fb77a67be9146836bebb0219de7c243e4b2e4754471bebc9220c2fe8f3"
+    },
+    {
+     "id": "haiku:icon-editor",
+     "path": "apps/web/public/icon-library/haiku/icon-editor.svg",
+     "sourcePath": "data/artwork/icons/App_Icon-O-Matic",
+     "sourceSha256": "4bc1b030cc3937e3d9b8aa672f2edf96c62be4091f9db74976a3070f877e4cb9",
+     "bytes": 10122,
+     "sha256": "0ad7dc736db9318e51b6b7e3574e39c91dcd01da7d206b8464eaa8ce1c17f433"
+    },
+    {
+     "id": "haiku:installer",
+     "path": "apps/web/public/icon-library/haiku/installer.svg",
+     "sourcePath": "data/artwork/icons/App_PackageInstaller",
+     "sourceSha256": "1d33c0c8e7255e5b2412ee291efa603e387ee38e612e997a5432c1994de58c77",
+     "bytes": 6662,
+     "sha256": "e243830140ad11e18dc069aa0c118051e486ad35d915f933acef4d645b7b35b9"
+    },
+    {
+     "id": "haiku:updater",
+     "path": "apps/web/public/icon-library/haiku/updater.svg",
+     "sourcePath": "data/artwork/icons/App_SoftwareUpdater",
+     "sourceSha256": "7e79dccb803cffeb81541f016f0a29d10962871a8b9ed8a5515f2251648b8164",
+     "bytes": 17446,
+     "sha256": "23d561645442ebc1d5e4f7fd9266275443e6a9e55c3ff371be00a4a2a9ed846c"
+    },
+    {
+     "id": "haiku:disk-usage",
+     "path": "apps/web/public/icon-library/haiku/disk-usage.svg",
+     "sourcePath": "data/artwork/icons/App_DiskUsage",
+     "sourceSha256": "99f131d0cf6db0778d9591f6c31760d46dc8a914c6543a9a3492820776785ee6",
+     "bytes": 5438,
+     "sha256": "3756f444ad2de6eaa2c4d37900387695801cc4b268c6a7893be49aae57624e5c"
+    },
+    {
+     "id": "haiku:workspaces",
+     "path": "apps/web/public/icon-library/haiku/workspaces.svg",
+     "sourcePath": "data/artwork/icons/App_Workspaces",
+     "sourceSha256": "b3fed01edc6285f12e9dc66bd4027ba265b9e947bdd961bae2aa67e747e16ff8",
+     "bytes": 12109,
+     "sha256": "c60e1e590855c44165dca0d352f61da03424eb7df8b6fb1c7ede23eac2f6336b"
+    },
+    {
+     "id": "haiku:appearance",
+     "path": "apps/web/public/icon-library/haiku/appearance.svg",
+     "sourcePath": "data/artwork/icons/Prefs_Appearance",
+     "sourceSha256": "d56ef126c068d8542c03543947c32255cccfcb562529fabf17238807f39da47b",
+     "bytes": 3884,
+     "sha256": "e9508ece38d5a6aa90606d3f2c6d2c9191c5af7fabbc5bd9bafee7b6dc5fb77c"
+    },
+    {
+     "id": "haiku:backgrounds",
+     "path": "apps/web/public/icon-library/haiku/backgrounds.svg",
+     "sourcePath": "data/artwork/icons/Prefs_Backgrounds",
+     "sourceSha256": "639e73f6268604089de3b024d785bf2ff843c269f431d32f75e47b3fb14ad092",
+     "bytes": 8837,
+     "sha256": "4c847be0698769b8c6f53b2eab87529e70f22a0c6e050c17a73ac43c89bc9fcd"
+    },
+    {
+     "id": "haiku:fonts",
+     "path": "apps/web/public/icon-library/haiku/fonts.svg",
+     "sourcePath": "data/artwork/icons/Prefs_Fonts",
+     "sourceSha256": "06efb9c37e3334747d7d4107ca6281305226d146540321a6c8220dcba8f1b95e",
+     "bytes": 4834,
+     "sha256": "49262ecc76aaae79b3e777805f8a537a8db222e5da0c9979ab20880a9b7b8ca6"
+    },
+    {
+     "id": "haiku:screen",
+     "path": "apps/web/public/icon-library/haiku/screen.svg",
+     "sourcePath": "data/artwork/icons/Prefs_Screen",
+     "sourceSha256": "9805e387d63c17f4806ca63440677c49d5811b116078e0ba5b109fe480316317",
+     "bytes": 4947,
+     "sha256": "615a445a9de9fbba48c527cdf9f88dc720918ab37134b73c2d38d6744b80c1da"
+    },
+    {
+     "id": "haiku:keyboard",
+     "path": "apps/web/public/icon-library/haiku/keyboard.svg",
+     "sourcePath": "data/artwork/icons/Prefs_Keyboard",
+     "sourceSha256": "2643e5ffba782e383f3b7d47f0f836a20cb719552fbd15fc419f02111348ac30",
+     "bytes": 17631,
+     "sha256": "449f37f202e4055bc2f1d4ef33d636cc5c1f8ee57719c2c2f8b2130115367288"
+    },
+    {
+     "id": "haiku:mouse",
+     "path": "apps/web/public/icon-library/haiku/mouse.svg",
+     "sourcePath": "data/artwork/icons/Prefs_Mouse",
+     "sourceSha256": "d8c940b47ef318d4dc6704f86392f9b7935c3213c3406547d8510bed997a88d0",
+     "bytes": 4259,
+     "sha256": "48d69b85834240aa4cd67ed9b81c7968d21fa749c164694634ffac8aa1546977"
+    },
+    {
+     "id": "haiku:network",
+     "path": "apps/web/public/icon-library/haiku/network.svg",
+     "sourcePath": "data/artwork/icons/Prefs_Network",
+     "sourceSha256": "73ed0be9b55c2faf2c9fc85bb90b437f008282d4ed080fef4b4d5b5d7bdde6c3",
+     "bytes": 6691,
+     "sha256": "d8505eef88065700bf114029a74e43caf16ccefd7ad3d4198612bbac87974462"
+    },
+    {
+     "id": "haiku:printer",
+     "path": "apps/web/public/icon-library/haiku/printer.svg",
+     "sourcePath": "data/artwork/icons/Prefs_Printer",
+     "sourceSha256": "ca72dca605a65f89989b2c1bfd52ba9366ddd716f767d753cb1a62a5b4cd88b2",
+     "bytes": 6087,
+     "sha256": "95934076d048ffae2c72570c7620234ed7ca9e6a4b7345b1d46ae49526fcd48f"
+    },
+    {
+     "id": "haiku:media-settings",
+     "path": "apps/web/public/icon-library/haiku/media-settings.svg",
+     "sourcePath": "data/artwork/icons/Prefs_Media",
+     "sourceSha256": "cceee25a57a055ad9118894e08516f3d2f13312850449ca6543694659ccb0dc9",
+     "bytes": 11051,
+     "sha256": "0d53824ae82a9daf668e8e3ea1d23811cd441d0e80a9cb52839b2b57feb3daf9"
+    },
+    {
+     "id": "haiku:magic-wand",
+     "path": "apps/web/public/icon-library/haiku/magic-wand.svg",
+     "sourcePath": "data/artwork/icons/Misc_Magic_Wand",
+     "sourceSha256": "217654da47e61a7f51dbb23fc6a83d8fd2c58e5d9dbe584c3048c7e0af4c02e3",
+     "bytes": 6401,
+     "sha256": "cc8339884b927e2677f60d7d7966cbf8f6473e9ba6d7bf1ed5b37661d0e2aab4"
+    },
+    {
+     "id": "haiku:marker",
+     "path": "apps/web/public/icon-library/haiku/marker.svg",
+     "sourcePath": "data/artwork/icons/Misc_Marker",
+     "sourceSha256": "54c3fae583d9997ee018a05d8ca9d9b094f0750013860f267ac8d6ffc3cec7ef",
+     "bytes": 3639,
+     "sha256": "a67fa832e26b8369873b0d2d5d9b20e881ae26a75d7d8a936517a7bfac5cb020"
+    },
+    {
+     "id": "haiku:trash-empty",
+     "path": "apps/web/public/icon-library/haiku/trash-empty.svg",
+     "sourcePath": "data/artwork/icons/Trash_Empty",
+     "sourceSha256": "e8a0bc50b05de7d343051265ffcab746473ee7a3f18ed859eb28afb6c2d96c80",
+     "bytes": 4982,
+     "sha256": "d0312a094a1c61a041670b6496625dfd3c170775d198c38cbe83e8511a4b8dc2"
+    },
+    {
+     "id": "haiku:trash-full",
+     "path": "apps/web/public/icon-library/haiku/trash-full.svg",
+     "sourcePath": "data/artwork/icons/Trash_Full",
+     "sourceSha256": "a3e8b48731ff6c7364f5041ff92bd899d2c39e99b3d68a66687453742070730a",
+     "bytes": 9367,
+     "sha256": "db115939995430e67b6c0793adb79d6cc8168d32a342ede0f7c1bb8537b4d37d"
+    },
+    {
+     "id": "haiku:search",
+     "path": "apps/web/public/icon-library/haiku/search.svg",
+     "sourcePath": "data/artwork/icons/Action_Search",
+     "sourceSha256": "168933ea1126227b35c3d58a5689beba806d79ef344e374bac088d6153e890c4",
+     "bytes": 5586,
+     "sha256": "70aa8803b1ccf4e56f70f83c3de84c8d806dae218a47cb9d9d4dd57675ece71c"
+    },
+    {
+     "id": "haiku:clipboard",
+     "path": "apps/web/public/icon-library/haiku/clipboard.svg",
+     "sourcePath": "data/artwork/icons/Device_Clipboard",
+     "sourceSha256": "acdcf06c2e269de431a7a8f4e7064d0e38c2618b91c322d341e479d7a361c96b",
+     "bytes": 3341,
+     "sha256": "6364bb5326f2888441b8a7becc9bd38cadf9696a464fdc50419ba419a3bcc55c"
+    },
+    {
+     "id": "haiku:scanner",
+     "path": "apps/web/public/icon-library/haiku/scanner.svg",
+     "sourcePath": "data/artwork/icons/Device_FlatbedScanner",
+     "sourceSha256": "d9a1c1ec0398d8901b17fab3ac58a52e288bd5e8e7c4372ef2c289c3550b4798",
+     "bytes": 4696,
+     "sha256": "69f973e9745e792c2f778fa7b7c72b176ba4a73801e7d475d4c4e5b76f1a3c8f"
+    },
+    {
+     "id": "haiku:finance",
+     "path": "apps/web/public/icon-library/haiku/finance.svg",
+     "sourcePath": "data/artwork/icons/App_Finance",
+     "sourceSha256": "90aabaf73712d45112ea98dcc608dbd93a8d58fb7804addee332372253e08bda",
+     "bytes": 9430,
+     "sha256": "d69f54acb5e6a72d0052d9b542438d8b40e6fa78498e8684d6ef9a6ed180a1ae"
+    },
+    {
+     "id": "haiku:birthday-cake",
+     "path": "apps/web/public/icon-library/haiku/birthday-cake.svg",
+     "sourcePath": "data/artwork/icons/Misc_Birthday_Cake",
+     "sourceSha256": "169b44eef837d97d9dee17115d3c516e69b3dfb0b2552d76aad9bca749d5adcc",
+     "bytes": 9959,
+     "sha256": "be41dcba379e81be9b61fecee0829b6c3a1e47813cd0e4ebb97ae657c5645fdb"
+    },
+    {
+     "id": "haiku:book",
+     "path": "apps/web/public/icon-library/haiku/book.svg",
+     "sourcePath": "data/artwork/icons/Misc_Book",
+     "sourceSha256": "e7b011346c0c132358c38bc5777f42fdb8204e0ff847623c3857963c948b31e3",
+     "bytes": 4581,
+     "sha256": "4293e808b978a03cccdf1fabf5313bb318fc9352b764ef0eed15c7b1f2b093eb"
+    },
+    {
+     "id": "haiku:box",
+     "path": "apps/web/public/icon-library/haiku/box.svg",
+     "sourcePath": "data/artwork/icons/Misc_Box",
+     "sourceSha256": "b4f9a6fc9f7bafddaa9d4a83ab732bc2b79349df6535a764ad617761a8f843b9",
+     "bytes": 2099,
+     "sha256": "3d33e84d5a571c90d92471a85146ce0e690810f9449c1f729037f1719077a510"
+    },
+    {
+     "id": "haiku:bug",
+     "path": "apps/web/public/icon-library/haiku/bug.svg",
+     "sourcePath": "data/artwork/icons/Misc_Bug",
+     "sourceSha256": "fa4f89cbe12e586b3800a88df5afc6f149a4508e0116559789a46965d5cad631",
+     "bytes": 2753,
+     "sha256": "ac7e13ae11b6959615f768af65b63fbfe0f499091f7599f5108b122de48851ba"
+    },
+    {
+     "id": "haiku:earth",
+     "path": "apps/web/public/icon-library/haiku/earth.svg",
+     "sourcePath": "data/artwork/icons/Misc_Earth",
+     "sourceSha256": "c537c9fe97e8cd9d3ad575122c1a761f0ec2b1a114a7238770923ca3b63a9eba",
+     "bytes": 15681,
+     "sha256": "383f2f4caad4777e5f50c71bef924f761ae35fc94f61b9403e08a7c183c6f666"
+    },
+    {
+     "id": "haiku:hand",
+     "path": "apps/web/public/icon-library/haiku/hand.svg",
+     "sourcePath": "data/artwork/icons/Misc_Hand",
+     "sourceSha256": "b553928a57a0f7b7cd283a336d3c68b519dcfeea07ae25d70000d002c0e07425",
+     "bytes": 8972,
+     "sha256": "db81bfb9211a62a3cffffeb1d4c667abb960abb053414186cdfd06c0e3b415f7"
+    },
+    {
+     "id": "haiku:lan",
+     "path": "apps/web/public/icon-library/haiku/lan.svg",
+     "sourcePath": "data/artwork/icons/Misc_LAN",
+     "sourceSha256": "b25b7b3bc3c412623215a1c0bb4fe6ff79785a2f53bb609797b77bd19a5e09e3",
+     "bytes": 10915,
+     "sha256": "4bb095af046aa45c5dce38de165d2f15cc5d21005afa496f21fad0e7e01bdff0"
+    },
+    {
+     "id": "haiku:paper-plane",
+     "path": "apps/web/public/icon-library/haiku/paper-plane.svg",
+     "sourcePath": "data/artwork/icons/Misc_Paper_Plane",
+     "sourceSha256": "3280df6e49b2c230a32f0c44d24361588d6aee5c4a0db014b51b6f5904878f7e",
+     "bytes": 2497,
+     "sha256": "ed583f8861e264423876ddf9dddbf863022e5c52467e7fec7a4d7113597a28c8"
+    },
+    {
+     "id": "haiku:scroll",
+     "path": "apps/web/public/icon-library/haiku/scroll.svg",
+     "sourcePath": "data/artwork/icons/Misc_Scroll",
+     "sourceSha256": "8c9795e18490552aaefcaca5cedd9fa87be61406070d2519b90c1d4f36142cb4",
+     "bytes": 4529,
+     "sha256": "c24ac3b5a3d8eba9aad14a814eb1ce284bd2903e6046667bf5157ebfe52edb34"
+    },
+    {
+     "id": "haiku:sphere",
+     "path": "apps/web/public/icon-library/haiku/sphere.svg",
+     "sourcePath": "data/artwork/icons/Misc_Sphere",
+     "sourceSha256": "c6b0d96eabc0472c9997604b495ed2d62af7dfec2a962d081713c3bcf1a47c1e",
+     "bytes": 1247,
+     "sha256": "b2422c730808204afdb2462da58d90fd91b52483d6f11ac986ef7e1b7e25afcf"
+    },
+    {
+     "id": "haiku:window",
+     "path": "apps/web/public/icon-library/haiku/window.svg",
+     "sourcePath": "data/artwork/icons/Misc_Window",
+     "sourceSha256": "36fabc0815bdbba49c959ce1de1db9f7de15678232ed0bc57fbcf9c12919e1c3",
+     "bytes": 2690,
+     "sha256": "e4ac6b86b6431099393ea6ab5094b1f6c42c5c8ca89aa7c5a62f7950f70c80b4"
+    },
+    {
+     "id": "haiku:web-search",
+     "path": "apps/web/public/icon-library/haiku/web-search.svg",
+     "sourcePath": "data/artwork/icons/Misc_WebSearch",
+     "sourceSha256": "9eddaa8d3ffd94a41280d0688e6f777b0d2a3cf6eb6427e48ff476ea138ccdd5",
+     "bytes": 18092,
+     "sha256": "36b695cbadf46f8dd3c207b4f910a897d696daf28e10adb42263fade6652c17f"
+    },
+    {
+     "id": "haiku:croissant",
+     "path": "apps/web/public/icon-library/haiku/croissant.svg",
+     "sourcePath": "data/artwork/icons/Misc_Croissant",
+     "sourceSha256": "b2c6bb44f8652582d0e4c9ac73dc2630e2612e71dd12dd0cdd03f90b9e71d887",
+     "bytes": 5086,
+     "sha256": "3551adeb06fab2574e9404d7839e4134a9f0585a880ba29fad78d6c71aed5513"
+    },
+    {
+     "id": "haiku:idea",
+     "path": "apps/web/public/icon-library/haiku/idea.svg",
+     "sourcePath": "data/artwork/icons/Alert_Idea",
+     "sourceSha256": "82beab92c524c164a7f427921e53c81b42d7dd81d8ebfd8e5b21deebcb41982f",
+     "bytes": 4321,
+     "sha256": "1507b7f366ed6b938178972e21f5a246d263fc38c926b04446748416e9c1dfc8"
+    },
+    {
+     "id": "haiku:info",
+     "path": "apps/web/public/icon-library/haiku/info.svg",
+     "sourcePath": "data/artwork/icons/Alert_Info",
+     "sourceSha256": "25678382194c95f0d4bbbf754d921e730802e870458959528034294836565c0a",
+     "bytes": 6027,
+     "sha256": "1dcfbd2de41f64e0b978a71295041d67edf63a314ae61383690585e383d50420"
+    },
+    {
+     "id": "haiku:warning",
+     "path": "apps/web/public/icon-library/haiku/warning.svg",
+     "sourcePath": "data/artwork/icons/Alert_Warning",
+     "sourceSha256": "8d3608178d27d8e4c98d9eaa5910a563155705ac909a668e745e63ed95f5a11e",
+     "bytes": 3404,
+     "sha256": "1417885b8c6c876544320d67e53765caaa7301c2865774b754940c7df8a6b86d"
+    },
+    {
+     "id": "haiku:stop",
+     "path": "apps/web/public/icon-library/haiku/stop.svg",
+     "sourcePath": "data/artwork/icons/Alert_Stop",
+     "sourceSha256": "70fc86a95a619fd151a0a192fb00c4eea8d641a5be651157b70b3a15d12bba89",
+     "bytes": 3604,
+     "sha256": "8eeb8446a4dd4c1a1f8ddbf84b76df43933dee4149e35bc481b2ce32e6eb437c"
+    },
+    {
+     "id": "haiku:mail-send",
+     "path": "apps/web/public/icon-library/haiku/mail-send.svg",
+     "sourcePath": "data/artwork/icons/Mail_Send",
+     "sourceSha256": "23534393d1b7a3c682848b15281e217428daf0b4be63c10a57eb81025add5eeb",
+     "bytes": 7718,
+     "sha256": "52d18d6701685896ebb32a01ac29ea03b273bf1dba62652850878cbe163528ea"
+    },
+    {
+     "id": "haiku:mail",
+     "path": "apps/web/public/icon-library/haiku/mail.svg",
+     "sourcePath": "data/artwork/icons/App_Mail",
+     "sourceSha256": "384bdb2d9f33f7ca419d6f01a01e0514b05be1cf433fe98c3d410bfd57da8dca",
+     "bytes": 9703,
+     "sha256": "3f6f61c4d31583aa69195ec7010053874685821772c2da4bd08b1442864c2973"
+    },
+    {
+     "id": "haiku:go-home",
+     "path": "apps/web/public/icon-library/haiku/go-home.svg",
+     "sourcePath": "data/artwork/icons/Action_GoHome",
+     "sourceSha256": "53856b05aeb28f06de080681b7783f0568ec9bf0e08eda9e8e0cc6ef9abc39a4",
+     "bytes": 5363,
+     "sha256": "dd21c3fd787fab73f0a5eea719a068d6e88897ca1a46bff4fdb69774802be7f8"
+    },
+    {
+     "id": "haiku:download",
+     "path": "apps/web/public/icon-library/haiku/download.svg",
+     "sourcePath": "data/artwork/icons/Action_Download",
+     "sourceSha256": "19cbb1edbc311e78520eadf058ab99834168cb95ad7f590b7da5bc3fa4f12bc7",
+     "bytes": 3423,
+     "sha256": "9856cb9a38e620a4058b695a6c98f335e4379045f263d425d7fe83d38b11be3d"
+    },
+    {
+     "id": "haiku:harddisk",
+     "path": "apps/web/public/icon-library/haiku/harddisk.svg",
+     "sourcePath": "data/artwork/icons/Device_Harddisk",
+     "sourceSha256": "a93920a089e33c8a3d59977e805be07286ee14e060fc21c636f9929d378388e2",
+     "bytes": 2905,
+     "sha256": "1a121c47ea0e9c5cde70910dce51316c51a1381ea0556beb4504ded91a58e514"
+    },
+    {
+     "id": "haiku:mobile",
+     "path": "apps/web/public/icon-library/haiku/mobile.svg",
+     "sourcePath": "data/artwork/icons/Device_Mobile",
+     "sourceSha256": "5bd5200f9595eda55d1aaa4943153a46d633663cc033166817b04b186194590e",
+     "bytes": 5952,
+     "sha256": "706e9682bde14667e6ec4541faae84f9408b11b46482dce41d03d4a18a1c0761"
+    },
+    {
+     "id": "haiku:pendrive",
+     "path": "apps/web/public/icon-library/haiku/pendrive.svg",
+     "sourcePath": "data/artwork/icons/Device_Pendrive",
+     "sourceSha256": "ad3958aaf20e487d611453b505781820c45503726adae218c2c6e8aff2eff3e6",
+     "bytes": 7066,
+     "sha256": "6edf2c9f8988a18efbf30875d46f7dd7738c4783a75c58cbde94fc555c9f296d"
+    },
+    {
+     "id": "haiku:sd-card",
+     "path": "apps/web/public/icon-library/haiku/sd-card.svg",
+     "sourcePath": "data/artwork/icons/Device_SD",
+     "sourceSha256": "bb71e09f9f14013689ffd6f117b8d669f1452cc2f96bde6a4751a245c797dfe5",
+     "bytes": 7269,
+     "sha256": "3c984d787beec14bf41bad514723dc15f88eae242efecba4f6697b71bd5c1405"
+    },
+    {
+     "id": "haiku:floppy",
+     "path": "apps/web/public/icon-library/haiku/floppy.svg",
+     "sourcePath": "data/artwork/icons/Device_Floppy",
+     "sourceSha256": "0d2f58adc8112bba1e2239a2bb28c8ccf100f07fe6d737a64f63e61ae5a7f055",
+     "bytes": 4834,
+     "sha256": "26298599c109ad92627364009519e36a397a1d18f0a3f863987eb24fa6488d33"
+    },
+    {
+     "id": "haiku:nas",
+     "path": "apps/web/public/icon-library/haiku/nas.svg",
+     "sourcePath": "data/artwork/icons/Device_NAS",
+     "sourceSha256": "b3cf6f7ece003622a67e45d3801329e2f203f94647e4cc76b24a77073db9b734",
+     "bytes": 4112,
+     "sha256": "38a7a32e70c7d59dc5a4e0a1f468b08a9b3743cc632e8d1e570df080fa4e4630"
+    },
+    {
+     "id": "haiku:teapot",
+     "path": "apps/web/public/icon-library/haiku/teapot.svg",
+     "sourcePath": "data/artwork/icons/App_Teapot",
+     "sourceSha256": "2768a6fb62b0204caeb20caf55a8101e0085f1c4757189b7a909ac6404054fc6",
+     "bytes": 6299,
+     "sha256": "50171630af172b0ec29ac19b2b89421a5ba9a042f29528f48a7795276af1ace0"
+    },
+    {
+     "id": "haiku:mandelbrot",
+     "path": "apps/web/public/icon-library/haiku/mandelbrot.svg",
+     "sourcePath": "data/artwork/icons/App_Mandelbrot",
+     "sourceSha256": "3ddb93a908bf47d512c6e37b4447fd358268cb7ad9ef0ce466bb76c679c10225",
+     "bytes": 7963,
+     "sha256": "c3a94a72aa3c16322c903f8dbcb42c4edf98a91e643528fd06d256d971895e98"
+    }
+   ]
+  },
+  "pixelart": {
+   "source": {
+    "url": "https://github.com/tstamborski/pixelart-icons",
+    "path": "png",
+    "revision": "aff260c021f9a8053719de0113cd59e428c87eca"
+   },
+   "license": "CC0-1.0",
+   "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "authorOrRightsHolder": "Tomasz Stamborski",
+   "count": 64,
+   "outputs": [
+    {
+     "id": "pixelart:alarm-clock",
+     "path": "apps/web/public/icon-library/pixelart/alarm-clock.png",
+     "sourcePath": "png/alarmclock32.png",
+     "sourceSha256": "1db6ba315d6f45c94a89178c888537935c9fc0154e176640bd60f8d2ef3761aa",
+     "bytes": 406,
+     "sha256": "1db6ba315d6f45c94a89178c888537935c9fc0154e176640bd60f8d2ef3761aa"
+    },
+    {
+     "id": "pixelart:birthday",
+     "path": "apps/web/public/icon-library/pixelart/birthday.png",
+     "sourcePath": "png/birthday32.png",
+     "sourceSha256": "f26f181c6383d2109e1db205cef6affc907a378d4dc7249147c4d5b867ff3e28",
+     "bytes": 517,
+     "sha256": "f26f181c6383d2109e1db205cef6affc907a378d4dc7249147c4d5b867ff3e28"
+    },
+    {
+     "id": "pixelart:brush",
+     "path": "apps/web/public/icon-library/pixelart/brush.png",
+     "sourcePath": "png/brush32.png",
+     "sourceSha256": "30a0c0d7b91e6b18f26a61e2a3bbf489ff33a9c75c4bb0bbe4fece490ba2f9fe",
+     "bytes": 325,
+     "sha256": "30a0c0d7b91e6b18f26a61e2a3bbf489ff33a9c75c4bb0bbe4fece490ba2f9fe"
+    },
+    {
+     "id": "pixelart:calculator",
+     "path": "apps/web/public/icon-library/pixelart/calculator.png",
+     "sourcePath": "png/calc32.png",
+     "sourceSha256": "ac8e57bba87907a130220dd72adb64bf237919cb36e715c814b8e8fda4c43307",
+     "bytes": 255,
+     "sha256": "ac8e57bba87907a130220dd72adb64bf237919cb36e715c814b8e8fda4c43307"
+    },
+    {
+     "id": "pixelart:calendar",
+     "path": "apps/web/public/icon-library/pixelart/calendar.png",
+     "sourcePath": "png/calendar32.png",
+     "sourceSha256": "5b167d29559086071709407d46063c9a8f44b5d9e4dac5ba6ad542ae11270ed2",
+     "bytes": 271,
+     "sha256": "5b167d29559086071709407d46063c9a8f44b5d9e4dac5ba6ad542ae11270ed2"
+    },
+    {
+     "id": "pixelart:cash",
+     "path": "apps/web/public/icon-library/pixelart/cash.png",
+     "sourcePath": "png/cash32.png",
+     "sourceSha256": "95f78c0727c07378e6c93693fe63c01f5ee729bf60247b16b281d3f1ed83ce69",
+     "bytes": 442,
+     "sha256": "95f78c0727c07378e6c93693fe63c01f5ee729bf60247b16b281d3f1ed83ce69"
+    },
+    {
+     "id": "pixelart:cassette",
+     "path": "apps/web/public/icon-library/pixelart/cassette.png",
+     "sourcePath": "png/cassette32.png",
+     "sourceSha256": "3530b04ba5d748ae62adca04abd9154837ec472124e000354e8a1ce67f62dbf4",
+     "bytes": 344,
+     "sha256": "3530b04ba5d748ae62adca04abd9154837ec472124e000354e8a1ce67f62dbf4"
+    },
+    {
+     "id": "pixelart:cell-phone",
+     "path": "apps/web/public/icon-library/pixelart/cell-phone.png",
+     "sourcePath": "png/cell-phone32.png",
+     "sourceSha256": "4928a78b824743e6e75e9e5c46a10d80b2a1965e55234f05942413ca727fc154",
+     "bytes": 263,
+     "sha256": "4928a78b824743e6e75e9e5c46a10d80b2a1965e55234f05942413ca727fc154"
+    },
+    {
+     "id": "pixelart:cherries",
+     "path": "apps/web/public/icon-library/pixelart/cherries.png",
+     "sourcePath": "png/cherries32.png",
+     "sourceSha256": "ba4931d12c32d4fbf10478fac1c0509fdd960f764f6077cac961f67e39bd464c",
+     "bytes": 378,
+     "sha256": "ba4931d12c32d4fbf10478fac1c0509fdd960f764f6077cac961f67e39bd464c"
+    },
+    {
+     "id": "pixelart:clock",
+     "path": "apps/web/public/icon-library/pixelart/clock.png",
+     "sourcePath": "png/clock32.png",
+     "sourceSha256": "12520cd0b2a0f6a72e9a1faec2b86d7acd155779b78ad3c37504b8a98ddb943b",
+     "bytes": 479,
+     "sha256": "12520cd0b2a0f6a72e9a1faec2b86d7acd155779b78ad3c37504b8a98ddb943b"
+    },
+    {
+     "id": "pixelart:cloudy",
+     "path": "apps/web/public/icon-library/pixelart/cloudy.png",
+     "sourcePath": "png/cloudy32.png",
+     "sourceSha256": "c38c005316ff84b07d8665b52444852cd80ad2841e025787cf5295031b946834",
+     "bytes": 293,
+     "sha256": "c38c005316ff84b07d8665b52444852cd80ad2841e025787cf5295031b946834"
+    },
+    {
+     "id": "pixelart:comb",
+     "path": "apps/web/public/icon-library/pixelart/comb.png",
+     "sourcePath": "png/comb32.png",
+     "sourceSha256": "c7baf5c282ddbb169ff615dc707533ac4e899f33f77c3b88ce86af6a41cfda9e",
+     "bytes": 309,
+     "sha256": "c7baf5c282ddbb169ff615dc707533ac4e899f33f77c3b88ce86af6a41cfda9e"
+    },
+    {
+     "id": "pixelart:copy",
+     "path": "apps/web/public/icon-library/pixelart/copy.png",
+     "sourcePath": "png/copy32.png",
+     "sourceSha256": "74ca2bb1889991a54c571950b6c0e0e8a8fd0a2739476d02e20c3003f0f81fc9",
+     "bytes": 211,
+     "sha256": "74ca2bb1889991a54c571950b6c0e0e8a8fd0a2739476d02e20c3003f0f81fc9"
+    },
+    {
+     "id": "pixelart:cut",
+     "path": "apps/web/public/icon-library/pixelart/cut.png",
+     "sourcePath": "png/cut32.png",
+     "sourceSha256": "0bdddf0a3ce7b914ff5c69920b79c87d0e7d7d838de71d3c10400c5c48b48bf7",
+     "bytes": 482,
+     "sha256": "0bdddf0a3ce7b914ff5c69920b79c87d0e7d7d838de71d3c10400c5c48b48bf7"
+    },
+    {
+     "id": "pixelart:dice",
+     "path": "apps/web/public/icon-library/pixelart/dice.png",
+     "sourcePath": "png/dices32.png",
+     "sourceSha256": "708d634919546900cdff778b9560a3e8b13ebe695a2a84ea6813e8dd07413498",
+     "bytes": 376,
+     "sha256": "708d634919546900cdff778b9560a3e8b13ebe695a2a84ea6813e8dd07413498"
+    },
+    {
+     "id": "pixelart:error",
+     "path": "apps/web/public/icon-library/pixelart/error.png",
+     "sourcePath": "png/error32.png",
+     "sourceSha256": "f04b0096c86069d1be4d359bb123619b546b0ceb5038581cf4c108934ca42794",
+     "bytes": 359,
+     "sha256": "f04b0096c86069d1be4d359bb123619b546b0ceb5038581cf4c108934ca42794"
+    },
+    {
+     "id": "pixelart:exit",
+     "path": "apps/web/public/icon-library/pixelart/exit.png",
+     "sourcePath": "png/exit32.png",
+     "sourceSha256": "abdc380ed94239256b9422928ec33223b6cfc781cf4fcd0c5990969a38ba78d6",
+     "bytes": 277,
+     "sha256": "abdc380ed94239256b9422928ec33223b6cfc781cf4fcd0c5990969a38ba78d6"
+    },
+    {
+     "id": "pixelart:eyes",
+     "path": "apps/web/public/icon-library/pixelart/eyes.png",
+     "sourcePath": "png/eyes32.png",
+     "sourceSha256": "867eca98e2ff351c8b9545947eeccfa1594dae9b49ffcd95f396e847cff8c101",
+     "bytes": 239,
+     "sha256": "867eca98e2ff351c8b9545947eeccfa1594dae9b49ffcd95f396e847cff8c101"
+    },
+    {
+     "id": "pixelart:film",
+     "path": "apps/web/public/icon-library/pixelart/film.png",
+     "sourcePath": "png/film32.png",
+     "sourceSha256": "1b809ad5ee7d14bf38b6a7c141bab1d2138a15f78f005523f5044d6202678b2a",
+     "bytes": 363,
+     "sha256": "1b809ad5ee7d14bf38b6a7c141bab1d2138a15f78f005523f5044d6202678b2a"
+    },
+    {
+     "id": "pixelart:flower",
+     "path": "apps/web/public/icon-library/pixelart/flower.png",
+     "sourcePath": "png/flower32.png",
+     "sourceSha256": "e62256a6244ae2eb018fadeeef58ba18469446c73282ff48a9a5a577d8694da0",
+     "bytes": 423,
+     "sha256": "e62256a6244ae2eb018fadeeef58ba18469446c73282ff48a9a5a577d8694da0"
+    },
+    {
+     "id": "pixelart:gem",
+     "path": "apps/web/public/icon-library/pixelart/gem.png",
+     "sourcePath": "png/gem32.png",
+     "sourceSha256": "99e987abcfb970991277a0cd37012b49aaf38508f607fe3eb8b59849d1811c6b",
+     "bytes": 259,
+     "sha256": "99e987abcfb970991277a0cd37012b49aaf38508f607fe3eb8b59849d1811c6b"
+    },
+    {
+     "id": "pixelart:guitar",
+     "path": "apps/web/public/icon-library/pixelart/guitar.png",
+     "sourcePath": "png/guitar32.png",
+     "sourceSha256": "2bfd1981489a5df68e0747ac0a224d2033132754af1623e1985832c233ec164e",
+     "bytes": 479,
+     "sha256": "2bfd1981489a5df68e0747ac0a224d2033132754af1623e1985832c233ec164e"
+    },
+    {
+     "id": "pixelart:heart",
+     "path": "apps/web/public/icon-library/pixelart/heart.png",
+     "sourcePath": "png/heart32.png",
+     "sourceSha256": "420553fe0e38993584b5c883630556b5a71262a90b63c96051bf8a447184706d",
+     "bytes": 279,
+     "sha256": "420553fe0e38993584b5c883630556b5a71262a90b63c96051bf8a447184706d"
+    },
+    {
+     "id": "pixelart:info",
+     "path": "apps/web/public/icon-library/pixelart/info.png",
+     "sourcePath": "png/info32.png",
+     "sourceSha256": "0cfc3e55d078017af1c13b53dd83632e78fb20453803b7dfcf0cfb5c8ba3851c",
+     "bytes": 224,
+     "sha256": "0cfc3e55d078017af1c13b53dd83632e78fb20453803b7dfcf0cfb5c8ba3851c"
+    },
+    {
+     "id": "pixelart:laboratory",
+     "path": "apps/web/public/icon-library/pixelart/laboratory.png",
+     "sourcePath": "png/laboratory32.png",
+     "sourceSha256": "149edad76abfd3f81f1d56819689bcd339c95b2c0ec29c1d234ed25880e2a8b3",
+     "bytes": 396,
+     "sha256": "149edad76abfd3f81f1d56819689bcd339c95b2c0ec29c1d234ed25880e2a8b3"
+    },
+    {
+     "id": "pixelart:lemon",
+     "path": "apps/web/public/icon-library/pixelart/lemon.png",
+     "sourcePath": "png/lemon32.png",
+     "sourceSha256": "fbf3b30bf2280bf0c2be0d0b4d3ebaf190aab249dfbf8387e71ae534c891b8cf",
+     "bytes": 302,
+     "sha256": "fbf3b30bf2280bf0c2be0d0b4d3ebaf190aab249dfbf8387e71ae534c891b8cf"
+    },
+    {
+     "id": "pixelart:letter",
+     "path": "apps/web/public/icon-library/pixelart/letter.png",
+     "sourcePath": "png/letter32.png",
+     "sourceSha256": "d2e7f1c1505c16cdf364f3d0b599ae3943ba6061ec361a629fe1acd97f75f7dc",
+     "bytes": 222,
+     "sha256": "d2e7f1c1505c16cdf364f3d0b599ae3943ba6061ec361a629fe1acd97f75f7dc"
+    },
+    {
+     "id": "pixelart:letter-open",
+     "path": "apps/web/public/icon-library/pixelart/letter-open.png",
+     "sourcePath": "png/letter-open32.png",
+     "sourceSha256": "0a403469a19d1e8718f49421127cbe78947ee99b7b82c9c2f096a1c783762aa6",
+     "bytes": 238,
+     "sha256": "0a403469a19d1e8718f49421127cbe78947ee99b7b82c9c2f096a1c783762aa6"
+    },
+    {
+     "id": "pixelart:lollipop",
+     "path": "apps/web/public/icon-library/pixelart/lollipop.png",
+     "sourcePath": "png/lollipop32.png",
+     "sourceSha256": "959bb39a0ab7b4c3e883b261093254535d57f64530d1dc75436deeed3306e3fe",
+     "bytes": 283,
+     "sha256": "959bb39a0ab7b4c3e883b261093254535d57f64530d1dc75436deeed3306e3fe"
+    },
+    {
+     "id": "pixelart:music-on",
+     "path": "apps/web/public/icon-library/pixelart/music-on.png",
+     "sourcePath": "png/music-on32.png",
+     "sourceSha256": "fbd132ba2f22da7568620f7e89e732ff417dcd066cb9f680dc4c7ca8dabdd349",
+     "bytes": 322,
+     "sha256": "fbd132ba2f22da7568620f7e89e732ff417dcd066cb9f680dc4c7ca8dabdd349"
+    },
+    {
+     "id": "pixelart:music-off",
+     "path": "apps/web/public/icon-library/pixelart/music-off.png",
+     "sourcePath": "png/music-off32.png",
+     "sourceSha256": "a524df2a41e1c7e60535a8c120628bb9468af8861f94e953f36fc00e7554cdc6",
+     "bytes": 378,
+     "sha256": "a524df2a41e1c7e60535a8c120628bb9468af8861f94e953f36fc00e7554cdc6"
+    },
+    {
+     "id": "pixelart:new-file",
+     "path": "apps/web/public/icon-library/pixelart/new-file.png",
+     "sourcePath": "png/newfile32.png",
+     "sourceSha256": "72621dcf5daa1e2e65701db56a9e99a2b52d369fc27a078409f467a64cf4999b",
+     "bytes": 158,
+     "sha256": "72621dcf5daa1e2e65701db56a9e99a2b52d369fc27a078409f467a64cf4999b"
+    },
+    {
+     "id": "pixelart:open-file",
+     "path": "apps/web/public/icon-library/pixelart/open-file.png",
+     "sourcePath": "png/openfile32.png",
+     "sourceSha256": "ede8e1441773122ec15c0e582aaf3cf46e117e9c5bbaaa59a12ede7812aba213",
+     "bytes": 224,
+     "sha256": "ede8e1441773122ec15c0e582aaf3cf46e117e9c5bbaaa59a12ede7812aba213"
+    },
+    {
+     "id": "pixelart:orange",
+     "path": "apps/web/public/icon-library/pixelart/orange.png",
+     "sourcePath": "png/orange32.png",
+     "sourceSha256": "a57c37c7356ea8fc39b78b761cf2a2441386cc092f1c57ca122e96df4ff2e73b",
+     "bytes": 293,
+     "sha256": "a57c37c7356ea8fc39b78b761cf2a2441386cc092f1c57ca122e96df4ff2e73b"
+    },
+    {
+     "id": "pixelart:palette",
+     "path": "apps/web/public/icon-library/pixelart/palette.png",
+     "sourcePath": "png/palette32.png",
+     "sourceSha256": "a6443bdc0d57cb644759e96fb06f26cda45df3b1bd727aec84f35905433e51d6",
+     "bytes": 477,
+     "sha256": "a6443bdc0d57cb644759e96fb06f26cda45df3b1bd727aec84f35905433e51d6"
+    },
+    {
+     "id": "pixelart:paste",
+     "path": "apps/web/public/icon-library/pixelart/paste.png",
+     "sourcePath": "png/paste32.png",
+     "sourceSha256": "738fecd9bbdc89737c4eb31bb00bf473fdb859d7aaa8141ff2b5605a2d0b5a13",
+     "bytes": 235,
+     "sha256": "738fecd9bbdc89737c4eb31bb00bf473fdb859d7aaa8141ff2b5605a2d0b5a13"
+    },
+    {
+     "id": "pixelart:peace",
+     "path": "apps/web/public/icon-library/pixelart/peace.png",
+     "sourcePath": "png/peace32.png",
+     "sourceSha256": "3d742d822de2d703a69fad1d1ca952d1a9f0df379dac4932250c2d4e289af6c4",
+     "bytes": 326,
+     "sha256": "3d742d822de2d703a69fad1d1ca952d1a9f0df379dac4932250c2d4e289af6c4"
+    },
+    {
+     "id": "pixelart:pencil",
+     "path": "apps/web/public/icon-library/pixelart/pencil.png",
+     "sourcePath": "png/pencil32.png",
+     "sourceSha256": "65190e08ff32a25b1b11d13f21cb1ede424733152f831769d68fbf396c61bdd7",
+     "bytes": 278,
+     "sha256": "65190e08ff32a25b1b11d13f21cb1ede424733152f831769d68fbf396c61bdd7"
+    },
+    {
+     "id": "pixelart:pendrive",
+     "path": "apps/web/public/icon-library/pixelart/pendrive.png",
+     "sourcePath": "png/pendrive32.png",
+     "sourceSha256": "383d2a8ef4f4e74bab514d7887fd2b82733e4e6314e0efa414fc1d8babee1f0e",
+     "bytes": 474,
+     "sha256": "383d2a8ef4f4e74bab514d7887fd2b82733e4e6314e0efa414fc1d8babee1f0e"
+    },
+    {
+     "id": "pixelart:printer",
+     "path": "apps/web/public/icon-library/pixelart/printer.png",
+     "sourcePath": "png/printer32.png",
+     "sourceSha256": "a5da4462949040369ee2746930f2c3e5801db2d44b916334123fb4960c6c8b34",
+     "bytes": 337,
+     "sha256": "a5da4462949040369ee2746930f2c3e5801db2d44b916334123fb4960c6c8b34"
+    },
+    {
+     "id": "pixelart:question",
+     "path": "apps/web/public/icon-library/pixelart/question.png",
+     "sourcePath": "png/question32.png",
+     "sourceSha256": "dee81e22d5de01cd35463462a35bac65549a1e583476246218681582fd517554",
+     "bytes": 301,
+     "sha256": "dee81e22d5de01cd35463462a35bac65549a1e583476246218681582fd517554"
+    },
+    {
+     "id": "pixelart:rainy",
+     "path": "apps/web/public/icon-library/pixelart/rainy.png",
+     "sourcePath": "png/rainy32.png",
+     "sourceSha256": "be85b228ab411a49aa4c060ace1e1b485cd01abd43d685070564da14fc7b40dc",
+     "bytes": 334,
+     "sha256": "be85b228ab411a49aa4c060ace1e1b485cd01abd43d685070564da14fc7b40dc"
+    },
+    {
+     "id": "pixelart:remove-file",
+     "path": "apps/web/public/icon-library/pixelart/remove-file.png",
+     "sourcePath": "png/remove-file32.png",
+     "sourceSha256": "d8024868583b809ab525d84c3ca4a965adfc6532f7da81c14dbf2a872b1cda4f",
+     "bytes": 220,
+     "sha256": "d8024868583b809ab525d84c3ca4a965adfc6532f7da81c14dbf2a872b1cda4f"
+    },
+    {
+     "id": "pixelart:save-file",
+     "path": "apps/web/public/icon-library/pixelart/save-file.png",
+     "sourcePath": "png/savefile32.png",
+     "sourceSha256": "0ea23e2c7f0a06f7c224e91fedf02388fa1311b98a2eb6a5f0cfe08adb9d7e49",
+     "bytes": 255,
+     "sha256": "0ea23e2c7f0a06f7c224e91fedf02388fa1311b98a2eb6a5f0cfe08adb9d7e49"
+    },
+    {
+     "id": "pixelart:star-red",
+     "path": "apps/web/public/icon-library/pixelart/star-red.png",
+     "sourcePath": "png/star-red32.png",
+     "sourceSha256": "bd48a0a896f7645469e5990d65b31e4ef6d060ac2d4db11bb82bae84d052277e",
+     "bytes": 278,
+     "sha256": "bd48a0a896f7645469e5990d65b31e4ef6d060ac2d4db11bb82bae84d052277e"
+    },
+    {
+     "id": "pixelart:star-yellow",
+     "path": "apps/web/public/icon-library/pixelart/star-yellow.png",
+     "sourcePath": "png/star-yellow32.png",
+     "sourceSha256": "57f9e90f2d334293bd77127b66fbe6dec69ab2bcb9d0e0b84f09b51571e498f2",
+     "bytes": 279,
+     "sha256": "57f9e90f2d334293bd77127b66fbe6dec69ab2bcb9d0e0b84f09b51571e498f2"
+    },
+    {
+     "id": "pixelart:stormy",
+     "path": "apps/web/public/icon-library/pixelart/stormy.png",
+     "sourcePath": "png/stormy32.png",
+     "sourceSha256": "48d0f7d8c9a66b9083df73f985360089ddabb767c766da5b4dab12076cbb1dda",
+     "bytes": 464,
+     "sha256": "48d0f7d8c9a66b9083df73f985360089ddabb767c766da5b4dab12076cbb1dda"
+    },
+    {
+     "id": "pixelart:sunny",
+     "path": "apps/web/public/icon-library/pixelart/sunny.png",
+     "sourcePath": "png/sunny32.png",
+     "sourceSha256": "a56c2840918c9d332b96c790ec043c020006d00095f554e3736009d0d71c7f8d",
+     "bytes": 279,
+     "sha256": "a56c2840918c9d332b96c790ec043c020006d00095f554e3736009d0d71c7f8d"
+    },
+    {
+     "id": "pixelart:thermometer",
+     "path": "apps/web/public/icon-library/pixelart/thermometer.png",
+     "sourcePath": "png/thermometer32.png",
+     "sourceSha256": "5d85779b1074eb2a41f51690c8461956b2d7df983f613adefa194455bf837b29",
+     "bytes": 185,
+     "sha256": "5d85779b1074eb2a41f51690c8461956b2d7df983f613adefa194455bf837b29"
+    },
+    {
+     "id": "pixelart:tools",
+     "path": "apps/web/public/icon-library/pixelart/tools.png",
+     "sourcePath": "png/tools32.png",
+     "sourceSha256": "50a5bf1b6a592a8f096810850624f2b9c03c00a33a1be1bfa7da668a098e79b4",
+     "bytes": 323,
+     "sha256": "50a5bf1b6a592a8f096810850624f2b9c03c00a33a1be1bfa7da668a098e79b4"
+    },
+    {
+     "id": "pixelart:traffic-lights",
+     "path": "apps/web/public/icon-library/pixelart/traffic-lights.png",
+     "sourcePath": "png/traffic-lights32.png",
+     "sourceSha256": "022136ff4587b866de8eb55d54757ee538dfeabf9002c3b5cd1b31bac34684ef",
+     "bytes": 338,
+     "sha256": "022136ff4587b866de8eb55d54757ee538dfeabf9002c3b5cd1b31bac34684ef"
+    },
+    {
+     "id": "pixelart:umbrella",
+     "path": "apps/web/public/icon-library/pixelart/umbrella.png",
+     "sourcePath": "png/umbrella32.png",
+     "sourceSha256": "164b4c2b964a7037c17445b5523353649776f833b76a85290d6f8df258250ce2",
+     "bytes": 253,
+     "sha256": "164b4c2b964a7037c17445b5523353649776f833b76a85290d6f8df258250ce2"
+    },
+    {
+     "id": "pixelart:warning",
+     "path": "apps/web/public/icon-library/pixelart/warning.png",
+     "sourcePath": "png/warning32.png",
+     "sourceSha256": "8658b67e6793039ba4254b0f1474d67928090919b8e161a1ae2eccba2f91e0a0",
+     "bytes": 297,
+     "sha256": "8658b67e6793039ba4254b0f1474d67928090919b8e161a1ae2eccba2f91e0a0"
+    },
+    {
+     "id": "pixelart:bananas",
+     "path": "apps/web/public/icon-library/pixelart/bananas.png",
+     "sourcePath": "png/bananas32.png",
+     "sourceSha256": "d568ddc01c0dc1c5360c3eca5c42f12ea2e6aadf914bfb2ae732aa05611340fa",
+     "bytes": 413,
+     "sha256": "d568ddc01c0dc1c5360c3eca5c42f12ea2e6aadf914bfb2ae732aa05611340fa"
+    },
+    {
+     "id": "pixelart:carrot",
+     "path": "apps/web/public/icon-library/pixelart/carrot.png",
+     "sourcePath": "png/carrot32.png",
+     "sourceSha256": "fdf17398c6182841f8f26db2bf7854dee11222702300271742adcc50c7810e9a",
+     "bytes": 423,
+     "sha256": "fdf17398c6182841f8f26db2bf7854dee11222702300271742adcc50c7810e9a"
+    },
+    {
+     "id": "pixelart:battery",
+     "path": "apps/web/public/icon-library/pixelart/battery.png",
+     "sourcePath": "png/battery32.png",
+     "sourceSha256": "f8b29c3f8fb6654fed6a6ac1428c0c4f81730bd9fa7efbe03f335a935101aa84",
+     "bytes": 355,
+     "sha256": "f8b29c3f8fb6654fed6a6ac1428c0c4f81730bd9fa7efbe03f335a935101aa84"
+    },
+    {
+     "id": "pixelart:old-tree",
+     "path": "apps/web/public/icon-library/pixelart/old-tree.png",
+     "sourcePath": "png/old-tree32.png",
+     "sourceSha256": "52b6724b12500a1d468e81486e5c6f71f7e4048ddc7caaf2b9656adff982dcc9",
+     "bytes": 551,
+     "sha256": "52b6724b12500a1d468e81486e5c6f71f7e4048ddc7caaf2b9656adff982dcc9"
+    },
+    {
+     "id": "pixelart:hotdog",
+     "path": "apps/web/public/icon-library/pixelart/hotdog.png",
+     "sourcePath": "png/hotdog32.png",
+     "sourceSha256": "16de4734d42a1b2a8654b6b608cd8dad9ac8858520179c595e71c36e6e3b1d6c",
+     "bytes": 305,
+     "sha256": "16de4734d42a1b2a8654b6b608cd8dad9ac8858520179c595e71c36e6e3b1d6c"
+    },
+    {
+     "id": "pixelart:ant",
+     "path": "apps/web/public/icon-library/pixelart/ant.png",
+     "sourcePath": "png/ant32.png",
+     "sourceSha256": "949b0e328bdc3bf1c476c3da27d0ba19fcf08f280022e48454b9bc3ec63e9b28",
+     "bytes": 439,
+     "sha256": "949b0e328bdc3bf1c476c3da27d0ba19fcf08f280022e48454b9bc3ec63e9b28"
+    },
+    {
+     "id": "pixelart:notepad",
+     "path": "apps/web/public/icon-library/pixelart/notepad.png",
+     "sourcePath": "png/notatnik32.png",
+     "sourceSha256": "1a972d43871fdc0ddaedeadb7c78277b563e5a4f4f0368e11167dc1f1022685e",
+     "bytes": 205,
+     "sha256": "1a972d43871fdc0ddaedeadb7c78277b563e5a4f4f0368e11167dc1f1022685e"
+    },
+    {
+     "id": "pixelart:potion-blue",
+     "path": "apps/web/public/icon-library/pixelart/potion-blue.png",
+     "sourcePath": "png/potion-blue32.png",
+     "sourceSha256": "35b3b2f608f70f3d01ccdd28805fbe4c311fc45efbc8a8264327ed4ced368f1b",
+     "bytes": 258,
+     "sha256": "35b3b2f608f70f3d01ccdd28805fbe4c311fc45efbc8a8264327ed4ced368f1b"
+    },
+    {
+     "id": "pixelart:potion-green",
+     "path": "apps/web/public/icon-library/pixelart/potion-green.png",
+     "sourcePath": "png/potion-green32.png",
+     "sourceSha256": "b2c0d1ebf3b051034745709879a7c10992fb35b0bccb289e9b0f2569cadbfe51",
+     "bytes": 255,
+     "sha256": "b2c0d1ebf3b051034745709879a7c10992fb35b0bccb289e9b0f2569cadbfe51"
+    },
+    {
+     "id": "pixelart:potion-red",
+     "path": "apps/web/public/icon-library/pixelart/potion-red.png",
+     "sourcePath": "png/potion-red32.png",
+     "sourceSha256": "d0d61207fae0f1fe0507fa82ded8a0fd306e3e2452608a4299b117d4ac503ccb",
+     "bytes": 260,
+     "sha256": "d0d61207fae0f1fe0507fa82ded8a0fd306e3e2452608a4299b117d4ac503ccb"
+    },
+    {
+     "id": "pixelart:cpu",
+     "path": "apps/web/public/icon-library/pixelart/cpu.png",
+     "sourcePath": "png/cpu32.png",
+     "sourceSha256": "e9664388a628b9b98d79bbfffedcbe59eadcabcc7c716f4e21ea2c49b65c552d",
+     "bytes": 412,
+     "sha256": "e9664388a628b9b98d79bbfffedcbe59eadcabcc7c716f4e21ea2c49b65c552d"
+    }
+   ]
+  },
+  "pixelarticons": {
+   "source": {
+    "url": "https://github.com/halfmage/pixelarticons",
+    "path": "svg",
+    "revision": "c9ecc2da61afde85dbe539025e3d931c6152ad75"
+   },
+   "license": "MIT",
+   "licenseUrl": "https://github.com/halfmage/pixelarticons/blob/main/LICENSE",
+   "authorOrRightsHolder": "Gerrit Halfmann",
+   "count": 165,
+   "outputs": [
+    {
+     "id": "pixelarticons:folder",
+     "path": "apps/web/public/icon-library/pixelarticons/folder.svg",
+     "sourcePath": "svg/folder.svg",
+     "sourceSha256": "c35b6e0092c10a38c8f4b29d25a97d6e3615d71a2c7738663870ae9819e44aee",
+     "bytes": 156,
+     "sha256": "1d3f1858b747dc83b2840b8cdd299f45131157bd3ae7f1ec5971ae2c96e24efa"
+    },
+    {
+     "id": "pixelarticons:folder-plus",
+     "path": "apps/web/public/icon-library/pixelarticons/folder-plus.svg",
+     "sourcePath": "svg/folder-plus.svg",
+     "sourceSha256": "aa442c25b89b0fc882765deaa6cc6de3e2e92fe08adb17e0c831dbc2dd5735d3",
+     "bytes": 211,
+     "sha256": "276c5fed7d13f9d9e1cd0f662917b90d7c466e58f4511f847b1d1411bbb2724e"
+    },
+    {
+     "id": "pixelarticons:archive",
+     "path": "apps/web/public/icon-library/pixelarticons/archive.svg",
+     "sourcePath": "svg/archive.svg",
+     "sourceSha256": "fbe07da48dc75ec49d07b51d2dc32e9b140f932bca4ee9a921201e8d202855ff",
+     "bytes": 191,
+     "sha256": "686d740350e6c4f2174784583cf24d542ff89fd0d10e56aa509663bfee7971df"
+    },
+    {
+     "id": "pixelarticons:inbox",
+     "path": "apps/web/public/icon-library/pixelarticons/inbox.svg",
+     "sourcePath": "svg/inbox.svg",
+     "sourceSha256": "0548af6b0eeac1560ce84e33a46c6459cedd945fd8ad398012753ab7518ef674",
+     "bytes": 179,
+     "sha256": "fec0b1e61b05dff2e58eebde0e710f02cbe2ac9a0bb13fd1a4970615ee02489e"
+    },
+    {
+     "id": "pixelarticons:package",
+     "path": "apps/web/public/icon-library/pixelarticons/package.svg",
+     "sourcePath": "svg/package.svg",
+     "sourceSha256": "0eeb6ec3f2ed2d6991a39400ad40f3a92180b7675e5eff1c442cb7fbc6610444",
+     "bytes": 329,
+     "sha256": "001a2887c8919128c67d938694143abc0ac9543445f8c5bc91a08e9f61dd299d"
+    },
+    {
+     "id": "pixelarticons:library",
+     "path": "apps/web/public/icon-library/pixelarticons/library.svg",
+     "sourcePath": "svg/library.svg",
+     "sourceSha256": "0e83b3901b0b6e157f78359fde3e58fe091e14f737ea4546ed31087470afe3b9",
+     "bytes": 166,
+     "sha256": "35ea669fee0cd5c9812f3d9a6b6f65b39011bb4bdb372e3089dd401fbe4efdb5"
+    },
+    {
+     "id": "pixelarticons:files",
+     "path": "apps/web/public/icon-library/pixelarticons/files.svg",
+     "sourcePath": "svg/files.svg",
+     "sourceSha256": "814393ff5d6d62669dc83c3744c9275050760975a9bf772f168a68b0ea3a6e7a",
+     "bytes": 260,
+     "sha256": "5bbdc99632f1bea0576119038df1fcdb5b0d05da5466fcbd20f74e6079eb58a3"
+    },
+    {
+     "id": "pixelarticons:file",
+     "path": "apps/web/public/icon-library/pixelarticons/file.svg",
+     "sourcePath": "svg/file.svg",
+     "sourceSha256": "bbfcfc5ba78856a4df9d448e60c33f1da95bd5c1920f181e50c1d2ac42fef324",
+     "bytes": 211,
+     "sha256": "3fb11392c7e91137a49f843a4f5b198eb929ad59cae7f1a5e72d7c3ac040f488"
+    },
+    {
+     "id": "pixelarticons:file-text",
+     "path": "apps/web/public/icon-library/pixelarticons/file-text.svg",
+     "sourcePath": "svg/file-text.svg",
+     "sourceSha256": "5e43d838eb7ca7ff0b8f3093893433054cea3add1282c5278c70438294347a10",
+     "bytes": 245,
+     "sha256": "902e39a1523b69243a64c497680da8a755a9a5d04212ebacd748d504437d50db"
+    },
+    {
+     "id": "pixelarticons:article",
+     "path": "apps/web/public/icon-library/pixelarticons/article.svg",
+     "sourcePath": "svg/article.svg",
+     "sourceSha256": "cf8d871dbef4aa8463ff25c0e830001ea639af2c6bd624949350ea178f1da898",
+     "bytes": 240,
+     "sha256": "3b4639e73d2aeb96646296b1345d016cd5bf2750f46519b510f5efee08e16d6a"
+    },
+    {
+     "id": "pixelarticons:notes",
+     "path": "apps/web/public/icon-library/pixelarticons/notes.svg",
+     "sourcePath": "svg/notes.svg",
+     "sourceSha256": "72ecab913a826b548f12159d211a7d02d82f5d37ac30bce15766d602e377640e",
+     "bytes": 271,
+     "sha256": "9025bfda383467218218a63bb2d32d4636a9cd2cfcbf52c7966cc9fd54538978"
+    },
+    {
+     "id": "pixelarticons:note",
+     "path": "apps/web/public/icon-library/pixelarticons/note.svg",
+     "sourcePath": "svg/note.svg",
+     "sourceSha256": "097fcaf072c4d83d70b250febe09cfbd59a822e6b20581992c135309b81f27a3",
+     "bytes": 197,
+     "sha256": "c420e6cdaeee1fffa8d12f709258f197905c45f7d6672fc524507955b7916dd4"
+    },
+    {
+     "id": "pixelarticons:notebook",
+     "path": "apps/web/public/icon-library/pixelarticons/notebook.svg",
+     "sourcePath": "svg/notebook.svg",
+     "sourceSha256": "ff6cfedad9914c8127b8336ca8f9fd7764404cfc7e5cc774b8fee61d42139ab1",
+     "bytes": 218,
+     "sha256": "b5aad4c6f148cd623b282d42fa7a096b19519899f156f97840202d7323716e78"
+    },
+    {
+     "id": "pixelarticons:clipboard",
+     "path": "apps/web/public/icon-library/pixelarticons/clipboard.svg",
+     "sourcePath": "svg/clipboard.svg",
+     "sourceSha256": "b72ca0d50806019fc116285edddda6fd7b46252eab45553bd11580fa71a339cc",
+     "bytes": 204,
+     "sha256": "f8dc7b45ae03cfda54bdd1ce855d719f08584695cb09f36af8734e1367f6400c"
+    },
+    {
+     "id": "pixelarticons:sticky-note",
+     "path": "apps/web/public/icon-library/pixelarticons/sticky-note.svg",
+     "sourcePath": "svg/sticky-note.svg",
+     "sourceSha256": "55750e0d1303f3e3f9f8694bce6f121a7779323a01706af970f777fd768f4c7b",
+     "bytes": 196,
+     "sha256": "a209d49265534012b5f055baa04a6766f2ef5181158df191cbe8d0e5bb64d705"
+    },
+    {
+     "id": "pixelarticons:bookmark",
+     "path": "apps/web/public/icon-library/pixelarticons/bookmark.svg",
+     "sourcePath": "svg/bookmark.svg",
+     "sourceSha256": "444956b195922980bc174394c7638ea63a1c14a4d0ca3e2a6efd54fbc936b314",
+     "bytes": 193,
+     "sha256": "07fe528fb25331a9e758352a0b995b42a51682896810159fb8211bae9a3c6573"
+    },
+    {
+     "id": "pixelarticons:book-open",
+     "path": "apps/web/public/icon-library/pixelarticons/book-open.svg",
+     "sourcePath": "svg/book-open.svg",
+     "sourceSha256": "a36417e30abc82e93e37ffa844c791fece78c99e445a7710bf63d37df7199859",
+     "bytes": 221,
+     "sha256": "f21d9a6524c472d4fe9ca9fe58417f2632a8e01c761971b31927c0ed094b8090"
+    },
+    {
+     "id": "pixelarticons:calendar",
+     "path": "apps/web/public/icon-library/pixelarticons/calendar.svg",
+     "sourcePath": "svg/calendar.svg",
+     "sourceSha256": "3fd7d320dca606e40c0c86478ab82f2f5eaa76726266011a6be2491d80a2f5e0",
+     "bytes": 204,
+     "sha256": "d181aa4bf4b9cd0773d13dcca70d2fa0b63483f130432ca85a2e79a178bcca98"
+    },
+    {
+     "id": "pixelarticons:receipt",
+     "path": "apps/web/public/icon-library/pixelarticons/receipt.svg",
+     "sourcePath": "svg/receipt.svg",
+     "sourceSha256": "f70bf08c4b5345eca436cc87f6da6925b64a3bd97b8a56195de1ce13b93f1172",
+     "bytes": 249,
+     "sha256": "8c07bff065b5b5c9446ec3349f5da4f90d30ff105f03407c1c9e233e944f18b1"
+    },
+    {
+     "id": "pixelarticons:script",
+     "path": "apps/web/public/icon-library/pixelarticons/script.svg",
+     "sourcePath": "svg/script.svg",
+     "sourceSha256": "c176fe0f919dc19601a4ae3c53effd9c8080ac6d192b8837988a7b749a8d0da4",
+     "bytes": 176,
+     "sha256": "cf1531e93ec2eeec1df1c894d42190e492c57731ba85eeb2f3ac6585397d2530"
+    },
+    {
+     "id": "pixelarticons:image",
+     "path": "apps/web/public/icon-library/pixelarticons/image.svg",
+     "sourcePath": "svg/image.svg",
+     "sourceSha256": "f2b50c253c8c89472f47ffda753c93df1a8543bb77e5994d4ba409ecade9c20a",
+     "bytes": 329,
+     "sha256": "80e21c7c1bdfd5aee7a61f394dd44869ae7c01bb8b097c70786c009d2a8621fc"
+    },
+    {
+     "id": "pixelarticons:images",
+     "path": "apps/web/public/icon-library/pixelarticons/images.svg",
+     "sourcePath": "svg/images.svg",
+     "sourceSha256": "b875d96229f1d907831f548d18370e86bb6c93446b1f48b164e1c6c6eaedfd91",
+     "bytes": 293,
+     "sha256": "48cc3fb0e2512a77764d47ef8d73aef380714ed841a286cfee04e742f278c902"
+    },
+    {
+     "id": "pixelarticons:gallery",
+     "path": "apps/web/public/icon-library/pixelarticons/gallery.svg",
+     "sourcePath": "svg/gallery-thumbnails.svg",
+     "sourceSha256": "d59280f10f4debeaa3ad86dc056c3b668171bff26b55b2d44f9b44948152c0ef",
+     "bytes": 191,
+     "sha256": "041da7e183f37a190c28f194f8651f2a35ab8a41b0d277e81c866e4893c7e90e"
+    },
+    {
+     "id": "pixelarticons:camera",
+     "path": "apps/web/public/icon-library/pixelarticons/camera.svg",
+     "sourcePath": "svg/camera.svg",
+     "sourceSha256": "747648d50af5f90da884be9cd3336074c79090cdc910f45c2a9e9ec6f233de09",
+     "bytes": 215,
+     "sha256": "a857ce84edacce55d48bfb552c7c292fa564c5d26412a356a708976928c7df5a"
+    },
+    {
+     "id": "pixelarticons:video",
+     "path": "apps/web/public/icon-library/pixelarticons/video.svg",
+     "sourcePath": "svg/video.svg",
+     "sourceSha256": "2978f8a086d068053cbb593a19b9120eb6714b3c18283c733f4833a255cde5a4",
+     "bytes": 170,
+     "sha256": "4cfeb71d3ce64321f368157c867adcfd8e9cfd9146fd3c768d7e9aa6bb910c53"
+    },
+    {
+     "id": "pixelarticons:clapperboard",
+     "path": "apps/web/public/icon-library/pixelarticons/clapperboard.svg",
+     "sourcePath": "svg/clapperboard.svg",
+     "sourceSha256": "7d58c2bf7d610c14715d2d5e3a4e1a445a3e47eff3b74989483668636523c8b4",
+     "bytes": 204,
+     "sha256": "88fa0f3f536d4d2869dc5f040768c2ce193b474d7707c172403ed6629e193c1d"
+    },
+    {
+     "id": "pixelarticons:frame",
+     "path": "apps/web/public/icon-library/pixelarticons/frame.svg",
+     "sourcePath": "svg/frame.svg",
+     "sourceSha256": "0e52d3df88a4183f4d1c8d4b6afcfee7c225f63ca0c8e6517ff4ddb57df63139",
+     "bytes": 178,
+     "sha256": "d9a8aead0cf287dcf918a6b460a7cda1999f4ed63e2079fe401a90aaa2cc8e1a"
+    },
+    {
+     "id": "pixelarticons:presentation",
+     "path": "apps/web/public/icon-library/pixelarticons/presentation.svg",
+     "sourcePath": "svg/presentation.svg",
+     "sourceSha256": "a4f580ec30bef96fcf01c30846ee98096a92de03651deb5ce3938762d741b93e",
+     "bytes": 192,
+     "sha256": "34ca45019619d2ed444a68131cd2f59e031903055311a4f1a58e718027da8da8"
+    },
+    {
+     "id": "pixelarticons:projector",
+     "path": "apps/web/public/icon-library/pixelarticons/projector.svg",
+     "sourcePath": "svg/projector.svg",
+     "sourceSha256": "7588b8d193a5929c0438cdfb2408bfdfdadcbef9cf9f12150648967922545531",
+     "bytes": 272,
+     "sha256": "9bf2377748a6cfbdb2d755a844244ed1c46fd53ef9648d4410a0cc8aa1bb1bc8"
+    },
+    {
+     "id": "pixelarticons:color-swatch",
+     "path": "apps/web/public/icon-library/pixelarticons/color-swatch.svg",
+     "sourcePath": "svg/colors-swatch.svg",
+     "sourceSha256": "9021245ed61ad0ca0bd2968afb2f0e6309bad38a9b0681a6b437ae2938eba631",
+     "bytes": 241,
+     "sha256": "1dc6661734a2ac886c24719ac797dbe6c39bb5f025e2bd5b6627a660bcf5c2ab"
+    },
+    {
+     "id": "pixelarticons:brush",
+     "path": "apps/web/public/icon-library/pixelarticons/brush.svg",
+     "sourcePath": "svg/brush.svg",
+     "sourceSha256": "1d6216bb9118b9077e7d22386a34a4fef4e7e6d9b8ccdeac650f515b0cccf95e",
+     "bytes": 242,
+     "sha256": "09f4e2819b4b01b8c525418b1078755fe12c77d15327936e4ba5351450aa0733"
+    },
+    {
+     "id": "pixelarticons:spray-can",
+     "path": "apps/web/public/icon-library/pixelarticons/spray-can.svg",
+     "sourcePath": "svg/spray-can.svg",
+     "sourceSha256": "051f8090f3e785b8f28b70d9b7212895a81cc761072c6d9eb251ae3a79cb86f2",
+     "bytes": 280,
+     "sha256": "6405e5cf2332f4d02c37e9fc6710ab2e416487e08b634ecc537a56da289819a5"
+    },
+    {
+     "id": "pixelarticons:eraser",
+     "path": "apps/web/public/icon-library/pixelarticons/eraser.svg",
+     "sourcePath": "svg/eraser.svg",
+     "sourceSha256": "e9e3b02534a4dfa052274192b6570889f0547fafb6b40f93d8eacb0b8b2a3949",
+     "bytes": 327,
+     "sha256": "b5dd36dcf2d8e1ffb4532912a3fddff73d7ae314599784033078c7563d454d67"
+    },
+    {
+     "id": "pixelarticons:shapes",
+     "path": "apps/web/public/icon-library/pixelarticons/shapes.svg",
+     "sourcePath": "svg/shapes.svg",
+     "sourceSha256": "83250e2c6d48d85bf63c4eea581acf4334cd730d24c75fba0acf6a6ccbee80fb",
+     "bytes": 257,
+     "sha256": "42b7922264102e6b38cccc8cde249403b280e18693bc14f1489511ea22e68c46"
+    },
+    {
+     "id": "pixelarticons:sparkles",
+     "path": "apps/web/public/icon-library/pixelarticons/sparkles.svg",
+     "sourcePath": "svg/sparkles.svg",
+     "sourceSha256": "09dce69634b0fee8ecb3126b76629241bf4a2ccfaafced33973d84326e3028d4",
+     "bytes": 344,
+     "sha256": "277bb8faff5ea055c005c474fb932ffafadc5f4c0f85a92ecbbb8a6423a7b97b"
+    },
+    {
+     "id": "pixelarticons:music",
+     "path": "apps/web/public/icon-library/pixelarticons/music.svg",
+     "sourcePath": "svg/music.svg",
+     "sourceSha256": "af8396af713c46a99547c7f0c0264d15be87e31821c4bd093db12556110e2be5",
+     "bytes": 204,
+     "sha256": "98d2df7dcc21aa996f2a8ff4c07b8cb73f8a5270d7faa9b9fb1dc4fa0856d486"
+    },
+    {
+     "id": "pixelarticons:album",
+     "path": "apps/web/public/icon-library/pixelarticons/album.svg",
+     "sourcePath": "svg/album.svg",
+     "sourceSha256": "d3048141c94827075b63c4d83748e0b526930683130b7112b37d50cbd7d372c2",
+     "bytes": 210,
+     "sha256": "aa9348d15a173d6ac5ea9685a1968bc8d824cf0c4f7ab3f8236d26ecb41dfa47"
+    },
+    {
+     "id": "pixelarticons:headphone",
+     "path": "apps/web/public/icon-library/pixelarticons/headphone.svg",
+     "sourcePath": "svg/headphone.svg",
+     "sourceSha256": "3f5a8b33dc80e0b966365a9e9511027b306eed620b1637f4abfae86d70ca3339",
+     "bytes": 282,
+     "sha256": "79ab3352f49677dc53f5c38dac63f380f0a94feef897f102c8748968564c277b"
+    },
+    {
+     "id": "pixelarticons:drum",
+     "path": "apps/web/public/icon-library/pixelarticons/drum.svg",
+     "sourcePath": "svg/drum.svg",
+     "sourceSha256": "57ca350b3cae9d6dbc23486b19ee170922753aa831e6b85b27955b76fea9d3b2",
+     "bytes": 314,
+     "sha256": "cb39ceefd90f36ebfe1859ae1237a1e1c63ba920fa4dfee8b452e6d5ea870eab"
+    },
+    {
+     "id": "pixelarticons:volume",
+     "path": "apps/web/public/icon-library/pixelarticons/volume.svg",
+     "sourcePath": "svg/volume-2.svg",
+     "sourceSha256": "d4b5356800e41feaf7172916ec543d51306e867e7172fa63541a6908b841ac46",
+     "bytes": 240,
+     "sha256": "3fefcf52aa89ab152bd0e659c9b353aa3a7f64b18132fac4b093d7b809cb7d79"
+    },
+    {
+     "id": "pixelarticons:volume-mute",
+     "path": "apps/web/public/icon-library/pixelarticons/volume-mute.svg",
+     "sourcePath": "svg/volume-x.svg",
+     "sourceSha256": "60bbd5e0c07c37b865e80f1b07a2220211448c6e794b876b60042eb5b014eb59",
+     "bytes": 266,
+     "sha256": "e091bdc7dbb77f0fb8c30d8afd878668cbf984b92c874d2bea710372bf956529"
+    },
+    {
+     "id": "pixelarticons:microphone",
+     "path": "apps/web/public/icon-library/pixelarticons/microphone.svg",
+     "sourcePath": "svg/mic.svg",
+     "sourceSha256": "3c1290115b8078fcf0ee509e7b81438dd48ea6ea956b9ad567f68bcaeed5594a",
+     "bytes": 217,
+     "sha256": "ab65aca17d04af297172fc229eebf6853788152e2a0fc74a789c6e4e03995288"
+    },
+    {
+     "id": "pixelarticons:radio",
+     "path": "apps/web/public/icon-library/pixelarticons/radio.svg",
+     "sourcePath": "svg/radio.svg",
+     "sourceSha256": "5c6d2ff07f9baf1d92e4aa920773348158adecf31104ee7a805b282d6075996f",
+     "bytes": 290,
+     "sha256": "5a2a5cb59885b685f54fe109b636bdf78f13aa994b98cdadd6cafae4e27f1d59"
+    },
+    {
+     "id": "pixelarticons:play",
+     "path": "apps/web/public/icon-library/pixelarticons/play.svg",
+     "sourcePath": "svg/play.svg",
+     "sourceSha256": "8eec58406f163768ae14decd69026746ec07baedfd90ab49e3832bf9b14aff65",
+     "bytes": 195,
+     "sha256": "90391db2a87de23d4bdab78e77592a58ac34a665f93b96fa51877e8382bc6d12"
+    },
+    {
+     "id": "pixelarticons:pause",
+     "path": "apps/web/public/icon-library/pixelarticons/pause.svg",
+     "sourcePath": "svg/pause.svg",
+     "sourceSha256": "a4b989e7bd38a0224faaf7b987c4ee858909a84c721d2b806ca4a20c8d467c46",
+     "bytes": 156,
+     "sha256": "f79d64be3bcc46174d351c41aedff143f2509950704df42aeabf223bd3124631"
+    },
+    {
+     "id": "pixelarticons:keyboard-music",
+     "path": "apps/web/public/icon-library/pixelarticons/keyboard-music.svg",
+     "sourcePath": "svg/keyboard-music.svg",
+     "sourceSha256": "48bd74b3b50169db9483d3b4d0797b4ecf4754986a3c64a0a728a4f1e0283862",
+     "bytes": 239,
+     "sha256": "607b2364bf03b20098ba17dbf18c166a59012636e988e9808c0af7e860479ff8"
+    },
+    {
+     "id": "pixelarticons:waveform",
+     "path": "apps/web/public/icon-library/pixelarticons/waveform.svg",
+     "sourcePath": "svg/audio-waveform.svg",
+     "sourceSha256": "0305c9edec99f7a7d621e9ebeaf80a76cd524dab700de0c6880cb3089b1835d6",
+     "bytes": 227,
+     "sha256": "d970d4b75d4cb2e4c3ce4d232f0f9af85dfe9ead2a6d31b7706fb3e28caac7e9"
+    },
+    {
+     "id": "pixelarticons:human",
+     "path": "apps/web/public/icon-library/pixelarticons/human.svg",
+     "sourcePath": "svg/human.svg",
+     "sourceSha256": "6ac2d81f07bea719883f94c1911e6f28cbd9f088069e56cb4b44f3fe6f99c146",
+     "bytes": 178,
+     "sha256": "53dfee69599f837a3631723f8de9284108a6e5411ca7f8b45b915680d094822f"
+    },
+    {
+     "id": "pixelarticons:user",
+     "path": "apps/web/public/icon-library/pixelarticons/user.svg",
+     "sourcePath": "svg/user.svg",
+     "sourceSha256": "17b4a7950d37cb6af135301c90c27d8617d91b3cc7b1d2fb5b10c4cdf4401209",
+     "bytes": 200,
+     "sha256": "246ecf07944adf82fe266589e4fa2d7d61ce401b45dc4449c331d65077efe1e5"
+    },
+    {
+     "id": "pixelarticons:users",
+     "path": "apps/web/public/icon-library/pixelarticons/users.svg",
+     "sourcePath": "svg/users.svg",
+     "sourceSha256": "5c85db676b5c15490ec5eab912d5999c96e7574f847e7b15c4e124c141cada67",
+     "bytes": 277,
+     "sha256": "f829afa2444f8607ba3523525ef34abeccb68b3d3f8341ece3a8eb9b32d0a086"
+    },
+    {
+     "id": "pixelarticons:user-plus",
+     "path": "apps/web/public/icon-library/pixelarticons/user-plus.svg",
+     "sourcePath": "svg/user-plus.svg",
+     "sourceSha256": "4f891c1cd10ad1ffcb18cff4eeb14dea5967453148893dc83af35e160577c4d7",
+     "bytes": 269,
+     "sha256": "a4e1bd4cfa94528e89a064c99d6b321a4a793e3019cf846ed7c5af6d2ecc6e9f"
+    },
+    {
+     "id": "pixelarticons:avatar-circle",
+     "path": "apps/web/public/icon-library/pixelarticons/avatar-circle.svg",
+     "sourcePath": "svg/avatar-circle.svg",
+     "sourceSha256": "62dd581d788c5427aaba86c14419b3b991033fdf8a476d414b5cb57b880d8f6f",
+     "bytes": 277,
+     "sha256": "0986214a854f14d7576997bda4151abcfc497512cf05f9a3dd1bae98842604f5"
+    },
+    {
+     "id": "pixelarticons:avatar-square",
+     "path": "apps/web/public/icon-library/pixelarticons/avatar-square.svg",
+     "sourcePath": "svg/avatar-square.svg",
+     "sourceSha256": "d87a0e6e79f50c687f1c7bf2c5495ebad56d3dc266becdd949d7aa69b4c4ebf9",
+     "bytes": 228,
+     "sha256": "7d9f1951939bd93b4cd3947a44e293becc484d44940f05fa8efff81a81b28f3a"
+    },
+    {
+     "id": "pixelarticons:contact",
+     "path": "apps/web/public/icon-library/pixelarticons/contact.svg",
+     "sourcePath": "svg/contact.svg",
+     "sourceSha256": "f78f3781e0553d92d46c6a8c6f80a07a08c7526dfe173d0bbfc6a9f51abc1499",
+     "bytes": 227,
+     "sha256": "a5813e21ea7272a847fcfc6bdf7a64e401ba562d090689e5ffd571ae0403db46"
+    },
+    {
+     "id": "pixelarticons:member-card",
+     "path": "apps/web/public/icon-library/pixelarticons/member-card.svg",
+     "sourcePath": "svg/membercard.svg",
+     "sourceSha256": "5001991c57f37d79e7149fdab850688fdb2b366244851fd8338eb5a9b54b8251",
+     "bytes": 217,
+     "sha256": "d42eb94db497449f5bbe86341591bd7d24f9a74b622bb30e555104e6cf06d79d"
+    },
+    {
+     "id": "pixelarticons:robot",
+     "path": "apps/web/public/icon-library/pixelarticons/robot.svg",
+     "sourcePath": "svg/robot.svg",
+     "sourceSha256": "e5cc064b1aa887d41a93d6425e911b7811902ac45d9f37dd27da2547573a0b5d",
+     "bytes": 216,
+     "sha256": "027899ff1f10d3da23f4544ea62de7623f2496cd8f6dc6a0ae69d9b40017b972"
+    },
+    {
+     "id": "pixelarticons:robot-face",
+     "path": "apps/web/public/icon-library/pixelarticons/robot-face.svg",
+     "sourcePath": "svg/robot-face.svg",
+     "sourceSha256": "fe7d81fc975006ba1292b90302c6dba90c4ee2087320c086cfc7f80311db7a9f",
+     "bytes": 284,
+     "sha256": "515b0c3ea709bf0f9585d8b796942d6e0837eecf17ba15a8ba5aac3144815e60"
+    },
+    {
+     "id": "pixelarticons:smile",
+     "path": "apps/web/public/icon-library/pixelarticons/smile.svg",
+     "sourcePath": "svg/smile.svg",
+     "sourceSha256": "3b4ee545b722ff8e80e8a12a13946a597f6cc552ce13284c8bbdef181aae248f",
+     "bytes": 251,
+     "sha256": "eec5de2815fa8fc5bad58767596c16adbbd7462b881544f84f2ed9935f125aa4"
+    },
+    {
+     "id": "pixelarticons:laugh",
+     "path": "apps/web/public/icon-library/pixelarticons/laugh.svg",
+     "sourcePath": "svg/laugh.svg",
+     "sourceSha256": "204e14aaded82186a4fd48ae77033c5ed50b726e2adef9112bcccd57268187c8",
+     "bytes": 263,
+     "sha256": "6dea99231a701ff2b5bfd964e0ac52d08c518e2fba1b4ecb7fe65d3111bac7b1"
+    },
+    {
+     "id": "pixelarticons:frown",
+     "path": "apps/web/public/icon-library/pixelarticons/frown.svg",
+     "sourcePath": "svg/frown.svg",
+     "sourceSha256": "b92654f67a3ff042d9f7803e5ce081d508faa568cbc282a9817f321428ca4058",
+     "bytes": 251,
+     "sha256": "301848eb0c049e0033e9ff03049735ae7ddbdaa69d1e81a7a494b1bbbcd94e1a"
+    },
+    {
+     "id": "pixelarticons:meh",
+     "path": "apps/web/public/icon-library/pixelarticons/meh.svg",
+     "sourcePath": "svg/meh.svg",
+     "sourceSha256": "b3767f8da3ca35afa8daba1ba204ccaa774b628aeaf0276471050683c6291b50",
+     "bytes": 229,
+     "sha256": "ce0306da7cbe2e0e52fee7e999fafa1c8a7d2501bc0b8e1b995b5dfb62992507"
+    },
+    {
+     "id": "pixelarticons:angry",
+     "path": "apps/web/public/icon-library/pixelarticons/angry.svg",
+     "sourcePath": "svg/angry.svg",
+     "sourceSha256": "4f986fea0a4104a51d45b1846ebdc59a5e8ec97de14c704e58bd30c795767d27",
+     "bytes": 275,
+     "sha256": "b2c0ad65f2b6828916fa66e93bd4ec16150eca1cc509c43d7ca3790b663e75ac"
+    },
+    {
+     "id": "pixelarticons:alien",
+     "path": "apps/web/public/icon-library/pixelarticons/alien.svg",
+     "sourcePath": "svg/alien.svg",
+     "sourceSha256": "7581996cb7634894bf703b203e8964bca5de51f95dfeb73cc500e89e7e769f3e",
+     "bytes": 373,
+     "sha256": "4cfcf9fe6342f1dfcd4d653f3a2ef155be38eb49aac460a13710f1e72da8710d"
+    },
+    {
+     "id": "pixelarticons:human-arms-up",
+     "path": "apps/web/public/icon-library/pixelarticons/human-arms-up.svg",
+     "sourcePath": "svg/human-arms-up.svg",
+     "sourceSha256": "04dd30ff7cc2ef226f6ba23840bbae05ac42ef38b3cb4694b1319151ff7c5849",
+     "bytes": 225,
+     "sha256": "dd73dc8c884d318cada9a5615df9c790a479c79c807714ec9fab7a1edf4dfe02"
+    },
+    {
+     "id": "pixelarticons:calculator",
+     "path": "apps/web/public/icon-library/pixelarticons/calculator.svg",
+     "sourcePath": "svg/calculator.svg",
+     "sourceSha256": "0347965fd36334c638b8af2c533b87d85ea815ab7362b4f2fc6f96e22d1043a1",
+     "bytes": 227,
+     "sha256": "e70540417d16706fc0b4b5bfdb81e83cd963d2dbb2e9b62b431d1c6eca93fe3a"
+    },
+    {
+     "id": "pixelarticons:clock",
+     "path": "apps/web/public/icon-library/pixelarticons/clock.svg",
+     "sourcePath": "svg/clock.svg",
+     "sourceSha256": "3642e7e8754a7ece948364c909cb8655ac5b442be540d5dc8b85c8464b1ac63a",
+     "bytes": 233,
+     "sha256": "a2b9979974ef9c0ff4238796d5b74a59e4ba0ae4fb88056026a35fea44b685bc"
+    },
+    {
+     "id": "pixelarticons:alarm-clock",
+     "path": "apps/web/public/icon-library/pixelarticons/alarm-clock.svg",
+     "sourcePath": "svg/alarm-clock.svg",
+     "sourceSha256": "abf60fcde152084b1889c699415b79d22ca71341c26c3c5edc09f47660ac8531",
+     "bytes": 287,
+     "sha256": "ea1ca433961a6da995b78d8914a977d323a78a0200e64cab1d578036199cf97d"
+    },
+    {
+     "id": "pixelarticons:hourglass",
+     "path": "apps/web/public/icon-library/pixelarticons/hourglass.svg",
+     "sourcePath": "svg/hourglass.svg",
+     "sourceSha256": "6c0e51b4ae9befaba92f3b1f726f69a1ff0a490c7bc93ebb5504f1ada50073d0",
+     "bytes": 255,
+     "sha256": "80f74f2e0be6aae99c90895a673fd4f4e90adff534c89484f52d73fa37b417e3"
+    },
+    {
+     "id": "pixelarticons:terminal",
+     "path": "apps/web/public/icon-library/pixelarticons/terminal.svg",
+     "sourcePath": "svg/terminal.svg",
+     "sourceSha256": "099303076a25286adf3e09c038419650d37a0dde5397ce07687edde57b04a45d",
+     "bytes": 179,
+     "sha256": "f59fc81bdfa567e6b05607a4fab273fee4b451708e14c115bd7f75ae356693fc"
+    },
+    {
+     "id": "pixelarticons:code",
+     "path": "apps/web/public/icon-library/pixelarticons/code.svg",
+     "sourcePath": "svg/code.svg",
+     "sourceSha256": "6858abe3ebac5a7b736c5e8c22fd23503a558a5f4f0d9064aad52bec8e365431",
+     "bytes": 290,
+     "sha256": "42888b90a96a7b95c52ade2c3e56ec58316561dde63d5fe4b951be58ea1615d3"
+    },
+    {
+     "id": "pixelarticons:settings",
+     "path": "apps/web/public/icon-library/pixelarticons/settings.svg",
+     "sourcePath": "svg/settings-cog.svg",
+     "sourceSha256": "0cd460e87e94dcf2d8481166ca15f6d55a7454e5f5c8fb47a296fd2f94753802",
+     "bytes": 350,
+     "sha256": "b60963d0bc16ae0ce14228b1273d5cc124798af9fdf36fc1e4cc77ebd37faefb"
+    },
+    {
+     "id": "pixelarticons:gear",
+     "path": "apps/web/public/icon-library/pixelarticons/gear.svg",
+     "sourcePath": "svg/gear.svg",
+     "sourceSha256": "a7c75f760cbc8ada3de08ba5994de455e36e5db2851447218de4ef85d71db3f7",
+     "bytes": 401,
+     "sha256": "f192fcfbf8de47e06ebdab26d2bd93ea5ac5b819ee1798f203da0c0a16734a25"
+    },
+    {
+     "id": "pixelarticons:sliders",
+     "path": "apps/web/public/icon-library/pixelarticons/sliders.svg",
+     "sourcePath": "svg/sliders.svg",
+     "sourceSha256": "d730a6247d143c5bead1924780d44578b82d2d0c6d0bda32af072f197d9b698b",
+     "bytes": 210,
+     "sha256": "21ddb42c77a71573d6f12e0ad53c0634d2d8b30c4bdc40d608b53560f4c727f2"
+    },
+    {
+     "id": "pixelarticons:search",
+     "path": "apps/web/public/icon-library/pixelarticons/search.svg",
+     "sourcePath": "svg/search.svg",
+     "sourceSha256": "ed931ec3576a46cc2f10d53b4643a4f19f5e4cec8e7ae943c4f6db81d384b5e5",
+     "bytes": 258,
+     "sha256": "b6e5d6b79107d272227c25c4e9d445fd01d42873a7147ea68db92844d10c6160"
+    },
+    {
+     "id": "pixelarticons:zoom-in",
+     "path": "apps/web/public/icon-library/pixelarticons/zoom-in.svg",
+     "sourcePath": "svg/zoom-in.svg",
+     "sourceSha256": "cdfb6b1e1f5605df82d0838510477b86321b65dca5d7dfd2a3b7e29a8105729e",
+     "bytes": 288,
+     "sha256": "a71ae4cae885a3929ee51aabbe03db7d6aa71d66830aa797a4280a8f88cf705b"
+    },
+    {
+     "id": "pixelarticons:zoom-out",
+     "path": "apps/web/public/icon-library/pixelarticons/zoom-out.svg",
+     "sourcePath": "svg/zoom-out.svg",
+     "sourceSha256": "3df45003528be6afa9e4d5dff7ac710ec5bb4fdbf9442a034dd7dabf24acf05a",
+     "bytes": 272,
+     "sha256": "2d503175231eedb1369ceb843d6b30b7e770bf6943a06bde1cbf96fead43e8d5"
+    },
+    {
+     "id": "pixelarticons:filter",
+     "path": "apps/web/public/icon-library/pixelarticons/filter.svg",
+     "sourcePath": "svg/filter.svg",
+     "sourceSha256": "8d9760d238b1f2f9c8aa848a7849e891202591069e9f4d4a675db6caaa52c047",
+     "bytes": 228,
+     "sha256": "42782c687dd73e6673e8fcf2770415fd09d72118dd46c53b10ab475dea346c64"
+    },
+    {
+     "id": "pixelarticons:scissors",
+     "path": "apps/web/public/icon-library/pixelarticons/scissors.svg",
+     "sourcePath": "svg/scissors.svg",
+     "sourceSha256": "3c7047a3a5af33f765f1a4f689b133a04519fb45eafb706e89acc2e2ba6281fd",
+     "bytes": 317,
+     "sha256": "82aea5af49778627743b439f06a8a2830c3b39cb297c2da3a00747b816cc5214"
+    },
+    {
+     "id": "pixelarticons:copy",
+     "path": "apps/web/public/icon-library/pixelarticons/copy.svg",
+     "sourcePath": "svg/copy.svg",
+     "sourceSha256": "2a5f7c61a136f1c238049218fababee15733c0ca688ebcc57a6e4d78a0c3dec2",
+     "bytes": 193,
+     "sha256": "ce504fe77c561f0fb7307c12d597a13653606b9d725f928f9d7b7bec9b6eefd4"
+    },
+    {
+     "id": "pixelarticons:tools",
+     "path": "apps/web/public/icon-library/pixelarticons/tools.svg",
+     "sourcePath": "svg/tools.svg",
+     "sourceSha256": "2d8f03b0861a4127e31bcd9906a3746598711b8c9b32910edf1ca3780fbb15c0",
+     "bytes": 310,
+     "sha256": "98c7adfc30865721163e0258ac9aa8a61d05a7c71d29026c70488440518a95f5"
+    },
+    {
+     "id": "pixelarticons:toolbox",
+     "path": "apps/web/public/icon-library/pixelarticons/toolbox.svg",
+     "sourcePath": "svg/tool-case.svg",
+     "sourceSha256": "03f0f894ce53fc645ed965ed9eeb624011662809b511159c9635a02ab4f0b74d",
+     "bytes": 225,
+     "sha256": "4ef05cd454a83d0cbc480bf13ab414de5b67ae2011661c39c159403ea8b27761"
+    },
+    {
+     "id": "pixelarticons:key",
+     "path": "apps/web/public/icon-library/pixelarticons/key.svg",
+     "sourcePath": "svg/key.svg",
+     "sourceSha256": "bf64d6dd030274437fa1fb7611f10fb7bb7493baf3cbdf716328ed4c9e723651",
+     "bytes": 235,
+     "sha256": "cf6689226f9d329a552b7fdfac4ba27bc10db3628eb1e038c8348c30e0985c6c"
+    },
+    {
+     "id": "pixelarticons:lock",
+     "path": "apps/web/public/icon-library/pixelarticons/lock.svg",
+     "sourcePath": "svg/lock.svg",
+     "sourceSha256": "5c28ff6d67054b62536bfde533b11dd84827659cb059e5b6334029cc7a647438",
+     "bytes": 179,
+     "sha256": "e637dcc86465151922723836a9078ea8b20e4a341f629e033dea4af15ab35925"
+    },
+    {
+     "id": "pixelarticons:unlock",
+     "path": "apps/web/public/icon-library/pixelarticons/unlock.svg",
+     "sourcePath": "svg/unlock.svg",
+     "sourceSha256": "b80309803ad50be702b1b0f83dce838a28cedcacf8e50f8cc7df068d42906304",
+     "bytes": 179,
+     "sha256": "8cddd09f218c2e2ce9d1675eb33ea72ea6ba5740f2d5e1b6f7333bdc0dfd61bb"
+    },
+    {
+     "id": "pixelarticons:shield",
+     "path": "apps/web/public/icon-library/pixelarticons/shield.svg",
+     "sourcePath": "svg/shield.svg",
+     "sourceSha256": "0b49fedb50fe3b26e83a70d2eba3466db0766d9e41cf6e3f7391f6dc93d30efc",
+     "bytes": 217,
+     "sha256": "cd1bc72f0b1888a672c648a5231d1e11f4dda3c0d6dba89be8d39830196f4022"
+    },
+    {
+     "id": "pixelarticons:link",
+     "path": "apps/web/public/icon-library/pixelarticons/link.svg",
+     "sourcePath": "svg/link.svg",
+     "sourceSha256": "50602cffe209b6b2b7a6fcc591a540683f3379eb2a14a84d776bfd4aaf188a73",
+     "bytes": 178,
+     "sha256": "043513c77b114411d7a2c44ae56b93cba361a88d5341af3c1d98e71a9e4c3214"
+    },
+    {
+     "id": "pixelarticons:share",
+     "path": "apps/web/public/icon-library/pixelarticons/share.svg",
+     "sourcePath": "svg/share.svg",
+     "sourceSha256": "bacfb6046aab7242d92840fdc6daa98c3d351e162d648be3fae0430294c6d741",
+     "bytes": 226,
+     "sha256": "167c109116d0f099d14bd964ba777df468a1b3c5afcf54201bca656128db61cf"
+    },
+    {
+     "id": "pixelarticons:download",
+     "path": "apps/web/public/icon-library/pixelarticons/download.svg",
+     "sourcePath": "svg/download.svg",
+     "sourceSha256": "2a419389fa31eb2f2bab03e2c94f5129e5d5734e1ab54fe630e41eb1e0139374",
+     "bytes": 254,
+     "sha256": "650220d4dff9382e786e619019e419346378691dfb48ab05babeb40c09cd0db5"
+    },
+    {
+     "id": "pixelarticons:upload",
+     "path": "apps/web/public/icon-library/pixelarticons/upload.svg",
+     "sourcePath": "svg/upload.svg",
+     "sourceSha256": "427ed865ba3303fba14da2b69ac36cccd99d74e86ca4953116d03cbdecccc032",
+     "bytes": 181,
+     "sha256": "1984410e71ab348171ec9e7ff76aa77d48070492c2b66f97cbd024c666a78bb7"
+    },
+    {
+     "id": "pixelarticons:send",
+     "path": "apps/web/public/icon-library/pixelarticons/send.svg",
+     "sourcePath": "svg/send.svg",
+     "sourceSha256": "660755f1b428050a46fe0f9cf597a31228c0f70e3de8655d69b35aee850e792a",
+     "bytes": 249,
+     "sha256": "a2d7f3c8a4c81d450af3fea91a187c2b5ea2964440f135c33d1d12e418e82006"
+    },
+    {
+     "id": "pixelarticons:mail",
+     "path": "apps/web/public/icon-library/pixelarticons/mail.svg",
+     "sourcePath": "svg/mail.svg",
+     "sourceSha256": "cf8e55d37a554eafc4d9a9868c2dab7159f79f4d385abf196d4140abd7bd761e",
+     "bytes": 205,
+     "sha256": "286a38f2d0643786ee2f74e27e64ce53a8a8bf3bf39c5de2d62d43f360413142"
+    },
+    {
+     "id": "pixelarticons:mail-open",
+     "path": "apps/web/public/icon-library/pixelarticons/mail-open.svg",
+     "sourcePath": "svg/mail-open.svg",
+     "sourceSha256": "e7b86783f7268b52864f7929fd60ff2c381264ca6c2cce5483323738a726067d",
+     "bytes": 250,
+     "sha256": "e16d60c6b54bcbe7051af076a8777d9445204f7df402f06f56f990041d2ea87a"
+    },
+    {
+     "id": "pixelarticons:message",
+     "path": "apps/web/public/icon-library/pixelarticons/message.svg",
+     "sourcePath": "svg/message.svg",
+     "sourceSha256": "e6bccfcc5d1f12b7ed3ecc77ba0432c2b35b59daafa4f0cd41cd05de901d510d",
+     "bytes": 157,
+     "sha256": "e69a4c5a335df7fad1e69faeee2c0f3bd5f0fa604fe71a867e2af379f0188f60"
+    },
+    {
+     "id": "pixelarticons:comment",
+     "path": "apps/web/public/icon-library/pixelarticons/comment.svg",
+     "sourcePath": "svg/comment.svg",
+     "sourceSha256": "c968532b27c95b16ff5a392ebba37a976ae5a661ead09134de7dbe3315009066",
+     "bytes": 158,
+     "sha256": "79bca7956989367a3d6ae150640e2c4fa4ce85cb70ccc75513f521ec9e44f7c0"
+    },
+    {
+     "id": "pixelarticons:phone",
+     "path": "apps/web/public/icon-library/pixelarticons/phone.svg",
+     "sourcePath": "svg/phone.svg",
+     "sourceSha256": "fe786b3c096bcde026dfade053a48526f5b6d554e95f281304ba6bdb08c6487d",
+     "bytes": 255,
+     "sha256": "5d209221b04e577b2c4cf7a3e5e3fbee8cb3f938a73c9a8e2cf32d9c53d9721f"
+    },
+    {
+     "id": "pixelarticons:smartphone",
+     "path": "apps/web/public/icon-library/pixelarticons/smartphone.svg",
+     "sourcePath": "svg/smartphone.svg",
+     "sourceSha256": "a0cc9a82f4c3906453c54eabfccb2f0e407e993d75e67f1f58aef8daafe805db",
+     "bytes": 158,
+     "sha256": "96c6ab956dd1cedbdf2fb12597c881675e6ef8ad0dab342544e612f21e1030ad"
+    },
+    {
+     "id": "pixelarticons:laptop",
+     "path": "apps/web/public/icon-library/pixelarticons/laptop.svg",
+     "sourcePath": "svg/laptop.svg",
+     "sourceSha256": "052f9ff1ee0e2a2792f2ba17b3850831b50e2f0a6a8c7de65c624746bfbc1d1d",
+     "bytes": 156,
+     "sha256": "74896e3801afdf1dbba32669fa06e9ba208812e1c775e80be489c965f92c9a0b"
+    },
+    {
+     "id": "pixelarticons:computer",
+     "path": "apps/web/public/icon-library/pixelarticons/computer.svg",
+     "sourcePath": "svg/computer.svg",
+     "sourceSha256": "f37167a30c43506eaae126cab5e90abd9af9355bb36f5dabf1499deaf516459b",
+     "bytes": 239,
+     "sha256": "21570c5868a0a5f170a0111ef61d39308374da3d8067115da6044cce51a83473"
+    },
+    {
+     "id": "pixelarticons:monitor",
+     "path": "apps/web/public/icon-library/pixelarticons/monitor.svg",
+     "sourcePath": "svg/monitor.svg",
+     "sourceSha256": "ed46eb0e5496ca68fb1ca2aa73e48879feaa44cb2800730a1fe439f2080baff4",
+     "bytes": 170,
+     "sha256": "9583c87f1fe9a01e8b766b756c6474421f06a95677271990821436d076862f0d"
+    },
+    {
+     "id": "pixelarticons:server",
+     "path": "apps/web/public/icon-library/pixelarticons/server.svg",
+     "sourcePath": "svg/server.svg",
+     "sourceSha256": "e2366585d24f9bed39abd4e6fe06e99d518db54a1dc5e2a9ce8aae53c0c877e9",
+     "bytes": 178,
+     "sha256": "700e9cf472cab14de5c636639609cfe4a7150378636d8abe764d1f8b36c0288f"
+    },
+    {
+     "id": "pixelarticons:database",
+     "path": "apps/web/public/icon-library/pixelarticons/database.svg",
+     "sourcePath": "svg/database.svg",
+     "sourceSha256": "35bc1665eed827761222cdcfbb08e4fe13f331f3fc68051a7f127efc41f20172",
+     "bytes": 310,
+     "sha256": "653b59de2b45a27aff0db0b2b38ecb21fe5fd77eb98e8789c3a10d5f830c29de"
+    },
+    {
+     "id": "pixelarticons:keyboard",
+     "path": "apps/web/public/icon-library/pixelarticons/keyboard.svg",
+     "sourcePath": "svg/keyboard.svg",
+     "sourceSha256": "c02d5aef1434008875d1c78e3813607761ab9797df4323baae8feb20b02a5340",
+     "bytes": 270,
+     "sha256": "ec8221589effab574e2498e457f928b86b85fa87c794d15dbfd8562fcf62b1d1"
+    },
+    {
+     "id": "pixelarticons:mouse",
+     "path": "apps/web/public/icon-library/pixelarticons/mouse.svg",
+     "sourcePath": "svg/mouse.svg",
+     "sourceSha256": "e93c907078219d9c577fa0a41584f19e82aa239d0892d7a97d9e2e3275a41ae3",
+     "bytes": 207,
+     "sha256": "956c676fcf1b457fb71aeb30b7a54896e6bdee906a83f943d6cec2299f0c7d78"
+    },
+    {
+     "id": "pixelarticons:printer",
+     "path": "apps/web/public/icon-library/pixelarticons/printer.svg",
+     "sourcePath": "svg/printer.svg",
+     "sourceSha256": "e289ddafddc1f70198cb3bbcd43f2e6d829f49e1e9d3ef9f015bcce293d503ad",
+     "bytes": 316,
+     "sha256": "1432b78c36fd3a37e1d4ddba47ee66524e8a5fd28bdbd8796a4b2c30d0c0857c"
+    },
+    {
+     "id": "pixelarticons:webcam",
+     "path": "apps/web/public/icon-library/pixelarticons/webcam.svg",
+     "sourcePath": "svg/webcam.svg",
+     "sourceSha256": "0e10aa4384952c7d613f44471b4f25173540312789bd4e57c7f78258461f7e27",
+     "bytes": 335,
+     "sha256": "4e2e2043cd84f0bf3ab1d31820456ed729e4f59d376c47717ca4b1e1bb0e14f4"
+    },
+    {
+     "id": "pixelarticons:qr-code",
+     "path": "apps/web/public/icon-library/pixelarticons/qr-code.svg",
+     "sourcePath": "svg/qr-code.svg",
+     "sourceSha256": "cf366bef446d9a893d0ff4b0464c912d22c903074c8304aff383c0b6080a1c6d",
+     "bytes": 424,
+     "sha256": "0a821907c1a6b8489dcff9c8ab09a11de7c75285fa61ae2f213a57c90a09601f"
+    },
+    {
+     "id": "pixelarticons:wifi",
+     "path": "apps/web/public/icon-library/pixelarticons/wifi.svg",
+     "sourcePath": "svg/wifi.svg",
+     "sourceSha256": "4165ebed14bc46ad778b3c8b624bd07b8e48f71f2645ff96ed2dd1e9688b347f",
+     "bytes": 287,
+     "sha256": "36c3f46ea12e11abf284553a64a9fb311290ec970a2d307e2cd0b510a695c509"
+    },
+    {
+     "id": "pixelarticons:plug",
+     "path": "apps/web/public/icon-library/pixelarticons/plug.svg",
+     "sourcePath": "svg/plug.svg",
+     "sourceSha256": "c04ab8a3b111af458defe8bfa22d11622f968812d439f6bfb99a52f1044d0052",
+     "bytes": 199,
+     "sha256": "1e186a14da85a63e78b8bf2d97cef3ad986f0534ea83538623208679fb427a38"
+    },
+    {
+     "id": "pixelarticons:power",
+     "path": "apps/web/public/icon-library/pixelarticons/power.svg",
+     "sourcePath": "svg/power.svg",
+     "sourceSha256": "7b7da5294c3b15ec5b876c7ab98d003297d525c65719f3cf5f06e32d11a5d347",
+     "bytes": 218,
+     "sha256": "c0c03ee556e30d68a1da7921ef35577b086e774523913e7ebcaf8c137cdcaa2d"
+    },
+    {
+     "id": "pixelarticons:lightbulb",
+     "path": "apps/web/public/icon-library/pixelarticons/lightbulb.svg",
+     "sourcePath": "svg/lightbulb.svg",
+     "sourceSha256": "51cfe6b209e5ac1bc9f78b2d63ee789a69cd61903a549d3c48536acad6eee2c7",
+     "bytes": 305,
+     "sha256": "b98c3e966bd910c3e4cd52984707698abc3b27365d5754658e22fc1188faefc7"
+    },
+    {
+     "id": "pixelarticons:wand",
+     "path": "apps/web/public/icon-library/pixelarticons/wand.svg",
+     "sourcePath": "svg/wand.svg",
+     "sourceSha256": "e3c6818e0a057c6ebee70471142939c849cd94c78d3c2d696ffa1a90a68c0240",
+     "bytes": 507,
+     "sha256": "71e698d034df917a2b76acc7d88d8c8e34e80c49f1fba4afec82d00d3ef181e0"
+    },
+    {
+     "id": "pixelarticons:trash",
+     "path": "apps/web/public/icon-library/pixelarticons/trash.svg",
+     "sourcePath": "svg/trash.svg",
+     "sourceSha256": "4aff6085c3617f4ce64cd44cef95f48115e563debd110b7d23ed2e7430871e53",
+     "bytes": 178,
+     "sha256": "127371c59bca02fa8fc54af32cb649387eae4bd1accaab16a8b1166066b9cb50"
+    },
+    {
+     "id": "pixelarticons:undo",
+     "path": "apps/web/public/icon-library/pixelarticons/undo.svg",
+     "sourcePath": "svg/undo.svg",
+     "sourceSha256": "4cabb00bcd4e08af6b2e55289b5c339ff511e77e2ec38c52616261c9ca9de2a5",
+     "bytes": 167,
+     "sha256": "51040f8356faf53bc64a9b4be1a49ec91c331a20d6ee98493198716043f7fef8"
+    },
+    {
+     "id": "pixelarticons:redo",
+     "path": "apps/web/public/icon-library/pixelarticons/redo.svg",
+     "sourcePath": "svg/redo.svg",
+     "sourceSha256": "2bd6fb3c185c8ba085f9398e48afbe3162dce6afeff33fe8fc27266841479f3f",
+     "bytes": 194,
+     "sha256": "8a5f65c2eff18a5fa0cc76d3769435b11076d61eaf4a79e041437c96a4e958b1"
+    },
+    {
+     "id": "pixelarticons:refresh",
+     "path": "apps/web/public/icon-library/pixelarticons/refresh.svg",
+     "sourcePath": "svg/refresh.svg",
+     "sourceSha256": "da6d70c9cd39a88e05c4ed516fb150e0c9d37b9b8af6228846ca53405eb85f15",
+     "bytes": 301,
+     "sha256": "a822897f301b011cead68acaaf5adbb5c827af35c33bfd24dba491e670c111ba"
+    },
+    {
+     "id": "pixelarticons:home",
+     "path": "apps/web/public/icon-library/pixelarticons/home.svg",
+     "sourcePath": "svg/home.svg",
+     "sourceSha256": "da320202d53ae29fbdf803838b64e7980f946a1c3622c7b7b76c6a215a1ea7c3",
+     "bytes": 251,
+     "sha256": "701e49ec5fab34e59cfcaa60771c707767b36bd3604e86cab6b3dca12fa42c49"
+    },
+    {
+     "id": "pixelarticons:building",
+     "path": "apps/web/public/icon-library/pixelarticons/building.svg",
+     "sourcePath": "svg/building.svg",
+     "sourceSha256": "a271bf22825122d4a573fc857e2d15453b203ff303818b3000c1b88b96c31814",
+     "bytes": 264,
+     "sha256": "ff9fffd5257b5ed44c293226190162df97e9134cf3c7900ae8fdd499623d5298"
+    },
+    {
+     "id": "pixelarticons:castle",
+     "path": "apps/web/public/icon-library/pixelarticons/castle.svg",
+     "sourcePath": "svg/castle.svg",
+     "sourceSha256": "8cf295b0fd3a47055913d81b5b12979cda9407d60db0aeaf1e84d8b393ca1248",
+     "bytes": 240,
+     "sha256": "39eb29a7e32963096ac7d51c48da2512ee555238d7983dc02c6a04b0555ad6d4"
+    },
+    {
+     "id": "pixelarticons:store",
+     "path": "apps/web/public/icon-library/pixelarticons/store.svg",
+     "sourcePath": "svg/store.svg",
+     "sourceSha256": "0a0986dc54a048076956bed4f1af2ebfd6401679fcd2815a11b322c07065c10f",
+     "bytes": 286,
+     "sha256": "d95aa591059fc23ad446ab22bc9f953dd6707db61737619594b27c35fcbd6223"
+    },
+    {
+     "id": "pixelarticons:shopping-cart",
+     "path": "apps/web/public/icon-library/pixelarticons/shopping-cart.svg",
+     "sourcePath": "svg/shopping-cart.svg",
+     "sourceSha256": "dc515d98888c0c070edbf971cd13ea22413fe1a530f9b12dbc80319295ab7804",
+     "bytes": 211,
+     "sha256": "b3b6a2a5f8ae60629c5965ef9838fedcbae5b26783d8f94975229a59c211f4ce"
+    },
+    {
+     "id": "pixelarticons:shopping-bag",
+     "path": "apps/web/public/icon-library/pixelarticons/shopping-bag.svg",
+     "sourcePath": "svg/shopping-bag.svg",
+     "sourceSha256": "1559b188a84dfb32f844160ee2f4c4fcbd52adb27b9947a83d3220348f5d1055",
+     "bytes": 205,
+     "sha256": "e12fb806b50a66081327036a408f19e22c610e4fefff0b06a82920dcce4a1e98"
+    },
+    {
+     "id": "pixelarticons:gift",
+     "path": "apps/web/public/icon-library/pixelarticons/gift.svg",
+     "sourcePath": "svg/gift.svg",
+     "sourceSha256": "5fd0bc866b75d9c6f20ccfd83c474b66fee324188a4fd99deaa7939d850b96c8",
+     "bytes": 261,
+     "sha256": "5532595ff01e180b224cd6bc8dc4d5f798565d1c22f34d4f188fa705cd8f7388"
+    },
+    {
+     "id": "pixelarticons:cake",
+     "path": "apps/web/public/icon-library/pixelarticons/cake.svg",
+     "sourcePath": "svg/cake.svg",
+     "sourceSha256": "ba15fb4cfd31a4f74908742618b0f4b6b2e46bee119b14114cb1054da9d5875a",
+     "bytes": 260,
+     "sha256": "7a2f650021081b4d6720a3210bf02f61fe6296f2035576107faa5704e4052036"
+    },
+    {
+     "id": "pixelarticons:balloon",
+     "path": "apps/web/public/icon-library/pixelarticons/balloon.svg",
+     "sourcePath": "svg/balloon.svg",
+     "sourceSha256": "dfbb572c6ba12ff6c5dd37405b0f164907fa5f77cd3d66da295b78b366d25ba3",
+     "bytes": 261,
+     "sha256": "2c2567fa5ddee1d34e553e66f448040ecd307218867092e7afd2acbd6e5d5fda"
+    },
+    {
+     "id": "pixelarticons:party-popper",
+     "path": "apps/web/public/icon-library/pixelarticons/party-popper.svg",
+     "sourcePath": "svg/party-popper.svg",
+     "sourceSha256": "c7d848c21862206c53be9ec990f5af393bc6c8eed794ed65ce4b0b5ba1ad58d3",
+     "bytes": 405,
+     "sha256": "cd0ae16188c06b76d3a1d951fe2a9806039256bdfcd20c9513af2f745148e601"
+    },
+    {
+     "id": "pixelarticons:trophy",
+     "path": "apps/web/public/icon-library/pixelarticons/trophy.svg",
+     "sourcePath": "svg/trophy.svg",
+     "sourceSha256": "f84272c4d2d69478202574d4a609729832b648d167e8f308c89a5d11d4f041ec",
+     "bytes": 211,
+     "sha256": "845ee396963bf613ab936be0bc9b8fbf9ade9227b36f15a6e625bd218cc71f37"
+    },
+    {
+     "id": "pixelarticons:crown",
+     "path": "apps/web/public/icon-library/pixelarticons/crown.svg",
+     "sourcePath": "svg/crown.svg",
+     "sourceSha256": "79223777f06f8279d6a5f74a0a089b7cb196bd55781b56390e02596a6b7036b5",
+     "bytes": 265,
+     "sha256": "7752a0e5a73aba6631530f43f4e73e158379609410ba597733928851a9d50356"
+    },
+    {
+     "id": "pixelarticons:gem",
+     "path": "apps/web/public/icon-library/pixelarticons/gem.svg",
+     "sourcePath": "svg/diamond-gem.svg",
+     "sourceSha256": "92f05d3f9be9ec455a045497c4474370b90a147227c18b9ee235084230e3a3b4",
+     "bytes": 406,
+     "sha256": "b7aded036bb950ae4d2dc87ca08dc6e8c46071f90d8d05415d7edc947a69ad1e"
+    },
+    {
+     "id": "pixelarticons:heart",
+     "path": "apps/web/public/icon-library/pixelarticons/heart.svg",
+     "sourcePath": "svg/heart.svg",
+     "sourceSha256": "6a927c32de0e8277a7cb6172d535f3028834b9b2dea2709ca08413909dee2c02",
+     "bytes": 358,
+     "sha256": "0023d127200c1958785514b0660724aafa3c91af601376acf8979e549a42190e"
+    },
+    {
+     "id": "pixelarticons:flag",
+     "path": "apps/web/public/icon-library/pixelarticons/flag.svg",
+     "sourcePath": "svg/flag.svg",
+     "sourceSha256": "98efb72a8051f47f70e4e034ae5452c37df3ec1b7143766cba48b4e2b3562fd1",
+     "bytes": 195,
+     "sha256": "d2f771357bb7625d1bbd8970943718b0665672f5914720b582ca0dcdfeab3ca5"
+    },
+    {
+     "id": "pixelarticons:map",
+     "path": "apps/web/public/icon-library/pixelarticons/map.svg",
+     "sourcePath": "svg/map.svg",
+     "sourceSha256": "22144d2ef2ff3dbaa341069cf9940237dae6921642d70a7c418cbe27fe39b7e4",
+     "bytes": 261,
+     "sha256": "c12cea921d800dffca5ce1fb01cac6d624d8b0863c3642b69a10c5b2790bddde"
+    },
+    {
+     "id": "pixelarticons:map-pin",
+     "path": "apps/web/public/icon-library/pixelarticons/map-pin.svg",
+     "sourcePath": "svg/map-pin.svg",
+     "sourceSha256": "a19c6d5890fe98105cba1808813f77a0ff9d576e7f9e338da7c2511fd0d9f177",
+     "bytes": 287,
+     "sha256": "1b4e285f2cbedea8d70db1668554dc39db26385f461e467e361c492d3e3efe68"
+    },
+    {
+     "id": "pixelarticons:compass",
+     "path": "apps/web/public/icon-library/pixelarticons/compass.svg",
+     "sourcePath": "svg/compass.svg",
+     "sourceSha256": "c4000b525eaff152a2e6a50014333168cbddfce9e5203de811f1c8d3fb647411",
+     "bytes": 337,
+     "sha256": "3bca275b58cb73095198e2b0480175b6850f98e22f33f70dae979813915d1a38"
+    },
+    {
+     "id": "pixelarticons:earth",
+     "path": "apps/web/public/icon-library/pixelarticons/earth.svg",
+     "sourcePath": "svg/earth.svg",
+     "sourceSha256": "4a93305fb0bb6af66963a2fa887da63e376ac35886193b4631a1dc5ed09f2360",
+     "bytes": 301,
+     "sha256": "7945c21e142ba68fcc2780d863a61a177d0dfc991c80f8c41ae79bff78911055"
+    },
+    {
+     "id": "pixelarticons:globe",
+     "path": "apps/web/public/icon-library/pixelarticons/globe.svg",
+     "sourcePath": "svg/globe.svg",
+     "sourceSha256": "1b0f2e56f4e7f105119fa2eb077427fa9c8334f3f51fc39fee3cd078c6809499",
+     "bytes": 305,
+     "sha256": "6c596c70ddbcc0981687f01a2c94cbb8805b7be64e5a9e5487f876ad08ac75e5"
+    },
+    {
+     "id": "pixelarticons:sun",
+     "path": "apps/web/public/icon-library/pixelarticons/sun.svg",
+     "sourcePath": "svg/sun.svg",
+     "sourceSha256": "ece0f656771f449ed865d1a3ab2759b6fa0f759d50178afe2690c3c07247e0c8",
+     "bytes": 272,
+     "sha256": "51e666f5ad7262c4f912cc61aaf16b908978ebcaa9b2474925fb9981e1016644"
+    },
+    {
+     "id": "pixelarticons:moon",
+     "path": "apps/web/public/icon-library/pixelarticons/moon.svg",
+     "sourcePath": "svg/moon.svg",
+     "sourceSha256": "93b21e16334e65b49bf7c7061dc1f23168e47343a3fbc90ecd9cc75fd089e108",
+     "bytes": 280,
+     "sha256": "5c6413a2c7545d4a6d95788e680556f600df308a104a141a6e7d65f93552a536"
+    },
+    {
+     "id": "pixelarticons:cloud",
+     "path": "apps/web/public/icon-library/pixelarticons/cloud.svg",
+     "sourcePath": "svg/cloud.svg",
+     "sourceSha256": "eb9fa16499d2ad29176f5629eb80143957bb5cd8b187b668c457a955d1d84916",
+     "bytes": 297,
+     "sha256": "7ebd60b709b136140a2387c9a7eae30d7c71ec4d0ea28a43479026e353f05fb6"
+    },
+    {
+     "id": "pixelarticons:snowflake",
+     "path": "apps/web/public/icon-library/pixelarticons/snowflake.svg",
+     "sourcePath": "svg/snowflake.svg",
+     "sourceSha256": "52e71604c05d5af3a4765c470eda827a26a5a73bfdb7dd5a593803f22a61b29f",
+     "bytes": 408,
+     "sha256": "b91cd7b68f302066ebf64a56c2f99f74fbb0d901a76e23075c2ca4bea9198feb"
+    },
+    {
+     "id": "pixelarticons:leaf",
+     "path": "apps/web/public/icon-library/pixelarticons/leaf.svg",
+     "sourcePath": "svg/leaf.svg",
+     "sourceSha256": "26faefc5e5dd2bb522b23c98424a81caf2864f58d2359d53f6484e46e2aabe18",
+     "bytes": 270,
+     "sha256": "f885799efee52853bd4eb2c6943b072988217209970bf04789b687bb27442c2d"
+    },
+    {
+     "id": "pixelarticons:tree",
+     "path": "apps/web/public/icon-library/pixelarticons/tree.svg",
+     "sourcePath": "svg/tree.svg",
+     "sourceSha256": "bb7370c8da24fe65a211a427133db033ccfa1cd8e3c5e678915e94ec10044aa5",
+     "bytes": 254,
+     "sha256": "08138da7f82b3fe0cc786c351dd74817e68edfd9dab9b554c51c2ceb3ad9ea8c"
+    },
+    {
+     "id": "pixelarticons:tree-pine",
+     "path": "apps/web/public/icon-library/pixelarticons/tree-pine.svg",
+     "sourcePath": "svg/tree-pine.svg",
+     "sourceSha256": "90e0b4d0769f80c640b5091b4b239e613c03d8b3c0a8eac480ee3d9858ae6400",
+     "bytes": 297,
+     "sha256": "efece5edd3d13b2d8e93810735258563702d2f47cc7e1dfbda6e599942a57105"
+    },
+    {
+     "id": "pixelarticons:fish",
+     "path": "apps/web/public/icon-library/pixelarticons/fish.svg",
+     "sourcePath": "svg/fish.svg",
+     "sourceSha256": "2be18f65014adf58939a3b486b49c1811ad92f1a0d7113b290a570e7810b9c06",
+     "bytes": 260,
+     "sha256": "b5bc5017837d184944b1d94d4d90acc5c52c2d75d6174b653a6b44a5b28dbc8b"
+    },
+    {
+     "id": "pixelarticons:dog",
+     "path": "apps/web/public/icon-library/pixelarticons/dog.svg",
+     "sourcePath": "svg/dog.svg",
+     "sourceSha256": "d5d9fa197efe7a7bff5361689a9219203d702c94edeafc230ce44d35795ebfe4",
+     "bytes": 350,
+     "sha256": "1cfdd91cbaad3164f251babbcf1df18bf76a83cb051926f0394e0ae78d9e0d7d"
+    },
+    {
+     "id": "pixelarticons:snail",
+     "path": "apps/web/public/icon-library/pixelarticons/snail.svg",
+     "sourcePath": "svg/snail.svg",
+     "sourceSha256": "8fedecb3c5cc8f0fc4d4f1ae5afc5de937d762b93fbc9f39604d383d8bb92098",
+     "bytes": 363,
+     "sha256": "5373dbbb82c3598fad9de6229b7778712c06e46e620085fe6125a878e8c53244"
+    },
+    {
+     "id": "pixelarticons:snake",
+     "path": "apps/web/public/icon-library/pixelarticons/snake.svg",
+     "sourcePath": "svg/snake.svg",
+     "sourceSha256": "91bc61be7421fc431cf81df21d2e092dd1b79c2e7dfce10156e7371baaea8703",
+     "bytes": 256,
+     "sha256": "49725a7edb9f6fc1bdddefefda93f0817a6c25fb731d235f522f716a367f919a"
+    },
+    {
+     "id": "pixelarticons:t-rex",
+     "path": "apps/web/public/icon-library/pixelarticons/t-rex.svg",
+     "sourcePath": "svg/t-rex.svg",
+     "sourceSha256": "5d7e4ff0a56b121458752f203919f4afb835e047b91f6c36f2b6dc638f975900",
+     "bytes": 325,
+     "sha256": "2e51e55497881b6bf072ade10bb1b91d82b8b09ab6ce8ce089e06f475ef3d50b"
+    },
+    {
+     "id": "pixelarticons:bug",
+     "path": "apps/web/public/icon-library/pixelarticons/bug.svg",
+     "sourcePath": "svg/bug.svg",
+     "sourceSha256": "02f75e11cf72a9c25798bd7350f11d5bb7e59c532d1b55927880307f88ecf840",
+     "bytes": 369,
+     "sha256": "73aa8756de355e1ce8f2cafc2b94afddcb1b9067ab13bcee42272bd10ad40b9d"
+    },
+    {
+     "id": "pixelarticons:coffee",
+     "path": "apps/web/public/icon-library/pixelarticons/coffee.svg",
+     "sourcePath": "svg/coffee.svg",
+     "sourceSha256": "4dd625ca2add00d7862aedca3528f1b59ac051c34b0398bd4f8ecf54d0e8f46d",
+     "bytes": 180,
+     "sha256": "accee9cf6dda83e1043680a5e1d0782ddb6d27003c32686e8845ec31a6c38910"
+    },
+    {
+     "id": "pixelarticons:mug",
+     "path": "apps/web/public/icon-library/pixelarticons/mug.svg",
+     "sourcePath": "svg/mug.svg",
+     "sourceSha256": "beca291e8dfea37a188b10ce7cca4f53a803ae035ea50794a7b1283e80e754b2",
+     "bytes": 173,
+     "sha256": "db837bf3ccf4e83514266f9e6c3bfd94c01b5ebf5ef9ec00cf507f9e3024ca27"
+    },
+    {
+     "id": "pixelarticons:tea",
+     "path": "apps/web/public/icon-library/pixelarticons/tea.svg",
+     "sourcePath": "svg/tea.svg",
+     "sourceSha256": "88a1e69d9b1f0cd50d15a0ed9017c7c2e53e685d2b2306907773074059edd4a9",
+     "bytes": 241,
+     "sha256": "7c18c76318f4b64a98a95c1edbee3fe2d157c27103b557756ad15e6580d8b1c4"
+    },
+    {
+     "id": "pixelarticons:bed",
+     "path": "apps/web/public/icon-library/pixelarticons/bed.svg",
+     "sourcePath": "svg/bed.svg",
+     "sourceSha256": "00ca3cf0e9318ef607f24fef813a66bdd20784403a82d5a7f600f07f781a44ea",
+     "bytes": 182,
+     "sha256": "839c23d65cea63d596564f133e980f7197c8874b2426e3eceba19846e11ab95b"
+    },
+    {
+     "id": "pixelarticons:sofa",
+     "path": "apps/web/public/icon-library/pixelarticons/sofa.svg",
+     "sourcePath": "svg/sofa.svg",
+     "sourceSha256": "59d347aba37c7233ad58c5daa6e00f216cfe65782e3bdcfc811afdb1118a8641",
+     "bytes": 262,
+     "sha256": "ff6a347d85fdbf58fbe0a3d846097fe13dcd994359c571aac9338ca94be77a05"
+    },
+    {
+     "id": "pixelarticons:car",
+     "path": "apps/web/public/icon-library/pixelarticons/car.svg",
+     "sourcePath": "svg/car.svg",
+     "sourceSha256": "6f7b35fb3559d5c96c23f01e02eba9051cdf1507b58fc170c62f9c9c3f82e958",
+     "bytes": 265,
+     "sha256": "8166934a1fbe25300e20f9e0ae7b3d3c3812e6fa5eedee88eb91b188205596d8"
+    },
+    {
+     "id": "pixelarticons:bus",
+     "path": "apps/web/public/icon-library/pixelarticons/bus.svg",
+     "sourcePath": "svg/bus.svg",
+     "sourceSha256": "5dabccd7fab9297a22fea2ebbc1b8f0b25760edbdd10140f602c3bc8499dec33",
+     "bytes": 277,
+     "sha256": "e0bb0c7ae250b4150202d0a6a65fb090b861b680bcaf7d9a327795ecc5ac9c39"
+    },
+    {
+     "id": "pixelarticons:ship",
+     "path": "apps/web/public/icon-library/pixelarticons/ship.svg",
+     "sourcePath": "svg/ship.svg",
+     "sourceSha256": "4826eaeae4574ba4d18068698521a52704d33566c2497c636a902c6ffaf448ed",
+     "bytes": 313,
+     "sha256": "c8b22b317cb6fedb8bca2435d642c8d901d95723d40dbeaf5f6b8cf45685ceb5"
+    },
+    {
+     "id": "pixelarticons:helicopter",
+     "path": "apps/web/public/icon-library/pixelarticons/helicopter.svg",
+     "sourcePath": "svg/helicopter.svg",
+     "sourceSha256": "2ded3769988dd5d91b4d0f6c8a7064f96a7138c6fb460105b2b9a597875d7abf",
+     "bytes": 277,
+     "sha256": "2bbe0e89fbae0c9dda976429c6e43a6228a74784843b92781baa5d04142afadb"
+    },
+    {
+     "id": "pixelarticons:truck",
+     "path": "apps/web/public/icon-library/pixelarticons/truck.svg",
+     "sourcePath": "svg/truck.svg",
+     "sourceSha256": "caab82589b09231ea7cf1a6ed0aa925f019b91aa92b246a62c77549cbbc37b03",
+     "bytes": 322,
+     "sha256": "8105af3767c436592ed941eb2d96b53fcc5c0c780013bdc2f29b52e9f591de18"
+    },
+    {
+     "id": "pixelarticons:gamepad",
+     "path": "apps/web/public/icon-library/pixelarticons/gamepad.svg",
+     "sourcePath": "svg/gamepad.svg",
+     "sourceSha256": "4b385667f20e542c2a89762ff331b40e3e29eb988de273f138b791f3cdea2f0d",
+     "bytes": 218,
+     "sha256": "ac32a639f3b5b8bd06c432747a201f3e07d3fc069dc77c4ad7e59a4a3fb217eb"
+    },
+    {
+     "id": "pixelarticons:joystick",
+     "path": "apps/web/public/icon-library/pixelarticons/joystick.svg",
+     "sourcePath": "svg/joystick.svg",
+     "sourceSha256": "03597e41d11a48299a93dc019c23a56d4e66592522c5444acaff1f102e8ba20f",
+     "bytes": 216,
+     "sha256": "5d1d8fe7aa12c6d147be96a6f93e46af38b40523c2fc4e39fd4a8c830827b3c2"
+    },
+    {
+     "id": "pixelarticons:chess",
+     "path": "apps/web/public/icon-library/pixelarticons/chess.svg",
+     "sourcePath": "svg/chess.svg",
+     "sourceSha256": "5bb230585de778c98b910a3468f71910c67e3eab787ef3ea662ec77776b0979d",
+     "bytes": 240,
+     "sha256": "b77b0e6723766481e833da5b039a1b3dc7471b1866f2cc48bdc3ee7a93b3c763"
+    },
+    {
+     "id": "pixelarticons:bell",
+     "path": "apps/web/public/icon-library/pixelarticons/bell.svg",
+     "sourcePath": "svg/bell.svg",
+     "sourceSha256": "be1864d3c0b794813b2c533f8adda27b78092ba0416725ea2d20e11f9bc60ff1",
+     "bytes": 252,
+     "sha256": "c483896ee962b2b9bcad4e7dec6df86847e6ddef37c3d17e45adf1e95773e815"
+    },
+    {
+     "id": "pixelarticons:fire",
+     "path": "apps/web/public/icon-library/pixelarticons/fire.svg",
+     "sourcePath": "svg/fire.svg",
+     "sourceSha256": "e470b19ea4ead92f76bc3b7244f030b00f375cf7df638e07984a6a81fd53f991",
+     "bytes": 288,
+     "sha256": "a0eee1b973cf6c2b714086eab790abc1b6f72da24ccca87cc8160b0f51ea9e48"
+    },
+    {
+     "id": "pixelarticons:zap",
+     "path": "apps/web/public/icon-library/pixelarticons/zap.svg",
+     "sourcePath": "svg/zap.svg",
+     "sourceSha256": "294975ccc602739edb4bc562bad9ec8c9436608a6c2ee312ce9042e394fc08dc",
+     "bytes": 247,
+     "sha256": "a77b05ef2c2d189ccd5a96f3f751ba67f863e736bb2c682dc8fef1cc16bf4443"
+    },
+    {
+     "id": "pixelarticons:smart-home",
+     "path": "apps/web/public/icon-library/pixelarticons/smart-home.svg",
+     "sourcePath": "svg/smart-home.svg",
+     "sourceSha256": "f721a8b92ff6b074d581ddbbb882b60a5bd548b6dd3aa9fdbfae33ced22def0e",
+     "bytes": 251,
+     "sha256": "fd280b58a39e15412b03270810f567dddd2313aa7493717df04aba3035632180"
+    }
+   ]
+  }
+ }
+}

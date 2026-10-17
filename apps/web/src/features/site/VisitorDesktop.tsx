@@ -6,7 +6,8 @@ import { RetroWindow } from "../../components/RetroWindow";
 import { useThemeView } from "../../lib/themeView";
 import { DesktopTaskbar } from "./DesktopTaskbar";
 import { WindowRenderer } from "./WindowRenderer";
-import { musicPlayback, useMusicPlayback } from "../modules/music/audioCoordinator";
+import { useMusicPlayback } from "../modules/music/audioCoordinator";
+import { stopAllMedia, stopWindowMedia } from "../modules/music/mediaSession";
 
 type WindowStatus = "open" | "minimized" | "closed";
 
@@ -48,7 +49,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
   const tv = useThemeView(document.theme);
   const music = useMusicPlayback();
 
-  useEffect(() => () => musicPlayback.stopAll(), []);
+  useEffect(() => () => stopAllMedia(), []);
 
   const topZ = useMemo(
     () => Math.max(0, ...Object.values(runtime).filter((item) => item.status === "open").map((item) => item.z)),
@@ -77,12 +78,12 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
   }
 
   function minimize(id: string) {
-    musicPlayback.stopWindow(id);
+    stopWindowMedia(id);
     setRuntime((current) => current[id] ? { ...current, [id]: { ...current[id], status: "minimized" } } : current);
   }
 
   function close(id: string) {
-    musicPlayback.stopWindow(id);
+    stopWindowMedia(id);
     setRuntime((current) => current[id] ? { ...current, [id]: { ...current[id], status: "closed", maximized: false } } : current);
   }
 

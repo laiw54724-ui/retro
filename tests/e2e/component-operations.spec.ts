@@ -98,7 +98,7 @@ for (const width of [1440, 320]) {
     const dialog = page.getByRole("dialog", { name: "Gallery.exe" });
     const opener = dialog.getByRole("button", { name: "放大 First" });
     await opener.click();
-    const lightbox = dialog.getByRole("dialog", { name: "圖片檢視" });
+    const lightbox = page.getByRole("dialog", { name: "圖片檢視" });
     await expect(lightbox).toBeVisible();
     if (width === 1440) await page.screenshot({ path: testInfo.outputPath("gallery-lightbox-desktop.png") });
     await lightbox.getByRole("button", { name: "下一張" }).focus();

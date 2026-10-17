@@ -3,7 +3,7 @@ import { makeLink, type LinkItem } from "@retrodesk/shared";
 import { Icon } from "../../../components/Icon";
 import { readableOn } from "../../../lib/themeView";
 import { MiniBtn } from "../ui";
-import { IconPicker } from "./IconPicker";
+import { IconPickerButton } from "./IconPicker";
 import { moveById, patchById, type ModuleProps } from "../types";
 import { linkDestinationSummary } from "./linkDestinationSummary";
 import "./editor.css";
@@ -50,7 +50,6 @@ export function LinksView({ window, ctx }: ModuleProps<"links">) {
 }
 
 export function LinksInlineEditor({ window, ctx, update }: ModuleProps<"links">) {
-  const [picking, setPicking] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
   const feedbackPrefix = useId();
   const links = window.content.links;
@@ -68,11 +67,10 @@ export function LinksInlineEditor({ window, ctx, update }: ModuleProps<"links">)
         const settingsId = `${feedbackPrefix}-settings-${index}`;
         const feedbackId = `${feedbackPrefix}-destination-${index}`;
         const labelHintId = `${feedbackPrefix}-label-${index}`;
-        const iconPickerId = `${feedbackPrefix}-icons-${index}`;
         return (
           <div key={link.id} className="ie-box link-editor-card" data-link-id={link.id}>
             <div className="link-tile edit" style={{ background: link.color, color: fg, boxShadow: tileShadow }}>
-              <button type="button" className="link-icon btn" aria-label="選擇圖示" aria-expanded={picking === link.id} aria-controls={iconPickerId} title="選擇圖示" onClick={() => setPicking(picking === link.id ? null : link.id)}><Icon name={link.icon} size={24} /></button>
+              <IconPickerButton siteId={ctx.siteId} value={link.icon} upload={ctx.upload} mediaTarget={{ windowId: window.id, windowType: "links", itemId: link.id }} label={link.label} defaultValue="link" onChange={(value) => patch(link.id, { icon: value, iconUrl: value.startsWith("http") ? value : "" })} />
               <input className="link-input" value={link.label} maxLength={200} placeholder="按鈕文字" aria-label="按鈕文字" aria-invalid={!link.label.trim()} aria-describedby={!link.label.trim() ? labelHintId : undefined} style={{ color: fg, outlineColor: fg }} onChange={(event) => patch(link.id, { label: event.currentTarget.value }, `label:${link.id}`)} />
             </div>
             {!link.label.trim() ? <p id={labelHintId} className="link-destination is-problem">請填寫按鈕文字，讓訪客知道會開啟什麼。</p> : null}
@@ -111,9 +109,6 @@ export function LinksInlineEditor({ window, ctx, update }: ModuleProps<"links">)
                 <p className="link-settings-hint">點選按鈕左側的圖示可更換圖示。</p>
               </fieldset>
             </div>
-            {picking === link.id ? (
-              <div id={iconPickerId}><IconPicker siteId={ctx.siteId} value={link.icon} upload={ctx.upload} mediaTarget={{ windowId: window.id, windowType: "links", itemId: link.id }} onDone={() => setPicking(null)} onChange={(value) => patch(link.id, { icon: value, iconUrl: value.startsWith("http") ? value : "" })} /></div>
-            ) : null}
           </div>
         );
       })}

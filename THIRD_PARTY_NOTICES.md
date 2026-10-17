@@ -10,6 +10,18 @@ The complete license is stored at
 [`apps/web/public/fonts/OFL.txt`](apps/web/public/fonts/OFL.txt). Reserved names
 include **Cubic** and **俐方體**.
 
+## Open icon library
+
+The icon picker bundles curated subsets of three open icon sets under
+`apps/web/public/icon-library/`. The full license text, pinned source commit and
+author of each set are in the `NOTICE.txt` next to its files:
+
+- **Haiku icons** (MIT; origin: the Haiku operating system, <https://www.haiku-os.org>),
+  © Haiku, Inc. and the Haiku icon artists. Haiku logos and trademarks are not included.
+- **Pixel-Art Icons** by Tomasz Stamborski (CC0 1.0), <https://github.com/tstamborski/pixelart-icons>.
+- **Pixelarticons** free set by Gerrit Halfmann (MIT), Copyright (c) 2019 Gerrit Halfmann,
+  <https://github.com/halfmage/pixelarticons>.
+
 ## Optional Windows icon pack
 
 Windows and application icons are not included in this repository or the

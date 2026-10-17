@@ -16,6 +16,7 @@ import {
   PostEntityV2Schema,
   projectPublicSiteDocument,
   projectV2ToLegacyDocument,
+  WindowChromeSchema,
   type SiteDocument,
   type SiteDocumentV2Input,
 } from "../src";
@@ -224,5 +225,59 @@ describe("OC media contract isolation", () => {
     if (!imported.ok || imported.value.document.schemaVersion !== 2) throw new Error("OC import failed");
     expect(imported.value.document.entities.posts[0].media).toEqual(expectedMedia);
     expect(canonical.entities.posts[0].media).toEqual(expectedMedia);
+  });
+});
+
+
+describe("Q0 combined reader and export compatibility", () => {
+  function combinedFixture() {
+    const legacy = legacyFixture();
+    const explorer = makeWindow("explorer", legacy.windows.length);
+    const music = makeWindow("music", legacy.windows.length + 1);
+    if (explorer.type !== "explorer" || music.type !== "music") throw new Error("Q0 fixture types");
+    legacy.windows[0].chrome = WindowChromeSchema.parse({ preset: "compact-98", controls: ["close"] });
+    legacy.windows[1].icon = "haiku:folder";
+    explorer.content.folders = [{ id: "art-folder", parentId: null, name: "Artwork", icon: "pixelart:heart", order: 0, visibility: "published" }];
+    explorer.content.shortcuts = [{ id: "art-shortcut", parentId: "art-folder", label: "Gallery", icon: "pixelarticons:image", order: 0, visibility: "published", target: { siteId: SITE_ID, kind: "window", id: "gallery-media" } }];
+    music.content.tracks = [{ id: "platform-track", title: "Platform link", artist: "", cover: null, coverUrl: "", lyrics: "", rightsNote: "", source: { kind: "providerEmbed", provider: "spotify", resourceType: "track", resourceId: "50q2aUjWoTn6CJIfSPRJQA", canonicalUrl: "https://open.spotify.com/track/50q2aUjWoTn6CJIfSPRJQA", originalUrl: "https://open.spotify.com/track/50q2aUjWoTn6CJIfSPRJQA" } }];
+    music.content.playlist.trackIds = ["platform-track"];
+    legacy.windows.push(explorer, music);
+    return legacy;
+  }
+
+  function allPresentation(document: SiteDocument | SiteDocumentV2Input) {
+    return document.windows.filter((window) => window.type !== "instagram").map((window) => ({ id: window.id, icon: window.icon, chrome: window.chrome, content: window.content }));
+  }
+
+  it.each(["owner-backup", "public"] as const)("keeps chrome, all three icon sets, embeds and media semantics through %s transfers", (scope) => {
+    const legacy = combinedFixture();
+    const expected = allPresentation(legacy);
+    const v1 = parseSiteDocument(JSON.parse(JSON.stringify(legacy)));
+    if (!v1.ok || v1.version !== 1) throw new Error("Q0 v1 parse");
+    expect(allPresentation(v1.document)).toEqual(expected);
+    const migrated = migrateSiteDocumentV2(legacy, { siteId: SITE_ID });
+    if (!migrated.ok || migrated.version !== 2) throw new Error("Q0 migration");
+    const view = projectV2ToLegacyDocument(migrated.document);
+    if (!view.ok) throw new Error("Q0 view adapter");
+    view.document.siteName = "Edited without losing presentation";
+    const updated = mergeLegacyDocumentIntoV2(migrated.document, view.document, { siteId: SITE_ID });
+    expect(allPresentation(updated)).toEqual(expected);
+    const projected = projectPublicSiteDocument(updated, SITE_ID);
+    if (!projected.ok || projected.version !== 2) throw new Error("Q0 public projection");
+    expect(allPresentation(projected.document)).toEqual(expected);
+    for (const document of [v1.document, updated]) {
+      const exported = createRetroExport({ scope, document, siteId: SITE_ID, username: "media", siteName: document.siteName });
+      if (!exported.ok) throw new Error("Q0 export");
+      const imported = inspectRetroImport(JSON.parse(JSON.stringify(exported.value)));
+      if (!imported.ok) throw new Error("Q0 import");
+      // Exports deliberately replace the source site scope; all other values remain exact.
+      const exportExpected = structuredClone(expected);
+      for (const window of exportExpected) {
+        if ("shortcuts" in window.content) for (const shortcut of window.content.shortcuts) shortcut.target.siteId = "export:site";
+      }
+      expect(allPresentation(imported.value.document)).toEqual(exportExpected);
+      expect(JSON.stringify(imported.value.document)).not.toContain(SITE_ID);
+      expectOriginalMedia(imported.value.document);
+    }
   });
 });
