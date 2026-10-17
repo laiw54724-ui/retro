@@ -88,7 +88,7 @@ describe("editor canonical history", () => {
 
 
   it("removes Explorer shortcuts to a deleted window and restores them through undo", () => {
-    const source = createStarterDocument("Desk", "classic98", "about");
+    const source = createStarterDocument("Desk", "classic98", "blank");
     const target = makeWindow("document", source.windows.length);
     target.id = "target-window";
     target.title = "Target.exe";
