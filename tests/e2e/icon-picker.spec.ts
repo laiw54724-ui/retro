@@ -360,7 +360,13 @@ test("private uploaded icons resolve authenticated blobs in the library and reta
   expect(requests.length).toBeGreaterThan(0);
   expect(requests.every((value) => value === "Bearer a.b.c")).toBe(true);
   await tile.click();
-  await expect(dialog.getByTestId("icon-preview").locator("img")).toHaveAttribute("src", /^blob:/);
+  const previews = dialog.getByTestId("icon-preview").locator("img");
+  // Both the desktop shortcut and the taskbar preview must resolve the private asset.
+  await expect(previews).toHaveCount(2);
+  for (const image of await previews.all()) {
+    await expect(image).toHaveAttribute("src", /^blob:/);
+    await expect.poll(() => image.evaluate((node) => (node as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+  }
   expect(saves).toHaveLength(0);
   await dialog.getByRole("button", { name: "套用", exact: true }).click();
   await expect.poll(() => aboutIcon(saves)).toBe(reference);

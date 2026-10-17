@@ -30,7 +30,28 @@ async function stubPlatforms(page: Page, opts: { hang?: boolean } = {}) {
   });
 }
 
+/** Valid, self-authored PCM: even a mocked play() must not load a corrupt file. */
+function silentPcmWave() {
+  const sampleRate = 8_000;
+  const dataBytes = sampleRate * 2;
+  const wave = Buffer.alloc(44 + dataBytes);
+  wave.write("RIFF", 0);
+  wave.writeUInt32LE(36 + dataBytes, 4);
+  wave.write("WAVEfmt ", 8);
+  wave.writeUInt32LE(16, 16);
+  wave.writeUInt16LE(1, 20);
+  wave.writeUInt16LE(1, 22);
+  wave.writeUInt32LE(sampleRate, 24);
+  wave.writeUInt32LE(sampleRate * 2, 28);
+  wave.writeUInt16LE(2, 32);
+  wave.writeUInt16LE(16, 34);
+  wave.write("data", 36);
+  wave.writeUInt32LE(dataBytes, 40);
+  return wave;
+}
+
 async function installFakeMedia(page: Page) {
+  await page.route("https://media.example.com/**", (route) => route.fulfill({ contentType: "audio/wav", body: silentPcmWave() }));
   await page.addInitScript(() => {
     Object.defineProperty(HTMLMediaElement.prototype, "duration", { configurable: true, get: () => 90 });
     Object.defineProperty(HTMLMediaElement.prototype, "seekable", { configurable: true, get: () => ({ length: 1, start: () => 0, end: () => 90 }) });
@@ -224,7 +245,7 @@ test.describe("visitor: official platform players", () => {
 
   test("no hidden player keeps sound going after switching source, minimizing or closing", async ({ page }) => {
     await stubPlatforms(page);
-    await page.route("https://media.example.com/**", (route) => route.fulfill({ contentType: "audio/mpeg", body: Buffer.alloc(64) }));
+    await page.route("https://media.example.com/**", (route) => route.fulfill({ contentType: "audio/wav", body: silentPcmWave() }));
     await page.addInitScript(() => {
       (window as unknown as { __playing: Set<HTMLMediaElement> }).__playing = new Set();
       Object.defineProperty(HTMLMediaElement.prototype, "duration", { configurable: true, get: () => 90 });

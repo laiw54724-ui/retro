@@ -198,7 +198,7 @@ test("window icon upload changes only its original window after explicit preview
   dialog = page.getByRole("dialog", { name: "選擇圖示" });
   await dialog.getByRole("button", { name: "資料夾（內建）", exact: true }).click();
   await dialog.getByRole("button", { name: "套用", exact: true }).click();
-  expect(site.saved().windows.find((window) => window.id === "gallery-b")?.icon).toBe("folder");
+  await expect.poll(() => site.saved().windows.find((window) => window.id === "gallery-b")?.icon).toBe("folder");
   expect(site.saved().windows.find((window) => window.id === "gallery-b")?.icon).not.toBe(originalOtherIcon);
   expect(site.saved().windows.find((window) => window.id === "gallery-a")?.icon).toMatch(/^retro-asset:/);
 });
