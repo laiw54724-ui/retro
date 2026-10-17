@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { THEME_PRESETS, type CollectionEntityV2, type DesktopWindow, type PostEntityV2, type ProfileEntityV2, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
+import { type CollectionEntityV2, type DesktopWindow, type PostEntityV2, type ProfileEntityV2, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { IconPicker } from "../modules/links/IconPicker";
-import { themeView, useThemeView } from "../../lib/themeView";
+import { useThemeView } from "../../lib/themeView";
+import { resolveWindowAppearance } from "../../lib/windowAppearance";
+import { WindowAppearanceEditor } from "../editor/WindowAppearanceEditor";
+import { ThemeAppearanceEditor } from "../editor/ThemeAppearanceEditor";
 import { moduleDefinitions } from "../modules/registry";
 import { useEditorStore } from "../editor/store";
 import { WindowRenderer } from "./WindowRenderer";
@@ -53,6 +56,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const music = useMusicPlayback();
   const ordered = useMemo(() => [...document.windows].sort((a, b) => a.layout.mobile.order - b.layout.mobile.order), [document.windows]);
   const openWindow = ordered.find((window) => window.id === openId) ?? null;
+  const openTitle = resolveWindowAppearance(document.theme, openWindow?.appearance);
   const selected = document.windows.find((window) => window.id === store.selectedId) ?? null;
 
   useEffect(() => () => musicPlayback.stopAll(), []);
@@ -92,7 +96,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
 
         {openWindow ? (
           <div role="dialog" aria-label={openWindow.title} className="m-window" style={{ background: tv.face, boxShadow: tv.bevel }}>
-            <div className="m-win-title" style={{ background: tv.titleBg, color: tv.titleText }}>
+            <div className="m-win-title" style={{ background: openTitle.titleBackground, color: openTitle.titleColor }}>
               <button type="button" className="m-btn m-back" style={btn} onClick={back}>‹ 桌面</button>
               <Icon name={openWindow.icon} size={18} />
               <span className="m-win-name">{openWindow.title}</span>
@@ -162,24 +166,9 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
                   <span className="add-card-text"><strong>{module.label}</strong><span>{module.description}</span></span>
                 </button>
               )) : null}
-              {sheet === "theme" ? (
-                <>
-                  <div className="m-theme-grid">
-                    {Object.values(THEME_PRESETS).map((theme) => {
-                      const view = themeView(theme);
-                      return (
-                        <button key={theme.id} type="button" className={"preset" + (document.theme.id === theme.id ? " on" : "")} aria-pressed={document.theme.id === theme.id} onClick={() => store.setTheme(theme)}>
-                          <span className="preset-thumb" style={{ backgroundColor: theme.wall, backgroundImage: view.wallImageCss, backgroundSize: view.wallSize, height: 44 }}><i style={{ background: view.titleBg }} /></span>
-                          <span>{theme.name}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <span className="w98-hint">桌布圖片、字型等進階設定可在桌面版編輯器調整。</span>
-                </>
-              ) : null}
+              {sheet === "theme" ? <ThemeAppearanceEditor theme={document.theme} onTheme={store.setTheme} upload={upload} /> : null}
               {sheet === "edit" ? (
-                selected ? <MobileEdit window={selected} count={ordered.length} siteId={siteId} upload={upload} /> : <span className="m-note">先點一下桌面上的圖示，選取要編輯的視窗。</span>
+                selected ? <MobileEdit key={selected.id} theme={document.theme} window={selected} count={ordered.length} siteId={siteId} upload={upload} /> : <span className="m-note">先點一下桌面上的圖示，選取要編輯的視窗。</span>
               ) : null}
               {sheet === "edit" ? (
                 <>
@@ -201,12 +190,13 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   return <div className="visitor-mobile framed"><div className="m-bezel">{body}</div></div>;
 }
 
-function MobileEdit({ window, count, siteId, upload }: { window: DesktopWindow; count: number; siteId?: string; upload?: (file: File, kind?: "image" | "icon" | "audio") => Promise<string | null> }) {
+function MobileEdit({ theme, window, count, siteId, upload }: { theme: SiteDocument["theme"]; window: DesktopWindow; count: number; siteId?: string; upload?: (file: File, kind?: "image" | "icon" | "audio") => Promise<string | null> }) {
   const store = useEditorStore();
   const patch = (change: Partial<DesktopWindow>, key?: string) => store.updateWindow(window.id, (current) => ({ ...current, ...change }) as DesktopWindow, key);
   return (
     <>
       <label className="w98-field"><span className="w98-hint">視窗標題</span><input className="w98-input m-input" value={window.title} onChange={(event) => patch({ title: event.target.value }, "mt" + window.id)} /></label>
+      <WindowAppearanceEditor theme={theme} window={window} onChange={(appearance, historyKey) => patch({ appearance }, historyKey)} />
       <span className="w98-hint">圖示</span>
       <IconPicker siteId={siteId} value={window.icon} upload={upload} size={28} onChange={(icon) => patch({ icon })} />
       <label className="check-row m-check"><input type="checkbox" checked={window.defaultOpen} onChange={(event) => patch({ defaultOpen: event.target.checked })} />訪客進站時自動開啟</label>
