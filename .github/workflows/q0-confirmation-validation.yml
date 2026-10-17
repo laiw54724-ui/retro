@@ -1,4 +1,4 @@
-name: Q0 corrected browser fixtures and final verification
+name: Q0 final import guard and release verification
 on:
   push:
     branches: [chore/retro-direct-workbench]
@@ -22,23 +22,23 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
-      - name: Apply only the reviewed three-file correction
+      - name: Apply only the reviewed four-file correction
         id: commit
         env:
-          EXPECTED_PARENT: da011a92baa10cb0fea0d83b655afbd2c7dac5c6
-          EXPECTED_TREE: aa7ec66d4309a161450ff35d51c4b07ef748b370
+          EXPECTED_PARENT: b984a293048f16e8160e5786d1943f45d1d085f5
+          EXPECTED_TREE: e67c92c3571fb81dd4e07ac9e609fd59159b8cea
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          cp .integration/q0-browser-fixtures.patch "$RUNNER_TEMP/q0-browser-fixtures.patch"
-          printf '595dd66e96af80643bee862a27e866d47352d61eb7ba16b70ada5eda1223942f  %s\n' "$RUNNER_TEMP/q0-browser-fixtures.patch" | sha256sum --check
+          cp .integration/q0-icon-transfer.patch "$RUNNER_TEMP/q0-icon-transfer.patch"
+          printf '0cb465a707d1b3f2e70d061ea35f8855b9265233ef2709596b87542863624f14  %s\n' "$RUNNER_TEMP/q0-icon-transfer.patch" | sha256sum --check
           git worktree add --detach "$RUNNER_TEMP/q0-confirmed" "$EXPECTED_PARENT"
           cd "$RUNNER_TEMP/q0-confirmed"
-          git apply --index --check "$RUNNER_TEMP/q0-browser-fixtures.patch"
-          git apply --index "$RUNNER_TEMP/q0-browser-fixtures.patch"
+          git apply --index --check "$RUNNER_TEMP/q0-icon-transfer.patch"
+          git apply --index "$RUNNER_TEMP/q0-icon-transfer.patch"
           git diff --cached --check
           test "$(git write-tree)" = "$EXPECTED_TREE"
-          git -c user.name='Retro integration' -c user.email='integration@users.noreply.github.com' commit -m 'test(integration): align icon previews, autosave and valid media fixtures'
+          git -c user.name='Retro integration' -c user.email='integration@users.noreply.github.com' commit -m 'fix(transfer): include uploaded icons in verified import warnings'
           sha="$(git rev-parse HEAD)"
           test "$(git show -s --format=%P HEAD)" = "$EXPECTED_PARENT"
           test "$(git ls-remote https://github.com/laiw54724-ui/retro.git refs/heads/integration/retro-q0-validation | cut -f1)" = "$EXPECTED_PARENT"
@@ -75,11 +75,10 @@ jobs:
           test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
           mkdir -p .candidate-evidence
           { git rev-parse HEAD; git rev-parse HEAD^{tree}; sha256sum pnpm-lock.yaml; node --version; pnpm --version; pnpm exec playwright --version; } | tee .candidate-evidence/identity.txt
-      - name: Confirm the diagnosed browser corrections before another full gate
+      - name: Confirm old and omitted-manifest icon imports before release checks
         run: |
           set -euo pipefail
-          trap 'if [ -d test-results ]; then cp -a test-results .candidate-evidence/focused-test-results; fi' EXIT
-          pnpm exec playwright test tests/e2e/icon-picker.spec.ts tests/e2e/media-tasks.spec.ts tests/e2e/music-sources.spec.ts --grep 'private uploaded icons|window icon upload changes only|no hidden player keeps|only one platform or native source' --project=chromium --workers=1 --retries=0 2>&1 | tee .candidate-evidence/focused.log
+          { pnpm --filter @retrodesk/shared test:unit test/site-transfer.test.ts test/media-semantics.test.ts && pnpm --filter @retrodesk/api test:unit test/transfer-routes.test.ts; } 2>&1 | tee .candidate-evidence/focused.log
       - name: Lint the final commit
         run: |
           set -euo pipefail
