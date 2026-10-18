@@ -30,13 +30,13 @@ export function VisitorPreview({ document, username, published, onClose }: { doc
       </div>
       <div className="preview-body">
         {view === "desktop" ? (
-          <main className="visitor-page preview-page" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: imageWallpaper ? "center" : "0 0", backgroundRepeat: imageWallpaper ? "no-repeat" : "repeat" }}>
+          <main key="desktop" className="visitor-page preview-page" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: imageWallpaper ? "center" : "0 0", backgroundRepeat: imageWallpaper ? "no-repeat" : "repeat" }}>
             <VisitorDesktop document={document} />
           </main>
         ) : phone ? (
-          <div className="preview-phone-real"><MobilePreview document={document} framed={false} /></div>
+          <div key="phone-plain" className="preview-phone-real"><MobilePreview document={document} framed={false} /></div>
         ) : (
-          <div className="preview-phone"><MobilePreview document={document} /></div>
+          <div key="phone-simulated" className="preview-phone"><MobilePreview document={document} /></div>
         )}
       </div>
     </div>
