@@ -10,6 +10,7 @@ on:
       - claude/retro-oc-ig-editor
       - claude/retro-i18n-expansion
       - integration/retro-preview-r1-r2
+      - integration/retro-preview-r1-r3
   workflow_dispatch:
 
 permissions:
