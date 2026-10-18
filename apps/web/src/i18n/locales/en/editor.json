@@ -111,7 +111,8 @@
     "theme": "Theme",
     "preview": "Preview",
     "addWindow": "Add a window",
-    "editWindowTitle": "Edit window"
+    "editWindowTitle": "Edit window",
+    "siteMenu": "Site options"
   },
   "integrity": {
     "targetWindow": "Window: {{name}}",
@@ -158,7 +159,7 @@
     "windowsArentDraggedOnMobile": "Windows aren't dragged on mobile. Add one and edit its content directly; you can adjust desktop positions later in the desktop view.",
     "windowTitle": "Window title",
     "desktopIcon": "Desktop icon",
-    "openByDefaultWhenVisitors": "Open by default when visitors arrive",
+    "openByDefaultWhenVisitors": "Open by default when visitors arrive (desktop only)",
     "mobileIconOrder": "Mobile icon order",
     "moveUp": "Move up",
     "moveDown": "Move down",
@@ -452,7 +453,7 @@
     "general": "General",
     "icon": "Icon",
     "layout": "Layout",
-    "openByDefaultWhenVisitors": "Open by default when visitors open the site",
+    "openByDefaultWhenVisitors": "Open by default when visitors open the site (desktop only)",
     "bringToFront": "Bring to front",
     "duplicateWindow": "Duplicate window",
     "theIconShownOnThe": "The icon shown on the desktop and taskbar.",

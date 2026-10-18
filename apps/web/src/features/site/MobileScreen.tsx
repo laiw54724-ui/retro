@@ -88,11 +88,14 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const body = (
     <div className="m-screen" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: "center", fontFamily: tv.fontFamily, color: tv.text }}>
       {framed ? <div className="m-status" style={{ background: tv.face, color: tv.text, fontFamily }}><time dateTime={now.toISOString()} title={formatDate(now, { dateStyle: "full" })} aria-label={common("desktop.clockLabel", { time: clock })}>{clock}</time><span>5G ▮▮▮</span></div> : null}
-      <div className="m-titlebar" style={{ background: tv.titleBg, color: tv.titleText, fontFamily }}>
-        <Icon name="computer" size={20} />
-        <span className="m-site">{document.siteName}</span>
-        {editor ? <span className="m-badge">{t("mobile.editing")}</span> : <LanguageSwitcher compact />}
-      </div>
+      {/* One return path: while an app is open its own title bar is the only header (site options live in its menu). */}
+      {!openWindow ? (
+        <div className="m-titlebar" style={{ background: tv.titleBg, color: tv.titleText, fontFamily }}>
+          <Icon name="computer" size={20} />
+          <span className="m-site">{document.siteName}</span>
+          {editor ? <span className="m-badge">{t("mobile.editing")}</span> : <LanguageSwitcher compact />}
+        </div>
+      ) : null}
 
       <div className="m-stage">
         <div className="m-scroll">
@@ -122,6 +125,9 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
               controlLabels={{ close: common("actions.close") }}
               onClose={back}
               titleBarLeading={<WindowChromeButton className="m-btn m-back" onClick={back}>‹ {t("mobile.desktop")}</WindowChromeButton>}
+              titleBarTrailing={editor
+                ? <WindowChromeButton className="m-btn m-edit-toggle" aria-pressed={inlineEdit} onClick={() => setInlineEdit(!inlineEdit)}>{t(inlineEdit ? "mobile.finishEditing" : "mobile.editWindow")}</WindowChromeButton>
+                : <MobileSiteMenu label={t("mobile.siteMenu")} playing={music.windowId === openWindow.id && music.status === "playing"} playingLabel={musicText("playback.playing")} />}
             >
               <WindowRenderer
                 window={openWindow}
@@ -155,17 +161,11 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
                 siteHandle={siteHandle}
               />
             </RetroWindow>
-            {editor ? <button type="button" className="m-fab" onClick={() => setInlineEdit(!inlineEdit)}>{t(inlineEdit ? "mobile.finishEditing" : "mobile.editWindow")}</button> : null}
           </div>
         ) : null}
       </div>
 
-      {!editor ? (
-        <div className="m-taskbar" style={{ background: tv.taskbar, boxShadow: `inset 0 1px ${tv.light}, inset 0 2px #fff`, fontFamily }}>
-          <button type="button" className="m-btn" style={btn} onClick={back}><Icon name="computer" size={18} />{t("mobile.desktop")}</button>
-          {openWindow ? <span className="m-current" style={{ background: tv.light, color: tv.text, boxShadow: tv.pressed }}><Icon name={openWindow.icon} size={16} />{openWindow.title}{music.windowId === openWindow.id && music.status === "playing" ? ` · ${musicText("playback.playing")}` : ""}</span> : null}
-        </div>
-      ) : (
+      {!editor ? null : (
         <div className="m-toolbar" role="toolbar" aria-label={t("mobile.toolbar")} style={{ fontFamily }}>
           {([
             ["add", "folder"], ["edit", "doc"], ["theme", "palette"], ["preview", "star"]
@@ -234,5 +234,37 @@ function MobileEdit({ theme, window, count, siteId, upload }: { theme: SiteDocum
       <div className="w98-sep" />
       <span className="w98-hint">{tr("mobileScreen.contentCloseThisPanelOpen")}</span>
     </>
+  );
+}
+
+/** Site-level options (language) tucked into the open app's title bar, plus a playing indicator now that the bottom taskbar is gone. */
+function MobileSiteMenu({ label, playing, playingLabel }: { label: string; playing: boolean; playingLabel: string }) {
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLSpanElement | null>(null);
+  const trigger = useRef<HTMLButtonElement | null>(null);
+  useEffect(() => {
+    if (!open) return;
+    // Capture phase on window: the menu is the top layer, so Escape closes only it (not the app, not a surrounding preview).
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      event.stopPropagation();
+      setOpen(false);
+      trigger.current?.focus();
+    };
+    const onPointer = (event: PointerEvent) => { if (!root.current?.contains(event.target as Node)) setOpen(false); };
+    globalThis.addEventListener("keydown", onKey, true);
+    globalThis.document.addEventListener("pointerdown", onPointer);
+    return () => {
+      globalThis.removeEventListener("keydown", onKey, true);
+      globalThis.document.removeEventListener("pointerdown", onPointer);
+    };
+  }, [open]);
+  return (
+    <span ref={root} className="m-site-menu">
+      {playing ? <span className="m-playing" role="status" title={playingLabel}>♫<span className="visually-hidden">{playingLabel}</span></span> : null}
+      <WindowChromeButton ref={trigger} className="m-btn sq" aria-label={label} aria-haspopup="true" aria-expanded={open} onClick={() => setOpen((value) => !value)}>⋯</WindowChromeButton>
+      {open ? <div className="m-site-panel w98-window" role="group" aria-label={label}><LanguageSwitcher /></div> : null}
+    </span>
   );
 }

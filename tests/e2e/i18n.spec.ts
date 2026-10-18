@@ -312,7 +312,9 @@ test("320px public mobile switching preserves its open OC window and authored te
   await page.locator(".m-icon").filter({ hasText: OC_WINDOW }).click();
   const dialog = page.getByRole("dialog", { name: OC_WINDOW, exact: true });
   await expect(dialog).toBeVisible();
-  const selector = page.locator(".m-titlebar").getByTestId("language-switcher");
+  // with an app open the site options (language) live in the title bar's menu
+  await page.getByRole("button", { name: "網站選項", exact: true }).click();
+  const selector = page.locator(".m-site-panel").getByTestId("language-switcher");
   await switchLanguage(page, selector, "en");
   await expectReachable(page, selector);
   await expect(dialog).toBeVisible();
@@ -421,7 +423,8 @@ for (const [locale, browserLocale, label, beta, fallbackFamily] of [
     await mockPublic(page);
     await page.goto("/@demo");
     await page.locator(".m-icon").filter({ hasText: OC_WINDOW }).click();
-    const mobileSelector = page.locator(".m-titlebar").getByTestId("language-switcher");
+    await page.getByRole("button", { name: /^(網站選項|Site options|サイトのオプション|사이트 옵션)$/ }).click();
+    const mobileSelector = page.locator(".m-site-panel").getByTestId("language-switcher");
     await expect(mobileSelector).toHaveValue(locale);
     await switchLanguage(page, mobileSelector, "en");
     await switchLanguage(page, mobileSelector, locale);
