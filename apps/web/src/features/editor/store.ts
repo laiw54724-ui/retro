@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { i18n } from "../../i18n";
-import { danglingExplorerShortcuts, describeShortcutTargetParts, mergeLegacyDocumentIntoV2, newlyDanglingShortcuts, removeExplorerShortcuts, type DanglingShortcut, type DesktopWindow, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
+import { danglingExplorerShortcuts, describeShortcutTargetParts, mergeLegacyDocumentIntoV2, newlyDanglingShortcuts, projectPublicSiteDocument, removeExplorerShortcuts, type DanglingShortcut, type DesktopWindow, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { createWindow } from "../modules/registry";
 import type { SiteAccessRole } from "../../lib/collaboration";
 
@@ -16,8 +16,8 @@ type EditorState = {
   versionedFuture: SiteDocumentV2Input[];
   lastSavedDocument: SiteDocument | null;
   publishedDocument: SiteDocument | null;
-  /** Canonical v2 snapshot of the published copy; null when never published or when it is still a v1 document. */
-  publishedVersioned: SiteDocumentV2Input | null;
+  /** The published document as stored (any version), or what publishing just wrote; null when never published. */
+  publishedRaw: unknown | null;
   publishedVersion: number | null;
   version: number;
   selectedId: string | null;
@@ -37,7 +37,7 @@ type EditorState = {
   setSaveStatus: (status: SaveStatus) => void;
   markSaved: (version: number, savedDocument: SiteDocument) => void;
   setVersionedDocument: (document: SiteDocumentV2Input | null) => void;
-  setPublishedVersioned: (document: SiteDocumentV2Input | null) => void;
+  setPublishedRaw: (document: unknown | null) => void;
   /** Replace the legacy render projection and canonical v2 snapshot atomically. */
   replaceDocument: (document: SiteDocument, historyKey?: string, versionedDocument?: SiteDocumentV2Input) => void;
   retrySave: () => void;
@@ -139,7 +139,7 @@ export const useEditorStore = create<EditorState>((set) => ({
   versionedFuture: [],
   lastSavedDocument: null,
   publishedDocument: null,
-  publishedVersioned: null,
+  publishedRaw: null,
   publishedVersion: null,
   version: 0,
   selectedId: null,
@@ -174,13 +174,15 @@ export const useEditorStore = create<EditorState>((set) => ({
     saveStatus: sameDocument(state.document, savedDocument) ? "saved" : "dirty"
   })),
   setVersionedDocument: (versionedDocument) => set({ versionedDocument, versionedPast: [], versionedFuture: [] }),
-  setPublishedVersioned: (publishedVersioned) => set({ publishedVersioned }),
+  setPublishedRaw: (publishedRaw) => set({ publishedRaw }),
   replaceDocument: (document, historyKey, versionedDocument) => set((state) => withHistory(state, document, {}, historyKey, versionedDocument)),
   retrySave: () => set((state) => state.document ? { saveStatus: "dirty" } : {}),
   markPublished: (publishedVersion) => set((state) => ({
     publishedVersion,
     publishedDocument: state.document,
-    publishedVersioned: state.versionedDocument,
+    // What the API stores is the draft's public projection (private content removed); asset URLs are written server-side
+    // and are mapped back to references when compared, so the local projection is the right baseline here.
+    publishedRaw: (() => { if (!state.versionedDocument || !state.siteId) return null; const projected = projectPublicSiteDocument(state.versionedDocument, state.siteId); return projected.ok ? projected.document : null; })(),
   })),
   undo: () => set((state) => {
     if ((!state.document || state.past.length === 0) && state.versionedPast.length === 0) return {};

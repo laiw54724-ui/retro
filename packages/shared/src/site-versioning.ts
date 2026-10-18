@@ -732,23 +732,3 @@ export function stableDocumentText(value: unknown): string {
 export function sameDocumentContent(a: unknown, b: unknown): boolean {
   return stableDocumentText(a) === stableDocumentText(b);
 }
-
-export type PublishComparisonInput = {
-  /** Legacy render projection of the current draft, and of the published copy (null when never published). */
-  draftLegacy: unknown;
-  publishedLegacy: unknown | null;
-  /** Canonical v2 snapshots; either may be missing (v1 documents). */
-  draftCanonical?: unknown | null;
-  publishedCanonical?: unknown | null;
-};
-
-/**
- * Whether the draft differs from what is published. The legacy projection drops canonical-only data (custom fields,
- * pronouns, world tags, character themes, pins, collections, social metadata, SEO), so it can only decide when no
- * canonical pair exists; whenever both snapshots are available the full canonical documents are compared.
- */
-export function hasUnpublishedChanges(input: PublishComparisonInput): boolean {
-  if (input.publishedLegacy == null) return true;
-  if (input.draftCanonical != null && input.publishedCanonical != null) return !sameDocumentContent(input.draftCanonical, input.publishedCanonical);
-  return !sameDocumentContent(input.draftLegacy, input.publishedLegacy);
-}

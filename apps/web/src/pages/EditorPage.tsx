@@ -133,7 +133,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     // adapter, so an autosave can never observe a stale v2 document after reload.
     setVersionedDraft(loadedDraft.version === 2 ? loadedDraft.document : null);
     store.setVersionedDocument(loadedDraft.version === 2 ? loadedDraft.document : null);
-    store.setPublishedVersioned(loadedPublished?.ok && loadedPublished.version === 2 ? loadedPublished.document : null);
+    store.setPublishedRaw(site.published_document ?? null);
     if (loadedDraft.migrated) store.setSaveStatus("dirty");
   }
 
@@ -332,8 +332,8 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
   const hasUnpublishedChanges = useMemo(() => {
     if (!store.document) return false;
-    return hasUnpublishedDraftChanges({ draftLegacy: store.document, publishedLegacy: store.publishedDocument, draftCanonical: store.versionedDocument, publishedCanonical: store.publishedVersioned });
-  }, [store.document, store.publishedDocument, store.versionedDocument, store.publishedVersioned]);
+    return hasUnpublishedDraftChanges({ siteId, draftLegacy: store.document, publishedLegacy: store.publishedDocument, draftCanonical: store.versionedDocument, publishedRaw: store.publishedRaw });
+  }, [siteId, store.document, store.publishedDocument, store.versionedDocument, store.publishedRaw]);
 
   const legacyAssets = assetInventory.filter((asset) => asset.storageScope === "legacy_public");
   const pendingPublicCopyAssets = assetInventory.filter((asset) => asset.publicCopyRemaining);
