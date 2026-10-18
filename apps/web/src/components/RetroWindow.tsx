@@ -1,4 +1,5 @@
 import { Icon } from "./Icon";
+import { useTranslation } from "react-i18next";
 import { WindowChrome } from "./window-chrome/WindowChrome";
 import { WindowStatusBar, WindowStatusField } from "./window-chrome/WindowPrimitives";
 import type { WindowChromeProps } from "./window-chrome/types";
@@ -7,9 +8,10 @@ import type { WindowChromeProps } from "./window-chrome/types";
 export type RetroWindowProps = Omit<WindowChromeProps, "icon"> & { icon?: string };
 
 export function RetroWindow({ icon, slots, fallbackSlots, ...props }: RetroWindowProps) {
+  const { t: tr } = useTranslation("editor");
   // An optional window-owned status bar, independent of any App content/registry.
   const statusBar = props.chrome?.sections?.statusBar === true
-    ? <WindowStatusBar><WindowStatusField title={props.title}>{props.title}</WindowStatusField><WindowStatusField>{props.maximized ? "最大化" : "視窗"}</WindowStatusField></WindowStatusBar>
+    ? <WindowStatusBar><WindowStatusField title={props.title}>{props.title}</WindowStatusField><WindowStatusField>{props.maximized ? tr("windowTitleBar.maximize") : tr("retroWindow.window")}</WindowStatusField></WindowStatusBar>
     : undefined;
   return <WindowChrome {...props} icon={icon ? <Icon name={icon} size={16} /> : undefined} slots={slots} fallbackSlots={{ statusBar, ...fallbackSlots }} />;
 }

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { THEME_PRESETS, type DesktopWindow, type SiteDocument } from "@retrodesk/shared";
 import { RetroButton } from "../../components/RetroButton";
 import { RetroWindow } from "../../components/RetroWindow";
@@ -36,6 +37,7 @@ export function MobileEditor({
   onColumns,
   onMessage
 }: Props) {
+  const { t: tr } = useTranslation("editor");
   const [mode, setMode] = useState<Mode>("desktop");
   const [previewId, setPreviewId] = useState<string | null>(null);
   const selected = useMemo(
@@ -68,16 +70,16 @@ export function MobileEditor({
       <header className="mobile-editor-header">
         <div>
           <strong>{document.siteName}</strong>
-          <small>{mode === "preview" ? "訪客預覽" : "手機編輯模式"}</small>
+          <small>{mode === "preview" ? tr("mobileEditor.visitorPreview") : tr("mobileEditor.mobileEditMode")}</small>
         </div>
-        {mode !== "desktop" ? <button type="button" onClick={() => setMode("desktop")}>回桌面</button> : null}
+        {mode !== "desktop" ? <button type="button" onClick={() => setMode("desktop")}>{tr("mobileEditor.backToDesktop")}</button> : null}
       </header>
 
       <div className="mobile-editor-body" style={{ background: document.theme.wall }}>
         {mode === "desktop" ? (
           <section className="mobile-editor-desktop">
             <div className="mobile-layout-row">
-              <span>圖示欄數</span>
+              <span>{tr("mobileEditor.iconColumns")}</span>
               <button className={document.mobileColumns === 3 ? "active" : ""} onClick={() => onColumns(3)}>3</button>
               <button className={document.mobileColumns === 4 ? "active" : ""} onClick={() => onColumns(4)}>4</button>
             </div>
@@ -89,14 +91,14 @@ export function MobileEditor({
                 </button>
               ))}
             </div>
-            {document.windows.length === 0 ? <div className="mobile-empty">還沒有視窗，從下方「新增」開始。</div> : null}
+            {document.windows.length === 0 ? <div className="mobile-empty">{tr("mobileEditor.noWindowsYetStartWith")}</div> : null}
           </section>
         ) : null}
 
         {mode === "add" ? (
           <section className="mobile-sheet">
-            <h2>新增視窗</h2>
-            <p>手機上不拖曳視窗。新增後直接編輯內容，桌面位置之後可在桌面版調整。</p>
+            <h2>{tr("mobileEditor.addAWindow")}</h2>
+            <p>{tr("mobileEditor.windowsArentDraggedOnMobile")}</p>
             <div className="mobile-module-list">
               {moduleDefinitions.map((module) => (
                 <button key={module.type} type="button" onClick={() => add(module.type)}>
@@ -114,15 +116,15 @@ export function MobileEditor({
               <>
                 <div className="mobile-selected-heading">
                   <span className="module-icon" />
-                  <div><strong>{selected.title}</strong><small>第 {selected.layout.mobile.order + 1} 個圖示</small></div>
+                  <div><strong>{selected.title}</strong><small>{tr("mobileEditor.iconPosition", { position: selected.layout.mobile.order + 1 })}</small></div>
                 </div>
-                <label>視窗標題<input value={selected.title} onChange={(event) => updateSelected((window) => ({ ...window, title: event.target.value }))} /></label>
-                <label>桌面圖示<input value={selected.icon} onChange={(event) => updateSelected((window) => ({ ...window, icon: event.target.value }))} /></label>
-                <label className="check-row"><input type="checkbox" checked={selected.defaultOpen} onChange={(event) => updateSelected((window) => ({ ...window, defaultOpen: event.target.checked }))} />訪客進入時預設開啟</label>
+                <label>{tr("mobileEditor.windowTitle")}<input value={selected.title} onChange={(event) => updateSelected((window) => ({ ...window, title: event.target.value }))} /></label>
+                <label>{tr("mobileEditor.desktopIcon")}<input value={selected.icon} onChange={(event) => updateSelected((window) => ({ ...window, icon: event.target.value }))} /></label>
+                <label className="check-row"><input type="checkbox" checked={selected.defaultOpen} onChange={(event) => updateSelected((window) => ({ ...window, defaultOpen: event.target.checked }))} />{tr("mobileEditor.openByDefaultWhenVisitors")}</label>
                 <div className="mobile-order-row">
-                  <span>手機圖示順序</span>
-                  <RetroButton disabled={selected.layout.mobile.order === 0} onClick={() => onReorder(selected.id, -1)}>往前</RetroButton>
-                  <RetroButton disabled={selected.layout.mobile.order === ordered.length - 1} onClick={() => onReorder(selected.id, 1)}>往後</RetroButton>
+                  <span>{tr("mobileEditor.mobileIconOrder")}</span>
+                  <RetroButton disabled={selected.layout.mobile.order === 0} onClick={() => onReorder(selected.id, -1)}>{tr("mobileEditor.moveUp")}</RetroButton>
+                  <RetroButton disabled={selected.layout.mobile.order === ordered.length - 1} onClick={() => onReorder(selected.id, 1)}>{tr("mobileEditor.moveDown")}</RetroButton>
                 </div>
                 <InspectorContent
                   window={selected}
@@ -131,12 +133,12 @@ export function MobileEditor({
                   update={updateSelected}
                   onMessage={onMessage}
                 />
-                <RetroButton className="danger mobile-delete" onClick={() => { onDelete(selected.id); setMode("desktop"); }}>刪除視窗</RetroButton>
+                <RetroButton className="danger mobile-delete" onClick={() => { onDelete(selected.id); setMode("desktop"); }}>{tr("mobileEditor.deleteWindow")}</RetroButton>
               </>
             ) : (
               <div className="mobile-empty">
-                <strong>尚未選取視窗</strong>
-                <p>回到桌面點一個圖示，或新增新的視窗。</p>
+                <strong>{tr("mobileEditor.noWindowSelected")}</strong>
+                <p>{tr("mobileEditor.goBackToTheDesktop")}</p>
               </div>
             )}
           </section>
@@ -144,7 +146,7 @@ export function MobileEditor({
 
         {mode === "theme" ? (
           <section className="mobile-sheet">
-            <h2>桌面主題</h2>
+            <h2>{tr("mobileEditor.desktopTheme")}</h2>
             <div className="mobile-theme-grid">
               {Object.values(THEME_PRESETS).map((theme) => (
                 <button key={theme.id} className={document.theme.id === theme.id ? "selected" : ""} onClick={() => onTheme(theme)}>
@@ -160,7 +162,7 @@ export function MobileEditor({
           <section className="mobile-preview-mode">
             {previewWindow ? (
               <>
-                <button className="mobile-back" type="button" onClick={() => setPreviewId(null)}>‹ 預覽桌面</button>
+                <button className="mobile-back" type="button" onClick={() => setPreviewId(null)}>{tr("mobileEditor.previewDesktop")}</button>
                 <RetroWindow title={previewWindow.title} theme={document.theme} appearance={previewWindow.appearance}>
                   <WindowRenderer window={previewWindow} theme={document.theme} onOpenWindow={setPreviewId} />
                 </RetroWindow>
@@ -179,11 +181,11 @@ export function MobileEditor({
         ) : null}
       </div>
 
-      <nav className="mobile-editor-toolbar" aria-label="手機編輯工具">
-        <button className={mode === "add" ? "active" : ""} onClick={() => setMode("add")}><span>＋</span><small>新增</small></button>
-        <button className={mode === "edit" ? "active" : ""} onClick={() => setMode("edit")}><span>▤</span><small>編輯</small></button>
-        <button className={mode === "theme" ? "active" : ""} onClick={() => setMode("theme")}><span>◉</span><small>主題</small></button>
-        <button className={mode === "preview" ? "active" : ""} onClick={() => setMode("preview")}><span>▣</span><small>預覽</small></button>
+      <nav className="mobile-editor-toolbar" aria-label={tr("mobileEditor.mobileEditingTools")}>
+        <button className={mode === "add" ? "active" : ""} onClick={() => setMode("add")}><span>＋</span><small>{tr("mobileEditor.add")}</small></button>
+        <button className={mode === "edit" ? "active" : ""} onClick={() => setMode("edit")}><span>▤</span><small>{tr("mobileEditor.edit")}</small></button>
+        <button className={mode === "theme" ? "active" : ""} onClick={() => setMode("theme")}><span>◉</span><small>{tr("mobileEditor.theme")}</small></button>
+        <button className={mode === "preview" ? "active" : ""} onClick={() => setMode("preview")}><span>▣</span><small>{tr("mobileEditor.preview")}</small></button>
       </nav>
     </div>
   );

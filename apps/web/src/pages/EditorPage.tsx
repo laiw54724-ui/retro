@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { i18n } from "../i18n";
 import { buildPublishChecks, CollectionEntityV2Schema, createProfile, deleteOrRetargetProfile, duplicateProfile, hasBlockingCheck, loadVersionedSiteDocument, normalizeDocument, parseSiteDocument, PostEntityV2Schema, ProfileEntityV2Schema, projectV2ToLegacyDocument, updateProfile, type DesktopWindow, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -32,16 +33,16 @@ function validationMessage(document: unknown) {
   if (parsed.ok) return null;
   const first = parsed.code === "invalid" ? parsed.diagnostics[0] : { path: ["schemaVersion"], message: `Unsupported document version: ${parsed.version}` };
   const path = first?.path.length ? first.path.join(" → ") + "：" : "";
-  return "請先修正內容格式。" + (first ? " " + path + first.message : "");
+  return i18n.t("editor:editor.pleaseFixTheContentFormat") + (first ? " " + path + first.message : "");
 }
 
 const sameDocument = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
 function loadedLegacyDocument(loaded: ReturnType<typeof loadVersionedSiteDocument>) {
-  if (!loaded.ok) throw new Error(loaded.diagnostics[0]?.message ?? "文件格式無效");
+  if (!loaded.ok) throw new Error(loaded.diagnostics[0]?.message ?? i18n.t("editor:editor.theDocumentFormatIsInvalid"));
   if (loaded.version === 1) return normalizeDocument(loaded.document);
   const legacy = projectV2ToLegacyDocument(loaded.document);
-  if (!legacy.ok) throw new Error(legacy.diagnostics[0]?.message ?? "角色引用無效");
+  if (!legacy.ok) throw new Error(legacy.diagnostics[0]?.message ?? i18n.t("editor:editor.invalidCharacterReference"));
   return legacy.document;
 }
 
@@ -67,7 +68,7 @@ function loadSidebarPreferences(): SidebarPreferences {
 export function EditorPage({ site }: { site: SiteRecord }) {
   const { t } = useTranslation("editor");
   const { t: common } = useTranslation("common");
-  const { formatNumber, fontFamily } = useLocaleFormatting();
+  const { formatNumber, formatList, fontFamily } = useLocaleFormatting();
   const siteId = site.id;
   const navigate = useNavigate();
   const { signOut } = useAuth();
@@ -106,9 +107,9 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
   function applyLoadedSite(site: Awaited<ReturnType<typeof api.getSite>>["site"]) {
     const loadedDraft = loadVersionedSiteDocument(site.draft_document, { siteId: site.id, migrateV1: true });
-    if (!loadedDraft.ok) throw new Error(loadedDraft.diagnostics[0]?.message ?? "草稿格式無效");
+    if (!loadedDraft.ok) throw new Error(loadedDraft.diagnostics[0]?.message ?? t("editor.theDraftFormatIsInvalid"));
     const loadedPublished = site.published_document ? loadVersionedSiteDocument(site.published_document, { siteId: site.id }) : null;
-    if (loadedPublished && !loadedPublished.ok) throw new Error(loadedPublished.diagnostics[0]?.message ?? "發布版本格式無效");
+    if (loadedPublished && !loadedPublished.ok) throw new Error(loadedPublished.diagnostics[0]?.message ?? t("editor.thePublishedVersionsFormatIs"));
     store.setSite(
       site.id,
       site.username,
@@ -127,7 +128,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
   function applyV2Document(next: SiteDocumentV2Input, historyKey?: string) {
     const projected = projectV2ToLegacyDocument(next);
-    if (!projected.ok) { setMessage(projected.diagnostics[0]?.message ?? "角色引用無效"); return; }
+    if (!projected.ok) { setMessage(projected.diagnostics[0]?.message ?? t("editor.invalidCharacterReference")); return; }
     versionedDraftRef.current = next;
     setVersionedDraft(next);
     store.replaceDocument(projected.document, historyKey, next);
@@ -146,7 +147,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   }
 
   function profileError(result: { ok: false; diagnostics: Array<{ message: string }> }) {
-    setMessage(result.diagnostics[0]?.message ?? "角色資料無效");
+    setMessage(result.diagnostics[0]?.message ?? t("editor.invalidCharacterData"));
   }
 
   function selectProfile(profileId: string, windowId?: string) {
@@ -164,7 +165,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     const current = versionedDraftRef.current;
     if (!current || !windowId) return;
     const base = `oc-${current.entities.profiles.length + 1}`;
-    const result = createProfile(current, { handle: base, displayName: "新角色", name: "新角色", bio: "" }, { siteId, id: `profile:${crypto.randomUUID()}` });
+    const result = createProfile(current, { handle: base, displayName: t("editor.newCharacter"), name: t("editor.newCharacter"), bio: "" }, { siteId, id: `profile:${crypto.randomUUID()}` });
     if (!result.ok) return profileError(result);
     const target = result.document.windows.find((window) => window.id === windowId);
     if (target?.type === "instagram") target.content.profileRef = { kind: "profile", id: result.profile.id, siteId };
@@ -209,7 +210,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       applyLoadedSite(site);
       setLoadError("");
     } catch (error) {
-      setLoadError(error instanceof Error ? error.message : "載入失敗");
+      setLoadError(error instanceof Error ? error.message : t("editor.failedToLoad"));
     } finally {
       setLoading(false);
     }
@@ -256,12 +257,12 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         saveInFlight.current = false;
         store.setSaveStatus("error");
         if (error instanceof ApiError && (error.status === 403 || error.status === 404)) {
-          navigate(`/auth?notice=${encodeURIComponent("你已失去這個桌面的編輯權限；草稿未再送出。")}`, { replace: true });
+          navigate(`/auth?notice=${encodeURIComponent(t("page.lostEditAccess"))}`, { replace: true });
         } else if (error instanceof ApiError && error.code === "version_conflict") {
           setConflict(true);
-          setMessage("偵測到另一個分頁或裝置有更新，已停止自動儲存以避免覆蓋。");
+          setMessage(t("editor.anUpdateFromAnotherTab"));
         } else {
-          setMessage(error instanceof Error ? error.message : "儲存失敗");
+          setMessage(error instanceof Error ? error.message : t("editor.saveFailed"));
         }
       }
     }, 650);
@@ -339,11 +340,11 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     const audio = kind === "audio";
     const allowed = audio ? ["audio/mpeg", "audio/ogg", "audio/wav", "audio/x-wav"] : ["image/jpeg", "image/png", "image/webp", "image/gif"];
     if (!allowed.includes(file.type)) {
-      setMessage(audio ? "無法上傳：請選擇 MP3、Ogg 或 WAV。" : "無法上傳：請選擇 JPG、PNG、GIF 或 WebP。");
+      setMessage(audio ? t("editor.cantUploadChooseAnMp3") : t("editor.cantUploadChooseAJpg"));
       return null;
     }
     if (file.size > (audio ? 16 : 8) * 1024 * 1024) {
-      setMessage(audio ? "檔案太大：單首 16 MB 以內。" : "檔案太大：單張 8 MB 以內。");
+      setMessage(audio ? t("editor.fileTooLargeEachTrack") : t("editor.fileTooLargeEachImage"));
       return null;
     }
     try {
@@ -352,12 +353,12 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     } catch (error) {
       const code = error instanceof ApiError ? error.code : "";
       setMessage(code === "site_audio_quota_exceeded"
-        ? "音訊空間已滿：每個網站最多 100 MB。"
+        ? t("editor.audioStorageIsFullEach")
         : code === "unsupported_media" || code === "invalid_image_bytes" || code === "invalid_audio_bytes"
-        ? audio ? "無法上傳：請選擇有效的 MP3、Ogg 或 WAV。" : "無法上傳：請選擇 JPG、PNG、GIF 或 WebP。"
+        ? audio ? t("editor.cantUploadChooseAValid") : t("editor.cantUploadChooseAJpg")
         : code === "file_too_large"
-          ? audio ? "檔案太大：單首 16 MB 以內。" : "檔案太大：單張 8 MB 以內。"
-          : "上傳失敗，請再試一次。");
+          ? audio ? t("editor.fileTooLargeEachTrack") : t("editor.fileTooLargeEachImage")
+          : t("editor.uploadFailedPleaseTryAgain"));
       return null;
     }
   }
@@ -369,11 +370,11 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       return;
     }
     if (store.saveStatus === "dirty" || store.saveStatus === "saving") {
-      setMessage("請等草稿儲存完成後再發布。");
+      setMessage(t("editor.pleaseWaitForTheDraft"));
       return;
     }
     if (store.saveStatus === "error") {
-      setMessage("目前草稿有儲存或格式錯誤，請先修正後再發布。");
+      setMessage(t("editor.theDraftHasASave"));
       return;
     }
     setPublishPrompt(true);
@@ -393,7 +394,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       if (error instanceof ApiError && error.code === "version_conflict") {
         setConflict(true);
       }
-      setMessage(error instanceof Error ? error.message : "發布失敗");
+      setMessage(error instanceof Error ? error.message : t("editor.publishingFailed"));
     } finally {
       setPublishing(false);
     }
@@ -404,14 +405,14 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     try {
       const { site } = await api.getSite(siteId);
       if (site.access_role === "viewer") {
-        navigate(`/auth?notice=${encodeURIComponent("你的權限已改為只能查看；請從桌面清單重新開啟私人草稿。")}`, { replace: true });
+        navigate(`/auth?notice=${encodeURIComponent(t("page.nowViewOnly"))}`, { replace: true });
         return;
       }
       applyLoadedSite(site);
       setConflict(false);
-      setMessage("已重新載入雲端最新草稿。");
+      setMessage(t("editor.reloadedTheLatestCloudDraft"));
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "重新載入失敗");
+      setMessage(error instanceof Error ? error.message : t("editor.reloadFailed"));
     } finally {
       setLoading(false);
     }
@@ -420,9 +421,9 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   async function copyLocalJson() {
     try {
       await navigator.clipboard.writeText(JSON.stringify(store.document, null, 2));
-      setMessage("目前本機草稿 JSON 已複製，可以先備份後再重新載入。");
+      setMessage(t("editor.theCurrentLocalDraftJson"));
     } catch {
-      setMessage("無法使用剪貼簿，請先不要重新整理頁面。");
+      setMessage(t("editor.theClipboardIsntAvailablePlease"));
     }
   }
 
@@ -430,9 +431,9 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     if (!publishSuccess) return;
     try {
       await navigator.clipboard.writeText(publishSuccess.url);
-      setMessage("公開網址已複製。");
+      setMessage(t("editor.publicUrlCopied"));
     } catch {
-      setMessage("無法自動複製網址。");
+      setMessage(t("editor.couldntCopyTheUrlAutomatically"));
     }
   }
 
@@ -449,7 +450,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       }
       const result = await api.migrateLegacyAssets(siteId, version);
       const loaded = loadVersionedSiteDocument(result.document, { siteId, migrateV1: true });
-      if (!loaded.ok) throw new Error(loaded.diagnostics[0]?.message ?? "遷移後的草稿格式無效");
+      if (!loaded.ok) throw new Error(loaded.diagnostics[0]?.message ?? t("editor.theMigratedDraftsFormatIs"));
       const legacy = loadedLegacyDocument(loaded);
       const canonical = loaded.version === 2 ? loaded.document : null;
       store.setSite(store.siteId!, store.username, legacy, result.version, store.publishedDocument, store.publishedVersion, store.accessRole);
@@ -459,32 +460,32 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       const refreshed = await refreshAssetInventory();
       const stillLegacy = refreshed.filter((asset) => asset.storageScope === "legacy_public");
       setMessage(stillLegacy.length
-        ? `已遷移 ${result.migratedCount} 個，但仍有 ${stillLegacy.length} 個舊素材未完成；請開啟明細查看。`
+        ? t("editor.migratedButLegacyAssetsAre", { migratedCount: result.migratedCount, length: stillLegacy.length })
         : result.cleanupWarnings.length
-          ? `素材已轉為私有預覽；${result.cleanupWarnings.length} 個舊公開副本仍因已發布版本引用而暫時保留。`
-          : `已將 ${result.migratedCount} 個舊素材轉為私有。`);
+          ? t("editor.assetsWereConvertedToPrivate", { length: result.cleanupWarnings.length })
+          : t("editor.convertedLegacyAssetsToPrivate", { migratedCount: result.migratedCount }));
       if (stillLegacy.length || result.cleanupWarnings.length) setAssetInventoryOpen(true);
     } catch (error) {
       const assetId = error instanceof ApiError && error.details && typeof error.details === "object" && "assetId" in error.details ? String((error.details as { assetId: unknown }).assetId) : "";
       const asset = assetInventory.find((item) => item.id === assetId);
-      setMessage(`${error instanceof Error ? error.message : "素材遷移失敗"}${asset ? `（${asset.name || asset.id}）` : ""}`);
+      setMessage(`${error instanceof Error ? error.message : t("page.assetMigrationFailed")}${asset ? t("page.assetSuffix", { name: asset.name || asset.id }) : ""}`);
       setAssetInventoryOpen(true);
     }
     finally { setMigratingAssets(false); }
   }
 
   async function deleteUnusedAsset(asset: AssetRecord) {
-    if (deletingAssetId || !window.confirm(`確定刪除素材「${asset.name || asset.id}」？刪除後無法復原。`)) return;
+    if (deletingAssetId || !window.confirm(t("editor.deleteTheAssetThisCant", { v1: asset.name || asset.id }))) return;
     setDeletingAssetId(asset.id);
     try {
       await api.deleteAsset(siteId, asset.id);
       await refreshAssetInventory();
-      setMessage(`已刪除未使用素材「${asset.name || asset.id}」。`);
+      setMessage(t("editor.deletedTheUnusedAsset", { v1: asset.name || asset.id }));
     } catch (error) {
       const code = error instanceof ApiError ? error.code : "";
       setMessage(code === "asset_public_copy_pending"
-        ? "這個素材仍有已發布的舊公開副本；請先重新發布，再刪除。"
-        : error instanceof Error ? error.message : "刪除素材失敗");
+        ? t("editor.thisAssetStillHasA")
+        : error instanceof Error ? error.message : t("editor.failedToDeleteTheAsset"));
     } finally {
       setDeletingAssetId(null);
     }
@@ -495,10 +496,10 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   }
 
   const publishState = !store.publishedDocument
-    ? "尚未發布"
+    ? t("editor.notPublished")
     : hasUnpublishedChanges
-      ? "有未發布變更"
-      : "已同步發布";
+      ? t("editor.hasUnpublishedChanges")
+      : t("editor.publishedAndInSync");
   const badge = !store.publishedDocument
     ? { text: t("shell.unpublished"), bg: "#ffffe1", color: "#7a5b00" }
     : hasUnpublishedChanges
@@ -561,37 +562,37 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
       {legacyAssets.length > 0 || pendingPublicCopyAssets.length > 0 ? <div className="editor-message asset-migration-message" role="status">
         <div className="asset-migration-summary">
-          <span>{legacyAssets.length > 0 ? `有 ${legacyAssets.length} 個舊素材仍是公開網址。` : `${pendingPublicCopyAssets.length} 個舊公開副本因已發布版本仍在使用，暫時保留。`}</span>
-          {legacyAssets.length > 0 ? <span className="asset-migration-names" aria-label="尚未轉為私有的素材">
+          <span>{legacyAssets.length > 0 ? t("editor.legacyAssetsStillUsePublic", { length: legacyAssets.length }) : t("editor.legacyPublicCopiesAreTemporarily", { length: pendingPublicCopyAssets.length })}</span>
+          {legacyAssets.length > 0 ? <span className="asset-migration-names" aria-label={t("editor.assetsNotYetConvertedTo")}>
             {legacyAssets.map((asset) => <code key={asset.id} title={asset.id}>{asset.name || asset.id.slice(0, 8)}</code>)}
           </span> : null}
         </div>
-        <button type="button" onClick={() => setAssetInventoryOpen(true)}>查看是哪幾個</button>
-        {legacyAssets.length > 0 && actions.migrateAssets ? <button disabled={migratingAssets || store.saveStatus === "saving" || store.saveStatus === "error" || conflict} onClick={migrateLegacyAssets}>{migratingAssets ? "遷移中…" : "轉為私有素材"}</button> : null}
+        <button type="button" onClick={() => setAssetInventoryOpen(true)}>{t("editor.seeWhichOnes")}</button>
+        {legacyAssets.length > 0 && actions.migrateAssets ? <button disabled={migratingAssets || store.saveStatus === "saving" || store.saveStatus === "error" || conflict} onClick={migrateLegacyAssets}>{migratingAssets ? t("editor.migrating") : t("editor.convertToPrivateAssets")}</button> : null}
       </div> : null}
 
       {assetInventoryOpen ? <div className="modal-backdrop" role="presentation">
         <section className="retro-panel editor-dialog asset-inventory-dialog" role="dialog" aria-modal="true" aria-labelledby="asset-inventory-title">
-          <header className="landing-titlebar" id="asset-inventory-title">舊素材遷移明細</header>
+          <header className="landing-titlebar" id="asset-inventory-title">{t("editor.legacyAssetMigrationDetails")}</header>
           <div className="dialog-body">
-            <p>這裡會列出素材名稱、目前狀態，以及草稿中正在使用它的位置。未被草稿引用的素材也會明確標示。</p>
+            <p>{t("editor.thisListsEachAssetsName")}</p>
             {migrationAudits.length ? <ul className="asset-inventory-list">
               {migrationAudits.map(({ asset, references }) => <li key={asset.id}>
-                <div className="asset-inventory-heading"><strong>{asset.name || "未命名素材"}</strong><code>{asset.id}</code></div>
-                <span className={`asset-status ${asset.storageScope === "legacy_public" ? "needs-migration" : "pending-cleanup"}`}>{asset.storageScope === "legacy_public" ? "尚未轉為私有" : "私有預覽已完成，舊公開副本待清理"}</span>
-                <div className="asset-reference-list">{references.length ? <>使用位置：{references.map((reference) => reference.label).join("、")}</> : "草稿中沒有引用（可考慮刪除）"}</div>
-                <div className="asset-source-url"><span>目前網址：</span><code>{asset.url}</code></div>
+                <div className="asset-inventory-heading"><strong>{asset.name || t("editor.unnamedAsset")}</strong><code>{asset.id}</code></div>
+                <span className={`asset-status ${asset.storageScope === "legacy_public" ? "needs-migration" : "pending-cleanup"}`}>{asset.storageScope === "legacy_public" ? t("editor.notYetConvertedToPrivate") : t("editor.privatePreviewIsReadyThe")}</span>
+                <div className="asset-reference-list">{references.length ? t("page.usedAt", { locations: formatList(references.map((reference) => reference.label)) }) : t("editor.notReferencedInTheDraft")}</div>
+                <div className="asset-source-url"><span>{t("editor.currentUrl")}</span><code>{asset.url}</code></div>
                 {!references.length ? <div className="button-row end asset-item-actions">
                   <RetroButton className="danger" disabled={deletingAssetId === asset.id || !!asset.publicCopyRemaining} onClick={() => void deleteUnusedAsset(asset)}>
-                    {deletingAssetId === asset.id ? "刪除中…" : asset.publicCopyRemaining ? "重新發布後可刪除" : "刪除未使用素材"}
+                    {deletingAssetId === asset.id ? t("editor.deleting") : asset.publicCopyRemaining ? t("editor.canBeDeletedAfterPublishing") : t("editor.deleteUnusedAsset")}
                   </RetroButton>
-                </div> : <p className="asset-delete-hint">仍在使用中；請先從上列位置移除或替換圖片。</p>}
+                </div> : <p className="asset-delete-hint">{t("editor.stillInUseFirstRemove")}</p>}
               </li>)}
-            </ul> : <p role="status">目前沒有需要遷移或清理的舊素材。</p>}
+            </ul> : <p role="status">{t("editor.noLegacyAssetsNeedMigration")}</p>}
             <div className="button-row end">
-              <RetroButton onClick={() => void refreshAssetInventory().catch((error) => setMessage(error instanceof Error ? error.message : "無法重新盤點素材"))}>重新盤點</RetroButton>
-              {legacyAssets.length && actions.migrateAssets ? <RetroButton className="primary" disabled={migratingAssets || store.saveStatus === "saving" || store.saveStatus === "error" || conflict} onClick={migrateLegacyAssets}>{migratingAssets ? "遷移中…" : `轉為私有（${legacyAssets.length}）`}</RetroButton> : null}
-              <RetroButton onClick={() => setAssetInventoryOpen(false)}>關閉</RetroButton>
+              <RetroButton onClick={() => void refreshAssetInventory().catch((error) => setMessage(error instanceof Error ? error.message : t("editor.couldntReScanAssets")))}>{t("editor.reScan")}</RetroButton>
+              {legacyAssets.length && actions.migrateAssets ? <RetroButton className="primary" disabled={migratingAssets || store.saveStatus === "saving" || store.saveStatus === "error" || conflict} onClick={migrateLegacyAssets}>{migratingAssets ? t("editor.migrating") : t("editor.convertToPrivate", { length: legacyAssets.length })}</RetroButton> : null}
+              <RetroButton onClick={() => setAssetInventoryOpen(false)}>{t("editor.close")}</RetroButton>
             </div>
           </div>
         </section>
@@ -674,13 +675,13 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       {conflict ? (
         <div className="modal-backdrop" role="presentation">
           <section className="retro-panel editor-dialog" role="alertdialog" aria-modal="true" aria-labelledby="conflict-title">
-            <header className="landing-titlebar" id="conflict-title">版本衝突</header>
+            <header className="landing-titlebar" id="conflict-title">{t("editor.versionConflict")}</header>
             <div className="dialog-body">
-              <h2>雲端草稿已經有較新的版本</h2>
-              <p>為了避免蓋掉另一個分頁或裝置的修改，自動儲存已停止。你可以先複製目前本機草稿，再重新載入雲端版本。</p>
+              <h2>{t("editor.aNewerVersionOfThe")}</h2>
+              <p>{t("editor.autosaveWasStoppedToAvoid")}</p>
               <div className="button-row end">
-                <RetroButton onClick={copyLocalJson}>複製本機 JSON</RetroButton>
-                <RetroButton className="primary" onClick={reloadRemote}>重新載入雲端版本</RetroButton>
+                <RetroButton onClick={copyLocalJson}>{t("editor.copyLocalJson")}</RetroButton>
+                <RetroButton className="primary" onClick={reloadRemote}>{t("editor.reloadTheCloudVersion")}</RetroButton>
               </div>
             </div>
           </section>
@@ -690,18 +691,18 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       {publishPrompt ? (
         <div className="modal-backdrop" role="presentation">
           <section className="retro-panel editor-dialog" role="dialog" aria-modal="true" aria-labelledby="publish-title">
-            <header className="landing-titlebar" id="publish-title">發布 Retro Desktop</header>
+            <header className="landing-titlebar" id="publish-title">{t("editor.publishRetroDesktop")}</header>
             <div className="dialog-body">
-              <h2>發布前檢查</h2>
-              <p>公開網址：<strong>retrodesk.me/{store.username}</strong></p>
-              <ul className="publish-checks" aria-label="發布前檢查結果">
+              <h2>{t("editor.prePublishCheck")}</h2>
+              <p>{t("editor.publicUrl")}<strong>retrodesk.me/{store.username}</strong></p>
+              <ul className="publish-checks" aria-label={t("editor.prePublishCheckResults")}>
                 {publishChecks.map((check, index) => <li key={index} className={check.level}><span aria-hidden="true">{check.level === "ok" ? "✓" : check.level === "warn" ? "!" : "×"}</span>{check.text}</li>)}
               </ul>
-              <p>{hasBlockingCheck(publishChecks) ? "請先修正紅色項目，再重新發布。" : "黃色項目是建議，不會阻擋發布。發布後仍可繼續編輯下一版草稿。"}</p>
-              {publishing ? <div className="publish-progress" role="progressbar" aria-label="發布中"><i /></div> : null}
+              <p>{hasBlockingCheck(publishChecks) ? t("editor.fixTheRedItemsFirst") : t("editor.yellowItemsAreSuggestionsAnd")}</p>
+              {publishing ? <div className="publish-progress" role="progressbar" aria-label={t("editor.publishing")}><i /></div> : null}
               <div className="button-row end">
-                <RetroButton disabled={publishing} onClick={() => setPublishPrompt(false)}>取消</RetroButton>
-                <RetroButton className="primary" disabled={publishing || hasBlockingCheck(publishChecks)} onClick={confirmPublish}>{publishing ? "發布中…" : "確認發布"}</RetroButton>
+                <RetroButton disabled={publishing} onClick={() => setPublishPrompt(false)}>{t("editor.cancel")}</RetroButton>
+                <RetroButton className="primary" disabled={publishing || hasBlockingCheck(publishChecks)} onClick={confirmPublish}>{publishing ? t("editor.publishing2") : t("editor.confirmAndPublish")}</RetroButton>
               </div>
             </div>
           </section>
@@ -711,21 +712,21 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       {publishSuccess ? (
         <div className="modal-backdrop" role="presentation">
           <section className="retro-panel editor-dialog" role="dialog" aria-modal="true" aria-labelledby="success-title">
-            <header className="landing-titlebar" id="success-title">發布完成</header>
+            <header className="landing-titlebar" id="success-title">{t("editor.published")}</header>
             <div className="dialog-body">
-              <h2>公開版本 v{publishSuccess.version} 已上線</h2>
-              {publishSuccess.artifactStatus === "failed" ? <p role="alert">資料庫版本已發布，但 CDN 檔案同步失敗。公開網站仍可使用；你可以重試同步。</p> : <p>公開檔案已同步完成。</p>}
+              <h2>{t("page.publishedLive", { version: publishSuccess.version })}</h2>
+              {publishSuccess.artifactStatus === "failed" ? <p role="alert">{t("editor.theDatabaseVersionIsPublished")}</p> : <p>{t("editor.publicFilesAreNowIn")}</p>}
               <input className="share-url" readOnly value={publishSuccess.url} onFocus={(event) => event.currentTarget.select()} />
               <div className="button-row end">
-                <RetroButton onClick={copyPublishedUrl}>複製網址</RetroButton>
+                <RetroButton onClick={copyPublishedUrl}>{t("editor.copyUrl")}</RetroButton>
                 {publishSuccess.retryable ? <RetroButton onClick={async () => {
                   try {
                     const result = await api.retryPublish(siteId);
                     setPublishSuccess((current) => current ? { ...current, artifactStatus: result.artifactStatus, retryable: result.retryable } : current);
-                  } catch (error) { setMessage(error instanceof Error ? error.message : "同步重試失敗"); }
-                }}>重試同步</RetroButton> : null}
-                <a className="retro-link" href={publishSuccess.url} target="_blank" rel="noreferrer">開啟網站</a>
-                <RetroButton className="primary" onClick={() => setPublishSuccess(null)}>完成</RetroButton>
+                  } catch (error) { setMessage(error instanceof Error ? error.message : t("editor.syncRetryFailed")); }
+                }}>{t("editor.retrySync")}</RetroButton> : null}
+                <a className="retro-link" href={publishSuccess.url} target="_blank" rel="noreferrer">{t("editor.openSite")}</a>
+                <RetroButton className="primary" onClick={() => setPublishSuccess(null)}>{t("editor.done")}</RetroButton>
               </div>
             </div>
           </section>

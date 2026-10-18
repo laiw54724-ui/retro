@@ -64,12 +64,13 @@ function AddTab({ onAdd }: { onAdd: Props["onAdd"] }) {
 }
 
 function LayersTab({ document, selectedId, view, onSelect, onToggleVisible, onMoveLayer }: Pick<Props, "document" | "selectedId" | "view" | "onSelect" | "onToggleVisible" | "onMoveLayer">) {
+  const { t: tr } = useTranslation("editor");
   const ordered = [...document.windows].sort((a, b) => b.layout.desktop.z - a.layout.desktop.z);
   return (
     <>
-      <strong>視窗與層級</strong>
-      <span className="w98-hint">上面的視窗會疊在最前面。隱藏的視窗仍保留桌面圖示。</span>
-      {ordered.length === 0 ? <span className="layers-empty">還沒有視窗</span> : null}
+      <strong>{tr("leftPanel.windowsAndLayers")}</strong>
+      <span className="w98-hint">{tr("leftPanel.windowsOnTopAreStacked")}</span>
+      {ordered.length === 0 ? <span className="layers-empty">{tr("leftPanel.noWindowsYet")}</span> : null}
       <div className="layers w98-sunken">
         {ordered.map((window, index) => {
           const hidden = view[window.id] === "closed" || view[window.id] === "min";
@@ -78,11 +79,11 @@ function LayersTab({ document, selectedId, view, onSelect, onToggleVisible, onMo
             <div key={window.id} className={"layer" + (selected ? " selected" : "")}>
               <button type="button" className="layer-main" onClick={() => onSelect(window.id)}>
                 <Icon name={window.icon} size={18} />
-                <span className="layer-text"><span className="layer-title">{window.title}</span><small>{hidden ? "已隱藏" : "顯示中"}</small></span>
+                <span className="layer-text"><span className="layer-title">{window.title}</span><small>{hidden ? tr("leftPanel.hidden") : tr("leftPanel.showing")}</small></span>
               </button>
-              <button type="button" className="mini-btn" onClick={() => onToggleVisible(window.id)}>{hidden ? "顯示" : "隱藏"}</button>
-              <button type="button" className="mini-btn" aria-label="往前一層" disabled={index === 0} onClick={() => onMoveLayer(window.id, 1)}>▲</button>
-              <button type="button" className="mini-btn" aria-label="往後一層" disabled={index === ordered.length - 1} onClick={() => onMoveLayer(window.id, -1)}>▼</button>
+              <button type="button" className="mini-btn" onClick={() => onToggleVisible(window.id)}>{hidden ? tr("leftPanel.show") : tr("leftPanel.hide")}</button>
+              <button type="button" className="mini-btn" aria-label={tr("leftPanel.moveForwardOneLayer")} disabled={index === 0} onClick={() => onMoveLayer(window.id, 1)}>▲</button>
+              <button type="button" className="mini-btn" aria-label={tr("leftPanel.moveBackOneLayer")} disabled={index === ordered.length - 1} onClick={() => onMoveLayer(window.id, -1)}>▼</button>
             </div>
           );
         })}

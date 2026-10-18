@@ -1,3 +1,4 @@
+import { i18n } from "../../i18n";
 export type UploadKind = "image" | "icon" | "audio";
 export type UploadStatus = "queued" | "uploading" | "completed" | "failed";
 
@@ -32,8 +33,8 @@ type Entry = {
   cancelAttempt?: () => void;
 };
 
-const TARGET_CHANGED = "目標已變更或移除，未套用這次上傳。請重新選擇檔案。";
-const UPLOAD_TIMEOUT = "上傳回應逾時，未更新內容。可重試這一項；原上傳仍可能完成並保留在素材庫。";
+const targetChanged = () => i18n.t("editor:uploadTasks.theTargetChangedOrWas");
+const uploadTimeout = () => i18n.t("editor:uploadTasks.theUploadResponseTimedOut");
 type UploadOutcome =
   | { kind: "stored"; stored: string | null }
   | { kind: "invalidated" }
@@ -65,7 +66,7 @@ export class UploadTaskQueue {
   enqueue(request: UploadRequest): string {
     const { file, ...options } = request;
     if (options.slot) {
-      this.invalidate("已選擇另一個檔案，這次上傳不再套用。", (entry) =>
+      this.invalidate(i18n.t("editor:uploadTasks.anotherFileChosen"), (entry) =>
         entry.options.scope === options.scope && entry.options.slot === options.slot);
     }
     const id = crypto.randomUUID();
@@ -81,7 +82,7 @@ export class UploadTaskQueue {
   retry = (id: string) => {
     const entry = this.entries.get(id);
     if (!entry || entry.view.status !== "failed" || !entry.view.retryable || !entry.file) return;
-    if (!this.current(entry)) { this.fail(entry, TARGET_CHANGED, false); return; }
+    if (!this.current(entry)) { this.fail(entry, targetChanged(), false); return; }
     entry.view = { ...entry.view, status: "queued", retryable: false, error: "" };
     this.emit();
     this.schedule();
@@ -108,7 +109,7 @@ export class UploadTaskQueue {
 
   /** Observe deletion/source edits immediately, even if an undo later restores the same id. */
   invalidateStale() {
-    this.invalidate(TARGET_CHANGED, (entry) => !this.current(entry));
+    this.invalidate(targetChanged(), (entry) => !this.current(entry));
   }
 
   /** Wait for logical tasks; abandoned HTTP requests may still finish remotely. */
@@ -182,7 +183,7 @@ export class UploadTaskQueue {
     for (;;) {
       const entry = [...this.entries.values()].find((candidate) => candidate.view.status === "queued");
       if (!entry) return;
-      if (!entry.file || !this.current(entry)) { this.fail(entry, TARGET_CHANGED, false); continue; }
+      if (!entry.file || !this.current(entry)) { this.fail(entry, targetChanged(), false); continue; }
       entry.view = { ...entry.view, status: "uploading", attempts: entry.view.attempts + 1 };
       this.emit();
       if (entry.view.status !== "uploading" || !entry.file) continue;
@@ -190,15 +191,15 @@ export class UploadTaskQueue {
       // An in-flight HTTP request may finish after undo/unmount/replacement. Its
       // asset remains in the owner's library, but its stale write is discarded.
       if (entry.view.status !== "uploading" || outcome.kind === "invalidated") continue;
-      if (!this.current(entry)) { this.fail(entry, TARGET_CHANGED, false); continue; }
-      if (outcome.kind === "timeout") { this.fail(entry, UPLOAD_TIMEOUT, true); continue; }
+      if (!this.current(entry)) { this.fail(entry, targetChanged(), false); continue; }
+      if (outcome.kind === "timeout") { this.fail(entry, uploadTimeout(), true); continue; }
       const { stored } = outcome;
-      if (!stored) { this.fail(entry, "上傳失敗。成功的檔案已保留，可單獨重試這一項。", true); continue; }
+      if (!stored) { this.fail(entry, i18n.t("editor:uploadTasks.uploadFailedKept"), true); continue; }
       let applied = false;
       entry.applying = true;
       try { applied = entry.options.apply(stored); } catch { /* report a failed application below */ }
       finally { entry.applying = false; }
-      if (!applied) { this.fail(entry, TARGET_CHANGED, false); continue; }
+      if (!applied) { this.fail(entry, targetChanged(), false); continue; }
       entry.view = { ...entry.view, status: "completed", error: "", retryable: false };
       entry.file = undefined;
       this.emit();

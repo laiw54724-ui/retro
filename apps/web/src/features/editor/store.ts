@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { danglingExplorerShortcuts, describeShortcutTarget, mergeLegacyDocumentIntoV2, newlyDanglingShortcuts, removeExplorerShortcuts, type DanglingShortcut, type DesktopWindow, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
+import { i18n } from "../../i18n";
+import { danglingExplorerShortcuts, describeShortcutTargetParts, mergeLegacyDocumentIntoV2, newlyDanglingShortcuts, removeExplorerShortcuts, type DanglingShortcut, type DesktopWindow, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { createWindow } from "../modules/registry";
 import type { SiteAccessRole } from "../../lib/collaboration";
 
@@ -77,7 +78,7 @@ let lastHistoryKey: string | null = null;
 let lastHistoryAt = 0;
 
 export type PendingIntegrity = {
-  impacts: Array<DanglingShortcut & { targetText: string }>;
+  impacts: Array<DanglingShortcut & { target: { kind: DanglingShortcut["targetKind"]; name: string | null } }>;
   document: SiteDocument;
   extra: Partial<EditorState>;
   historyKey?: string;
@@ -98,7 +99,7 @@ function withHistory(state: EditorState, document: SiteDocument, extra: Partial<
     const after = nextVersioned ?? document;
     const impacts = before ? newlyDanglingShortcuts(before, after) : [];
     if (impacts.length) {
-      return { pendingIntegrity: { impacts: impacts.map((item) => ({ ...item, targetText: describeShortcutTarget(before!, item) })), document, extra, historyKey, explicitVersioned } };
+      return { pendingIntegrity: { impacts: impacts.map((item) => ({ ...item, target: describeShortcutTargetParts(before!, item) })), document, extra, historyKey, explicitVersioned } };
     }
   } else {
     // Confirmed edit: also sweep any other broken shortcut so the draft is always savable.
@@ -301,7 +302,7 @@ export const useEditorStore = create<EditorState>((set) => ({
     const maxZ = Math.max(0, ...state.document.windows.map((window) => window.layout.desktop.z));
     const copy = JSON.parse(JSON.stringify(source)) as DesktopWindow;
     copy.id = copyId;
-    copy.title = source.title + " 複本";
+    copy.title = source.title + i18n.t("editor:store.copySuffix");
     copy.layout = {
       desktop: { ...source.layout.desktop, x: source.layout.desktop.x + 28, y: source.layout.desktop.y + 28, z: Math.min(9999, maxZ + 1), iconX: source.layout.desktop.iconX + 16, iconY: source.layout.desktop.iconY + 16 },
       mobile: { order: state.document.windows.length }

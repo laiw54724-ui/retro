@@ -1,5 +1,9 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
+import { i18n, initI18n } from "../../i18n";
 import { insertInSelectionOrder, UploadTaskQueue, type UploadRequest } from "./uploadTasks";
+
+// Queue messages are localized when they are created, so the runtime must be initialized (pinned to Traditional Chinese for these assertions).
+beforeAll(async () => { await initI18n(); await i18n.changeLanguage("zh-Hant"); });
 
 const file = (name: string) => new File(["image"], name, { type: "image/png" });
 function deferred<T>() {

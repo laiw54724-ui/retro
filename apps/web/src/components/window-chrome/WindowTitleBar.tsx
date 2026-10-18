@@ -1,4 +1,5 @@
 import type { MouseEvent, PointerEvent } from "react";
+import { useTranslation } from "react-i18next";
 import type { WindowControlAction } from "@retrodesk/shared";
 import type { WindowTitleBarProps } from "./types";
 import styles from "./WindowChrome.module.css";
@@ -7,10 +8,11 @@ const order: readonly WindowControlAction[] = ["minimize", "maximize", "close"];
 
 /** The class hooks are part of the existing window managers' gesture contract. */
 export function WindowTitleBar({ title, icon, controls, interactive = false, maximized = false, leading, trailing, titleBarProps, controlLabels, onMinimize, onMaximize, onClose }: WindowTitleBarProps) {
+  const { t: tr } = useTranslation("editor");
   const stopPointer = (event: PointerEvent) => event.stopPropagation();
   const stopDoubleClick = (event: MouseEvent) => event.stopPropagation();
   const handlers = { minimize: onMinimize, maximize: onMaximize, close: onClose };
-  const labels = { minimize: "最小化", maximize: maximized ? "還原" : "最大化", close: "關閉", ...controlLabels };
+  const labels = { minimize: tr("windowTitleBar.minimize"), maximize: maximized ? tr("windowTitleBar.restore") : tr("windowTitleBar.maximize"), close: tr("editor.close"), ...controlLabels };
   // Canonical order and a bounded allowlist even for callers outside the schema boundary.
   const visibleControls = order.filter((action) => controls.includes(action));
   return (

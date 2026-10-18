@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { useTranslation } from "react-i18next";
 import type { CollectionEntityV2, DesktopWindow, PostEntityV2, ProfileEntityV2, SiteDocumentV2Input } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { RetroWindow } from "../../components/RetroWindow";
@@ -47,6 +48,7 @@ type Props = {
 };
 
 export function DesktopCanvas({ siteId, upload, profiles, posts, collections, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
+  const { t: tr } = useTranslation("editor");
   const document = useEditorStore((s) => s.document)!;
   const selectedId = useEditorStore((s) => s.selectedId);
   const view = useEditorStore((s) => s.viewState);
@@ -216,7 +218,7 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
               key={"icon-" + win.id}
               type="button"
               className="deskicon"
-              aria-label={`開啟 ${win.title}`}
+              aria-label={tr("desktopCanvas.open", { title: win.title })}
               style={{ left: layout.iconX, top: layout.iconY, zIndex: isSel ? 2 : 1, outline: isSel ? `1px dotted ${tv.text}` : "none", cursor: layoutMode ? "grab" : "pointer" }}
               onClick={() => iconClick(win.id)}
               onPointerDown={(event) => iconPointerDown(event, win)}
@@ -234,11 +236,11 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
 
       {document.windows.length === 0 ? (
         <div className="empty-desktop w98-window" role="status">
-          <div className="w98-titlebar" style={{ height: 26 }}>開始吧！</div>
+          <div className="w98-titlebar" style={{ height: 26 }}>{tr("desktopCanvas.letsStart")}</div>
           <div className="empty-body">
             <Icon name="folder" size={48} />
-            <strong>你的桌面還空空的</strong>
-            <span>新增第一個視窗，放上自我介紹、作品或連結。從左側面板點「新增」。</span>
+            <strong>{tr("desktopCanvas.yourDesktopIsStillEmpty")}</strong>
+            <span>{tr("desktopCanvas.addYourFirstWindowWith")}</span>
           </div>
         </div>
       ) : null}
@@ -283,25 +285,25 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
               <WindowRenderer window={win} theme={document.theme} editing={!layoutMode} allWindows={document.windows} siteId={siteId} upload={upload} onUpdate={store().updateWindow} profiles={profiles} posts={posts} collections={collections} profileId={profileId} profileIdsByWindow={profileIdsByWindow} onProfileSelect={onProfileSelect} onProfileAdd={onProfileAdd} onProfileDuplicate={onProfileDuplicate} onProfileChange={onProfileChange} onProfileDelete={onProfileDelete} profileDeleteBlocked={profileDeleteBlocked} profileDeleteGuardById={profileDeleteGuardById} profileDirectory={profileDirectory} updateContent={updateContent} socialDocument={socialDocument} />
             </RetroWindow>
             {layoutMode ? <div className={`layout-veil ${styles.layoutVeil}`}><span className="geo-text">{layout.x}, {layout.y} · {layout.w}×{layout.h}</span></div> : null}
-            {!maximized ? <span className="window-resize-handle" aria-label="調整大小" /> : null}
+            {!maximized ? <span className="window-resize-handle" aria-label={tr("desktopCanvas.resize")} /> : null}
           </div>
         );
       })}
 
       {selected && !layoutMode && !view[selected.id] ? (
-        <div className="sel-tag" style={{ left: selected.layout.desktop.x, top: Math.max(0, selected.layout.desktop.y - 22), zIndex: 99990 }}>已選取 · 拖曳標題列移動、右下角縮放</div>
+        <div className="sel-tag" style={{ left: selected.layout.desktop.x, top: Math.max(0, selected.layout.desktop.y - 22), zIndex: 99990 }}>{tr("desktopCanvas.selectedDragTheTitleBar")}</div>
       ) : null}
 
       {layoutMode ? (
-        <div className="layout-toolbar w98-window" role="toolbar" aria-label="排版模式">
-          <strong>▦ 排版模式</strong>
-          <span>拖曳視窗或桌面圖示 · 右下角縮放</span>
-          <button type="button" className="w98-btn small" onClick={() => store().autoArrangeIcons(rows())}>圖示自動排列</button>
-          <button type="button" className={"w98-btn small" + (snap ? " on" : "")} aria-pressed={snap} onClick={() => store().toggleSnap()}>對齊格線 {GRID}px：{snap ? "開" : "關"}</button>
-          <button type="button" className="w98-btn small primary" onClick={() => store().setLayoutMode(false)}>完成</button>
+        <div className="layout-toolbar w98-window" role="toolbar" aria-label={tr("desktopCanvas.layoutMode")}>
+          <strong>{tr("desktopCanvas.layoutMode2")}</strong>
+          <span>{tr("desktopCanvas.dragWindowsOrDesktopIcons")}</span>
+          <button type="button" className="w98-btn small" onClick={() => store().autoArrangeIcons(rows())}>{tr("desktopCanvas.autoArrangeIcons")}</button>
+          <button type="button" className={"w98-btn small" + (snap ? " on" : "")} aria-pressed={snap} onClick={() => store().toggleSnap()}>{snap ? tr("desktopCanvas.snapOn", { size: GRID }) : tr("desktopCanvas.snapOff", { size: GRID })}</button>
+          <button type="button" className="w98-btn small primary" onClick={() => store().setLayoutMode(false)}>{tr("editor.done")}</button>
         </div>
       ) : (
-        <div className="edit-tag" aria-hidden="true">編輯模式 · 直接點視窗內容編輯</div>
+        <div className="edit-tag" aria-hidden="true">{tr("desktopCanvas.editModeClickWindowContent")}</div>
       )}
 
       <DesktopTaskbar
@@ -310,7 +312,7 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
           window: win,
           visible: view[win.id] !== "closed",
           active: selectedId === win.id && view[win.id] !== "min",
-          statusLabel: music.windowId === win.id && music.status === "playing" ? "播放中" : undefined
+          statusLabel: music.windowId === win.id && music.status === "playing" ? tr("desktopCanvas.playing") : undefined
         }))}
         onOpen={openWindow}
         onToggle={(id) => {

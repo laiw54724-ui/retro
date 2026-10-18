@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import { lockBackground } from "../lib/backgroundLock";
 
@@ -20,6 +21,7 @@ type Props = {
  * Escape closes, Tab stays inside, the page behind is inert, and focus returns to where it was.
  */
 export function ModalDialog({ title, onClose, children, actions, dismissOnBackdrop = true, width = 460 }: Props) {
+  const { t: tr } = useTranslation("editor");
   const root = useRef<HTMLDivElement | null>(null);
   const titleId = useId();
   const latestClose = useRef(onClose);
@@ -76,7 +78,7 @@ export function ModalDialog({ title, onClose, children, actions, dismissOnBackdr
       onClick={(event) => { event.stopPropagation(); if (dismissOnBackdrop && event.target === event.currentTarget) onClose(); }}
     >
       <div ref={root} role="dialog" aria-modal="true" aria-labelledby={titleId} className="modal-card w98-window" style={{ width: `min(${width}px, 100%)` }}>
-        <div className="w98-titlebar"><strong id={titleId} className="grow">{title}</strong><button type="button" className="w98-titlebtn" aria-label="關閉" onClick={onClose}>×</button></div>
+        <div className="w98-titlebar"><strong id={titleId} className="grow">{title}</strong><button type="button" className="w98-titlebtn" aria-label={tr("editor.close")} onClick={onClose}>×</button></div>
         <div className="modal-body">{children}</div>
         {actions ? <div className="modal-actions">{actions}</div> : null}
       </div>
