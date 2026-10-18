@@ -1,14 +1,16 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { addFollow, removeFollow, setProfileExtraCounts, type SiteDocumentV2Input } from "@retrodesk/shared";
 import type { ModuleProps } from "../types";
+import { igEditorScope, useIgEditorState } from "./useIgEditorState";
 
 type Props = { props: ModuleProps<"instagram"> };
 
 export function CanonicalSocialEditor({ props }: Props) {
   const { ctx } = props;
   const profile = ctx.profiles?.find((item) => item.id === ctx.profileId);
-  const [query, setQuery] = useState("");
-  const [error, setError] = useState("");
+  const scope = igEditorScope(props);
+  const [query, setQuery] = useIgEditorState(scope, "");
+  const [error, setError] = useIgEditorState(scope, "");
   const candidates = useMemo(() => (ctx.profiles ?? []).filter((item) => item.id !== profile?.id && `${item.displayName ?? item.name} ${item.handle ?? item.username}`.toLowerCase().includes(query.trim().toLowerCase())), [ctx.profiles, profile?.id, query]);
   if (!profile || !ctx.siteId || !ctx.updateContent) return null;
 
