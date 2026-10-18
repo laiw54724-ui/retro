@@ -1,0 +1,17 @@
+{
+  "generic": "發生錯誤，請稍後再試。",
+  "languageChangeFailed": "無法切換語言，已保留原本的語言。請再試一次。",
+  "codes": {
+    "unauthorized": "請先登入，再繼續操作。",
+    "forbidden": "你沒有執行這項操作的權限。",
+    "not_found": "找不到要求的項目。",
+    "version_conflict": "其他分頁或裝置已有更新，請確認最新版本後再試。",
+    "request_failed": "要求未完成，請稍後再試。",
+    "internal_error": "伺服器發生錯誤，請稍後再試。",
+    "export_failed": "無法匯出，請再試一次。",
+    "db_error": "目前無法讀取或儲存資料，請稍後再試。",
+    "rate_limited": "操作太頻繁，請稍候再試。",
+    "invalid_draft": "草稿格式有誤，請先檢查內容。",
+    "not_published": "請先發布一個版本，再繼續操作。"
+  }
+}

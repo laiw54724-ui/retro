@@ -1,0 +1,77 @@
+{
+  "app": {
+    "name": "Retro Desktop",
+    "loading": "Loading desktop…",
+    "loadingAccount": "Loading account…",
+    "loadingSite": "Loading site…",
+    "notFoundTitle": "Page not found",
+    "notFoundDescription": "This page may have been removed, or the address may be incorrect.",
+    "home": "Back to home"
+  },
+  "actions": {
+    "close": "Close",
+    "home": "Home"
+  },
+  "language": {
+    "label": "Interface language",
+    "partialNote": "Only the core interface is translated so far. Some editor tools remain in Traditional Chinese. Your character and artwork content stays as written.",
+    "zhHansNote": "Simplified Chinese is not available yet; Simplified Chinese preferences use Traditional Chinese.",
+    "beta": "Beta",
+    "changing": "Changing language…",
+    "betaNote": "Japanese and Korean translations are in beta and still need native-speaker review."
+  },
+  "desktop": {
+    "start": "Start",
+    "startMenu": "Start menu",
+    "empty": "No desktop items yet",
+    "clockLabel": "Current time {{time}}",
+    "credit": "Made with Retro Desktop"
+  },
+  "landing": {
+    "title": "Welcome to Retro Desktop.exe",
+    "signedIn": "Signed in as {{email}}",
+    "eyebrow": "NO-CODE PERSONAL DESKTOP",
+    "headline": "Your own little universe,\non a retro desktop.",
+    "description": "Drag windows, add images and links, and create a digital card, an OC showcase, or a portfolio in minutes. No coding required, and it works on phones too.",
+    "myDesktop": "Go to my desktops →",
+    "createDesktop": "Create my desktop →",
+    "examples": "Examples",
+    "browseExamples": "Explore examples",
+    "openExample": "Open interactive example →",
+    "demoCard": "Profile card",
+    "demoGallery": "Gallery",
+    "demoLinks": "Links",
+    "steps": {
+      "choose": {
+        "title": "Choose an address and theme",
+        "description": "Pick your personal address and a retro color scheme."
+      },
+      "add": {
+        "title": "Add windows",
+        "description": "Add documents, galleries, links, and a profile card, then drag them into place."
+      },
+      "publish": {
+        "title": "Publish and share",
+        "description": "Preview desktop and mobile layouts, publish, and share your address."
+      }
+    },
+    "examplesList": {
+      "card": {
+        "name": "Digital card — Mochi",
+        "description": "Profile fields, a bio, social links, and a banner."
+      },
+      "ig": {
+        "name": "Retro IG — pixel 日記",
+        "description": "Follower counts, a bio, and a post grid with a 2000s feel."
+      },
+      "oc": {
+        "name": "OC showcase — 月面圖書館",
+        "description": "Character profiles, reference galleries, and worldbuilding documents."
+      },
+      "portfolio": {
+        "name": "Portfolio — Ren",
+        "description": "An introduction, an artwork grid, and contact details."
+      }
+    }
+  }
+}

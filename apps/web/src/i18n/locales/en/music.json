@@ -1,0 +1,7 @@
+{
+  "playback": {
+    "playing": "Playing",
+    "paused": "Paused",
+    "stopped": "Stopped"
+  }
+}

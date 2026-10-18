@@ -11,6 +11,9 @@ export default defineConfig({
   reporter: process.env.CI ? "github" : "list",
   use: {
     baseURL,
+    // Existing interaction suites assert the original Traditional Chinese UI.
+    // i18n.spec.ts overrides this baseline to exercise language detection.
+    locale: "zh-TW",
     trace: "retain-on-failure",
     screenshot: "only-on-failure"
   },

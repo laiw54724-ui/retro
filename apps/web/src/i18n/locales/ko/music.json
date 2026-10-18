@@ -1,0 +1,7 @@
+{
+  "playback": {
+    "playing": "재생 중",
+    "paused": "일시 정지됨",
+    "stopped": "정지됨"
+  }
+}

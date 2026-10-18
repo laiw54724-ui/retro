@@ -34,7 +34,7 @@ export function WindowChromeSlot({ name, children }: { name: WindowChromeSection
 }
 
 /** Stable frame/content DOM across presets. Layout, focus, and persistence belong to its host. */
-export function WindowChrome({ title, theme, appearance, chrome, icon, children, active = true, maximized = false, interactiveControls = false, presentation = "desktop", slots, fallbackSlots, titleBarLeading, titleBarTrailing, titleBarProps, contentProps, frameProps, style, bodyStyle, onMinimize, onMaximize, onClose }: WindowChromeProps) {
+export function WindowChrome({ title, theme, appearance, chrome, icon, children, active = true, maximized = false, interactiveControls = false, presentation = "desktop", slots, fallbackSlots, titleBarLeading, titleBarTrailing, titleBarProps, controlLabels, contentProps, frameProps, style, bodyStyle, onMinimize, onMaximize, onClose }: WindowChromeProps) {
   const config = useMemo(() => resolveWindowChrome(chrome), [chrome]);
   const tv = useThemeView(theme);
   const titleView = resolveWindowAppearance(theme, appearance, active, { preset: config.preset });
@@ -63,7 +63,7 @@ export function WindowChrome({ title, theme, appearance, chrome, icon, children,
   const controls = presentation === "mobile" ? config.controls.filter((action) => action === "close") : config.controls;
   const titleProps: WindowTitleBarProps = {
     title, icon: config.showIcon ? icon : undefined, controls, interactive: interactiveControls, maximized,
-    leading: titleBarLeading, trailing: titleBarTrailing,
+    leading: titleBarLeading, trailing: titleBarTrailing, controlLabels,
     titleBarProps: {
       ...titleBarProps,
       className: `${presentation === "mobile" ? "m-win-title " : ""}${titleBarProps?.className ?? ""}`,

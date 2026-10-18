@@ -1,8 +1,11 @@
-import { useState } from "react";
-import type { DesktopWindow, RetroTheme, SiteDocument } from "@retrodesk/shared";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { THEME_PRESETS, type DesktopWindow, type RetroTheme, type SiteDocument } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { COMING_SOON, moduleDefinitions, registry } from "../modules/registry";
 import { ThemeAppearanceEditor } from "./ThemeAppearanceEditor";
+import { FilePick } from "../modules/ui";
+import { useLocaleFormatting } from "../../i18n/format";
 
 type Tab = "add" | "layers" | "theme";
 type ViewMap = Record<string, "min" | "closed" | "max">;
@@ -21,12 +24,14 @@ type Props = {
 };
 
 export function LeftPanel({ document, selectedId, view, onAdd, onSelect, onToggleVisible, onMoveLayer, onTheme, upload, initialTab = "add" }: Props) {
+  const { t } = useTranslation("editor");
+  const { fontFamily } = useLocaleFormatting();
   const [tab, setTab] = useState<Tab>(initialTab);
-  const tabs: Array<[Tab, string]> = [["add", "新增"], ["layers", "視窗"], ["theme", "主題"]];
+  const tabs: Tab[] = ["add", "layers", "theme"];
   return (
-    <aside id="editor-left-panel" className="left-panel2" aria-label="工具面板">
-      <div role="tablist" className="w98-tabs">
-        {tabs.map(([id, label]) => <button key={id} role="tab" type="button" className="w98-tab" aria-selected={tab === id} onClick={() => setTab(id)}>{label}</button>)}
+    <aside id="editor-left-panel" className="left-panel2" aria-label={t("shell.toolsPanel")} style={{ fontFamily }}>
+      <div role="tablist" className="w98-tabs" aria-label={t("shell.toolsTabs")}>
+        {tabs.map((id) => <button key={id} role="tab" type="button" className="w98-tab" aria-selected={tab === id} onClick={() => setTab(id)}>{t(`tabs.${id}`)}</button>)}
       </div>
       <div className="w98-tabpanel w98-scroll panel-scroll" role="tabpanel">
         {tab === "add" ? <AddTab onAdd={onAdd} /> : null}
@@ -38,19 +43,22 @@ export function LeftPanel({ document, selectedId, view, onAdd, onSelect, onToggl
 }
 
 function AddTab({ onAdd }: { onAdd: Props["onAdd"] }) {
+  const { t } = useTranslation("editor");
+  // The legacy coming-soon list contains product labels, not persisted window data.
+  const comingSoonKeys: Record<string, "add.diary" | "add.characterProfile" | "add.visualNovel"> = { "日記": "add.diary", "角色檔案": "add.characterProfile", "視覺小說": "add.visualNovel" };
   return (
     <>
-      <strong>新增視窗</strong>
-      <span className="w98-hint">點一下就會加到桌面上，並自動建立桌面圖示。</span>
+      <strong>{t("add.heading")}</strong>
+      <span className="w98-hint">{t("add.hint")}</span>
       {moduleDefinitions.map((module) => (
         <button key={module.type} type="button" className="w98-btn add-card" onClick={() => onAdd(module.type)}>
           <Icon name={module.icon} size={32} />
-          <span className="add-card-text"><strong>{module.label}</strong><span>{module.description}</span></span>
+          <span className="add-card-text"><strong>{t(`modules.${module.type}.label`, { defaultValue: module.label })}</strong><span>{t(`modules.${module.type}.description`, { defaultValue: module.description })}</span></span>
         </button>
       ))}
       <div className="w98-sep" />
-      <strong style={{ color: "var(--w98-muted)" }}>即將推出</strong>
-      <div className="soon">{COMING_SOON.map((name) => <span key={name}>{name}</span>)}</div>
+      <strong style={{ color: "var(--w98-muted)" }}>{t("add.comingSoon")}</strong>
+      <div className="soon">{COMING_SOON.map((name) => <span key={name}>{comingSoonKeys[name] ? t(comingSoonKeys[name], { defaultValue: name }) : name}</span>)}</div>
     </>
   );
 }
