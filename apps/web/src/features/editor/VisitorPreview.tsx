@@ -110,7 +110,7 @@ export function VisitorPreview({ publishable, draft, sample, username = "", site
   const canShareEntity = useCallback((kind: "oc" | "post", id: string) => !!shareable && (kind === "oc" ? shareable.profileIds.has(id) : shareable.postIds.has(id)), [shareable]);
 
   if (!model) return null;
-  const sharing = source === "sample" ? {} : { publicShareBaseUrl: siteUrl ?? undefined, siteHandle: username, canShareEntity: siteUrl ? canShareEntity : undefined };
+  const sharing = source === "sample" ? {} : { viewDrafts: source === "draft", publicShareBaseUrl: siteUrl ?? undefined, siteHandle: username, canShareEntity: siteUrl ? canShareEntity : undefined };
   const imageWallpaper = model.document.theme.pattern === "image" && !!model.document.theme.wallImage;
   const label = source === "sample"
     ? tr("visitorPreview.sampleReadOnly")

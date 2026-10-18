@@ -60,7 +60,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
   // fall back to the entry OC's details after visitor navigation or a stale ID.
   const profileDetails = directoryEntry ? ctx.profiles?.find((item) =>
     item.id === s.activeProfileId && item.siteId === directoryEntry.siteId &&
-    (ctx.editing || item.visibility === "published"),
+    (ctx.editing || ctx.viewDrafts || item.visibility === "published"),
   ) : undefined;
   const profile = directoryEntry?.profile ?? window.content.profile;
   const posts = directoryEntry?.posts ?? window.content.images;
