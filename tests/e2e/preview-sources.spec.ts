@@ -26,6 +26,9 @@ function draftDocument(): SiteDocumentV2Input {
   const document = withSecret.document;
   const profile = (id: string) => document.entities.profiles.find((item) => item.id === id)!;
   profile("profile:bei").displayName = "Bei Original"; profile("profile:bei").name = "Bei Original"; profile("profile:bei").visibility = "published";
+  profile("profile:secret").pronouns = "SECRET_PRONOUNS";
+  profile("profile:secret").worldTags = ["SECRET_WORLD"];
+  profile("profile:secret").customFields = [{ key: "Rank", value: "SECRET_DETAIL" }];
   profile("profile:secret").displayName = "Secret Draft Character"; profile("profile:secret").name = "Secret Draft Character"; profile("profile:secret").visibility = "draft";
   const template = document.entities.posts[0];
   document.entities.posts.push(
@@ -309,3 +312,44 @@ for (const locale of (PREVIEW_LOCALES ? ["en", "ja", "ko"] : ["en"]) as Array<"e
     await expect(overlay(page).getByRole("button", { name: copy.backToSamples })).toBeVisible();
   });
 }
+
+test("an authorised draft preview shows a private character's details (pronouns, world tags, custom fields) — the published views never do", async ({ page }) => {
+  await openEditor(page);
+  await previewButton(page).click();
+  await overlay(page).getByRole("button", { name: "目前草稿", exact: true }).click();
+  const win = overlay(page).getByRole("dialog", { name: "Instagram.exe" });
+  await openDirectory(win);
+  await win.getByRole("button", { name: "Secret Draft Character @secret" }).click();
+  await win.locator("summary", { hasText: "角色資料" }).click();
+  await expect(win.getByText("SECRET_PRONOUNS")).toBeVisible();
+  await expect(win.getByText("SECRET_WORLD")).toBeVisible();
+  await expect(win.getByText("SECRET_DETAIL")).toBeVisible();
+
+  // switching to what publishing would produce removes the private character and every trace of its details
+  await overlay(page).getByRole("button", { name: "發布後的樣子", exact: true }).click();
+  expect(await overlay(page).evaluate((node) => node.textContent ?? "")).not.toMatch(/SECRET_|Secret Draft/);
+});
+
+test("the collaborator draft viewer shows a private character's details too", async ({ page }) => {
+  await page.addInitScript((value) => localStorage.setItem("sb-example-auth-token", JSON.stringify(value)), session);
+  const site = { id: SITE, username: "demo", site_name: "Demo", draft_document: draftDocument(), draft_version: 2, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-15T00:00:00.000Z", access_role: "viewer" };
+  await page.route(`**/api/sites/${SITE}`, (route) => route.fulfill({ json: { site } }));
+  await page.route(`**/api/sites/${SITE}/assets**`, (route) => route.fulfill({ json: { assets: [] } }));
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(`/editor/${SITE}`);
+  const win = page.locator(".draft-viewer-body").getByRole("dialog", { name: "Instagram.exe" });
+  await openDirectory(win);
+  await win.getByRole("button", { name: "Secret Draft Character @secret" }).click();
+  await win.locator("summary", { hasText: "角色資料" }).click();
+  await expect(win.getByText("SECRET_PRONOUNS")).toBeVisible();
+  await expect(win.getByText("SECRET_DETAIL")).toBeVisible();
+});
+
+test("the real public page never shows a draft character's details", async ({ page }) => {
+  await page.route("**/api/public/sites/demo", (route) => route.fulfill({ json: { site: { id: SITE, username: "demo", site_name: "Demo", published_document: draftDocument(), published_version: 2, published_at: "2026-10-15T00:00:00.000Z" } } }));
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/@demo");
+  const win = page.locator(".visitor-desktop").getByRole("dialog", { name: "Instagram.exe" });
+  await openDirectory(win);
+  expect(await page.evaluate(() => document.body.textContent ?? "")).not.toMatch(/SECRET_|Secret Draft/);
+});

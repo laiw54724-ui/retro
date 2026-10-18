@@ -58,10 +58,10 @@ function DraftViewerContent({ site, draft }: { site: SiteRecord; draft: ReturnTy
         <section className={"draft-viewer-body " + device} aria-label={tr("draft.preview", { device: device === "desktop" ? tr("draft.deviceDesktop") : tr("draft.deviceMobile") })}>
           {device === "desktop" ? (
             <div key="desktop" className="visitor-page draft-viewer-desktop" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: imageWallpaper ? "center" : "0 0", backgroundRepeat: imageWallpaper ? "no-repeat" : "repeat" }}>
-              <VisitorDesktop navigation={navigation} document={draft.document} profiles={draft.profiles} profileIdsByWindow={draft.profileIdsByWindow} profileDirectory={draft.profileDirectory} />
+              <VisitorDesktop viewDrafts navigation={navigation} document={draft.document} profiles={draft.profiles} profileIdsByWindow={draft.profileIdsByWindow} profileDirectory={draft.profileDirectory} />
             </div>
           ) : (
-            <div key={phone ? "phone-plain" : "phone-simulated"} className="draft-viewer-phone"><MobileScreen document={draft.document} mode="visitor" framed={!phone} navigation={navigation} profiles={draft.profiles} profileIdsByWindow={draft.profileIdsByWindow} profileDirectory={draft.profileDirectory} /></div>
+            <div key={phone ? "phone-plain" : "phone-simulated"} className="draft-viewer-phone"><MobileScreen document={draft.document} mode="visitor" framed={!phone} viewDrafts navigation={navigation} profiles={draft.profiles} profileIdsByWindow={draft.profileIdsByWindow} profileDirectory={draft.profileDirectory} /></div>
           )}
         </section>
       </main>

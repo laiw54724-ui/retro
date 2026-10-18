@@ -48,12 +48,13 @@ type Props = {
   /** Visitor previews: shared with the other layouts so rotation keeps the open app and character. */
   navigation?: PreviewNavigation;
   canShareEntity?: (kind: "oc" | "post", id: string) => boolean;
+  viewDrafts?: boolean;
   publicShareBaseUrl?: string;
   siteHandle?: string;
 };
 
 /** The single-window phone experience. Used for visitors, the editor preview and the mobile editor. */
-export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview, profiles, posts, collections, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument, initialOpenId, initialPostId, navigation, canShareEntity, publicShareBaseUrl, siteHandle }: Props) {
+export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview, profiles, posts, collections, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument, initialOpenId, initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle }: Props) {
   const { t } = useTranslation("editor");
   const { t: common } = useTranslation("common");
   const { t: musicText } = useTranslation("music");
@@ -149,6 +150,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
                 initialPostId={openWindow.id === initialOpenId ? initialPostId : undefined}
                 navigation={navigation}
                 canShareEntity={canShareEntity}
+                viewDrafts={viewDrafts}
                 publicShareBaseUrl={publicShareBaseUrl}
                 siteHandle={siteHandle}
               />

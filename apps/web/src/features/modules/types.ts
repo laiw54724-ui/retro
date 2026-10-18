@@ -29,6 +29,8 @@ export type ModuleCtx = {
   /** Visitor-only navigation shared across renderers of one preview; see previewNavigation.ts. */
   navigation?: PreviewNavigation;
   /** Previews only: whether a share link may point at this character/post (it must exist in the stored public snapshot). Omitted = always allowed (the real public page). */
+  /** The viewer is authorised to see unpublished (draft) content — an owner/collaborator draft preview. Never set on the public page. */
+  viewDrafts?: boolean;
   canShareEntity?: (kind: "oc" | "post", id: string) => boolean;
   publicShareBaseUrl?: string;
   siteHandle?: string;
