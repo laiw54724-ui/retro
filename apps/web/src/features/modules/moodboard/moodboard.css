@@ -1,0 +1,29 @@
+/* Scoped to Moodboard: never changes the shared window or mobile shell. */
+.moodboard-editor { container: moodboard / inline-size; min-width: 0; box-sizing: border-box; }
+.moodboard-editor .moodboard-workspace { grid-template-columns: minmax(0, 1fr) minmax(180px, 220px); }
+.moodboard-editor .moodboard-stage.editing { min-height: 0; max-height: none; touch-action: pan-y; }
+.moodboard-view .moodboard-stage { min-height: 0; }
+.moodboard-sidebar { display: grid; gap: 8px; min-width: 0; }
+.moodboard-layers { min-width: 0; padding: 8px; border: 1px solid #808080; background: #c0c0c0; }
+.moodboard-layers ol { display: grid; gap: 4px; max-height: 176px; overflow: auto; margin: 6px 0 0; padding: 2px; list-style: none; overscroll-behavior: contain; }
+.moodboard-layers li { min-width: 0; }
+.moodboard-layer.w98-btn { display: flex; align-items: center; gap: 6px; width: 100%; min-height: 44px; padding: 5px 7px; text-align: start; }
+.moodboard-layer[aria-pressed="true"] { background: #000080; color: #fff; }
+.moodboard-layer-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.moodboard-layer-rank { min-width: 2ch; font-variant-numeric: tabular-nums; }
+.moodboard-editor .moodboard-inspector > strong { overflow-wrap: anywhere; }
+.moodboard-geometry { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin: 0; padding: 6px; min-width: 0; border: 1px solid #808080; }
+.moodboard-editor .moodboard-geometry input { box-sizing: border-box; min-height: 36px; }
+.moodboard-alignment { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.moodboard-alignment .w98-btn { min-width: 0; min-height: 40px; }
+.moodboard-editor button:focus-visible { outline: 2px solid #000080; outline-offset: 2px; }
+.moodboard-editor .moodboard-layer:focus-visible { outline-color: #000; }
+.moodboard-editor .moodboard-element:focus-visible { outline-offset: -3px; }
+@container moodboard (max-width: 560px) {
+  .moodboard-editor .moodboard-workspace { grid-template-columns: minmax(0, 1fr); }
+  .moodboard-editor .moodboard-toolbar .w98-btn,
+  .moodboard-editor .moodboard-actions .w98-btn,
+  .moodboard-editor .moodboard-nudge .w98-btn,
+  .moodboard-editor .moodboard-alignment .w98-btn,
+  .moodboard-editor .moodboard-geometry input { min-height: 44px; }
+}
