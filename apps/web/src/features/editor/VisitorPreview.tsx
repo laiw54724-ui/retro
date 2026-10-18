@@ -1,15 +1,18 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { SiteDocument } from "@retrodesk/shared";
 import { useThemeView } from "../../lib/themeView";
 import { useIsPhoneViewport } from "../../lib/useViewport";
 import { VisitorDesktop } from "../site/VisitorDesktop";
 import { MobilePreview } from "./MobilePreview";
+import { createPreviewNavigation } from "../site/previewNavigation";
 
 /** Full-screen "what a visitor sees" view of the current draft. */
 export function VisitorPreview({ document, username, published, onClose }: { document: SiteDocument; username: string; published: boolean; onClose: () => void }) {
   const { t: tr } = useTranslation("editor");
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
+  // Survives layout switches (rotation), so the visitor stays on the same app and character; dropped when the preview closes.
+  const navigation = useRef(createPreviewNavigation()).current;
   const phone = useIsPhoneViewport();
   // On a real phone the desktop renderer is hidden by the global stylesheet, so the only honest view is the mobile one.
   const view = phone ? "mobile" : device;
@@ -31,12 +34,12 @@ export function VisitorPreview({ document, username, published, onClose }: { doc
       <div className="preview-body">
         {view === "desktop" ? (
           <main key="desktop" className="visitor-page preview-page" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: imageWallpaper ? "center" : "0 0", backgroundRepeat: imageWallpaper ? "no-repeat" : "repeat" }}>
-            <VisitorDesktop document={document} />
+            <VisitorDesktop document={document} navigation={navigation} />
           </main>
         ) : phone ? (
-          <div key="phone-plain" className="preview-phone-real"><MobilePreview document={document} framed={false} /></div>
+          <div key="phone-plain" className="preview-phone-real"><MobilePreview document={document} framed={false} navigation={navigation} /></div>
         ) : (
-          <div key="phone-simulated" className="preview-phone"><MobilePreview document={document} /></div>
+          <div key="phone-simulated" className="preview-phone"><MobilePreview document={document} navigation={navigation} /></div>
         )}
       </div>
     </div>

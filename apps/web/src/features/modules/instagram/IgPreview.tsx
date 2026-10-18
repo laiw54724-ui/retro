@@ -26,7 +26,21 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
     const legacy = entry?.profile.highlights ?? (profileId === entryProfileId ? window.content.profile.highlights : []);
     return legacy.map((highlight) => ({ id: highlight.id, src: highlight.src, srcUrl: highlight.srcUrl, alt: highlight.title, text: "", highlightId: highlight.id, highlightTitle: highlight.title, frameIndex: 0, frameCount: 1 }));
   };
-  const session = useIgSession((profileId) => storyFramesFor(profileId).length, entryProfileId, `${entrySiteId}:${window.id}`, ctx.initialPostId ?? null);
+  // Rotation hands the visitor's character/screen over from the previous renderer; only a route that still resolves is used.
+  const saved = ctx.navigation?.ig[window.id];
+  const restorable = (() => {
+    if (!saved) return null;
+    const resolves = (route: { profileId: string; postId: string | null }) => {
+      const entry = profileDirectory.find((item) => item.id === route.profileId);
+      if (!entry && route.profileId !== entryProfileId) return false;
+      return !route.postId || (entry?.posts ?? window.content.images).some((post) => post.id === route.postId);
+    };
+    // Anything that no longer resolves (hidden/removed character or post) falls back to the character's profile.
+    const entryRoute = { screen: "profile", profileId: entryProfileId, postId: null, collectionId: null, peopleKind: null } as const;
+    const history = saved.history.filter((frame) => resolves(frame.route));
+    return resolves(saved.route) ? { route: saved.route, history } : { route: entryRoute, history: [] };
+  })();
+  const session = useIgSession((profileId) => storyFramesFor(profileId).length, entryProfileId, `${entrySiteId}:${window.id}`, ctx.initialPostId ?? null, ctx.navigation ? { restore: restorable as never, save: (state) => { ctx.navigation!.ig[window.id] = state as never; } } : undefined);
   const s = session;
   const [shareFallback, setShareFallback] = useState<string | null>(null);
   const shareEntity = async (kind: "oc" | "post", id: string, title: string) => {
