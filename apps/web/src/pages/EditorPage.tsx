@@ -79,6 +79,15 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   const [loadError, setLoadError] = useState("");
   const [message, setMessage] = useState("");
   const [conflict, setConflict] = useState(false);
+  // IME composition in progress anywhere on the page: autosave waits so a half-composed fragment is never written.
+  const [composing, setComposing] = useState(false);
+  useEffect(() => {
+    const start = () => setComposing(true);
+    const end = () => setComposing(false);
+    document.addEventListener("compositionstart", start, true);
+    document.addEventListener("compositionend", end, true);
+    return () => { document.removeEventListener("compositionstart", start, true); document.removeEventListener("compositionend", end, true); };
+  }, []);
   // Transient invalid drafts (e.g. a field cleared mid-edit) pause autosave quietly instead of raising a popup.
   const [draftIssue, setDraftIssue] = useState<string | null>(null);
   const [publishPrompt, setPublishPrompt] = useState(false);
@@ -231,7 +240,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   useEffect(() => { void refreshAssetInventory().catch(() => undefined); }, [siteId]);
 
   useEffect(() => {
-    if (!store.document || store.saveStatus !== "dirty" || !store.siteId || saveInFlight.current || conflict) return;
+    if (!store.document || store.saveStatus !== "dirty" || !store.siteId || saveInFlight.current || conflict || composing) return;
 
     const timer = window.setTimeout(async () => {
       const legacyDocumentToSave = store.document!;
@@ -269,7 +278,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     }, 650);
 
     return () => window.clearTimeout(timer);
-  }, [store.document, store.versionedDocument, versionedDraft, store.saveStatus, store.siteId, store.version, conflict]);
+  }, [store.document, store.versionedDocument, versionedDraft, store.saveStatus, store.siteId, store.version, conflict, composing]);
 
   useEffect(() => {
     function keydown(event: KeyboardEvent) {

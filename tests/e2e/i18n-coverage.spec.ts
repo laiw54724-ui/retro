@@ -190,33 +190,45 @@ for (const locale of LOCALES) {
       }
     });
 
-    test(`switching language keeps unsaved text, undo and selection and writes nothing`, async ({ page }) => {
+    test(`switching language keeps text, caret selection and undo, and causes no save`, async ({ page }) => {
       await setLocale(page, locale === "en" ? "ja" : "en"); // start in another language, then switch
       const backend = await mockBackend(page, v2(documentFixture));
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto("/editor/site-1");
-      const titleLabel = (l: string) => tx(l, "editor:inspector.title") ?? "";
-      void titleLabel;
-      await page.getByRole("tab", { name: /./ }).first().waitFor();
-      // type into the first window's title field in the properties panel
       const field = page.locator("#editor-right-panel input.w98-input").first();
       await expect(field).toBeVisible({ timeout: 15000 });
       await field.fill("");
       await page.keyboard.type("Draft in progress");
-      await field.evaluate((input: HTMLInputElement) => input.setSelectionRange(3, 8));
+      // let the edit autosave, then wait until the save count is stable: this is the baseline
+      await expect.poll(() => JSON.stringify(backend.saves.at(-1) ?? {})).toContain("Draft in progress");
+      let settled = -1;
+      await expect.poll(async () => { const n = backend.saves.length; const stable = n === settled; settled = n; await page.waitForTimeout(700); return stable; }, { timeout: 15000 }).toBe(true);
       const savesBefore = backend.saves.length;
-      const selector = page.getByTestId("language-switcher").first();
-      await selector.selectOption(locale);
+      const documentBefore = JSON.stringify(backend.saves.at(-1));
+      await field.evaluate((input: HTMLInputElement) => { input.focus(); input.setSelectionRange(3, 8); });
+      expect(await field.evaluate((input: HTMLInputElement) => [input.selectionStart, input.selectionEnd])).toEqual([3, 8]);
+
+      await page.getByTestId("language-switcher").first().selectOption(locale);
       await expect(page.locator("html")).toHaveAttribute("lang", locale);
-      await expect(page.locator("#editor-right-panel input.w98-input").first()).toHaveValue("Draft in progress");
-      // switching alone never saves or changes the document
-      await page.waitForTimeout(1600);
-      expect(backend.saves.length - savesBefore).toBeLessThanOrEqual(1); // at most the pending edit itself
-      const last = backend.saves.at(-1);
-      expect(JSON.stringify(last)).toContain("Draft in progress");
-      // undo is still there after the switch
+      const after = page.locator("#editor-right-panel input.w98-input").first();
+      await expect(after).toHaveValue("Draft in progress");
+      // the same element keeps its selection range across the switch
+      expect(await after.evaluate((input: HTMLInputElement) => [input.selectionStart, input.selectionEnd])).toEqual([3, 8]);
+      expect(await after.evaluate((input: HTMLInputElement) => input.value.slice(input.selectionStart!, input.selectionEnd!))).toBe("ft in");
+
+      // switching never marks the draft dirty or writes: wait well past the autosave delay
+      await page.waitForTimeout(3000);
+      expect(backend.saves.length).toBe(savesBefore);
+      expect(JSON.stringify(backend.saves.at(-1))).toBe(documentBefore);
+
+      // typing over the preserved selection edits exactly that range (the selection is live, not cosmetic)
+      await after.focus();
+      await after.evaluate((input: HTMLInputElement) => input.setSelectionRange(3, 8));
+      await page.keyboard.type("X");
+      await expect(after).toHaveValue("DraX progress");
+      // history survives the switch
       await page.getByRole("button", { name: tx(locale, "editor:shell.undo"), exact: true }).click();
-      await expect(page.locator("#editor-right-panel input.w98-input").first()).not.toHaveValue("Draft in progress");
+      await expect(page.locator("#editor-right-panel input.w98-input").first()).not.toHaveValue("DraX progress");
     });
 
     for (const width of [320, 390, 430]) {
@@ -282,23 +294,40 @@ for (const locale of PREVIEW ? (["ja", "ko"] as const) : []) {
       expect(await visibleChineseLeaks(page, locale), "icon picker").toEqual([]);
     });
 
-    test("window title composition commits once and is what gets saved", async ({ page }) => {
+    test("window title composition is not committed or saved until the IME commits", async ({ page }) => {
       await setLocale(page, locale);
       const backend = await mockBackend(page, v2(documentFixture));
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto("/editor/site-1");
       const field = page.locator("#editor-right-panel input.w98-input").first();
       await expect(field).toBeVisible({ timeout: 15000 });
-      await field.fill("");
+      await field.fill("Base");
+      await expect.poll(() => JSON.stringify(backend.saves.at(-1) ?? {})).toContain("Base");
+      let settled = -1;
+      await expect.poll(async () => { const n = backend.saves.length; const stable = n === settled; settled = n; await page.waitForTimeout(700); return stable; }, { timeout: 15000 }).toBe(true);
+      const savesBefore = backend.saves.length;
       await field.focus();
+      await field.evaluate((input: HTMLInputElement) => input.setSelectionRange(4, 4));
       const client = await page.context().newCDPSession(page);
-      for (const step of compose.steps) await client.send("Input.imeSetComposition", { text: step, selectionStart: step.length, selectionEnd: step.length });
+      // run the composition steps with a pause longer than the autosave delay after each one
+      for (const step of compose.steps) {
+        await client.send("Input.imeSetComposition", { text: step, selectionStart: step.length, selectionEnd: step.length });
+        await page.waitForTimeout(2200);
+        expect(backend.saves.length, `a save was sent mid-composition at "${step}"`).toBe(savesBefore);
+        for (const save of backend.saves) {
+          const title = save.document.windows[0].title as string;
+          expect(title, "saved title must never contain composition text").not.toContain(step);
+        }
+      }
+      // the stored document title is still the pre-composition value while composing
+      expect(backend.saves.at(-1)!.document.windows[0].title).toBe("Base");
+
       await client.send("Input.insertText", { text: compose.committed });
-      await expect(field).toHaveValue(compose.committed);
-      await expect.poll(() => JSON.stringify(backend.saves.at(-1) ?? {})).toContain(compose.committed);
-      // no fragment of the in-progress composition ended up in the saved title
-      const title = backend.saves.at(-1)!.document.windows[0].title as string;
-      expect(title).toBe(compose.committed);
+      await expect(field).toHaveValue(`Base${compose.committed}`);
+      await expect.poll(() => backend.saves.length, { timeout: 10000 }).toBe(savesBefore + 1);
+      await page.waitForTimeout(2500);
+      expect(backend.saves.length, "committing produces exactly one save").toBe(savesBefore + 1);
+      expect(backend.saves.at(-1)!.document.windows[0].title).toBe(`Base${compose.committed}`);
     });
   });
 }
