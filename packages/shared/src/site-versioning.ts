@@ -19,6 +19,8 @@ import {
   SafeUrlSchema,
   ImageUrlSchema,
   HttpsAudioUrlSchema,
+  providerEmbedSourceShape,
+  checkProviderEmbed,
   WebUrlSchema,
   SocialLinkSchema,
   ThemeSchema,
@@ -28,6 +30,7 @@ import {
   type SiteDocument,
 } from "./site";
 import { AssetReferenceSchema } from "./asset-reference";
+import { WindowChromeSchema } from "./window-chrome";
 
 const BoundedId = z.string().trim().min(1).max(160);
 /** Canonical OC handles are URL-safe, lower-case labels. Display names remain unrestricted. */
@@ -45,7 +48,7 @@ export type EntityRef = z.infer<typeof EntityRefSchema>;
 const StrictDocumentBlockSchema = z.discriminatedUnion("kind", [
   z.object({ id: BoundedId, kind: z.literal("heading"), text: z.string().max(500) }).strict(),
   z.object({ id: BoundedId, kind: z.literal("text"), text: z.string().max(10_000), align: z.enum(["left", "center", "right"]).default("left"), bold: z.boolean().default(false), italic: z.boolean().default(false) }).strict(),
-  z.object({ id: BoundedId, kind: z.literal("image"), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default(""), alt: z.string().max(300).default("") }).strict(),
+  z.object({ id: BoundedId, kind: z.literal("image"), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default(""), alt: z.string().max(300).default(""), caption: z.string().max(300).optional() }).strict(),
   z.object({ id: BoundedId, kind: z.literal("button"), text: z.string().max(200), url: SafeUrlSchema }).strict(),
   z.object({ id: BoundedId, kind: z.literal("link"), text: z.string().max(500), url: SafeUrlSchema }).strict(),
   z.object({ id: BoundedId, kind: z.literal("list"), text: z.string().max(10_000) }).strict(),
@@ -68,7 +71,8 @@ const StrictMusicCharacterRefSchema = z.object({ siteId: BoundedId, id: BoundedI
 const StrictMusicSourceSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("audioUrl"), url: HttpsAudioUrlSchema }).strict(),
   z.object({ kind: z.literal("uploadedAudio"), asset: z.union([AssetReferenceSchema, HttpsAudioUrlSchema]) }).strict(),
-  z.object({ kind: z.literal("externalLink"), url: WebUrlSchema }).strict()
+  z.object({ kind: z.literal("externalLink"), url: WebUrlSchema }).strict(),
+  z.object(providerEmbedSourceShape).strict().superRefine(checkProviderEmbed)
 ]);
 const StrictMusicTrackSchema = z.object({
   id: BoundedId, title: z.string().max(200), artist: z.string().max(200), cover: ImageUrlSchema.nullable(), coverUrl: z.string().max(2048).default(""),
@@ -146,7 +150,7 @@ export type PostEntityV2 = z.infer<typeof PostEntityV2Schema>;
 
 const BaseV2Window = z.object({
   id: BoundedId, title: z.string().min(1).max(160), icon: z.string().min(1).max(500), layout: StrictWindowLayoutSchema,
-  defaultOpen: z.boolean(), appearance: StrictAppearanceSchema.optional()
+  defaultOpen: z.boolean(), appearance: StrictAppearanceSchema.optional(), chrome: WindowChromeSchema.optional()
 }).strict();
 const NonInstagramWindowV2Schema = z.discriminatedUnion("type", [
   BaseV2Window.extend({ type: z.literal("document"), content: z.object({ blocks: z.array(StrictDocumentBlockSchema).max(100) }).strict() }),
@@ -468,7 +472,6 @@ export function parseSiteDocument(raw: unknown): ParseSiteDocumentResult {
 export function validateSiteDocumentScope(raw: unknown, siteId: string): Diagnostic[] {
   const parsed = parseSiteDocument(raw);
   if (!parsed.ok) return parsed.code === "invalid" ? parsed.diagnostics : [{ path: ["schemaVersion"], message: `Unsupported document version: ${parsed.version}`, code: "unsupported_version" }];
-  if (parsed.version === 1) return [];
   const scope = documentSiteScope(parsed.document);
   return [...scope].filter((value) => value !== siteId).map((value) => ({ path: ["entities"], message: `Document scope ${value} does not match site ${siteId}`, code: "cross_site" }));
 }
@@ -583,12 +586,15 @@ function validatedOutput(document: SiteDocumentV2Input): ProfileDiagnostic[] {
   return validDocument(document);
 }
 
-function documentSiteScope(document: SiteDocumentV2Input): Set<string> {
-  const sites = new Set<string>([...document.entities.profiles, ...document.entities.posts].map((entity) => entity.siteId));
-  for (const edge of document.entities.followEdges ?? []) sites.add(edge.siteId);
+function documentSiteScope(document: SiteDocument | SiteDocumentV2Input): Set<string> {
+  const sites = new Set<string>();
+  if (document.schemaVersion === 2) {
+    for (const entity of [...document.entities.profiles, ...document.entities.posts, ...(document.entities.highlights ?? []), ...(document.entities.collections ?? []), ...(document.entities.followEdges ?? [])]) sites.add(entity.siteId);
+    for (const window of document.windows) if (window.type === "instagram") sites.add(window.content.profileRef.siteId);
+  }
   for (const window of document.windows) {
-    if (window.type === "instagram") sites.add(window.content.profileRef.siteId);
     if (window.type === "music") for (const track of window.content.tracks) if (track.characterRef) sites.add(track.characterRef.siteId);
+    if (window.type === "explorer") for (const shortcut of window.content.shortcuts) sites.add(shortcut.target.siteId);
   }
   return sites;
 }
@@ -681,6 +687,7 @@ export function deleteOrRetargetProfile(document: SiteDocumentV2Input, profileId
   const next = structuredClone(document);
   if (options.retargetProfileId) {
     next.windows = next.windows.map((window) => {
+      if (window.type === "explorer") return { ...window, content: { ...window.content, shortcuts: window.content.shortcuts.map((shortcut) => shortcut.target.kind === "profile" && shortcut.target.id === profileId ? { ...shortcut, target: { ...shortcut.target, id: options.retargetProfileId! } } : shortcut) } };
       if (window.type === "instagram" && window.content.profileRef.id === profileId) return { ...window, content: { ...window.content, profileRef: { ...window.content.profileRef, id: options.retargetProfileId! } } };
       if (window.type === "music") return { ...window, content: { ...window.content, tracks: window.content.tracks.map((track) => track.characterRef?.id === profileId ? { ...track, characterRef: { ...track.characterRef, id: options.retargetProfileId! } } : track) } };
       return window;

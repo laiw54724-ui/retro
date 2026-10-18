@@ -1,5 +1,7 @@
 import { z } from "zod";
+import { resolveEmbedUrl } from "./embed-provider";
 import { AssetReferenceSchema } from "./asset-reference";
+import { WindowChromeSchema } from "./window-chrome";
 
 export const usernamePattern = /^[a-z0-9](?:[a-z0-9-]{1,18}[a-z0-9])?$/;
 export const reservedUsernames = new Set([
@@ -114,14 +116,17 @@ const BaseBlockSchema = z.object({ id: z.string().min(1) });
 export const DocumentBlockSchema = z.discriminatedUnion("kind", [
   BaseBlockSchema.extend({ kind: z.literal("heading"), text: z.string().max(500) }),
   BaseBlockSchema.extend({ kind: z.literal("text"), text: z.string().max(10_000), align: z.enum(["left", "center", "right"]).default("left"), bold: z.boolean().default(false), italic: z.boolean().default(false) }),
-  BaseBlockSchema.extend({ kind: z.literal("image"), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default(""), alt: z.string().max(300).default("") }),
+  // Missing caption preserves legacy visible alt text; an explicit empty caption hides it.
+  BaseBlockSchema.extend({ kind: z.literal("image"), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default(""), alt: z.string().max(300).default(""), caption: z.string().max(300).optional() }),
   BaseBlockSchema.extend({ kind: z.literal("button"), text: z.string().max(200), url: SafeUrlSchema }),
   BaseBlockSchema.extend({ kind: z.literal("link"), text: z.string().max(500), url: SafeUrlSchema }),
   BaseBlockSchema.extend({ kind: z.literal("list"), text: z.string().max(10_000) }),
   BaseBlockSchema.extend({ kind: z.literal("divider") })
 ]);
 
-export const GalleryImageSchema = z.object({
+// Keep the original fields shared with legacy IG posts. Gallery-only metadata
+// must not become a second alternative-text field on canonical OC post media.
+const LegacyGalleryImageSchema = z.object({
   id: z.string().min(1),
   src: ImageUrlSchema.nullable(),
   title: z.string().max(200),
@@ -129,6 +134,9 @@ export const GalleryImageSchema = z.object({
   srcUrl: z.string().max(2048).default(""),
   href: SafeUrlSchema.default("")
 });
+
+/** An absent alt retains the legacy caption/title fallback; an empty alt is intentional. */
+export const GalleryImageSchema = LegacyGalleryImageSchema.extend({ alt: z.string().max(300).optional() });
 
 export const LinkItemSchema = z.object({
   id: z.string().min(1),
@@ -146,7 +154,7 @@ export const SocialLinkSchema = z.object({ id: z.string().min(1), label: z.strin
 
 export const IgCommentSchema = z.object({ id: z.string().min(1), user: z.string().max(64), text: z.string().max(1000) });
 export const IgExtraImageSchema = z.object({ id: z.string().min(1), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default("") });
-export const IgPostSchema = GalleryImageSchema.extend({
+export const IgPostSchema = LegacyGalleryImageSchema.extend({
   location: z.string().max(120).default(""),
   date: z.string().max(40).default(""),
   likes: z.number().int().min(0).max(1e9).default(0),
@@ -156,10 +164,26 @@ export const IgPostSchema = GalleryImageSchema.extend({
 export const IgHighlightSchema = z.object({ id: z.string().min(1), title: z.string().max(40), src: ImageUrlSchema.nullable(), srcUrl: z.string().max(2048).default("") });
 
 export const MusicCharacterRefSchema = z.object({ siteId: z.string().trim().min(1).max(160), id: z.string().trim().min(1).max(160), kind: z.literal("profile") });
+/** Official platform player (Spotify / YouTube). Only ids are stored; the iframe URL is rebuilt in code. */
+export const providerEmbedSourceShape = {
+  kind: z.literal("providerEmbed"),
+  provider: z.enum(["spotify", "youtube"]),
+  resourceType: z.enum(["track", "album", "playlist", "video"]),
+  resourceId: z.string().min(1).max(64),
+  canonicalUrl: z.string().max(2048),
+  /** What the author pasted, kept so switching source type never loses it. */
+  originalUrl: WebUrlSchema.default("")
+};
+export function checkProviderEmbed(source: { provider: "spotify" | "youtube"; resourceType: string; resourceId: string; canonicalUrl: string }, ctx: z.RefinementCtx) {
+  const resolved = resolveEmbedUrl(source.canonicalUrl);
+  const consistent = resolved.status === "supported" && resolved.provider === source.provider && resolved.resourceType === source.resourceType && resolved.resourceId === source.resourceId && resolved.canonicalUrl === source.canonicalUrl;
+  if (!consistent) ctx.addIssue({ code: "custom", path: ["canonicalUrl"], message: "Embed source does not match its provider, type and id" });
+}
 export const MusicSourceSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("audioUrl"), url: HttpsAudioUrlSchema }),
   z.object({ kind: z.literal("uploadedAudio"), asset: z.union([AssetReferenceSchema, HttpsAudioUrlSchema]) }),
-  z.object({ kind: z.literal("externalLink"), url: WebUrlSchema })
+  z.object({ kind: z.literal("externalLink"), url: WebUrlSchema }),
+  z.object(providerEmbedSourceShape).superRefine(checkProviderEmbed)
 ]);
 export const MusicTrackSchema = z.object({
   id: z.string().min(1).max(160),
@@ -210,11 +234,14 @@ export const MoodboardContentSchema = z.object({
 
 export const ExplorerFolderSchema = z.object({
   id: z.string().min(1).max(160), parentId: z.string().min(1).max(160).nullable(), name: z.string().trim().min(1).max(120),
-  order: z.number().int().min(0).max(9999), visibility: z.enum(["published", "draft"]).default("published")
+  order: z.number().int().min(0).max(9999), visibility: z.enum(["published", "draft"]).default("published"),
+  /** Appearance only: a built-in key, library id (`haiku:folder`), asset reference or https image. Missing means the default glyph. */
+  icon: z.string().max(500).optional()
 }).strict();
 export const ExplorerShortcutSchema = z.object({
   id: z.string().min(1).max(160), parentId: z.string().min(1).max(160).nullable(), label: z.string().trim().min(1).max(160),
   order: z.number().int().min(0).max(9999), visibility: z.enum(["published", "draft"]).default("published"),
+  icon: z.string().max(500).optional(),
   target: z.discriminatedUnion("kind", [
     z.object({ siteId: z.string().trim().min(1).max(160), id: z.string().trim().min(1).max(160), kind: z.literal("window") }).strict(),
     z.object({ siteId: z.string().trim().min(1).max(160), id: z.string().trim().min(1).max(160), kind: z.literal("profile") }).strict(),
@@ -291,7 +318,8 @@ export const BaseWindowSchema = z.object({
   icon: z.string().min(1).max(500),
   layout: WindowLayoutSchema,
   defaultOpen: z.boolean(),
-  appearance: WindowAppearanceSchema.optional()
+  appearance: WindowAppearanceSchema.optional(),
+  chrome: WindowChromeSchema.optional()
 });
 
 export const DesktopWindowSchema = z.discriminatedUnion("type", [
@@ -579,7 +607,7 @@ export function makeBlock(kind: DocumentBlockKind): DocumentBlock {
   switch (kind) {
     case "heading": return { id, kind, text: "標題" };
     case "text": return { id, kind, text: "", align: "left", bold: false, italic: false };
-    case "image": return { id, kind, src: null, srcUrl: "", alt: "" };
+    case "image": return { id, kind, src: null, srcUrl: "", alt: "", caption: "" };
     case "button": return { id, kind, text: "按鈕", url: "" };
     case "link": return { id, kind, text: "連結文字", url: "" };
     case "list": return { id, kind, text: "項目一\n項目二" };

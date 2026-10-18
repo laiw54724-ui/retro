@@ -142,7 +142,7 @@ test("editing an active preview source stops the old audio", async ({ page }) =>
   await expect(player.getByRole("button", { name: "試聽" })).toBeVisible();
 });
 
-test("one explicit audio source survives minimize, switches globally and stops on close", async ({ page }) => {
+test("one explicit audio source stops on minimize, switches globally and stops on close", async ({ page }) => {
   await installFakeMedia(page);
   const first = musicWindow("music-a", "Player A", 0, ["https://media.example.com/a.mp3", "https://example.com/work"]);
   const second = musicWindow("music-b", "Player B", 1, ["https://media.example.com/b.mp3"]);
@@ -155,7 +155,8 @@ test("one explicit audio source survives minimize, switches globally and stops o
   await expect(page.locator(".visitor-task-buttons").getByRole("button", { name: "Player A · 播放中" })).toBeVisible();
   await firstDialog.getByRole("button", { name: "最小化" }).click();
   await expect(firstDialog).toBeHidden();
-  await expect(page.locator(".visitor-task-buttons").getByRole("button", { name: "Player A · 播放中" })).toBeVisible();
+  await expect(page.locator(".visitor-task-buttons").getByRole("button", { name: "Player A", exact: true })).toBeVisible();
+  await expect(page.locator(".visitor-task-buttons").getByText("播放中")).toHaveCount(0);
 
   await secondDialog.getByRole("button", { name: "播放" }).click();
   await expect(page.locator(".visitor-task-buttons").getByRole("button", { name: "Player B · 播放中" })).toBeVisible();

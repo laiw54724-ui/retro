@@ -46,4 +46,55 @@ describe("asset resolver cache", () => {
     resolver.dispose();
     expect(revoke).toHaveBeenCalledWith("blob:one");
   });
+
+  it("keeps a disposed lifecycle terminal while a fresh setup resolves the same reference", async () => {
+    let releaseOld!: (blob: Blob) => void;
+    let releaseCurrent!: (blob: Blob) => void;
+    const oldFetch = vi.fn(() => new Promise<Blob>((resolve) => { releaseOld = resolve; }));
+    const oldCreate = vi.fn(() => "blob:old");
+    const oldRevoke = vi.fn();
+    const old = createAssetResolver({ fetchBlob: oldFetch, createUrl: oldCreate, revokeUrl: oldRevoke });
+    const late = old.resolve(ref);
+    old.dispose();
+
+    const currentFetch = vi.fn(() => new Promise<Blob>((resolve) => { releaseCurrent = resolve; }));
+    const currentRevoke = vi.fn();
+    const current = createAssetResolver({ fetchBlob: currentFetch, createUrl: () => "blob:current", revokeUrl: currentRevoke });
+    const active = current.resolve(ref);
+    releaseOld(new Blob(["old site response"]));
+    releaseCurrent(new Blob(["current site response"]));
+
+    await expect(late).resolves.toBeNull();
+    await expect(active).resolves.toBe("blob:current");
+    await expect(old.resolve(ref)).resolves.toBeNull();
+    await expect(old.resolve("retro-asset:22222222-2222-4222-8222-222222222222")).resolves.toBeNull();
+    await expect(current.resolve(ref)).resolves.toBe("blob:current");
+    expect(oldFetch).toHaveBeenCalledTimes(1);
+    expect(oldCreate).not.toHaveBeenCalled();
+    expect(currentFetch).toHaveBeenCalledTimes(1);
+
+    old.dispose();
+    expect(oldRevoke).not.toHaveBeenCalled();
+    expect(currentRevoke).not.toHaveBeenCalled();
+    current.dispose();
+    current.dispose();
+    expect(currentRevoke).toHaveBeenCalledExactlyOnceWith("blob:current");
+  });
+
+  it("reports failed loads as null without caching the failure", async () => {
+    const fetchBlob = vi.fn<() => Promise<Blob | null>>()
+      .mockRejectedValueOnce(new Error("network unavailable"))
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(new Blob(["recovered"]));
+    const revoke = vi.fn();
+    const resolver = createAssetResolver({ fetchBlob, createUrl: () => "blob:recovered", revokeUrl: revoke });
+
+    await expect(resolver.resolve(ref)).resolves.toBeNull();
+    await expect(resolver.resolve(ref)).resolves.toBeNull();
+    await expect(resolver.resolve(ref)).resolves.toBe("blob:recovered");
+    await expect(resolver.resolve(ref)).resolves.toBe("blob:recovered");
+    expect(fetchBlob).toHaveBeenCalledTimes(3);
+    resolver.dispose();
+    expect(revoke).toHaveBeenCalledExactlyOnceWith("blob:recovered");
+  });
 });

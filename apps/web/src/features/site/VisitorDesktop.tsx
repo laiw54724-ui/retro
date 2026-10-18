@@ -6,7 +6,8 @@ import { RetroWindow } from "../../components/RetroWindow";
 import { useThemeView } from "../../lib/themeView";
 import { DesktopTaskbar } from "./DesktopTaskbar";
 import { WindowRenderer } from "./WindowRenderer";
-import { musicPlayback, useMusicPlayback } from "../modules/music/audioCoordinator";
+import { useMusicPlayback } from "../modules/music/audioCoordinator";
+import { stopAllMedia, stopWindowMedia } from "../modules/music/mediaSession";
 
 type WindowStatus = "open" | "minimized" | "closed";
 
@@ -48,7 +49,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
   const tv = useThemeView(document.theme);
   const music = useMusicPlayback();
 
-  useEffect(() => () => musicPlayback.stopAll(), []);
+  useEffect(() => () => stopAllMedia(), []);
 
   const topZ = useMemo(
     () => Math.max(0, ...Object.values(runtime).filter((item) => item.status === "open").map((item) => item.z)),
@@ -77,11 +78,12 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
   }
 
   function minimize(id: string) {
+    stopWindowMedia(id);
     setRuntime((current) => current[id] ? { ...current, [id]: { ...current[id], status: "minimized" } } : current);
   }
 
   function close(id: string) {
-    musicPlayback.stopWindow(id);
+    stopWindowMedia(id);
     setRuntime((current) => current[id] ? { ...current, [id]: { ...current[id], status: "closed", maximized: false } } : current);
   }
 
@@ -223,20 +225,24 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
             onPointerMove={pointerMove}
             onPointerUp={pointerUp}
             onPointerCancel={() => { gesture.current = null; }}
+            onFocusCapture={() => focus(window.id)}
           >
             <RetroWindow
               title={window.title}
+              icon={window.icon}
               theme={document.theme}
               appearance={window.appearance}
+              chrome={window.chrome}
               active={state.z === topZ}
               maximized={state.maximized}
               interactiveControls
               onMinimize={() => minimize(window.id)}
               onMaximize={() => toggleMaximize(window.id)}
               onClose={() => close(window.id)}
+              titleBarProps={{ onDoubleClick: () => toggleMaximize(window.id), style: { touchAction: "none" } }}
               style={{ height: "100%" }}
             >
-              <WindowRenderer window={window} theme={document.theme} onOpenWindow={openWindow} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialPostId={window.id === initialOpenId ? initialPostId : undefined} publicShareBaseUrl={publicShareBaseUrl} siteHandle={siteHandle} />
+              <WindowRenderer window={window} theme={document.theme} allWindows={document.windows} onOpenWindow={openWindow} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialPostId={window.id === initialOpenId ? initialPostId : undefined} publicShareBaseUrl={publicShareBaseUrl} siteHandle={siteHandle} />
             </RetroWindow>
             {!state.maximized ? <span className="window-resize-handle" aria-hidden="true" /> : null}
           </div>

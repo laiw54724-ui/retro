@@ -264,3 +264,23 @@ describe("demo documents", () => {
     }
   });
 });
+
+describe("publish checks for music sources", () => {
+  it("warns when a platform page is stored as a direct audio URL, but not for real audio files or embeds", () => {
+    const doc = createStarterDocument("x", "classic98", "blank");
+    const music = makeWindow("music");
+    if (music.type !== "music") throw new Error("music factory mismatch");
+    const track = (id: string, source: never) => ({ id, title: id, artist: "", cover: null, coverUrl: "", source, lyrics: "", rightsNote: "" });
+    music.content.tracks = [
+      track("yt", { kind: "audioUrl", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" } as never),
+      track("sp", { kind: "audioUrl", url: "https://open.spotify.com/track/50q2aUjWoTn6CJIfSPRJQA" } as never),
+      track("ok", { kind: "audioUrl", url: "https://media.example.com/a.mp3" } as never),
+      track("emb", { kind: "providerEmbed", provider: "spotify", resourceType: "track", resourceId: "50q2aUjWoTn6CJIfSPRJQA", canonicalUrl: "https://open.spotify.com/track/50q2aUjWoTn6CJIfSPRJQA", originalUrl: "" } as never)
+    ];
+    music.content.playlist.trackIds = ["yt", "sp", "ok", "emb"];
+    doc.windows.push(music);
+    const checks = buildPublishChecks(doc);
+    expect(checks.find((c) => c.text.includes("平台網頁"))).toMatchObject({ level: "warn", text: expect.stringContaining("2 首") });
+    expect(hasBlockingCheck(checks)).toBe(false);
+  });
+});

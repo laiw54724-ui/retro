@@ -1,0 +1,28 @@
+.editor { min-width: 0; margin: 0; padding: 10px 8px; display: flex; flex-direction: column; gap: 10px; border: 1px solid #808080; box-shadow: inset 1px 1px #fff, 1px 1px #fff; }
+.editor > legend { padding: 0 5px; font-weight: 700; }
+.presets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.preset { min-width: 0; padding: 4px; color: #111; background: #c0c0c0; border: 1px solid #808080; font: inherit; text-align: left; cursor: pointer; }
+.preset[aria-pressed="true"] { outline: 2px solid #000080; outline-offset: -2px; background: #dfdfdf; }
+.preset strong, .preset small { display: block; font-size: 11px; overflow-wrap: anywhere; }
+.preset small { margin-top: 4px; color: #444; font-size: 10px; line-height: 1.4; }
+.preset:focus-visible { outline: 2px dotted #000; outline-offset: 1px; }
+.thumbnail { display: flex; flex-direction: column; gap: 3px; padding: 3px; height: 40px; margin-bottom: 5px; box-shadow: var(--w98-raised); }
+.thumbnail > i { display: block; }
+.thumbnail > b { display: block; flex: 1; background: #fff; box-shadow: var(--w98-sunken); }
+.preview { min-width: 0; }
+.previewText { margin: 6px; font-size: 11px; line-height: 1.5; }
+.note { margin: 0; font-size: 11px; line-height: 1.5; color: #444; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field select { min-width: 0; min-height: 32px; padding: 3px 7px; border: 0; color: #111; background: #fff; box-shadow: var(--w98-sunken); }
+.check, .section { min-height: 28px; display: flex; align-items: center; gap: 6px; }
+.sections { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.section { min-width: 0; font-size: 12px; }
+.section small { display: block; color: #555; font-size: 10px; }
+.actions { display: grid; gap: 6px; position: sticky; bottom: 0; z-index: 1; padding: 6px 0; background: #c0c0c0; }
+.editor button { white-space: normal; }
+@media (max-width: 767px) {
+  .actions { grid-template-columns: 1fr 1fr; }
+  .editor .actions button, .field select, .check, .section { min-height: 44px; }
+  .editor input[type="checkbox"] { width: 20px; height: 20px; }
+  .preset { min-height: 90px; }
+}

@@ -137,8 +137,8 @@ test("one window can override, flatten and reset its title bar", async ({ page }
 
   await page.getByRole("tab", { name: "版面" }).click();
   await page.getByLabel("自訂標題列").check();
-  await page.getByLabel("標題起始色").fill("#112233");
-  await page.getByLabel("標題結束色").fill("#445566");
+  await page.getByLabel("標題起始色", { exact: true }).fill("#112233");
+  await page.getByLabel("標題結束色", { exact: true }).fill("#445566");
   await expect(titlebar).toHaveCSS("background-image", /linear-gradient/);
   await expect.poll(() => saves.at(-1)?.document.windows.find((window) => window.id === "about")?.appearance?.titleFrom).toBe("#112233");
 
@@ -155,20 +155,26 @@ test("Windows icon picker offers curated icons and searchable full library", asy
   await mockWindowsIconPack(page);
   const saves = await openEditor(page);
   await page.getByRole("tab", { name: "圖示" }).click();
-  await expect(page.getByText("Windows 精選")).toBeVisible();
-  await page.getByLabel("搜尋 Windows 圖示").fill("computer");
-  const result = page.getByRole("button", { name: /Windows 圖示 .*computer/i }).first();
+  await page.getByRole("button", { name: "更換圖示…" }).click();
+  const dialog = page.getByRole("dialog", { name: "選擇圖示" });
+  await dialog.getByRole("tab", { name: "Windows（本機）" }).click();
+  await expect(dialog.locator(".ilib-grid .ilib-tile").first()).toBeVisible();
+  await dialog.getByLabel("搜尋圖示").fill("computer");
+  const result = dialog.locator(".ilib-grid .ilib-tile").first();
   await expect(result).toBeVisible();
   await result.click();
+  await dialog.getByRole("button", { name: "套用" }).click();
   await expect.poll(() => saves.at(-1)?.document.windows.find((window) => window.id === "about")?.icon).toMatch(/^\/windows-icons\/[A-Za-z0-9._-]+\.(?:ico|png)$/);
 });
 
 test("clean release explains the optional Windows icon pack", async ({ page }) => {
   await openEditor(page);
   await page.getByRole("tab", { name: "圖示" }).click();
-  await expect(page.getByText("未安裝 Windows 可選圖示包", { exact: false })).toBeVisible();
-  await expect(page.getByLabel("搜尋 Windows 圖示")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "圖示 camera" })).toBeVisible();
+  await page.getByRole("button", { name: "更換圖示…" }).click();
+  const dialog = page.getByRole("dialog", { name: "選擇圖示" });
+  await expect(dialog.getByText("未安裝 Windows 可選圖示包", { exact: false })).toBeVisible();
+  await expect(dialog.getByRole("tab", { name: "Windows（本機）" })).toHaveCount(0);
+  await expect(dialog.getByRole("button", { name: "相機（內建）" })).toBeVisible();
 });
 
 test("desktop and mobile add surfaces share the registry modules", async ({ page }) => {
