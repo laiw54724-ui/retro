@@ -1,0 +1,116 @@
+{
+  "shell": {
+    "backToDesktops": "自分のデスクトップへ戻る",
+    "undo": "元に戻す",
+    "undoTitle": "元に戻す (Ctrl+Z)",
+    "redo": "やり直す",
+    "redoTitle": "やり直す (Ctrl+Shift+Z)",
+    "unpublished": "未公開",
+    "unpublishedChanges": "下書きに未公開の変更があります",
+    "published": "v{{version}} を公開済み",
+    "saveIncomplete": "未入力の項目があるため保存を一時停止中",
+    "saving": "保存中…",
+    "unsaved": "未保存",
+    "saveFailed": "保存できませんでした",
+    "saved": "保存済み",
+    "roleNote": "編集者 · 公開できるのは所有者のみ",
+    "roleHint": "公開と共同編集者の管理は、デスクトップの所有者のみが行えます",
+    "device": "デバイス",
+    "desktop": "パソコン",
+    "mobile": "モバイル",
+    "preview": "訪問者プレビュー",
+    "collaborators": "共同編集者",
+    "transfer": "エクスポート／インポート",
+    "openPublished": "公開サイトを開く",
+    "publish": "公開",
+    "republish": "変更を公開",
+    "home": "ホーム",
+    "signOut": "ログアウト",
+    "layoutMode": "レイアウトモード",
+    "editMode": "編集モード",
+    "selected": "選択中：{{title}}",
+    "noneSelected": "未選択",
+    "windowsCount_one": "ウィンドウ {{formattedCount}} 個",
+    "windowsCount_other": "ウィンドウ {{formattedCount}} 個",
+    "loadingError": "エディターを開けません",
+    "retrySave": "保存を再試行",
+    "closeNotice": "通知を閉じる",
+    "toolsPanel": "ツールパネル",
+    "toolsTabs": "編集ツールの分類"
+  },
+  "tabs": {
+    "add": "追加",
+    "layers": "ウィンドウ",
+    "theme": "テーマ"
+  },
+  "add": {
+    "heading": "ウィンドウを追加",
+    "hint": "項目を選ぶとウィンドウとデスクトップアイコンが追加されます。",
+    "comingSoon": "近日公開",
+    "diary": "日記",
+    "characterProfile": "キャラクター紹介",
+    "visualNovel": "ビジュアルノベル"
+  },
+  "modules": {
+    "document": {
+      "label": "文書",
+      "description": "見出し、段落、画像、ボタン、リスト"
+    },
+    "gallery": {
+      "label": "アルバム",
+      "description": "タップで拡大できる画像グリッド"
+    },
+    "links": {
+      "label": "リンク",
+      "description": "SNS や外部サイトへのリンクボタン"
+    },
+    "about": {
+      "label": "プロフィールカード／自己紹介",
+      "description": "アイコン、プロフィール項目、自己紹介、バナー"
+    },
+    "instagram": {
+      "label": "レトロ IG プロフィール",
+      "description": "アカウント、フォロワー数、自己紹介、投稿グリッド"
+    },
+    "music": {
+      "label": "音楽プレーヤー",
+      "description": "キャラクターのプレイリスト、音声再生、音楽リンク"
+    },
+    "moodboard": {
+      "label": "ムードボード",
+      "description": "画像、文章、色でキャラクターのイメージをまとめる"
+    },
+    "explorer": {
+      "label": "世界観フォルダー",
+      "description": "階層フォルダーでウィンドウやキャラクター設定を整理"
+    },
+    "minesweeper": {
+      "label": "マインスイーパー",
+      "description": "スコアの記録や送信をしない訪問者向けミニゲーム"
+    },
+    "character-dialog": {
+      "label": "キャラクターのあいさつ",
+      "description": "閉じることができるキャラクターのウェルカムメッセージ"
+    },
+    "guestbook": {
+      "label": "ゲストブック",
+      "description": "初期設定で承認待ちになる公開テキストメッセージ"
+    }
+  },
+  "mobile": {
+    "editing": "編集中",
+    "emptyTitle": "デスクトップはまだ空です",
+    "emptyEditor": "下の「追加」から最初のウィンドウを作成しましょう。",
+    "emptyVisitor": "このデスクトップにはまだ内容がありません。",
+    "desktop": "デスクトップ",
+    "finishEditing": "編集を終了",
+    "editWindow": "このウィンドウを編集",
+    "toolbar": "モバイル編集ツール",
+    "add": "追加",
+    "edit": "編集",
+    "theme": "テーマ",
+    "preview": "プレビュー",
+    "addWindow": "ウィンドウを追加",
+    "editWindowTitle": "ウィンドウを編集"
+  }
+}

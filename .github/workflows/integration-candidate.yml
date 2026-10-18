@@ -6,6 +6,8 @@ on:
       - integration/retro-usability-release
       - integration/retro-q0-validation
       - claude/retro-release-candidate
+      - claude/retro-i18n-foundation
+      - claude/retro-oc-ig-editor
   workflow_dispatch:
 
 permissions:

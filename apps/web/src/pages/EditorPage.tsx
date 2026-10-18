@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { buildPublishChecks, CollectionEntityV2Schema, createProfile, deleteOrRetargetProfile, duplicateProfile, hasBlockingCheck, loadVersionedSiteDocument, normalizeDocument, parseSiteDocument, PostEntityV2Schema, ProfileEntityV2Schema, projectV2ToLegacyDocument, updateProfile, type DesktopWindow, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { api, ApiError, type AssetRecord, type SiteRecord } from "../lib/api";
 import { useEditorStore } from "../features/editor/store";
 import { DesktopCanvas } from "../features/editor/DesktopCanvas";
@@ -21,6 +22,8 @@ import { TransferDialog } from "../features/transfer/TransferDialog";
 import { EditorMediaProvider } from "../features/media/editorMedia";
 import { IntegrityDialog } from "../features/editor/IntegrityDialog";
 import { stopAllMedia } from "../features/modules/music/mediaSession";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
+import { useLocaleFormatting } from "../i18n/format";
 
 
 
@@ -62,6 +65,9 @@ function loadSidebarPreferences(): SidebarPreferences {
 }
 
 export function EditorPage({ site }: { site: SiteRecord }) {
+  const { t } = useTranslation("editor");
+  const { t: common } = useTranslation("common");
+  const { formatNumber, fontFamily } = useLocaleFormatting();
   const siteId = site.id;
   const navigate = useNavigate();
   const { signOut } = useAuth();
@@ -326,8 +332,8 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   );
   const migrationAudits = assetAudits.filter((entry) => entry.asset.storageScope === "legacy_public" || entry.asset.publicCopyRemaining);
 
-  if (loadError) return <main className="not-found"><div><h1>無法開啟編輯器</h1><p>{loadError}</p></div></main>;
-  if (loading || !store.document) return <div className="boot-screen">Loading desktop...</div>;
+  if (loadError) return <main className="not-found" style={{ fontFamily }}><div><h1 style={{ fontFamily }}>{t("shell.loadingError")}</h1><p>{loadError}</p><LanguageSwitcher /></div></main>;
+  if (loading || !store.document) return <div className="boot-screen" style={{ fontFamily }}>{common("app.loading")}</div>;
 
   async function uploadImage(file: File, kind: "image" | "icon" | "audio" = "image"): Promise<string | null> {
     const audio = kind === "audio";
@@ -494,16 +500,16 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       ? "有未發布變更"
       : "已同步發布";
   const badge = !store.publishedDocument
-    ? { text: "尚未發布", bg: "#ffffe1", color: "#7a5b00" }
+    ? { text: t("shell.unpublished"), bg: "#ffffe1", color: "#7a5b00" }
     : hasUnpublishedChanges
-      ? { text: "草稿有未發布的變更", bg: "#fff0e0", color: "#b35c00" }
-      : { text: `已發布 v${store.publishedVersion ?? ""}`, bg: "#e6f4ee", color: "#1f7a5c" };
+      ? { text: t("shell.unpublishedChanges"), bg: "#fff0e0", color: "#b35c00" }
+      : { text: t("shell.published", { version: store.publishedVersion == null ? "" : formatNumber(store.publishedVersion) }), bg: "#e6f4ee", color: "#1f7a5c" };
   const saveText = draftIssue && store.saveStatus === "dirty"
-    ? "有欄位未完成，暫不儲存"
-    : store.saveStatus === "saving" ? "儲存中…"
-      : store.saveStatus === "dirty" ? "尚未儲存"
-        : store.saveStatus === "error" ? "儲存失敗"
-          : "已儲存";
+    ? t("shell.saveIncomplete")
+    : store.saveStatus === "saving" ? t("shell.saving")
+      : store.saveStatus === "dirty" ? t("shell.unsaved")
+        : store.saveStatus === "error" ? t("shell.saveFailed")
+          : t("shell.saved");
 
   const layoutMode = store.layoutMode && store.device === "desktop";
   const actions = collaborationActions(store.accessRole);
@@ -516,39 +522,40 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     <AssetSourceProvider siteId={siteId}>
     <EditorMediaProvider key={siteId} siteId={siteId}>
     <main className="editor-app">
-      <header className="editor-topbar">
-        <Link to="/auth" className="brand" title="回到我的桌面"><Icon name="computer" size={22} />Retro Desktop</Link>
+      <header className="editor-topbar" style={{ height: "auto", minHeight: 46, flexWrap: "wrap", overflow: "visible", paddingBlock: 6, fontFamily }}>
+        <Link to="/auth" className="brand" title={t("shell.backToDesktops")} style={{ fontFamily, flex: "0 0 auto" }}><Icon name="computer" size={22} />Retro Desktop</Link>
+        <LanguageSwitcher compact />
         <span className="w98-vsep mobile-hide" />
         <div className="topbar-meta">
           <span className="site-url">retrodesk.me/{store.username}</span>
           <span className="status-badge" title={badge.text} style={{ background: badge.bg, color: badge.color, borderColor: badge.color }}>{badge.text}</span>
         </div>
         <span className="w98-vsep mobile-hide" />
-        <RetroButton className="mobile-hide" disabled={store.past.length === 0} onClick={store.undo} aria-label="復原" title="復原 (Ctrl+Z)">↶ 復原</RetroButton>
-        <RetroButton className="mobile-hide" disabled={store.future.length === 0} onClick={store.redo} aria-label="重做" title="重做 (Ctrl+Shift+Z)">↷ 重做</RetroButton>
+        <RetroButton className="mobile-hide" disabled={store.past.length === 0} onClick={store.undo} aria-label={t("shell.undo")} title={t("shell.undoTitle")}>↶ {t("shell.undo")}</RetroButton>
+        <RetroButton className="mobile-hide" disabled={store.future.length === 0} onClick={store.redo} aria-label={t("shell.redo")} title={t("shell.redoTitle")}>↷ {t("shell.redo")}</RetroButton>
         <span className={"save-text mobile-hide " + store.saveStatus} title={draftIssue ?? undefined} role="status">{saveText}</span>
-        {store.accessRole === "editor" ? <span className="collaboration-role-note" title="只有桌面擁有者可以發布與管理協作者">編輯者 · 只有擁有者可以發布</span> : null}
+        {store.accessRole === "editor" ? <span className="collaboration-role-note" title={t("shell.roleHint")}>{t("shell.roleNote")}</span> : null}
         <div className="top-spacer" />
-        <div role="group" aria-label="裝置" className="device-toggle mobile-hide">
-          <button type="button" aria-pressed={store.device === "desktop"} className={"w98-btn" + (store.device === "desktop" ? " on" : "")} onClick={() => store.setDevice("desktop")}>桌面版</button>
-          <button type="button" aria-pressed={store.device === "mobile"} className={"w98-btn" + (store.device === "mobile" ? " on" : "")} onClick={() => { store.setLayoutMode(false); store.setDevice("mobile"); }}>手機版</button>
+        <div role="group" aria-label={t("shell.device")} className="device-toggle mobile-hide">
+          <button type="button" aria-pressed={store.device === "desktop"} className={"w98-btn" + (store.device === "desktop" ? " on" : "")} onClick={() => store.setDevice("desktop")}>{t("shell.desktop")}</button>
+          <button type="button" aria-pressed={store.device === "mobile"} className={"w98-btn" + (store.device === "mobile" ? " on" : "")} onClick={() => { store.setLayoutMode(false); store.setDevice("mobile"); }}>{t("shell.mobile")}</button>
         </div>
-        <RetroButton onClick={() => { stopAllMedia(); setPreview(true); }}>▶ 訪客預覽</RetroButton>
-        {actions.manageMembers ? <RetroButton ref={collaborationButtonRef} onClick={() => setCollaborationOpen(true)}>協作者</RetroButton> : null}
-        {actions.manageMembers ? <RetroButton onClick={() => setTransferOpen(true)}>匯出／匯入</RetroButton> : null}
-        {store.publishedDocument ? <a className="w98-btn mobile-hide" href={"/@" + store.username} target="_blank" rel="noreferrer">開啟已發布網站</a> : null}
+        <RetroButton onClick={() => { stopAllMedia(); setPreview(true); }}>▶ {t("shell.preview")}</RetroButton>
+        {actions.manageMembers ? <RetroButton ref={collaborationButtonRef} onClick={() => setCollaborationOpen(true)}>{t("shell.collaborators")}</RetroButton> : null}
+        {actions.manageMembers ? <RetroButton onClick={() => setTransferOpen(true)}>{t("shell.transfer")}</RetroButton> : null}
+        {store.publishedDocument ? <a className="w98-btn mobile-hide" href={"/@" + store.username} target="_blank" rel="noreferrer">{t("shell.openPublished")}</a> : null}
         {actions.publish ? <RetroButton className="primary" onClick={requestPublish} disabled={publishing || (!!store.publishedDocument && !hasUnpublishedChanges)}>
-          {store.publishedDocument ? "重新發布" : "發布"}
+          {t(store.publishedDocument ? "shell.republish" : "shell.publish")}
         </RetroButton> : null}
-        <Link className="retro-link mobile-hide" to="/">首頁</Link>
-        <RetroButton className="mobile-hide" onClick={async () => { await signOut(); navigate("/"); }}>登出</RetroButton>
+        <Link className="retro-link mobile-hide" to="/">{t("shell.home")}</Link>
+        <RetroButton className="mobile-hide" onClick={async () => { await signOut(); navigate("/"); }}>{t("shell.signOut")}</RetroButton>
       </header>
 
       {message ? (
         <div className="editor-message" role="alert">
           <span>{message}</span>
-          {store.saveStatus === "error" && !conflict ? <button onClick={store.retrySave}>重試儲存</button> : null}
-          <button aria-label="關閉通知" onClick={() => setMessage("")}>×</button>
+          {store.saveStatus === "error" && !conflict ? <button onClick={store.retrySave}>{t("shell.retrySave")}</button> : null}
+          <button aria-label={t("shell.closeNotice")} onClick={() => setMessage("")}>×</button>
         </div>
       ) : null}
 
@@ -652,11 +659,11 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         ) : null}
       </div>
 
-      <footer className="editor-status2">
-        <span>{layoutMode ? "排版模式" : "編輯模式"}</span>
-        <span>{selected ? "已選取：" + selected.title : "未選取"}</span>
+      <footer className="editor-status2" style={{ height: "auto", minHeight: 26, flexWrap: "wrap", paddingBlock: 3, fontFamily }}>
+        <span>{t(layoutMode ? "shell.layoutMode" : "shell.editMode")}</span>
+        <span>{selected ? t("shell.selected", { title: selected.title }) : t("shell.noneSelected")}</span>
         <span className="top-spacer" />
-        <span>{store.document.windows.length} 個視窗 · {badge.text}</span>
+        <span>{t("shell.windowsCount", { count: store.document.windows.length, formattedCount: formatNumber(store.document.windows.length) })} · {badge.text}</span>
       </footer>
 
       {preview ? <VisitorPreview document={store.document} username={store.username} published={!!store.publishedDocument && !hasUnpublishedChanges} onClose={() => setPreview(false)} /> : null}

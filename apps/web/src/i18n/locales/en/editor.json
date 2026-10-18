@@ -1,0 +1,116 @@
+{
+  "shell": {
+    "backToDesktops": "Back to my desktops",
+    "undo": "Undo",
+    "undoTitle": "Undo (Ctrl+Z)",
+    "redo": "Redo",
+    "redoTitle": "Redo (Ctrl+Shift+Z)",
+    "unpublished": "Not published",
+    "unpublishedChanges": "Draft has unpublished changes",
+    "published": "Published v{{version}}",
+    "saveIncomplete": "Complete required fields to save",
+    "saving": "Saving…",
+    "unsaved": "Not saved",
+    "saveFailed": "Save failed",
+    "saved": "Saved",
+    "roleNote": "Editor · Only the owner can publish",
+    "roleHint": "Only the desktop owner can publish and manage collaborators",
+    "device": "Device",
+    "desktop": "Desktop",
+    "mobile": "Mobile",
+    "preview": "Visitor preview",
+    "collaborators": "Collaborators",
+    "transfer": "Export / Import",
+    "openPublished": "Open published site",
+    "publish": "Publish",
+    "republish": "Publish changes",
+    "home": "Home",
+    "signOut": "Sign out",
+    "layoutMode": "Layout mode",
+    "editMode": "Edit mode",
+    "selected": "Selected: {{title}}",
+    "noneSelected": "Nothing selected",
+    "windowsCount_one": "{{formattedCount}} window",
+    "windowsCount_other": "{{formattedCount}} windows",
+    "loadingError": "Unable to open the editor",
+    "retrySave": "Retry save",
+    "closeNotice": "Dismiss notification",
+    "toolsPanel": "Tools panel",
+    "toolsTabs": "Editor tool categories"
+  },
+  "tabs": {
+    "add": "Add",
+    "layers": "Windows",
+    "theme": "Theme"
+  },
+  "add": {
+    "heading": "Add a window",
+    "hint": "Select an item to add a window and its desktop icon.",
+    "comingSoon": "Coming soon",
+    "diary": "Diary",
+    "characterProfile": "Character profile",
+    "visualNovel": "Visual novel"
+  },
+  "modules": {
+    "document": {
+      "label": "Document",
+      "description": "Headings, paragraphs, images, buttons, and lists"
+    },
+    "gallery": {
+      "label": "Gallery",
+      "description": "An image grid with full-size previews"
+    },
+    "links": {
+      "label": "Links",
+      "description": "Buttons for social profiles and external links"
+    },
+    "about": {
+      "label": "Profile card / About me",
+      "description": "An avatar, profile fields, a bio, and a banner"
+    },
+    "instagram": {
+      "label": "Retro IG profile",
+      "description": "An account, follower counts, a bio, and a post grid"
+    },
+    "music": {
+      "label": "Music player",
+      "description": "Character playlists, audio playback, and music links"
+    },
+    "moodboard": {
+      "label": "Moodboard",
+      "description": "Arrange images, text, and colors for character inspiration"
+    },
+    "explorer": {
+      "label": "Worldbuilding folders",
+      "description": "Organize windows and character notes in nested folders"
+    },
+    "minesweeper": {
+      "label": "Minesweeper",
+      "description": "A visitor mini-game with no score tracking or uploads"
+    },
+    "character-dialog": {
+      "label": "Character greeting",
+      "description": "A character welcome message visitors can dismiss"
+    },
+    "guestbook": {
+      "label": "Guestbook",
+      "description": "Public plain-text messages held for review by default"
+    }
+  },
+  "mobile": {
+    "editing": "Editing",
+    "emptyTitle": "Your desktop is empty",
+    "emptyEditor": "Tap Add below to create your first window.",
+    "emptyVisitor": "This desktop has no content yet.",
+    "desktop": "Desktop",
+    "finishEditing": "Finish editing",
+    "editWindow": "Edit this window",
+    "toolbar": "Mobile editor tools",
+    "add": "Add",
+    "edit": "Edit",
+    "theme": "Theme",
+    "preview": "Preview",
+    "addWindow": "Add a window",
+    "editWindowTitle": "Edit window"
+  }
+}

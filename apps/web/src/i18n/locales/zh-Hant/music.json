@@ -1,0 +1,7 @@
+{
+  "playback": {
+    "playing": "播放中",
+    "paused": "已暫停",
+    "stopped": "已停止"
+  }
+}

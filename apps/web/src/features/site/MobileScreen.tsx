@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { makeWindow, type CollectionEntityV2, type DesktopWindow, type PostEntityV2, type ProfileEntityV2, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
+import { useTranslation } from "react-i18next";
+import { makeWindow, THEME_PRESETS, type CollectionEntityV2, type DesktopWindow, type PostEntityV2, type ProfileEntityV2, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
 import { IconPicker } from "../modules/links/IconPicker";
 import { useThemeView } from "../../lib/themeView";
@@ -12,8 +13,10 @@ import { moduleDefinitions } from "../modules/registry";
 import { useEditorStore } from "../editor/store";
 import { WindowRenderer } from "./WindowRenderer";
 import type { ProfileDirectoryEntry } from "../modules/types";
-import { useMusicPlayback } from "../modules/music/audioCoordinator";
+import { musicPlayback, useMusicPlayback } from "../modules/music/audioCoordinator";
 import { stopAllMedia, stopWindowMedia } from "../modules/music/mediaSession";
+import { LanguageSwitcher } from "../../components/LanguageSwitcher";
+import { useLocaleFormatting } from "../../i18n/format";
 
 type Sheet = "add" | "edit" | "theme" | null;
 
@@ -45,10 +48,14 @@ type Props = {
   siteHandle?: string;
 };
 
-const clock = () => new Date().toTimeString().slice(0, 5);
-
 /** The single-window phone experience. Used for visitors, the editor preview and the mobile editor. */
 export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview, profiles, posts, collections, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument, initialOpenId, initialPostId, publicShareBaseUrl, siteHandle }: Props) {
+  const { t } = useTranslation("editor");
+  const { t: common } = useTranslation("common");
+  const { t: musicText } = useTranslation("music");
+  const { formatDate, formatTime, fontFamily } = useLocaleFormatting();
+  const now = new Date();
+  const clock = formatTime(now, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
   const editor = mode === "editor";
   const store = useEditorStore();
   const tv = useThemeView(document.theme);
@@ -70,15 +77,15 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
     globalThis.document.addEventListener("keydown", escape);
     return () => globalThis.document.removeEventListener("keydown", escape);
   }, [openId]);
-  const btn = { background: tv.face, color: tv.text, boxShadow: tv.bevel };
+  const btn = { background: tv.face, color: tv.text, boxShadow: tv.bevel, fontFamily };
 
   const body = (
     <div className="m-screen" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: "center", fontFamily: tv.fontFamily, color: tv.text }}>
-      {framed ? <div className="m-status" style={{ background: tv.face, color: tv.text }}><span>{clock()}</span><span>5G ▮▮▮</span></div> : null}
-      <div className="m-titlebar" style={{ background: tv.titleBg, color: tv.titleText }}>
+      {framed ? <div className="m-status" style={{ background: tv.face, color: tv.text, fontFamily }}><time dateTime={now.toISOString()} title={formatDate(now, { dateStyle: "full" })} aria-label={common("desktop.clockLabel", { time: clock })}>{clock}</time><span>5G ▮▮▮</span></div> : null}
+      <div className="m-titlebar" style={{ background: tv.titleBg, color: tv.titleText, fontFamily }}>
         <Icon name="computer" size={20} />
         <span className="m-site">{document.siteName}</span>
-        {editor ? <span className="m-badge">編輯中</span> : null}
+        {editor ? <span className="m-badge">{t("mobile.editing")}</span> : <LanguageSwitcher compact />}
       </div>
 
       <div className="m-stage">
@@ -92,7 +99,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
             ))}
           </div>
           {ordered.length === 0 ? (
-            <div className="m-empty w98-window"><strong>桌面還空空的</strong><span>{editor ? "點下方「新增」放上第一個視窗。" : "這個桌面還沒有內容。"}</span></div>
+            <div className="m-empty w98-window" style={{ fontFamily }}><strong>{t("mobile.emptyTitle")}</strong><span>{t(editor ? "mobile.emptyEditor" : "mobile.emptyVisitor")}</span></div>
           ) : null}
         </div>
 
@@ -106,8 +113,9 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
               chrome={openWindow.chrome}
               presentation="mobile"
               interactiveControls
+              controlLabels={{ close: common("actions.close") }}
               onClose={back}
-              titleBarLeading={<WindowChromeButton className="m-btn m-back" onClick={back}>‹ 桌面</WindowChromeButton>}
+              titleBarLeading={<WindowChromeButton className="m-btn m-back" onClick={back}>‹ {t("mobile.desktop")}</WindowChromeButton>}
             >
               <WindowRenderer
                 window={openWindow}
@@ -138,23 +146,23 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
                 siteHandle={siteHandle}
               />
             </RetroWindow>
-            {editor ? <button type="button" className="m-fab" onClick={() => setInlineEdit(!inlineEdit)}>{inlineEdit ? "完成編輯" : "編輯此視窗"}</button> : null}
+            {editor ? <button type="button" className="m-fab" onClick={() => setInlineEdit(!inlineEdit)}>{t(inlineEdit ? "mobile.finishEditing" : "mobile.editWindow")}</button> : null}
           </div>
         ) : null}
       </div>
 
       {!editor ? (
-        <div className="m-taskbar" style={{ background: tv.taskbar, boxShadow: `inset 0 1px ${tv.light}, inset 0 2px #fff` }}>
-          <button type="button" className="m-btn" style={btn} onClick={back}><Icon name="computer" size={18} />桌面</button>
-          {openWindow ? <span className="m-current" style={{ background: tv.light, color: tv.text, boxShadow: tv.pressed }}><Icon name={openWindow.icon} size={16} />{openWindow.title}{music.windowId === openWindow.id && music.status === "playing" ? " · 播放中" : ""}</span> : null}
+        <div className="m-taskbar" style={{ background: tv.taskbar, boxShadow: `inset 0 1px ${tv.light}, inset 0 2px #fff`, fontFamily }}>
+          <button type="button" className="m-btn" style={btn} onClick={back}><Icon name="computer" size={18} />{t("mobile.desktop")}</button>
+          {openWindow ? <span className="m-current" style={{ background: tv.light, color: tv.text, boxShadow: tv.pressed }}><Icon name={openWindow.icon} size={16} />{openWindow.title}{music.windowId === openWindow.id && music.status === "playing" ? ` · ${musicText("playback.playing")}` : ""}</span> : null}
         </div>
       ) : (
-        <div className="m-toolbar" role="toolbar" aria-label="手機編輯工具">
+        <div className="m-toolbar" role="toolbar" aria-label={t("mobile.toolbar")} style={{ fontFamily }}>
           {([
-            ["add", "folder", "新增"], ["edit", "doc", "編輯"], ["theme", "palette", "主題"], ["preview", "star", "預覽"]
-          ] as const).map(([id, icon, label]) => (
+            ["add", "folder"], ["edit", "doc"], ["theme", "palette"], ["preview", "star"]
+          ] as const).map(([id, icon]) => (
             <button key={id} type="button" className="m-tool" aria-pressed={sheet === id} onClick={() => { if (id === "preview") onPreview?.(); else setSheet(sheet === id ? null : id); }}>
-              <Icon name={icon} size={22} />{label}
+              <Icon name={icon} size={22} />{t(`mobile.${id}`)}
             </button>
           ))}
         </div>
@@ -163,13 +171,13 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
       {editor && sheet ? (
         <>
           <div className="m-scrim" onClick={() => setSheet(null)} />
-          <div role="dialog" aria-label={{ add: "新增視窗", edit: "編輯視窗", theme: "主題" }[sheet]} className="m-sheet w98-window">
-            <div className="m-sheet-title"><strong>{{ add: "新增視窗", edit: "編輯視窗", theme: "主題" }[sheet]}</strong><button type="button" className="m-btn sq" aria-label="關閉" onClick={() => setSheet(null)}>×</button></div>
+          <div role="dialog" aria-label={t(({ add: "mobile.addWindow", edit: "mobile.editWindowTitle", theme: "mobile.theme" } as const)[sheet])} className="m-sheet w98-window" style={{ fontFamily }}>
+            <div className="m-sheet-title"><strong>{t(({ add: "mobile.addWindow", edit: "mobile.editWindowTitle", theme: "mobile.theme" } as const)[sheet])}</strong><button type="button" className="m-btn sq" aria-label={common("actions.close")} onClick={() => setSheet(null)}>×</button></div>
             <div className="m-sheet-body">
               {sheet === "add" ? moduleDefinitions.map((module) => (
                 <button key={module.type} type="button" className="w98-btn m-add" onClick={() => { store.addWindow(module.type); setSheet(null); }}>
                   <Icon name={module.mobile.icon} size={32} />
-                  <span className="add-card-text"><strong>{module.label}</strong><span>{module.description}</span></span>
+                  <span className="add-card-text"><strong>{t(`modules.${module.type}.label`, { defaultValue: module.label })}</strong><span>{t(`modules.${module.type}.description`, { defaultValue: module.description })}</span></span>
                 </button>
               )) : null}
               {sheet === "theme" ? <ThemeAppearanceEditor theme={document.theme} onTheme={store.setTheme} upload={upload} /> : null}

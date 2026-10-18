@@ -26,6 +26,8 @@ export type WindowTitleBarProps = WindowControlHandlers & {
   leading?: ReactNode;
   trailing?: ReactNode;
   titleBarProps?: HTMLAttributes<HTMLDivElement>;
+  /** Accessible names for the controls; hosts that localize pass them, others keep the built-in defaults. */
+  controlLabels?: Partial<Record<WindowControlAction, string>>;
 };
 
 export type WindowChromeProps = WindowControlHandlers & {
@@ -46,6 +48,7 @@ export type WindowChromeProps = WindowControlHandlers & {
   titleBarLeading?: ReactNode;
   titleBarTrailing?: ReactNode;
   titleBarProps?: HTMLAttributes<HTMLDivElement>;
+  controlLabels?: Partial<Record<WindowControlAction, string>>;
   contentProps?: HTMLAttributes<HTMLDivElement>;
   frameProps?: Omit<HTMLAttributes<HTMLElement>, "children" | "title">;
   style?: CSSProperties;

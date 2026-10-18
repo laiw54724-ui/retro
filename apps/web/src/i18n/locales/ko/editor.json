@@ -1,0 +1,116 @@
+{
+  "shell": {
+    "backToDesktops": "내 데스크톱으로 돌아가기",
+    "undo": "실행 취소",
+    "undoTitle": "실행 취소 (Ctrl+Z)",
+    "redo": "다시 실행",
+    "redoTitle": "다시 실행 (Ctrl+Shift+Z)",
+    "unpublished": "아직 게시되지 않음",
+    "unpublishedChanges": "초안에 게시되지 않은 변경 사항이 있습니다",
+    "published": "v{{version}} 게시됨",
+    "saveIncomplete": "필수 항목을 입력하면 저장됩니다",
+    "saving": "저장 중…",
+    "unsaved": "저장되지 않음",
+    "saveFailed": "저장 실패",
+    "saved": "저장됨",
+    "roleNote": "편집자 · 소유자만 게시할 수 있음",
+    "roleHint": "데스크톱 소유자만 게시하고 공동 작업자를 관리할 수 있습니다",
+    "device": "기기",
+    "desktop": "데스크톱",
+    "mobile": "모바일",
+    "preview": "방문자 미리보기",
+    "collaborators": "공동 작업자",
+    "transfer": "내보내기 / 가져오기",
+    "openPublished": "게시된 사이트 열기",
+    "publish": "게시",
+    "republish": "변경 사항 게시",
+    "home": "홈",
+    "signOut": "로그아웃",
+    "layoutMode": "배치 모드",
+    "editMode": "편집 모드",
+    "selected": "선택됨: {{title}}",
+    "noneSelected": "선택된 항목 없음",
+    "windowsCount_one": "창 {{formattedCount}}개",
+    "windowsCount_other": "창 {{formattedCount}}개",
+    "loadingError": "편집기를 열 수 없습니다",
+    "retrySave": "저장 다시 시도",
+    "closeNotice": "알림 닫기",
+    "toolsPanel": "도구 패널",
+    "toolsTabs": "편집 도구 종류"
+  },
+  "tabs": {
+    "add": "추가",
+    "layers": "창",
+    "theme": "테마"
+  },
+  "add": {
+    "heading": "창 추가",
+    "hint": "항목을 선택하면 창과 데스크톱 아이콘이 추가됩니다.",
+    "comingSoon": "출시 예정",
+    "diary": "일기",
+    "characterProfile": "캐릭터 프로필",
+    "visualNovel": "비주얼 노벨"
+  },
+  "modules": {
+    "document": {
+      "label": "문서",
+      "description": "제목, 문단, 이미지, 버튼, 목록"
+    },
+    "gallery": {
+      "label": "갤러리",
+      "description": "눌러서 확대할 수 있는 이미지 그리드"
+    },
+    "links": {
+      "label": "링크",
+      "description": "소셜 프로필과 외부 링크 버튼"
+    },
+    "about": {
+      "label": "프로필 카드 / 자기소개",
+      "description": "아바타, 프로필 항목, 소개, 배너"
+    },
+    "instagram": {
+      "label": "레트로 IG 프로필",
+      "description": "계정, 팔로워 수, 소개, 게시물 그리드"
+    },
+    "music": {
+      "label": "음악 플레이어",
+      "description": "캐릭터 재생 목록, 오디오 재생, 음악 링크"
+    },
+    "moodboard": {
+      "label": "무드보드",
+      "description": "이미지, 글, 색상으로 캐릭터 영감 모으기"
+    },
+    "explorer": {
+      "label": "세계관 폴더",
+      "description": "여러 단계의 폴더로 창과 캐릭터 설정 정리"
+    },
+    "minesweeper": {
+      "label": "지뢰찾기",
+      "description": "점수를 기록하거나 전송하지 않는 방문자 미니 게임"
+    },
+    "character-dialog": {
+      "label": "캐릭터 인사말",
+      "description": "방문자가 닫을 수 있는 캐릭터 환영 메시지"
+    },
+    "guestbook": {
+      "label": "방명록",
+      "description": "기본적으로 검토 후 공개되는 일반 텍스트 메시지"
+    }
+  },
+  "mobile": {
+    "editing": "편집 중",
+    "emptyTitle": "데스크톱이 비어 있습니다",
+    "emptyEditor": "아래의 추가를 눌러 첫 번째 창을 만들어 보세요.",
+    "emptyVisitor": "이 데스크톱에는 아직 내용이 없습니다.",
+    "desktop": "데스크톱",
+    "finishEditing": "편집 완료",
+    "editWindow": "이 창 편집",
+    "toolbar": "모바일 편집 도구",
+    "add": "추가",
+    "edit": "편집",
+    "theme": "테마",
+    "preview": "미리보기",
+    "addWindow": "창 추가",
+    "editWindowTitle": "창 편집"
+  }
+}
