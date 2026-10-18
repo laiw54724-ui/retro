@@ -8,13 +8,16 @@ function withRef() { return { ...document, windows: [{ id: "w", title: "w", icon
 function withAudioRef() { return { ...document, windows: [{ id: "music", title: "Music", icon: "music", layout: { desktop: { x: 0, y: 0, w: 390, h: 430, z: 1 }, mobile: { order: 0 } }, defaultOpen: true, type: "music", content: { tracks: [{ id: "track", title: "Theme", artist: "OC", cover: null, coverUrl: "", source: { kind: "uploadedAudio", asset: `retro-asset:${id}` }, lyrics: "", rightsNote: "Original" }], playlist: { id: "playlist", title: "Themes", trackIds: ["track"] } } }] }; }
 
 describe("publish asset preparation", () => {
-  it("copies private assets and rewrites references to immutable public URLs", async () => {
-    const put = vi.fn(async () => undefined);
+  it("stages private assets while preparing unchanged immutable public URLs", async () => {
+    const put = vi.fn(async (key: string, _body: ReadableStream, _options: R2PutOptions) => ({ key }));
     const supabase = { from: () => ({ select: () => ({ in: async () => ({ data: [{ id, owner_id: "user-a", site_id: "site-a", object_key: `draft/users/user-a/sites/site-a/${id}.png`, storage_scope: "draft_private", mime_type: "image/png" }], error: null }) }) }) } as any;
-    const result = await copyReferencedAssets({ PUBLIC_ASSET_BASE_URL: "https://assets.example", ASSETS: { get: async () => ({ body: new ReadableStream(), httpEtag: "x" }), put } } as any, supabase, { ownerId: "user-a", siteId: "site-a", username: "demo", document: withRef() });
+    const result = await copyReferencedAssets({ PUBLIC_ASSET_BASE_URL: "https://assets.example", ASSETS: { head: async () => null, get: async () => ({ body: new ReadableStream(), httpEtag: "x" }), put } } as any, supabase, { ownerId: "user-a", siteId: "site-a", username: "demo", document: withRef() });
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.document.windows[0].content.blocks[0].src).toBe(`https://assets.example/published/demo/assets/${id}.png`);
-    expect(put).toHaveBeenCalledWith(`published/demo/assets/${id}.png`, expect.any(ReadableStream), expect.objectContaining({ httpMetadata: expect.objectContaining({ cacheControl: "public, max-age=31536000, immutable" }) }));
+    expect(put).toHaveBeenCalledWith(`draft/publication-assets/site-a/${id}.png`, expect.any(ReadableStream), expect.objectContaining({ httpMetadata: expect.objectContaining({ cacheControl: "private, no-store" }) }));
+    expect(put.mock.calls.map(([key]) => key).some((key) => key.startsWith("published/"))).toBe(false);
+    expect(put.mock.calls[0][2].onlyIf).toBeInstanceOf(Headers);
+    expect((put.mock.calls[0][2].onlyIf as Headers).get("If-None-Match")).toBe("*");
   });
 
   it("rejects missing references before copying", async () => {
@@ -25,13 +28,14 @@ describe("publish asset preparation", () => {
     expect(put).not.toHaveBeenCalled();
   });
 
-  it("copies private audio and rewrites it to an immutable public media URL", async () => {
-    const put = vi.fn(async () => undefined);
+  it("stages private audio and prepares the unchanged immutable public media URL", async () => {
+    const put = vi.fn(async (key: string, _body: ReadableStream, _options: R2PutOptions) => ({ key }));
     const supabase = { from: () => ({ select: () => ({ in: async () => ({ data: [{ id, owner_id: "user-a", site_id: "site-a", object_key: `draft/users/user-a/sites/site-a/${id}.mp3`, storage_scope: "draft_private", mime_type: "audio/mpeg" }], error: null }) }) }) } as any;
-    const result = await copyReferencedAssets({ PUBLIC_ASSET_BASE_URL: "https://assets.example", ASSETS: { get: async () => ({ body: new ReadableStream(), httpEtag: "x" }), put } } as any, supabase, { ownerId: "user-a", siteId: "site-a", username: "demo", document: withAudioRef() });
+    const result = await copyReferencedAssets({ PUBLIC_ASSET_BASE_URL: "https://assets.example", ASSETS: { head: async () => null, get: async () => ({ body: new ReadableStream(), httpEtag: "x" }), put } } as any, supabase, { ownerId: "user-a", siteId: "site-a", username: "demo", document: withAudioRef() });
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.document.windows[0].content.tracks[0].source.asset).toBe(`https://assets.example/published/demo/assets/${id}.mp3`);
-    expect(put).toHaveBeenCalledWith(`published/demo/assets/${id}.mp3`, expect.any(ReadableStream), expect.objectContaining({ httpMetadata: { contentType: "audio/mpeg", cacheControl: "public, max-age=31536000, immutable" } }));
+    expect(put).toHaveBeenCalledWith(`draft/publication-assets/site-a/${id}.mp3`, expect.any(ReadableStream), expect.objectContaining({ httpMetadata: { contentType: "audio/mpeg", cacheControl: "private, no-store" } }));
+    expect(put.mock.calls.map(([key]) => key).some((key) => key.startsWith("published/"))).toBe(false);
   });
 
   it("rejects a draft key whose filename UUID does not match the reference", async () => {

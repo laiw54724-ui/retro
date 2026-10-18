@@ -9,6 +9,13 @@ export type PublishedAssetCopyResult =
   | { ok: true; document: VersionedSiteDocument; copied: Array<{ id: string; key: string; url: string }> }
   | { ok: false; code: "missing" | "foreign" | "unavailable" | "copy_failed"; assetId?: string; message: string };
 
+// The public URL stays stable. Only this internal, non-public storage key is new.
+// Retain staged bytes for retries even if the author later removes the upload.
+export function publicationAssetStageKey(siteId: string, filename: string): string {
+  return `draft/publication-assets/${siteId}/${filename}`;
+}
+
+/** Prepare the public document, but copy bytes ONLY into the private namespace. */
 export async function copyReferencedAssets(
   env: Env,
   supabase: SupabaseClient,
@@ -21,6 +28,9 @@ export async function copyReferencedAssets(
   const byId = new Map((rows ?? []).map((row) => [String(row.id), row]));
   const replacements = new Map<string, string>();
   const copied: Array<{ id: string; key: string; url: string }> = [];
+  const prepared: Array<{ id: string; sourceKey: string; stageKey: string; url: string; mimeType: string }> = [];
+  // Validate the entire inventory before any storage writes, including references
+  // that appear after an otherwise valid asset.
   for (const id of ids) {
     const row = byId.get(id);
     if (!row) return { ok: false, code: "missing", assetId: id, message: `Referenced asset ${id} was not found` };
@@ -29,21 +39,69 @@ export async function copyReferencedAssets(
     const keyMatch = typeof row.object_key === "string" ? row.object_key.match(draftKey) : null;
     if (row.storage_scope !== "draft_private" || !keyMatch) return { ok: false, code: "foreign", assetId: id, message: `Referenced asset ${id} is not a private draft asset` };
     const extension = keyMatch[1].toLowerCase();
-    const object = await env.ASSETS.get(row.object_key);
-    if (!object) return { ok: false, code: "missing", assetId: id, message: `Referenced asset ${id} is missing from storage` };
     const key = `published/${input.username}/assets/${id}.${extension === "jpeg" ? "jpg" : extension}`;
-    try {
-      await env.ASSETS.put(key, object.body, { httpMetadata: { contentType: row.mime_type, cacheControl: "public, max-age=31536000, immutable" }, customMetadata: { site: input.username, assetId: id } });
-    } catch (copyError) {
-      return { ok: false, code: "copy_failed", assetId: id, message: copyError instanceof Error ? copyError.message : "Asset copy failed" };
-    }
     const url = `${env.PUBLIC_ASSET_BASE_URL.replace(/\/$/, "")}/${key}`;
+    prepared.push({ id, sourceKey: row.object_key, stageKey: publicationAssetStageKey(input.siteId, `${id}.${extension}`), url, mimeType: row.mime_type });
     replacements.set(id, url);
-    copied.push({ id, key, url });
   }
   const document = replaceAssetReferences(input.document, replacements);
   if (collectAssetReferences(document).length) return { ok: false, code: "copy_failed", message: "Some asset references could not be rewritten" };
+  for (const asset of prepared) {
+    try {
+      if (!await env.ASSETS.head(asset.stageKey)) {
+        const object = await env.ASSETS.get(asset.sourceKey);
+        if (!object) return { ok: false, code: "missing", assetId: asset.id, message: `Referenced asset ${asset.id} is missing from storage` };
+        const staged = await env.ASSETS.put(asset.stageKey, object.body, {
+          onlyIf: new Headers({ "If-None-Match": "*" }),
+          httpMetadata: { contentType: asset.mimeType, cacheControl: "private, no-store" },
+          customMetadata: { siteId: input.siteId, assetId: asset.id }
+        });
+        if (staged === null && !await env.ASSETS.head(asset.stageKey)) {
+          return { ok: false, code: "copy_failed", assetId: asset.id, message: "Could not retain publication asset" };
+        }
+      }
+    } catch {
+      return { ok: false, code: "copy_failed", assetId: asset.id, message: "Could not stage publication asset" };
+    }
+    copied.push({ id: asset.id, key: asset.stageKey, url: asset.url });
+  }
   return { ok: true, document, copied };
+}
+
+/** Call only for a document whose DB publication has committed (including retry). */
+export async function promotePublishedAssets(
+  env: Env,
+  input: { siteId: string; username: string; document: unknown }
+): Promise<{ ok: true } | { ok: false; message: string }> {
+  const prefix = `${env.PUBLIC_ASSET_BASE_URL?.replace(/\/$/, "")}/published/${input.username}/assets/`;
+  const filenames = new Set<string>();
+  const visit = (value: unknown) => {
+    if (typeof value === "string" && value.startsWith(prefix)) {
+      const filename = value.slice(prefix.length);
+      const match = /^([0-9a-f-]+)\.(jpg|png|webp|gif|mp3|ogg|wav)$/i.exec(filename);
+      if (match && parseAssetReference(`retro-asset:${match[1]}`)) filenames.add(filename);
+    } else if (Array.isArray(value)) value.forEach(visit);
+    else if (value && typeof value === "object") Object.values(value).forEach(visit);
+  };
+  visit(input.document);
+  for (const filename of filenames) {
+    const key = `published/${input.username}/assets/${filename}`;
+    try {
+      // Old publications and concurrent successful promotions are immutable.
+      if (await env.ASSETS.head(key)) continue;
+      const object = await env.ASSETS.get(publicationAssetStageKey(input.siteId, filename));
+      if (!object) return { ok: false, message: "A committed publication asset is missing; retry after restoring staged storage" };
+      const promoted = await env.ASSETS.put(key, object.body, {
+        onlyIf: new Headers({ "If-None-Match": "*" }),
+        httpMetadata: { contentType: object.httpMetadata?.contentType ?? "application/octet-stream", cacheControl: "public, max-age=31536000, immutable" },
+        customMetadata: { site: input.username, assetId: filename.slice(0, filename.lastIndexOf(".")) }
+      });
+      if (promoted === null && !await env.ASSETS.head(key)) return { ok: false, message: "Could not retain committed publication asset" };
+    } catch {
+      return { ok: false, message: "Publication is committed; asset promotion failed and can be retried" };
+    }
+  }
+  return { ok: true };
 }
 
 function escapeRegExp(value: string): string {

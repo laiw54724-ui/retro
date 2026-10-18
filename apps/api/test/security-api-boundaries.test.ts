@@ -271,9 +271,8 @@ describe("API identity and site boundaries", () => {
 });
 
 describe("asset boundary failures", () => {
-  // Intentionally RED until the R2/DB publication contract is resolved. Do not
-  // skip this assertion or treat the name-isolation fix as closing issue #76.
-  it("failed publication must not leave a publicly readable asset (known blocker #76)", async () => {
+  // Original F2 regression: retain both assertions after the staging/commit fix.
+  it("failed publication must not leave a publicly readable asset (F2 regression #76)", async () => {
     const document = draft(1);
     document.windows[0].icon = `retro-asset:${assetId}`;
     document.windows[1].icon = "retro-asset:22222222-2222-4222-8222-222222222222";

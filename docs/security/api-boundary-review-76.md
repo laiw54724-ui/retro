@@ -1,140 +1,159 @@
-# API boundary review — #76
+# API boundary review and bounded fixes — #76
 
-## Scope and execution plan
+Both reproduced findings (F1 unpublished names and F2 precommit public asset copies)
+are fixed locally. The original F2 negative assertions are retained and now pass.
+This Draft PR still needs review and final integration/deployment verification.
+No production data was inspected, changed or cleaned up.
 
-Author: Codex task-3. Base: `386c209dd8cb47bae96a749a7751cc7189032183`
-(`integration/retro-preview-r1-r3`, fetched before work). Excludes #77 and
-other worktrees. Repository/ancestor AGENTS.md files were not present;
-`~/.codex/AGENTS.md` was empty.
+## Scope and provenance
 
-Authorized write paths: `apps/api/src/routes/sites.ts`,
-`apps/api/src/routes/transfer.ts`, `apps/api/test/security-*.test.ts`, this report.
-No shared schema, frontend, CSP, CI, credentials, migrations or production changes.
+Base: `386c209dd8cb47bae96a749a7751cc7189032183`, fetched and verified against
+`integration/retro-preview-r1-r3`. Excludes #77 and other worktrees. Sole API author:
+Codex task-3. Repository/ancestor AGENTS.md files were absent; `~/.codex/AGENTS.md`
+was empty. Worktree and branch are retained for integration.
 
-Design: retain the existing published snapshot and API response contracts. Public
-names must come from that snapshot, while the owner draft and private backup keep
-the latest saved name. Fix the public read boundary rather than changing autosave
-or persistence. A schema migration or rewriting old snapshots would add avoidable
-compatibility risk. Tests use real Hono handlers, authentication parsing and access
-checks, with local in-memory identity/database/storage doubles only.
+Runtime changes: `apps/api/src/routes/sites.ts`, `routes/transfer.ts` and
+`lib/publish.ts`. Tests/report are API-specific. No shared schema, frontend, CSP,
+CI, lockfile, credentials, binding, SQL/RLS, migration or remote setting changed.
+API ownership was recorded in #55 before writing. Other worktrees were preserved.
 
-- [x] Fetch, verify remote/base and claim independent paths in #55.
-- [x] Run existing API tests on the unchanged base.
-- [x] Reproduce draft-name disclosure through public reads with synthetic fixtures.
-- [x] Run owner/editor/viewer/unrelated/anonymous API boundary cases.
-- [x] Apply one bounded fix; run API/shared regressions and typecheck/lint.
-- [x] Record results, limitations and final integration checks.
+## F1 — confirmed and fixed: unpublished names in public responses
 
-Delivery is a Draft PR with this report; acceptance remains blocked by F2.
+Source at the base SHA:
 
-Full contributor/browser gates belong to the final integrator. These tests do not
-validate deployed Supabase RLS, R2 policies, Cloudflare headers or real accounts.
+- `routes/sites.ts:164–166`: autosave updates both `draft_document` and mutable
+  `site_name` from the latest draft.
+- `routes/sites.ts:273,301`: public JSON and metadata selected/used `site_name`
+  independently of the older `published_document` snapshot.
+- `routes/transfer.ts:40–43,60`: public and owner-published exports populated
+  `sourceSite.siteName` from the same mutable column.
 
-## Findings
+Synthetic reproduction, **both v1 and v2**: store `Published desktop`, owner A
+autosaves `UNPUBLISHED-NAME-ONLY-IN-DRAFT`, then anonymous reads public JSON,
+metadata and export; owner reads published export. All four surfaces disclosed
+the unpublished marker while the snapshot retained the old name. Metadata could
+change under an unchanged `published:1:site` cache tag.
 
-### F1 — confirmed and fixed: unpublished name disclosed by public reads
+`test/security-api-boundaries.test.ts` retains:
 
-Affected code: `apps/api/src/routes/sites.ts` autosave (lines 160–166), public
-JSON (268–282), metadata (285–314), and `apps/api/src/routes/transfer.ts`
-public/published export (36–61). `site_name` tracks the latest saved draft;
-the immutable publication has its own `siteName`.
+- `isolates every public name surface for stored v%s snapshots`: all four surfaces
+  checked using soft assertions, so neither version stops after the first failure.
+- `keeps saved v%s draft names out ... until publish`: actual Hono autosave, owner
+  reload, anonymous reads, private backup, publish and public reload.
+- Unmodified base runtime plus new tests: **4 failed / 27 passed**, with each
+  affected surface in `/tmp/retro-76-red.log`. These cases now pass.
 
-Identity: owner A saves, anonymous reads. Minimal reproduction, for both v1/v2:
+Fix: public queries stop selecting `site_name`; the public JSON field keeps that
+name but derives its value from `published_document.siteName`. Metadata and
+published exports use the snapshot name too. Owner draft reads/private backup
+keep the latest saved name. Only an authorized publication exposes the new name.
+No persisted data, v1/v2 reader or export format was rewritten.
 
-1. Store a published snapshot with `siteName: "Published desktop"`.
-2. Autosave draft name `UNPUBLISHED-NAME-ONLY-IN-DRAFT`, version 1 → 2.
-3. Read public JSON, site metadata, public export, and owner published export.
+## F2 — confirmed and fixed: failed publish left public asset copies
 
-Before: each surface included the unpublished marker despite the stored public
-snapshot still having the old name. The public metadata title could change while
-its `published:1:site` cache tag stayed unchanged. Owner draft reads correctly
-returned the new name.
+### Original conditions and reachability
 
-After: public queries no longer select mutable `site_name`; names derive from
-`published_document.siteName`. The public JSON field remains named `site_name`.
-Public exports use the snapshot name; owner draft backup keeps its latest name.
-After an authorized publish, the new name appears on all public surfaces.
-No persisted data, version reader or export format was changed.
+At initial PR head `3c526e2583266f3dd1825439f64cfa31cc05cdb3`, unchanged
+`lib/publish.ts:24–42` validated/copied assets one at a time into public storage.
+`routes/sites.ts:205–212` did this before the atomic DB publication. After an early
+copy, later missing/foreign rows, missing R2 objects, copy failure, rewritten-document
+validation failure or DB conflicts/errors could leave public copies.
 
-Evidence: `security-api-boundaries.test.ts` contains separate surface checks plus
-actual save/read/publish round trips for both versions. Original name cases were
-RED on the base; all are now GREEN. Fixtures are fabricated, not real user data.
+The retained synthetic regression uses two icon references: matching private PNG
+first, missing asset row second. Original result: **400**, old DB snapshot unchanged,
+no publish RPC, one public write, anonymous GET **200** rather than **404**. Initial
+complete API suite: **145 passed / 1 failed**, no skips. The original regression in
+`security-api-boundaries.test.ts` still asserts **404 and no storage writes at all**
+for that missing-row case; both now pass.
 
-### F2 — confirmed, unresolved P1 candidate: failed publish leaves a public asset
+Anonymous entry: `GET/HEAD /api/assets/published/<username>/assets/<uuid>.<ext>`;
+GET supports Range. `routes/assets.ts` serves this namespace without consulting
+committed publications. The requester must know/obtain the URL including UUID;
+this is not evidence of enumeration or bypassing draft-list permissions. An
+alternate configured public asset origin can expose the same copied object.
 
-**Integration/release blocker. The API suite is intentionally RED for this risk.**
+Original public puts were unconditional: an identical existing key was overwritten
+even if the later publish failed. Normal uploads create new UUIDs and have no
+in-place byte-update API, so repeated ordinary publishes usually copied identical
+bytes. Tests additionally alter synthetic staged bytes to verify that the fix
+preserves any already-public bytes rather than overwriting them.
 
-Affected unchanged code: `apps/api/src/lib/publish.ts:24–42` copies assets inside
-the validation loop; `apps/api/src/routes/sites.ts:205–212` invokes it before
-the atomic DB publication; `apps/api/src/routes/assets.ts:236–239` serves the
-published namespace anonymously without consulting committed publications.
+### Existing capabilities and implemented flow
 
-Identity: owner A triggers publish; anonymous subsequently requests the asset.
-Controlled reproduction is retained as the unskipped test
-`failed publication must not leave a publicly readable asset (known blocker #76)`:
+`0003_atomic_publish.sql` already locks the site row, checks draft and published
+versions, inserts `site_versions`, commits the public snapshot, and sets artifact
+state pending. Status updates already match the published version. The existing
+API can return a committed version with `artifactStatus: failed, retryable: true`,
+and `/publish/retry` loads that committed snapshot. No new schema, binding,
+permission, remote data operation or migration is required. The initial assessment
+that F2 necessarily needed a new publication contract was too broad.
 
-1. Use two harmless icon references in an owner-owned draft. The first points to
-   an owner/site-matching private PNG fixture; the second has no asset row.
-2. Publish expected version 1.
-3. Handler returns `400 publish_assets_failed`, DB public snapshot is unchanged,
-   and the atomic publish RPC is never reached.
-4. Nevertheless a public R2 write has already completed for the first asset.
-5. Anonymous GET through the real asset route returns 200 instead of expected 404.
+1. Validate **all** asset rows, ownership, site, scope and exact filenames before
+   any writes. Prepare unchanged public URLs.
+2. Copy only to `draft/publication-assets/<siteId>/<uuid>.<ext>`, with private
+   metadata and create-only semantics. The public route rejects this namespace;
+   it is not a draft asset row either. Partial failure leaves private stages only.
+3. Revalidate the rewritten projection; invoke the existing atomic publish RPC.
+   A conflict/error never promotes bytes. If DB commit succeeded but its response
+   was lost, bytes remain private until the owner retries.
+4. **After commit acknowledgement**, derive filenames from this site's exact
+   trusted public URL prefix in the committed document and promote staged bytes.
+   Reuse existing public objects. New public puts use
+   `onlyIf: new Headers({ "If-None-Match": "*" })`, preventing overwrite across a
+   head/write race. Copies stream data rather than buffering all assets.
+5. Write the JSON artifact after asset promotion. A promotion failure returns the
+   existing **200 / committed version / failed / retryable** state. Retry restores
+   missing public objects from retained stages, then writes the artifact; it does
+   not create a version or depend on removed source upload rows. Known-stale or
+   unsynced calls do not run legacy cleanup.
 
-Observed local evidence:
+Stage/public keys are create-only under the existing immutable-UUID asset model.
+A same-draft loser may retain private bytes, never delete the winner's objects.
+A slower older committed publication may finish its historical artifact, but
+cannot overwrite public bytes or the newer version's sync status. Old snapshots
+with existing public files retry without requiring stages.
 
-```text
-publish status: 400
-published_document: unchanged
-public writes: [published/demo/assets/11111111-1111-4111-8111-111111111111.png]
-anonymous asset GET: 200 (expected 404)
-cache policy written: public, max-age=31536000, immutable
-```
+Rejected alternatives: preflight plus delete leaves visibility/rollback races;
+an API read gate adds serving/DB logic yet misses alternate direct public origins.
+Postcommit promotion preserves public URL/response/schema contracts with no public
+rollback deletion.
 
-The test uses an in-memory R2 map and the real Hono asset handler. It establishes
-the source behavior; no deployed bucket or real asset was probed. Exposure requires
-knowledge of the asset URL/ID; the finding is not evidence that arbitrary private
-assets can be enumerated or that production exploitation occurred.
+### Tradeoffs and limits
 
-Why deferred: prevalidating all rows would address this specific missing-row case
-but not later R2 failures or a DB commit conflict after copying. Blind rollback of
-the stable public key could delete an earlier/concurrent publication's asset. A
-complete fix needs an agreed commit/visibility/retry contract across R2 and DB,
-while preserving existing public URLs and historical artifacts. This task is not
-authorized to change that persistence/publication contract or introduce migration.
+- Public JSON can briefly reference files still being promoted after DB commit.
+  Storage failure is a live publication with explicit retryable sync failure,
+  following the existing DB-authoritative contract. Existing public bytes remain.
+  No global atomic R2+DB transaction is claimed.
+- Abandoned private stages are retained for safe retries. GC/storage reclamation
+  is deferred; there is no unsafe rollback deletion.
+- New premature copies are prevented. Already-public leftovers from older code
+  are not remotely cleaned, missing historical data is not repaired, and bucket
+  policies are unchanged. An old-API rollback reintroduces the original behavior.
+- Staging relies on the existing private-draft storage boundary. No raw bucket
+  exposure was inspected/enabled; deployed policies remain a separate check.
+- Retry assumes the committed snapshot's configured public asset base is retained.
+  Config/base changes and alternate-origin routing need deployment verification.
 
-Recommended decision: design publication-scoped private staging and a visibility
-gate tied to a committed publication, with retry/cleanup ownership and coverage for
-partial copy, DB conflict, concurrent publishers, existing URLs and old readers.
-First confirm all deployed public asset access paths; an API-only gate is
-insufficient if an alternate public bucket/custom domain bypasses it. Do not mark
-#76 accepted or deploy this candidate until F2 is resolved or explicitly triaged
-by the maintainer. The name fix is a separate reviewable improvement.
+## Coverage and validation
 
-## Coverage and limits
+Real Hono handlers, bearer parsing/access rules, projection and helpers run against
+synthetic identity/database doubles and an in-memory R2 map. Concurrency fixtures
+model the SQL CAS; they do not certify real PostgreSQL locking or deployed RLS.
 
-| Boundary | Local result / evidence |
+| Boundary | Local evidence |
 | --- | --- |
-| Owner/editor/viewer draft reads | Allowed with authoritative role; only site-specific memberships count. |
-| Unrelated B / anonymous / invalid session | 404/401 for 13 protected route/method pairs, unchanged fixture data, no R2 or DB writes. Actual bearer parsing/getUser call used with a synthetic identity provider. |
-| Draft writes/autosave/reload | Owner/editor allowed, viewer rejected; stale expectedVersion rejected; exact saved document read back. Cross-site document rejection also covered by existing draft-validation tests. |
-| Publish/retry/migration/member administration/backup | Collaborator editor/viewer denied; owner publish round trip verified. Existing collaboration tests cover RPC actor IDs/digests and role mutations. |
-| Revocation | Next draft/asset request denied after local membership removal. |
-| Public projection | Private profile/post/collection and private asset references absent from JSON, metadata, export and written artifact; owner draft unchanged. Shared projection suite covers transitive references. |
-| Public names/cache metadata | Fixed F1 for v1/v2; published version/cache headers retained. Unpublished sites return 404. |
-| Private asset GET/HEAD/Range | Owner/editor/viewer authorized; private no-store. Wrong site, foreign storage prefix and raw draft namespace denied before storage reads. |
-| Upload limits/type/failure | MIME mismatch, declared request oversize, and actual image/audio per-file oversize without Content-Length rejected before storage writes. Existing API tests cover private owner namespace for editor uploads, byte signatures, audio quota, and rollback on DB insert failure. Streaming request-memory bounds and concurrent quota enforcement were not stress-tested. |
-| Failed publication | F2 RED; no claim of safe failure atomicity. |
-| URL/content parser | Existing shared URL/scheme, asset reference, export/import, provider and metadata tests run. No provider whitelist or rendering code changed. |
-| Preview/sample interaction isolation | Relevant web previewModel, sharing, collaboration, assetSource and uploadTasks unit tests run; browser preview/guestbook E2E and DOM escaping not rerun. Existing browser coverage is not presented as current execution. |
-| CSP/external media | Outside this API write ownership; no deployed header or provider session verification. Frontend/CSP author retains ownership. |
-| Real RLS/RPC/R2/deployment | Not verified. DB filters, select projections and writes are modeled; SQL locking/RLS and actual service authorization require disposable staging accounts with recorded Web SHA/Pages ID/Worker version. |
+| owner/editor/viewer/B/anonymous/invalid session | Authorized reads; 13 protected method/path pairs deny unrelated/anonymous identities without writes; cross-site memberships and revocation checked. |
+| autosave/reload/publish | Editor writes, viewer rejection, stale draft rejection, v1/v2 F1 round trips; existing scope-validation tests retained. |
+| public projection | Private profile/post/collection/asset references absent from JSON, metadata, export and artifact; source draft unchanged. Shared suite covers transitive references. |
+| private assets | Authorized GET/HEAD/Range with private no-store; foreign ID/site/prefix and raw draft namespace rejected before storage. |
+| uploads | MIME, declared size, actual image/audio per-file oversize without Content-Length; existing namespace/quota/signature/DB-insert rollback cases. No load/stress test. |
+| F2/order/retry | Original missing-row regression; partial staging, missing source, DB conflicts/errors, commit-before-public-write, promotion retry after source removal, lost commit response, existing bytes, head/put race, two same-draft publishers, slow old publisher, old snapshot retry. No skips. |
+| R2 condition/storage | Local Miniflare verifies existing bytes retained, condition returns null, exactly one concurrent create wins; actual production helpers stage privately then promote with correct bytes/MIME/cache metadata. No real bucket. |
+| preview/content | Related web previewModel/sharing/collaboration/assetSource/uploadTasks plus shared parser/provider/projection; no browser DOM/escaping/provider session rerun. |
+| CSP/deployment | Deployed headers, true RLS/RPC, real accounts, mobile and platform playback unverified; outside API write ownership. |
 
-## Validation
-
-Node 22.23.2; pnpm 10.18.2; locked dependencies, no lockfile edits. Tests use a
-single Vitest worker with file parallelism disabled. No browser or Mac runner jobs
-were launched. Ordinary PR CI is Ubuntu; no workflow was modified or dispatched.
+Node 22.23.2; pnpm 10.18.2; locked dependencies, unchanged lockfile. Single Vitest
+worker, no file parallelism. No browser or Mac runner jobs launched.
 
 ```sh
 pnpm --filter @retrodesk/api test:unit --maxWorkers=1 --no-file-parallelism
@@ -144,37 +163,37 @@ pnpm --filter @retrodesk/web exec vitest run \
   src/features/editor/previewModel.test.ts src/lib/publicShare.test.ts \
   src/lib/collaboration.test.ts src/lib/assetSource.test.ts \
   src/features/media/uploadTasks.test.ts --maxWorkers=1 --no-file-parallelism
+pnpm --filter @retrodesk/api exec node test/r2-create-only.smoke.mjs
 pnpm security:audit
 git diff --check
 ```
 
-- Unmodified base API: **26 files / 110 tests passed**.
-- Final API: **26 files passed, 1 file failed; 145 tests passed, 1 failed**.
-  The only failure is F2's retained security contract, with two failing assertions:
-  anonymous 200 vs expected 404 and one public write vs expected none. No skips.
-- Shared: **19 files / 175 tests passed**.
-- API/shared lint: **PASS**; both scripts run `tsc --noEmit`, covering their
-  production TypeScript typechecks.
-- Web focused unit: **5 files / 43 tests passed**. Synthetic configuration logs
-  that Supabase environment variables are absent; no real auth setup was used.
-- Secret audit: **PASS**, values were not printed.
-- `git diff --check`: **PASS**.
-- Full contributor/build/browser gates, staging headers, real accounts and mobile:
-  **NOT RUN**, reserved for final integration; prior base gate success is not a
-  green gate for this candidate.
+- Base API: **26 files / 110 tests PASS**.
+- Final API with original F2 assertion and 13 additional flow cases:
+  **28 files / 159 tests PASS**, no skips.
+- Shared: **19 files / 175 tests PASS**. Focused Web: **5 files / 43 tests PASS**.
+- API/shared lint: **PASS**, both run production `tsc --noEmit`.
+- Local Miniflare R2 smoke and actual staging/promotion helpers: **PASS**. Requires a loopback socket; installed v5
+  required its V4-options converter. No project config changed.
+- Secret audit and diff check: **PASS**, secret values not printed.
+- Full contributor/build/browser gate, deployed headers, true accounts/RLS,
+  providers and mobile: **NOT RUN**, reserved for final integration.
 
-Raw local logs: `/tmp/retro-76-baseline.log`, `/tmp/retro-76-red.log`,
-`/tmp/retro-76-final-api.log`, `/tmp/retro-76-final-shared.log`,
-`/tmp/retro-76-final-web.log`, `/tmp/retro-76-lint.log`,
-`/tmp/retro-76-secret-audit.log`. All content comes from synthetic fixtures.
+Local logs: `/tmp/retro-76-baseline.log`, `/tmp/retro-76-red.log`,
+`/tmp/retro-76-final-api.log` (initial F2 RED), `/tmp/retro-76-f2-final-api.log`
+(final GREEN), `/tmp/retro-76-final-shared.log`, `/tmp/retro-76-final-web.log`,
+`/tmp/retro-76-f2-lint.log`, `/tmp/retro-76-r2-conditional.log`,
+`/tmp/retro-76-secret-audit.log`. All target identities/URLs/UUIDs are synthetic;
+public prose contains no real target account, private URL, token or user content.
+The [R2 Workers API](https://developers.cloudflare.com/r2/api/workers/workers-api-reference/)
+documents conditional writes; installed types and local runtime were checked too.
 
 ## Integrator handoff
 
-Keep the branch/worktree and Draft PR as review evidence. Refs #76 and #55; do not
-close either issue. No merge, main push, deployment, branch deletion or permission
-change occurred. Resolve/triage F2 first, then run the retained negative test and
-the applicable full gate once on the final combined SHA. Add browser checks for
-name parity in page/share/export, preview write isolation and upload failures;
-validate real owner/editor/viewer/B/anonymous boundaries and deployed asset access
-using authorized disposable accounts. Record actual Web SHA/Pages ID/Worker
-version separately. Avoid claiming this bounded local review certifies security.
+Review F1/F2 source and failure/retry semantics; then run the applicable full gate
+once on the final combined SHA. Add browser page/share/export name parity,
+preview non-writing, upload failure/retry messaging and old public content checks.
+Use authorized disposable staging identities for owner/editor/viewer/B/anonymous
+and actual asset policy/paths; record Web SHA, Pages ID and Worker version
+separately. The base's old full gate is not this candidate's gate. Refs #76/#55;
+no merge, deploy, issue close, main push, remote cleanup or permission change.
