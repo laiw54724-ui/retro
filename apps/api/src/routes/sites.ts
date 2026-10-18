@@ -270,14 +270,15 @@ sites.get("/public/sites/:username", async (c) => {
   const supabase = serviceClient(c.env);
   const { data, error } = await supabase
     .from("sites")
-    .select("username,site_name,published_document,published_version,published_at")
+    .select("username,published_document,published_version,published_at")
     .eq("username", parsed.data)
     .not("published_document", "is", null)
     .maybeSingle();
   if (error) return jsonError(c, 500, "db_error", "Could not load published site");
   if (!data?.published_document) return jsonError(c, 404, "not_found", "Site not found");
   c.header("Cache-Control", "no-store");
-  return c.json({ site: data });
+  // site_name follows autosave; public names belong to the stored publication.
+  return c.json({ site: { ...data, site_name: data.published_document.siteName } });
 });
 
 sites.get("/public/sites/:username/metadata", async (c) => {
@@ -289,7 +290,7 @@ sites.get("/public/sites/:username/metadata", async (c) => {
   const supabase = serviceClient(c.env);
   const { data, error } = await supabase
     .from("sites")
-    .select("id,username,site_name,published_document,published_version")
+    .select("id,username,published_document,published_version")
     .eq("username", parsed.data)
     .not("published_document", "is", null)
     .maybeSingle();
@@ -298,7 +299,7 @@ sites.get("/public/sites/:username/metadata", async (c) => {
   const result = buildPublicMetadata({
     siteId: data.id,
     username: data.username,
-    siteName: data.site_name,
+    siteName: data.published_document.siteName,
     publishedVersion: data.published_version,
     document: data.published_document,
     target: kind && id ? { kind: kind as "oc" | "post", id } : undefined,
