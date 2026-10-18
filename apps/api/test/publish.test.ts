@@ -48,7 +48,7 @@ describe("atomic publication API", () => {
     const response = await sites.request("/sites/site-a/publish", { method: "POST", body: JSON.stringify({ expectedVersion: 2 }) }, { ASSETS: { put } } as never);
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ publishedVersion: 4, artifactStatus: "synced", retryable: false });
-    expect(put).toHaveBeenCalledWith("published/demo/versions/4/site.json", expect.any(String), expect.objectContaining({ httpMetadata: expect.objectContaining({ cacheControl: "public, max-age=31536000, immutable" }), customMetadata: { site: "demo", version: "4" } }));
+    expect(put).toHaveBeenCalledWith("published/demo/versions/4/site.json", expect.any(String), expect.objectContaining({ onlyIf: expect.any(Headers), httpMetadata: expect.objectContaining({ cacheControl: "public, max-age=31536000, immutable" }), customMetadata: { site: "demo", version: "4", siteId: "site-a" } }));
     expect(state.updates).toContainEqual({ published_artifact_status: "synced", published_artifact_error: null });
     expect(state.rpcCalls[0]).toMatchObject({ name: "publish_site_atomic", args: { p_site_id: "site-a", p_owner_id: "user-a", p_expected_version: 2, p_expected_published_version: 0 } });
     expect(JSON.parse(String(put.mock.calls[0][1])).document).toEqual(state.site.draft_document);

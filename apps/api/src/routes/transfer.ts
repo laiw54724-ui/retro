@@ -37,10 +37,10 @@ transfer.get("/public/sites/:username/export", async (c) => {
   const username = UsernameSchema.safeParse(c.req.param("username"));
   if (!username.success) return jsonError(c, 404, "not_found", "Published site not found");
   const supabase = serviceClient(c.env);
-  const { data, error } = await supabase.from("sites").select("id,username,site_name,published_document").eq("username", username.data).not("published_document", "is", null).maybeSingle();
+  const { data, error } = await supabase.from("sites").select("id,username,published_document").eq("username", username.data).not("published_document", "is", null).maybeSingle();
   if (error) return jsonError(c, 500, "db_error", "Could not load published export");
   if (!data?.published_document) return jsonError(c, 404, "not_found", "Published site not found");
-  const result = createRetroExport({ scope: "public", siteId: data.id, username: data.username, siteName: data.site_name, document: data.published_document });
+  const result = createRetroExport({ scope: "public", siteId: data.id, username: data.username, siteName: data.published_document.siteName, document: data.published_document });
   return result.ok ? exportResponse(data.username, "public", result.value) : exportFailure(c, result);
 });
 
@@ -57,7 +57,7 @@ transfer.get("/sites/:siteId/export", async (c) => {
   const document = scope === "published" ? data.published_document : data.draft_document;
   if (!document) return jsonError(c, 409, "not_published", "Publish this desktop before exporting its public version");
   const exportScope = scope === "published" ? "public" : "owner-backup";
-  const result = createRetroExport({ scope: exportScope, siteId: data.id, username: data.username, siteName: data.site_name, document });
+  const result = createRetroExport({ scope: exportScope, siteId: data.id, username: data.username, siteName: scope === "published" ? document.siteName : data.site_name, document });
   return result.ok ? exportResponse(data.username, exportScope, result.value) : exportFailure(c, result);
 });
 
