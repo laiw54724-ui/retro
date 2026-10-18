@@ -1,3 +1,4 @@
+import type { PreviewNavigation } from "./previewNavigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { makeWindow, THEME_PRESETS, type CollectionEntityV2, type DesktopWindow, type PostEntityV2, type ProfileEntityV2, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
@@ -44,12 +45,14 @@ type Props = {
   socialDocument?: SiteDocumentV2Input;
   initialOpenId?: string;
   initialPostId?: string;
+  /** Visitor previews: shared with the other layouts so rotation keeps the open app and character. */
+  navigation?: PreviewNavigation;
   publicShareBaseUrl?: string;
   siteHandle?: string;
 };
 
 /** The single-window phone experience. Used for visitors, the editor preview and the mobile editor. */
-export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview, profiles, posts, collections, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument, initialOpenId, initialPostId, publicShareBaseUrl, siteHandle }: Props) {
+export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview, profiles, posts, collections, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument, initialOpenId, initialPostId, navigation, publicShareBaseUrl, siteHandle }: Props) {
   const { t } = useTranslation("editor");
   const { t: common } = useTranslation("common");
   const { t: musicText } = useTranslation("music");
@@ -59,7 +62,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const editor = mode === "editor";
   const store = useEditorStore();
   const tv = useThemeView(document.theme);
-  const [openId, setOpenId] = useState<string | null>(() => initialOpenId ?? (mode === "visitor" ? document.windows.find((window) => window.type === "character-dialog" && window.content.autoShow)?.id ?? null : null));
+  const [openId, setOpenId] = useState<string | null>(() => initialOpenId ?? (navigation?.openId && document.windows.some((window) => window.id === navigation.openId) ? navigation.openId : null) ?? (mode === "visitor" ? document.windows.find((window) => window.type === "character-dialog" && window.content.autoShow)?.id ?? null : null));
   const [sheet, setSheet] = useState<Sheet>(null);
   const [inlineEdit, setInlineEdit] = useState(false);
   const iconRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -69,8 +72,8 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const selected = document.windows.find((window) => window.id === store.selectedId) ?? null;
 
   useEffect(() => () => stopAllMedia(), []);
-  const open = (id: string) => { if (openId && openId !== id) stopWindowMedia(openId); setOpenId(id); setInlineEdit(false); if (editor) store.select(id); };
-  const back = () => { const closingId = openId; if (closingId) stopWindowMedia(closingId); setOpenId(null); setInlineEdit(false); if (closingId) requestAnimationFrame(() => iconRefs.current.get(closingId)?.focus()); };
+  const open = (id: string) => { if (openId && openId !== id) stopWindowMedia(openId); if (navigation) navigation.openId = id; setOpenId(id); setInlineEdit(false); if (editor) store.select(id); };
+  const back = () => { const closingId = openId; if (closingId) stopWindowMedia(closingId); if (navigation) navigation.openId = null; setOpenId(null); setInlineEdit(false); if (closingId) requestAnimationFrame(() => iconRefs.current.get(closingId)?.focus()); };
   useEffect(() => {
     if (!openId) return;
     const escape = (event: KeyboardEvent) => { if (event.key === "Escape") back(); };
@@ -142,6 +145,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
                 updateContent={updateContent}
                 socialDocument={socialDocument}
                 initialPostId={openWindow.id === initialOpenId ? initialPostId : undefined}
+                navigation={navigation}
                 publicShareBaseUrl={publicShareBaseUrl}
                 siteHandle={siteHandle}
               />

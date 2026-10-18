@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { i18n } from "../../i18n";
 import { useTranslation } from "react-i18next";
 import { loadVersionedSiteDocument, normalizeDocument, ProfileEntityV2Schema, projectV2ToLegacyDocument } from "@retrodesk/shared";
@@ -12,6 +12,7 @@ import type { SiteRecord } from "../../lib/api";
 import { useThemeView } from "../../lib/themeView";
 import { useIsPhoneViewport } from "../../lib/useViewport";
 import { MobileScreen } from "../site/MobileScreen";
+import { createPreviewNavigation } from "../site/previewNavigation";
 import { VisitorDesktop } from "../site/VisitorDesktop";
 
 function projectDraft(site: SiteRecord) {
@@ -44,6 +45,7 @@ function DraftViewerContent({ site, draft }: { site: SiteRecord; draft: ReturnTy
   const { t: tr } = useTranslation("collab");
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const navigation = useRef(createPreviewNavigation()).current; // see VisitorPreview
   const phone = useIsPhoneViewport();
   const [chosen, setDevice] = useState<"desktop" | "mobile">("desktop");
   // A real phone only has the mobile layout (the desktop renderer is hidden there); larger screens may simulate either.
@@ -68,10 +70,10 @@ function DraftViewerContent({ site, draft }: { site: SiteRecord; draft: ReturnTy
         <section className={"draft-viewer-body " + device} aria-label={tr("draft.preview", { device: device === "desktop" ? tr("draft.deviceDesktop") : tr("draft.deviceMobile") })}>
           {device === "desktop" ? (
             <div key="desktop" className="visitor-page draft-viewer-desktop" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: imageWallpaper ? "center" : "0 0", backgroundRepeat: imageWallpaper ? "no-repeat" : "repeat" }}>
-              <VisitorDesktop document={draft.document} profiles={draft.profiles} profileIdsByWindow={draft.profileIdsByWindow} profileDirectory={draft.profileDirectory} />
+              <VisitorDesktop navigation={navigation} document={draft.document} profiles={draft.profiles} profileIdsByWindow={draft.profileIdsByWindow} profileDirectory={draft.profileDirectory} />
             </div>
           ) : (
-            <div key={phone ? "phone-plain" : "phone-simulated"} className="draft-viewer-phone"><MobileScreen document={draft.document} mode="visitor" framed={!phone} profiles={draft.profiles} profileIdsByWindow={draft.profileIdsByWindow} profileDirectory={draft.profileDirectory} /></div>
+            <div key={phone ? "phone-plain" : "phone-simulated"} className="draft-viewer-phone"><MobileScreen document={draft.document} mode="visitor" framed={!phone} navigation={navigation} profiles={draft.profiles} profileIdsByWindow={draft.profileIdsByWindow} profileDirectory={draft.profileDirectory} /></div>
           )}
         </section>
       </main>

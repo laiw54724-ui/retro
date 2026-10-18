@@ -1,3 +1,4 @@
+import type { PreviewNavigation } from "../site/previewNavigation";
 import type { ReactElement } from "react";
 import type { CollectionEntityV2, DesktopWindow, EntityRef, HighlightEntityV2, IgPost, PostEntityV2, ProfileEntityV2, RetroTheme, SiteDocumentV2Input } from "@retrodesk/shared";
 import type { ThemeView } from "../../lib/themeView";
@@ -25,6 +26,8 @@ export type ModuleCtx = {
   collections?: CollectionEntityV2[];
   profileId?: string;
   initialPostId?: string;
+  /** Visitor-only navigation shared across renderers of one preview; see previewNavigation.ts. */
+  navigation?: PreviewNavigation;
   publicShareBaseUrl?: string;
   siteHandle?: string;
   profileThemeOverride?: { accent: string; background: string };

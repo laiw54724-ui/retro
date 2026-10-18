@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
+import { duplicateProfile, migrateSiteDocumentV2, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { documentFixture } from "./fixture";
+import { igDocument } from "./ig-fixture";
 
 /**
  * R2 / Issue #69: the three preview entries (home sample, owner preview, collaborator draft viewer) shared no viewport
@@ -117,10 +119,11 @@ for (const entry of entries) {
 
 /**
  * Rotation while an app is open. The boundary is the viewport *width* (< 768px = phone), so an 844px-wide landscape
- * phone leaves the phone layout and gets the desktop view (and its optional phone simulation). That is deliberate and
- * recorded in the PR: each renderer keeps its own open-window state, so rotating re-lays out the preview rather than
- * carrying the open app across. What must hold across a rotation: never blank, no media left playing by the renderer
- * that went away, the app the visitor opens next starts from a clean state, and the exit/back controls still work.
+ * phone leaves the phone layout and gets the desktop view (and its optional phone simulation). Each layout has its own
+ * renderer, but the visitor's position (the open app and, for Instagram, the character and screen) lives above them
+ * (`previewNavigation`), so a rotation keeps the visitor on the same app/character instead of dropping them on the home
+ * screen. Media is the exception: the renderer that goes away stops its playback (single-audio rule) and the visitor
+ * presses play again. Real-device rotation is NOT covered by these simulated viewport changes.
  */
 async function installCountingMedia(page: Page) {
   await page.addInitScript(() => {
@@ -166,7 +169,7 @@ async function openOwnerPreviewWithMusic(page: Page) {
   return { saves: () => saves };
 }
 
-test("rotating 390 -> 844 -> 390 with a playing app open: never blank, media stops, state is clean, exit works", async ({ page }) => {
+test("rotating 390 -> 844 -> 390 with a playing app open: stays on the app, never blank, media stops, Back and exit work", async ({ page }) => {
   const backend = await openOwnerPreviewWithMusic(page);
   const overlay = page.locator(".preview-overlay");
   // the v1 fixture is migrated on load and autosaved once; the preview itself must add no further writes
@@ -179,36 +182,44 @@ test("rotating 390 -> 844 -> 390 with a playing app open: never blank, media sto
   await expect(overlay.getByRole("button", { name: "暫停", exact: true })).toBeVisible();
   await expect.poll(() => activeMedia(page)).toBe(1);
 
-  // rotate to landscape (844px wide = not a phone by the width rule): desktop view, never blank, phone renderer's media stopped
+  // rotate to landscape (844px wide = not a phone by the width rule): the desktop view shows the SAME app open, not
+  // playing; the phone renderer's media stopped
   await page.setViewportSize({ width: 844, height: 390 });
   await expectVisibleContent(page, ".preview-overlay", "after rotating to 844x390");
   await expect(overlay.locator(".visitor-desktop")).toBeVisible();
   await expect(overlay.locator(".m-bezel, .m-status")).toHaveCount(0);
   await expect.poll(() => activeMedia(page)).toBe(0);
-  // the desktop renderer starts clean: its player is open by default but not playing
+  await expect(overlay.getByRole("dialog", { name: "Rotation Player" })).toBeVisible();
   await expect(overlay.getByRole("button", { name: "播放", exact: true })).toBeVisible();
   await expect(overlay.getByRole("button", { name: "暫停", exact: true })).toHaveCount(0);
 
-  // optional phone simulation in landscape still works and shows the device frame
+  // the optional phone simulation keeps the same app too
   await overlay.locator(".device-toggle").getByRole("button", { name: /手機版/ }).click();
   await expect(overlay.locator(".m-bezel")).toBeVisible();
-  await overlay.getByRole("button", { name: "Rotation Player" }).click();
+  await expect(overlay.getByRole("button", { name: /‹ 桌面/ })).toBeVisible();
   await overlay.getByRole("button", { name: "播放", exact: true }).click();
   await expect.poll(() => activeMedia(page)).toBe(1);
 
-  // rotate back to portrait: plain mobile layout again, simulated frame gone, the previous playback stopped
+  // back to portrait: plain mobile layout, still on the app, previous playback stopped
   await page.setViewportSize({ width: 390, height: 844 });
   await expectVisibleContent(page, ".preview-overlay", "after rotating back to 390x844");
   await expect(overlay.locator(".m-bezel, .m-status")).toHaveCount(0);
   await expect(overlay.locator(".device-toggle")).toHaveCount(0);
   await expect.poll(() => activeMedia(page)).toBe(0);
-  // no app is left open from before: the home grid is shown, and the app can be opened and played once, then Back stops it
-  await expect(overlay.getByRole("button", { name: "Rotation Player" })).toBeVisible();
-  await overlay.getByRole("button", { name: "Rotation Player" }).click();
+  await expect(overlay.getByRole("button", { name: /‹ 桌面/ })).toBeVisible();
   await overlay.getByRole("button", { name: "播放", exact: true }).click();
   await expect.poll(() => activeMedia(page)).toBe(1);
+  // Back returns to the home grid and stops media
   await overlay.getByRole("button", { name: /‹ 桌面/ }).click();
   await expect.poll(() => activeMedia(page)).toBe(0);
+  await expect(overlay.getByRole("button", { name: "Rotation Player" })).toBeVisible();
+
+  // having gone Back to the home grid, a rotation keeps the visitor on the home screen (no app force-opened)
+  await page.setViewportSize({ width: 844, height: 390 });
+  await expect(overlay.locator(".m-bezel")).toBeVisible(); // the simulated phone the author chose earlier
+  await expect(overlay.getByRole("button", { name: /‹ 桌面/ })).toHaveCount(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(overlay.getByRole("button", { name: /‹ 桌面/ })).toHaveCount(0);
   await expect(overlay.getByRole("button", { name: "Rotation Player" })).toBeVisible();
 
   // exiting the preview stops everything too and writes nothing
@@ -219,4 +230,64 @@ test("rotating 390 -> 844 -> 390 with a playing app open: never blank, media sto
   await expect(page.locator(".preview-overlay")).toHaveCount(0);
   await expect.poll(() => activeMedia(page)).toBe(0);
   expect(backend.saves()).toBe(savesBeforePreviewUse);
+
+  // the remembered position belongs to that preview only: reopening starts on the home screen
+  await page.locator(".m-tool", { hasText: "預覽" }).first().click();
+  await expect(page.locator(".preview-overlay").getByRole("button", { name: /‹ 桌面/ })).toHaveCount(0);
+  await expect(page.locator(".preview-overlay").getByRole("button", { name: "Rotation Player" })).toBeVisible();
+});
+
+/** Two published characters; the second owns a post, plus a private character that must never show. */
+function twoCharacterDraft(): SiteDocumentV2Input {
+  const migrated = migrateSiteDocumentV2(igDocument(), { siteId: "site-1" });
+  if (!migrated.ok || migrated.version !== 2) throw new Error("fixture migration failed");
+  const first = migrated.document.entities.profiles[0];
+  first.displayName = "Retro User"; first.visibility = "published";
+  const duplicated = duplicateProfile(migrated.document, first.id, { siteId: "site-1", id: "profile:bei", handle: "bei" });
+  if (!duplicated.ok) throw new Error("duplication failed");
+  const document = duplicated.document;
+  const bei = document.entities.profiles.find((profile) => profile.id === "profile:bei")!;
+  bei.displayName = "Bei Original"; bei.name = "Bei Original"; bei.visibility = "published";
+  const template = document.entities.posts[0];
+  document.entities.posts.push({ ...structuredClone(template), id: "post:bei:timeline", authorProfileId: bei.id, caption: "Bei timeline", visibility: "published" });
+  return document;
+}
+
+test("rotating with an Instagram character open keeps the visitor on that character and screen", async ({ page }) => {
+  await signIn(page);
+  const site = { id: "site-1", username: "demo", site_name: "Demo", draft_document: twoCharacterDraft(), draft_version: 2, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-15T00:00:00.000Z", access_role: "viewer" };
+  await page.route("**/api/sites/site-1", (route) => route.fulfill({ json: { site } }));
+  await page.route("**/api/sites/site-1/assets**", (route) => route.fulfill({ json: { assets: [] } }));
+  await page.route("**/api/sites/site-1/draft", (route) => route.fulfill({ json: { version: 3, updatedAt: "2026-10-15T00:01:00.000Z" } }));
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/editor/site-1");
+  // the collaborator draft viewer carries the character directory (the owner preview gets it in R3)
+  const overlay = page.locator(".draft-viewer-body");
+  await expect(overlay).toBeVisible();
+
+  await overlay.getByRole("button", { name: "Instagram.exe" }).click();
+  const win = overlay.getByRole("dialog", { name: "Instagram.exe" });
+  await win.getByRole("button", { name: "所有角色" }).evaluate((button) => (button as HTMLButtonElement).click());
+  await win.getByRole("button", { name: "Bei Original @bei" }).click();
+  await expect(win.locator(".ig-title strong")).toHaveText("bei");
+
+  // portrait -> landscape (desktop view): same window, still on the second character
+  await page.setViewportSize({ width: 844, height: 390 });
+  await expect(overlay.locator(".visitor-desktop")).toBeVisible();
+  const desktopWin = overlay.getByRole("dialog", { name: "Instagram.exe" });
+  await expect(desktopWin).toBeVisible();
+  await expect(desktopWin.locator(".ig-title strong")).toHaveText("bei");
+
+  // go one level deeper on the desktop view, rotate back: the post stays open on the phone layout
+  await desktopWin.getByRole("button", { name: "開啟貼文：Bei timeline" }).click();
+  await expect(desktopWin.locator(".ig-title strong")).toHaveText("貼文");
+  await page.setViewportSize({ width: 390, height: 844 });
+  const phoneWin = overlay.getByRole("dialog", { name: "Instagram.exe" });
+  await expect(phoneWin.locator(".ig-title strong")).toHaveText("貼文");
+  await expect(overlay.locator(".m-bezel, .m-status")).toHaveCount(0);
+  await expect(phoneWin.getByText("Bei timeline")).toBeVisible();
+
+  // layered Back still works from the restored position, and private/hidden content never appears
+  await phoneWin.getByRole("button", { name: "返回" }).click();
+  await expect(phoneWin.locator(".ig-title strong")).toHaveText("bei");
 });

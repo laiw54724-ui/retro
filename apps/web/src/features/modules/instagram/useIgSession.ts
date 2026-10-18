@@ -4,17 +4,20 @@ import { useTranslation } from "react-i18next";
 export type IgScreen = "profile" | "feed" | "explore" | "saved" | "directory" | "collection" | "post" | "people";
 export type IgComment = { id: string; user: string; text: string };
 export type IgGridTab = "grid" | "list" | "collections";
-type Route = { screen: IgScreen; profileId: string; postId: string | null; collectionId: string | null; peopleKind: "followers" | "following" | "likers" | null };
-type HistoryFrame = { route: Route; scrollTop: number };
+export type Route = { screen: IgScreen; profileId: string; postId: string | null; collectionId: string | null; peopleKind: "followers" | "following" | "likers" | null };
+export type HistoryFrame = { route: Route; scrollTop: number };
 
 /** Visitor-only Instagram state. Lives in memory; never writes the document or API. */
-export function useIgSession(highlightCount: (profileId: string) => number, entryProfileId = "entry", sessionScope = "ig", initialPostId: string | null = null) {
+export function useIgSession(highlightCount: (profileId: string) => number, entryProfileId = "entry", sessionScope = "ig", initialPostId: string | null = null, persist?: { restore: { route: Route; history: HistoryFrame[] } | null; save: (state: { route: Route; history: HistoryFrame[] }) => void }) {
   const { t: tr } = useTranslation("instagram");
-  const initialRoute = (): Route => ({ screen: initialPostId ? "post" : "profile", profileId: entryProfileId, postId: initialPostId, collectionId: null, peopleKind: null });
+  // A route handed over by a previous renderer (rotation) is used for this mount only; a real scope change starts fresh.
+  const restored = useRef(persist?.restore ?? null);
+  const initialRoute = (): Route => restored.current?.route ?? ({ screen: initialPostId ? "post" : "profile", profileId: entryProfileId, postId: initialPostId, collectionId: null, peopleKind: null });
   const [route, setRoute] = useState<Route>(initialRoute);
-  const history = useRef<HistoryFrame[]>([]);
+  const history = useRef<HistoryFrame[]>(restored.current?.history.map((frame) => ({ ...frame })) ?? []);
   const pendingScroll = useRef<number | null>(null);
-  const [, setHistoryVersion] = useState(0);
+  const [historyVersion, setHistoryVersion] = useState(0);
+  useEffect(() => { persist?.save({ route, history: history.current.map((frame) => ({ ...frame })) }); }, [route, historyVersion]);
   const [gridTabs, setGridTabs] = useState<Record<string, IgGridTab>>({});
   const [followedProfiles, setFollowedProfiles] = useState<Record<string, boolean>>({});
   const [liked, setLiked] = useState<Record<string, boolean>>({});
@@ -47,7 +50,12 @@ export function useIgSession(highlightCount: (profileId: string) => number, entr
     clearInterval(timers.current.story);
   }, []);
 
+  const scopeKey = `${entryProfileId}|${initialPostId ?? ""}|${sessionScope}`;
+  const lastScope = useRef(scopeKey);
   useEffect(() => {
+    if (lastScope.current === scopeKey) return; // mount (or a StrictMode re-run): keep the initial/restored route
+    lastScope.current = scopeKey;
+    restored.current = null;
     history.current = [];
     pendingScroll.current = 0;
     setRoute(initialRoute());
