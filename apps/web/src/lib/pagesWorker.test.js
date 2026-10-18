@@ -11,6 +11,15 @@ function assets() {
 }
 
 describe("Pages metadata worker", () => {
+  it("inserts authored text literally, even when it looks like a replacement pattern ($&, $\', $`)", () => {
+    const tricky = { ...metadata, title: "A $' B $& C $` D $$ E", description: "$' </head> $&" };
+    const result = injectMetadata(index, tricky, "https://retro.example/@bei");
+    expect(result).toContain("<title>A $&#39; B $&amp; C $` D $$ E</title>");
+    expect(result.match(/<\/head>/g)).toHaveLength(1);
+    expect(result.indexOf("</head>")).toBeGreaterThan(result.indexOf("og:title"));
+    expect(result).not.toContain("<title>A </head>");
+  });
+
   it("parses only canonical public paths", () => {
     expect(parsePublicPath("/@bei/post/post%3A1")).toEqual({ username: "bei", kind: "post", id: "post:1" });
     expect(parsePublicPath("/editor/site-a")).toBeNull();

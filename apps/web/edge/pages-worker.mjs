@@ -41,7 +41,8 @@ export function injectMetadata(html, metadata, requestUrl) {
     `<meta name="twitter:image" content="${escapeHtml(image)}" />`,
   ].join("\n    ");
   const clean = managedTags.reduce((value, pattern) => value.replace(pattern, ""), html);
-  return clean.replace("</head>", `    ${tags}\n  </head>`);
+  // A replacer function: a plain replacement string would interpret `$&`, `$'` and "$`" inside authored titles.
+  return clean.replace("</head>", () => `    ${tags}\n  </head>`);
 }
 
 async function readRuntimeConfig(request, env) {
