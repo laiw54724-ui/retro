@@ -16,6 +16,8 @@ type EditorState = {
   versionedFuture: SiteDocumentV2Input[];
   lastSavedDocument: SiteDocument | null;
   publishedDocument: SiteDocument | null;
+  /** Canonical v2 snapshot of the published copy; null when never published or when it is still a v1 document. */
+  publishedVersioned: SiteDocumentV2Input | null;
   publishedVersion: number | null;
   version: number;
   selectedId: string | null;
@@ -35,6 +37,7 @@ type EditorState = {
   setSaveStatus: (status: SaveStatus) => void;
   markSaved: (version: number, savedDocument: SiteDocument) => void;
   setVersionedDocument: (document: SiteDocumentV2Input | null) => void;
+  setPublishedVersioned: (document: SiteDocumentV2Input | null) => void;
   /** Replace the legacy render projection and canonical v2 snapshot atomically. */
   replaceDocument: (document: SiteDocument, historyKey?: string, versionedDocument?: SiteDocumentV2Input) => void;
   retrySave: () => void;
@@ -136,6 +139,7 @@ export const useEditorStore = create<EditorState>((set) => ({
   versionedFuture: [],
   lastSavedDocument: null,
   publishedDocument: null,
+  publishedVersioned: null,
   publishedVersion: null,
   version: 0,
   selectedId: null,
@@ -170,11 +174,13 @@ export const useEditorStore = create<EditorState>((set) => ({
     saveStatus: sameDocument(state.document, savedDocument) ? "saved" : "dirty"
   })),
   setVersionedDocument: (versionedDocument) => set({ versionedDocument, versionedPast: [], versionedFuture: [] }),
+  setPublishedVersioned: (publishedVersioned) => set({ publishedVersioned }),
   replaceDocument: (document, historyKey, versionedDocument) => set((state) => withHistory(state, document, {}, historyKey, versionedDocument)),
   retrySave: () => set((state) => state.document ? { saveStatus: "dirty" } : {}),
   markPublished: (publishedVersion) => set((state) => ({
     publishedVersion,
     publishedDocument: state.document,
+    publishedVersioned: state.versionedDocument,
   })),
   undo: () => set((state) => {
     if ((!state.document || state.past.length === 0) && state.versionedPast.length === 0) return {};

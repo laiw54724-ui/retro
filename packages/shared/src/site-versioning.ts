@@ -711,3 +711,44 @@ export function deleteOrRetargetProfile(document: SiteDocumentV2Input, profileId
 export const createProfileEntity = createProfile;
 export const updateProfileEntity = updateProfile;
 export const duplicateProfileEntity = duplicateProfile;
+
+
+/** JSON text with object keys sorted and undefined members dropped, so equal content always compares equal. */
+export function stableDocumentText(value: unknown): string {
+  const normalize = (item: unknown): unknown => {
+    if (Array.isArray(item)) return item.map(normalize);
+    if (item && typeof item === "object") {
+      return Object.fromEntries(Object.entries(item as Record<string, unknown>)
+        .filter(([, member]) => member !== undefined)
+        .sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)
+        .map(([key, member]) => [key, normalize(member)]));
+    }
+    return item;
+  };
+  return JSON.stringify(normalize(value));
+}
+
+/** Content equality that ignores key order (a stored jsonb copy reorders keys) and undefined members. */
+export function sameDocumentContent(a: unknown, b: unknown): boolean {
+  return stableDocumentText(a) === stableDocumentText(b);
+}
+
+export type PublishComparisonInput = {
+  /** Legacy render projection of the current draft, and of the published copy (null when never published). */
+  draftLegacy: unknown;
+  publishedLegacy: unknown | null;
+  /** Canonical v2 snapshots; either may be missing (v1 documents). */
+  draftCanonical?: unknown | null;
+  publishedCanonical?: unknown | null;
+};
+
+/**
+ * Whether the draft differs from what is published. The legacy projection drops canonical-only data (custom fields,
+ * pronouns, world tags, character themes, pins, collections, social metadata, SEO), so it can only decide when no
+ * canonical pair exists; whenever both snapshots are available the full canonical documents are compared.
+ */
+export function hasUnpublishedChanges(input: PublishComparisonInput): boolean {
+  if (input.publishedLegacy == null) return true;
+  if (input.draftCanonical != null && input.publishedCanonical != null) return !sameDocumentContent(input.draftCanonical, input.publishedCanonical);
+  return !sameDocumentContent(input.draftLegacy, input.publishedLegacy);
+}
