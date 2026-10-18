@@ -12,6 +12,8 @@ import { igDocument } from "./ig-fixture";
  */
 const session = { access_token: "a.b.c", refresh_token: "r", expires_at: 4102444800, expires_in: 3600, token_type: "bearer", user: { id: "u", email: "x@y.z", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01" } };
 const SITE = "site-1";
+// The editor trusts `<API_URL>/api/assets` (the dev server is the API origin in these tests) as the published asset base.
+const ASSET_BASE = `http://127.0.0.1:${process.env.PLAYWRIGHT_PORT ?? 5173}/api/assets`;
 const AVATAR_ASSET = "0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d";
 
 /** A published character with an uploaded avatar, plus private content that must never reach the published copy. */
@@ -31,20 +33,20 @@ function draftWithPrivateContentAndAsset(): SiteDocumentV2Input {
 }
 
 /** Same pipeline as the API's publish route, followed by a jsonb round-trip (keys come back reordered). */
-function publishLikeApi(draft: unknown): unknown {
+function publishLikeApi(draft: unknown, assetBase = ASSET_BASE): unknown {
   const projected = projectPublicSiteDocument(draft, SITE);
   if (!projected.ok) throw new Error("draft is not publishable");
-  const urls = new Map(collectAssetReferences(projected.document).map((id) => [id, `https://assets.test/api/assets/published/demo/assets/${id}.png`]));
+  const urls = new Map(collectAssetReferences(projected.document).map((id) => [id, `${assetBase}/published/demo/assets/${id}.png`]));
   const rewritten = replaceAssetReferences(projected.document, urls);
   return JSON.parse(JSON.stringify(rewritten, (_key, value) => value && typeof value === "object" && !Array.isArray(value) ? Object.fromEntries(Object.entries(value).reverse()) : value));
 }
 
 type Backend = { saves: Array<{ document: SiteDocumentV2Input }>; publishes: () => number; published: () => any; draft: () => SiteDocumentV2Input };
 
-async function openPublishedEditor(page: Page, options: { publishedAsV1?: boolean } = {}): Promise<Backend> {
+async function openPublishedEditor(page: Page, options: { publishedAsV1?: boolean; assetBase?: string } = {}): Promise<Backend> {
   await page.addInitScript((value) => localStorage.setItem("sb-example-auth-token", JSON.stringify(value)), session);
   let draft = draftWithPrivateContentAndAsset();
-  let published: unknown = options.publishedAsV1 ? igDocument() : publishLikeApi(draft);
+  let published: unknown = options.publishedAsV1 ? igDocument() : publishLikeApi(draft, options.assetBase);
   if (options.publishedAsV1) {
     // an old publication: the v1 document the site had before migration; the draft is its v2 migration
     const migrated = migrateSiteDocumentV2(published, { siteId: SITE });
@@ -60,7 +62,7 @@ async function openPublishedEditor(page: Page, options: { publishedAsV1?: boolea
   const site = () => ({ id: SITE, username: "demo", site_name: "D", draft_document: draft, draft_version: version, published_document: published, published_version: publishedVersion, published_at: "2026-10-15T00:00:00.000Z", updated_at: "2026-10-15T00:00:00.000Z", access_role: "owner" });
   await page.route("**/api/sites/site-1", (route) => route.fulfill({ json: { site: site() } }));
   await page.route("**/api/sites/site-1/assets**", (route) => route.fulfill({ json: { assets: options.publishedAsV1 ? [] : [asset] } }));
-  await page.route("https://assets.test/**", (route) => route.fulfill({ status: 200, contentType: "image/png", body: Buffer.from("iVBORw0KGgo=", "base64") }));
+  await page.route("**/api/assets/**", (route) => route.fulfill({ status: 200, contentType: "image/png", body: Buffer.from("iVBORw0KGgo=", "base64") }));
   await page.route("**/api/sites/site-1/draft", (route) => {
     const body = route.request().postDataJSON() as { document: SiteDocumentV2Input };
     saves.push(body); draft = body.document; version += 1;
@@ -138,6 +140,13 @@ test("an old v1 published copy with a v2 draft: unchanged is in sync, a canonica
   await inSync(page);
   await expect(republish(page)).toBeDisabled();
   await addCustomField(page, backend);
+  await changed(page);
+  await expect(republish(page)).toBeEnabled();
+});
+
+test("a published copy whose asset URL comes from an untrusted origin is not treated as the same asset", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openPublishedEditor(page, { assetBase: "https://untrusted.example/api/assets" });
   await changed(page);
   await expect(republish(page)).toBeEnabled();
 });

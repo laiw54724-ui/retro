@@ -93,6 +93,8 @@ For each environment, configure these **variables**:
 | `WEB_ORIGIN` | `https://retrodesk-staging.pages.dev` |
 | `API_URL` | `https://api-staging.example.com` |
 | `ASSET_BASE_URL` | `https://api-staging.example.com/api/assets` |
+
+> If published assets are served from an origin other than `<API_URL>/api/assets`, also build the web app with `VITE_PUBLIC_ASSET_BASE_URL` set to the same value as the API's `PUBLIC_ASSET_BASE_URL`. The editor uses it to recognise published copies of a draft's asset references; a mismatch only makes the editor report "unpublished changes" until the next publish.
 | `SUPABASE_URL` | `https://project.supabase.co` |
 | `DEPLOY_ENABLED` | `true` only after the environment is fully provisioned |
 

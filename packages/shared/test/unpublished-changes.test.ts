@@ -6,6 +6,9 @@ import { createStarterDocument, makeIgPost } from "../src/site";
 import { migrateSiteDocumentV2, projectV2ToLegacyDocument, type SiteDocumentV2Input } from "../src/site-versioning";
 
 const SITE = "site-1";
+const USERNAME = "demo";
+const BASE = "https://assets.example/api/assets";
+const MAPPING = { username: USERNAME, trustedAssetBaseUrls: [BASE] };
 const AVATAR = "0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d";
 const MEDIA = "1c2d3e4f-5061-4b7c-9d8e-0f1a2b3c4d5e";
 
@@ -25,16 +28,16 @@ function baseline(): SiteDocumentV2Input {
 function publishLikeApi(draft: SiteDocumentV2Input, options: { reorderKeys?: boolean } = {}): unknown {
   const projected = projectPublicSiteDocument(draft, SITE);
   if (!projected.ok) throw new Error("draft is not publishable");
-  const urls = new Map(collectAssetReferences(projected.document).map((id) => [id, `https://assets.example/api/assets/published/demo/assets/${id}.png`]));
+  const urls = new Map(collectAssetReferences(projected.document).map((id) => [id, `${BASE}/published/${USERNAME}/assets/${id}.png`]));
   const stored = replaceAssetReferences(projected.document, urls);
   const text = JSON.stringify(stored, options.reorderKeys ? (_key, value) => value && typeof value === "object" && !Array.isArray(value) ? Object.fromEntries(Object.entries(value).reverse()) : value : undefined);
   return JSON.parse(text);
 }
 
-function decide(draft: SiteDocumentV2Input, publishedRaw: unknown | null) {
+function decide(draft: SiteDocumentV2Input, publishedRaw: unknown | null, mapping = MAPPING) {
   const legacy = projectV2ToLegacyDocument(draft);
   if (!legacy.ok) throw new Error("projection failed");
-  return hasUnpublishedChanges({ siteId: SITE, draftLegacy: legacy.document, publishedLegacy: publishedRaw === null ? null : legacy.document, draftCanonical: draft, publishedRaw });
+  return hasUnpublishedChanges({ siteId: SITE, assets: mapping, draftLegacy: legacy.document, publishedLegacy: publishedRaw === null ? null : legacy.document, draftCanonical: draft, publishedRaw });
 }
 
 /** The legacy projection cannot see these (the original #41 bug): they must be caught by comparing public canonical content. */
@@ -138,6 +141,81 @@ describe("publish state compares the same semantics the API publishes", () => {
       const published = publishLikeApi(draft);
       draft.entities.profiles[0].avatar = createAssetReference("2d3e4f50-6172-4c8d-ae9f-1a2b3c4d5e6f");
       expect(decide(draft, published)).toBe(true);
+    });
+  });
+
+  describe("asset URLs are matched only at asset positions, for this site, under a trusted base", () => {
+    function withAvatar(draft: SiteDocumentV2Input) { draft.entities.profiles[0].avatar = createAssetReference(AVATAR); }
+    const publishedUrl = (base = BASE, username = USERNAME, id = AVATAR, ext = "png") => `${base}/published/${username}/assets/${id}.${ext}`;
+    function publishedWithAvatarUrl(draft: SiteDocumentV2Input, url: string) {
+      const stored = publishLikeApi(draft) as { entities: { profiles: Array<{ avatar: string | null }> } };
+      stored.entities.profiles[0].avatar = url;
+      return stored;
+    }
+
+    it("accepts the exact URL the API writes for this site, for every published extension", () => {
+      for (const ext of ["jpg", "png", "webp", "gif", "mp3", "ogg", "wav"]) {
+        const draft = baseline(); withAvatar(draft);
+        expect(decide(draft, publishedWithAvatarUrl(draft, publishedUrl(BASE, USERNAME, AVATAR, ext))), ext).toBe(false);
+      }
+    });
+
+    it("rejects the same path on a different origin", () => {
+      const draft = baseline(); withAvatar(draft);
+      expect(decide(draft, publishedWithAvatarUrl(draft, publishedUrl("https://evil.example/api/assets")))).toBe(true);
+      expect(decide(draft, publishedWithAvatarUrl(draft, `${BASE}.evil.example/published/${USERNAME}/assets/${AVATAR}.png`))).toBe(true);
+    });
+
+    it("rejects another site's published asset (different username) and a different asset id", () => {
+      const draft = baseline(); withAvatar(draft);
+      expect(decide(draft, publishedWithAvatarUrl(draft, publishedUrl(BASE, "someone-else")))).toBe(true);
+      expect(decide(draft, publishedWithAvatarUrl(draft, publishedUrl(BASE, USERNAME, MEDIA)))).toBe(true);
+    });
+
+    it("rejects look-alike shapes: unknown extension, query string, extra path, draft keys", () => {
+      const draft = baseline(); withAvatar(draft);
+      for (const url of [publishedUrl(BASE, USERNAME, AVATAR, "svg"), `${publishedUrl()}?x=1`, `${publishedUrl()}/extra`, `${BASE}/draft/users/u/sites/s/${AVATAR}.png`]) {
+        expect(decide(draft, publishedWithAvatarUrl(draft, url)), url).toBe(true);
+      }
+    });
+
+    it("does nothing when the base is not trusted or the username is unknown (conservative: reports a change)", () => {
+      const draft = baseline(); withAvatar(draft);
+      const published = publishLikeApi(draft);
+      expect(decide(draft, published, { username: USERNAME, trustedAssetBaseUrls: [] })).toBe(true);
+      expect(decide(draft, published, { username: "", trustedAssetBaseUrls: [BASE] })).toBe(true);
+      expect(decide(draft, published, { username: USERNAME, trustedAssetBaseUrls: [`${BASE}/`] })).toBe(false); // trailing slash is tolerated
+    });
+
+    it("never rewrites ordinary text or external links, even when they look like published asset URLs", () => {
+      const draft = baseline();
+      const lookalike = publishedUrl("https://elsewhere.example/api/assets");
+      draft.entities.profiles[0].bio = `see ${publishedUrl()}`;
+      draft.entities.profiles[0].customFields = [{ key: "Link", value: publishedUrl() }];
+      const published = publishLikeApi(draft) as { entities: { profiles: Array<{ bio: string; customFields: Array<{ value: string }> }> } };
+      // identical text stays identical...
+      expect(decide(draft, published)).toBe(false);
+      // ...and text that merely resembles an asset URL is a change when it differs, never "the same asset"
+      published.entities.profiles[0].customFields[0].value = lookalike;
+      expect(decide(draft, published)).toBe(true);
+      const other = publishLikeApi(draft) as typeof published;
+      other.entities.profiles[0].bio = `see ${publishedUrl(BASE, USERNAME, MEDIA)}`;
+      expect(decide(draft, other)).toBe(true);
+    });
+
+    it("a draft that holds a plain URL where the stored copy holds the converted asset is a change (no reverse rewriting)", () => {
+      const draft = baseline();
+      draft.entities.profiles[0].avatar = publishedUrl(); // an author-pasted URL, not a reference
+      const stored = publishLikeApi(draft);
+      expect(decide(draft, stored)).toBe(false);
+      const withRef = baseline(); withAvatar(withRef);
+      expect(decide(withRef, publishLikeApi(draft))).toBe(true);
+    });
+
+    it("a reference in an ordinary text field is converted by the API the same way and compares equal at that position", () => {
+      const draft = baseline();
+      draft.entities.profiles[0].bio = createAssetReference(AVATAR);
+      expect(decide(draft, publishLikeApi(draft))).toBe(false);
     });
   });
 

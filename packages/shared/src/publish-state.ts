@@ -1,9 +1,11 @@
-import { ASSET_REFERENCE_PREFIX } from "./asset-reference";
+import { parseAssetReference } from "./asset-reference";
 import { projectPublicSiteDocument } from "./public-projection";
 import { migrateSiteDocumentV2, parseSiteDocument, sameDocumentContent } from "./site-versioning";
 
 export type PublishComparisonInput = {
   siteId: string;
+  /** How the API names published assets for this site; see {@link PublishedAssetMapping}. */
+  assets: PublishedAssetMapping;
   /** Legacy render projection of the current draft, and of the published copy (null when never published). */
   draftLegacy: unknown;
   publishedLegacy: unknown | null;
@@ -13,39 +15,65 @@ export type PublishComparisonInput = {
   publishedRaw?: unknown | null;
 };
 
-const PUBLISHED_ASSET_URL = /\/published\/[^/]+\/assets\/([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\.(?:jpg|png|webp|gif|mp3|ogg|wav)$/i;
+/** Extensions the API writes for published assets (`published/<username>/assets/<id>.<ext>`). */
+const PUBLISHED_ASSET_EXTENSIONS = new Set(["jpg", "png", "webp", "gif", "mp3", "ogg", "wav"]);
 
-/** Publishing replaces `retro-asset:<id>` with a public URL; map those URLs back so both sides name assets the same way. */
-function normalizePublishedAssetUrls<T>(value: T): T {
-  const visit = (node: unknown): unknown => {
-    if (typeof node === "string") {
-      const match = PUBLISHED_ASSET_URL.exec(node);
-      return match ? `${ASSET_REFERENCE_PREFIX}${match[1].toLowerCase()}` : node;
-    }
-    if (Array.isArray(node)) return node.map(visit);
-    if (node && typeof node === "object") return Object.fromEntries(Object.entries(node as Record<string, unknown>).map(([key, item]) => [key, visit(item)]));
-    return node;
-  };
-  return visit(value) as T;
+export type PublishedAssetMapping = {
+  /** The site's username: published assets live under `published/<username>/assets/`. */
+  username: string;
+  /**
+   * Trusted base URLs the API publishes assets under (its `PUBLIC_ASSET_BASE_URL`). Only a URL that starts with one of
+   * these, followed by exactly `/published/<username>/assets/<id>.<ext>`, counts as the published form of a reference.
+   */
+  trustedAssetBaseUrls: readonly string[];
+};
+
+function publishedFormOfReference(reference: string, published: string, mapping: PublishedAssetMapping): boolean {
+  const id = parseAssetReference(reference);
+  if (!id || !mapping.username) return false;
+  for (const base of mapping.trustedAssetBaseUrls) {
+    const prefix = `${base.replace(/\/+$/, "")}/published/${mapping.username}/assets/${id}.`;
+    if (published.startsWith(prefix) && PUBLISHED_ASSET_EXTENSIONS.has(published.slice(prefix.length))) return true;
+  }
+  return false;
+}
+
+/**
+ * Structural equality between what publishing would store (draft side) and the stored published copy. Object key order
+ * and `undefined` members are ignored; arrays are ordered; strings must be identical, except at a position where the
+ * draft holds `retro-asset:<id>`: there the stored copy holds the URL the API wrote for that exact asset, site and
+ * trusted base. No string is ever rewritten, so ordinary text and foreign URLs can never be mistaken for assets.
+ */
+function equalAsPublished(draft: unknown, published: unknown, mapping: PublishedAssetMapping): boolean {
+  if (typeof draft === "string") return typeof published === "string" && (draft === published || publishedFormOfReference(draft, published, mapping));
+  if (Array.isArray(draft)) return Array.isArray(published) && draft.length === published.length && draft.every((item, index) => equalAsPublished(item, published[index], mapping));
+  if (draft && typeof draft === "object") {
+    if (!published || typeof published !== "object" || Array.isArray(published)) return false;
+    const left = Object.entries(draft as Record<string, unknown>).filter(([, value]) => value !== undefined);
+    const right = published as Record<string, unknown>;
+    const rightKeys = Object.entries(right).filter(([, value]) => value !== undefined).map(([key]) => key);
+    return left.length === rightKeys.length && left.every(([key, value]) => Object.prototype.hasOwnProperty.call(right, key) && equalAsPublished(value, right[key], mapping));
+  }
+  return draft === published;
 }
 
 /** What publishing would store for a draft, expressed in draft vocabulary (assets as references). Null when it cannot be published. */
 function comparablePublicDocument(raw: unknown, siteId: string): { version: 1 | 2; document: unknown } | null {
   const projected = projectPublicSiteDocument(raw, siteId);
-  return projected.ok ? { version: projected.version, document: normalizePublishedAssetUrls(projected.document) } : null;
+  return projected.ok ? { version: projected.version, document: projected.document } : null;
 }
 
 /** A published copy as a canonical v2 document, migrating a v1 copy the same way the draft was migrated. */
 function publishedAsV2(raw: unknown, siteId: string): unknown | null {
   const parsed = parseSiteDocument(raw);
   if (!parsed.ok) return null;
-  if (parsed.version === 2) return normalizePublishedAssetUrls(parsed.document);
+  if (parsed.version === 2) return parsed.document;
   // A v1 copy was published before canonical data existed. Migrate it as the draft was migrated, then take its public
   // projection so both sides pass through the same publish semantics (e.g. canonical highlight ids replace legacy ones).
   const migrated = migrateSiteDocumentV2(parsed.document, { siteId });
   if (!migrated.ok || migrated.version !== 2) return null;
   const projected = projectPublicSiteDocument(migrated.document, siteId);
-  return projected.ok ? normalizePublishedAssetUrls(projected.document) : null;
+  return projected.ok ? projected.document : null;
 }
 
 /**
@@ -63,7 +91,7 @@ export function hasUnpublishedChanges(input: PublishComparisonInput): boolean {
     if (draft && draft.version === 2) {
       const published = publishedAsV2(input.publishedRaw, input.siteId);
       // A published copy that cannot be read counts as different: republishing is the way to repair it.
-      return !published || !sameDocumentContent(draft.document, published);
+      return !published || !equalAsPublished(draft.document, published, input.assets);
     }
   }
   return !sameDocumentContent(input.draftLegacy, input.publishedLegacy);
