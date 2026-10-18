@@ -171,6 +171,8 @@ test.describe("phone editor shell", () => {
     await expect(page.getByRole("toolbar")).toBeVisible();
     await page.getByRole("button", { name: /‹ 桌面/ }).click();
     await expect(page.locator(".m-titlebar")).toBeVisible();
+    await page.locator(".m-toolbar").getByRole("button", { name: "編輯", exact: true }).click();
+    await expect(page.locator(".m-sheet").getByRole("checkbox", { name: "訪客進入時預設開啟（僅桌面版）", exact: true })).toBeVisible();
   });
 });
 

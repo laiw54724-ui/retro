@@ -224,7 +224,7 @@ function MobileEdit({ theme, window, count, siteId, upload }: { theme: SiteDocum
       <WindowAppearanceEditor theme={theme} window={window} onChange={(appearance, historyKey) => patch({ appearance }, historyKey)} />
       <span className="w98-hint">{tr("rightPanel.icon")}</span>
       <IconPicker key={window.id} siteId={siteId} value={window.icon} upload={upload} mediaTarget={{ windowId: window.id, windowType: window.type }} size={28} label={window.title} defaultValue={makeWindow(window.type).icon} onChange={(icon) => patch({ icon })} />
-      <label className="check-row m-check"><input type="checkbox" checked={window.defaultOpen} onChange={(event) => patch({ defaultOpen: event.target.checked })} />{tr("mobileScreen.openAutomaticallyWhenVisitorsArrive")}</label>
+      <label className="check-row m-check"><input type="checkbox" checked={window.defaultOpen} onChange={(event) => patch({ defaultOpen: event.target.checked })} />{tr("mobileEditor.openByDefaultWhenVisitors")}</label>
       <div className="m-actions">
         <button type="button" className="w98-btn" disabled={window.layout.mobile.order === 0} onClick={() => store.reorderMobile(window.id, -1)}>{tr("mobileScreen.moveIconEarlier")}</button>
         <button type="button" className="w98-btn" disabled={window.layout.mobile.order >= count - 1} onClick={() => store.reorderMobile(window.id, 1)}>{tr("mobileScreen.moveIconLater")}</button>
