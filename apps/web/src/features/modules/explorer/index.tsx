@@ -1,11 +1,12 @@
 import { useEffect, useId, useMemo, useRef, useState, type DragEvent, type KeyboardEvent } from "react";
+import { useTranslation } from "react-i18next";
 import type { ModuleProps } from "../types";
 import { Icon } from "../../../components/Icon";
 import { IconPickerAction } from "../links/IconPicker";
 import { buildPublicEntityUrl } from "../../../lib/publicShare";
 import { DeleteFolderDialog, MoveDialog, TargetPickerDialog } from "./ExplorerDialogs";
 import {
-  ROOT_LABEL, canCreateFolder, canCreateShortcut, deleteImpact, moveItem, moveOptions, nextOrderIn, pathLabel, removeFolder,
+  rootLabel, canCreateFolder, canCreateShortcut, deleteImpact, moveItem, moveOptions, nextOrderIn, pathLabel, removeFolder,
   sortFolders, sortShortcuts, targetStatus, uniqueName, type ExplorerContent, type Folder, type Shortcut, type TargetOption
 } from "./explorerModel";
 
@@ -54,6 +55,7 @@ function RenameInput({ label, value, onCommit, onCancel }: { label: string; valu
 }
 
 function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer"> & { editing: boolean }) {
+  const { t: tr } = useTranslation("modules");
   const [folderId, setFolderId] = useState<string | null>(null);
   const [selected, setSelected] = useState<Item | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -89,10 +91,10 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
   const searchResults = search ? content.shortcuts.filter((shortcut) => shortcut.label.toLowerCase().includes(search)) : [];
 
   const targetOptions: TargetOption[] = useMemo(() => [
-    ...ctx.windows.filter((candidate) => candidate.id !== window.id).map((candidate) => ({ kind: "window" as const, id: candidate.id, label: candidate.title || "（未命名視窗）", group: "視窗" })),
+    ...ctx.windows.filter((candidate) => candidate.id !== window.id).map((candidate) => ({ kind: "window" as const, id: candidate.id, label: candidate.title || tr("explorer.untitledWindow"), group: tr("explorer.window") })),
     ...(ctx.profileDirectory ?? []).flatMap((entry) => [
       { kind: "profile" as const, id: entry.id, label: entry.profile.name || entry.profile.username, group: "OC" },
-      ...entry.posts.map((post) => ({ kind: "post" as const, id: post.id, label: `${entry.profile.name || entry.profile.username}：${post.title || post.caption || post.id}`, group: "貼文" }))
+      ...entry.posts.map((post) => ({ kind: "post" as const, id: post.id, label: `${entry.profile.name || entry.profile.username}：${post.title || post.caption || post.id}`, group: tr("explorer.post") }))
     ])
   ], [ctx.windows, ctx.profileDirectory, window.id]);
   // Only call a shortcut broken when the host actually told us what exists; otherwise we cannot know.
@@ -106,9 +108,9 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
     const check = canCreateFolder(content, folderId);
     if (!check.ok) { setStatus(check.reason); return; }
     const siblings = content.folders.filter((folder) => folder.parentId === folderId).map((folder) => folder.name);
-    const folder: Folder = { id: newId(), parentId: folderId, name: uniqueName("新資料夾", siblings), order: nextOrderIn(content.folders, folderId), visibility: "published" };
+    const folder: Folder = { id: newId(), parentId: folderId, name: uniqueName(tr("explorer.newFolder"), siblings), order: nextOrderIn(content.folders, folderId), visibility: "published" };
     setContent({ ...content, folders: [...content.folders, folder] });
-    setStatus(`已新增資料夾，請輸入名稱。`);
+    setStatus(tr("explorer.folderAddedTypeAName"));
     setSelected({ kind: "folder", id: folder.id });
     setRenamingId(folder.id);
   }
@@ -119,30 +121,30 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
     const shortcut: Shortcut = { id: newId(), parentId: folderId, label: option.label.slice(0, 160), order: nextOrderIn(content.shortcuts, folderId), visibility: "published", target: { siteId: ctx.siteId, id: option.id, kind: option.kind } };
     setContent({ ...content, shortcuts: [...content.shortcuts, shortcut] });
     setDialog(null);
-    setStatus("已建立捷徑，可以直接改名。");
+    setStatus(tr("explorer.shortcutCreatedYouCanRename"));
     setSelected({ kind: "shortcut", id: shortcut.id });
     setRenamingId(shortcut.id);
   }
   function duplicateShortcut(shortcut: Shortcut) {
     const check = canCreateShortcut(content);
     if (!check.ok) { setStatus(check.reason); return; }
-    const copy: Shortcut = { ...shortcut, id: newId(), label: `${shortcut.label} 副本`.slice(0, 160), order: nextOrderIn(content.shortcuts, shortcut.parentId) };
+    const copy: Shortcut = { ...shortcut, id: newId(), label: tr("explorer.copy", { label: shortcut.label }).slice(0, 160), order: nextOrderIn(content.shortcuts, shortcut.parentId) };
     setContent({ ...content, shortcuts: [...content.shortcuts, copy] });
     setSelected({ kind: "shortcut", id: copy.id });
     setRenamingId(copy.id);
-    setStatus("已建立副本捷徑；它和原本的捷徑指向同一個內容。");
+    setStatus(tr("explorer.duplicateShortcutCreatedItPoints"));
   }
   function repairShortcut(shortcutId: string, option: TargetOption) {
     if (!ctx.siteId) return;
     setContent({ ...content, shortcuts: content.shortcuts.map((shortcut) => shortcut.id === shortcutId ? { ...shortcut, target: { siteId: ctx.siteId!, id: option.id, kind: option.kind } } : shortcut) });
     setDialog(null);
-    setStatus(`已把捷徑改指向「${option.label}」。`);
+    setStatus(tr("explorer.theShortcutNowPointsTo", { label: option.label }));
   }
   function commitRename(item: Item, value: string) {
     setRenamingId(null);
     const name = value.trim();
     const current = item.kind === "folder" ? foldersById.get(item.id)?.name : content.shortcuts.find((shortcut) => shortcut.id === item.id)?.label;
-    if (!name) { setStatus("名稱不能空白，已保留原本的名稱。"); return; }
+    if (!name) { setStatus(tr("explorer.theNameCantBeBlank")); return; }
     if (name === current) return;
     if (item.kind === "folder") setContent({ ...content, folders: content.folders.map((folder) => folder.id === item.id ? { ...folder, name: name.slice(0, 120) } : folder) });
     else setContent({ ...content, shortcuts: content.shortcuts.map((shortcut) => shortcut.id === item.id ? { ...shortcut, label: name.slice(0, 160) } : shortcut) });
@@ -153,12 +155,12 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
     setContent(result.content);
     setDialog(null);
     const name = item.kind === "folder" ? foldersById.get(item.id)?.name : content.shortcuts.find((shortcut) => shortcut.id === item.id)?.label;
-    setStatus(`已把「${name}」移到「${pathLabel(content.folders, parentId)}」。`);
+    setStatus(tr("explorer.movedTo", { name, v2: pathLabel(content.folders, parentId) }));
   }
   function deleteShortcut(shortcut: Shortcut) {
     setContent({ ...content, shortcuts: content.shortcuts.filter((item) => item.id !== shortcut.id) });
     setSelected(null);
-    setStatus(`已刪除捷徑「${shortcut.label}」。原本的內容沒有被刪除，可以用「復原」找回。`);
+    setStatus(tr("explorer.deletedTheShortcutTheOriginal", { label: shortcut.label }));
   }
   function setIcon(item: Item, icon: string) {
     const next = icon || undefined;
@@ -173,9 +175,9 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
     else setContent({ ...content, shortcuts: content.shortcuts.map((shortcut) => shortcut.id === item.id ? { ...shortcut, visibility } : shortcut) });
   }
   function openShortcut(shortcut: Shortcut) {
-    if (editing) { setStatus("編輯時不會跳轉；用上方的「▶ 訪客預覽」測試捷徑。"); return; }
+    if (editing) { setStatus(tr("explorer.shortcutsDontNavigateWhileEditing")); return; }
     const state = statusOf(shortcut);
-    if (state.status === "missing") { setStatus("這個捷徑的目標已經不存在。"); return; }
+    if (state.status === "missing") { setStatus(tr("explorer.thisShortcutsTargetNoLonger")); return; }
     if (shortcut.target.kind === "window") { ctx.onLink({ target: "window", windowId: shortcut.target.id, label: shortcut.label }); return; }
     if (ctx.publicShareBaseUrl) {
       const base = new URL(ctx.publicShareBaseUrl, globalThis.location.origin);
@@ -259,9 +261,9 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
           <span className="explorer-icon" aria-hidden="true">{opts.icon ? <Icon name={opts.icon} size={36} /> : opts.glyph}{opts.shortcut ? <i className="explorer-arrow">↗</i> : null}</span>
           {renaming ? null : <strong>{name}</strong>}
         </button>
-        {renaming ? <RenameInput label={`${item.kind === "folder" ? "資料夾" : "捷徑"}名稱`} value={name} onCommit={(value) => commitRename(item, value)} onCancel={() => setRenamingId(null)} /> : null}
-        <small id={descId} className="explorer-desc">{opts.draft ? "草稿 · " : ""}{summary}</small>
-        {editing ? <button type="button" className="explorer-more" aria-label={`${name} 的操作`} onClick={() => showActions(item)}>⋯</button> : null}
+        {renaming ? <RenameInput label={item.kind === "folder" ? tr("explorer.folderName") : tr("explorer.shortcutName")} value={name} onCommit={(value) => commitRename(item, value)} onCancel={() => setRenamingId(null)} /> : null}
+        <small id={descId} className="explorer-desc">{opts.draft ? tr("explorer.draft") : ""}{summary}</small>
+        {editing ? <button type="button" className="explorer-more" aria-label={tr("explorer.actionsFor", { name })} onClick={() => showActions(item)}>⋯</button> : null}
       </div>
     );
   }
@@ -269,34 +271,34 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
   return (
     <div className={`explorer-shell${editing ? " editing" : ""}${coarse ? " touch" : ""}`}>
       <div className="explorer-address">
-        <button type="button" className={`w98-btn${dropOver === "up" ? " drop" : ""}`} disabled={!active} onClick={() => { setFolderId(active?.parentId ?? null); setSelected(null); }} {...dropProps(active?.parentId ?? null)}>↑ 上一層</button>
-        <nav aria-label="資料夾路徑">
-          <button type="button" className={dropOver === "root" ? "drop" : ""} aria-current={!active ? "page" : undefined} onClick={() => { setFolderId(null); setSelected(null); }} {...dropProps(null)}>{ROOT_LABEL}</button>
+        <button type="button" className={`w98-btn${dropOver === "up" ? " drop" : ""}`} disabled={!active} onClick={() => { setFolderId(active?.parentId ?? null); setSelected(null); }} {...dropProps(active?.parentId ?? null)}>{tr("explorer.upOneLevel")}</button>
+        <nav aria-label={tr("explorer.folderPath")}>
+          <button type="button" className={dropOver === "root" ? "drop" : ""} aria-current={!active ? "page" : undefined} onClick={() => { setFolderId(null); setSelected(null); }} {...dropProps(null)}>{rootLabel()}</button>
           {breadcrumbs.map((folder, index) => <span key={folder.id}> / <button type="button" className={dropOver === folder.id ? "drop" : ""} aria-current={index === breadcrumbs.length - 1 ? "page" : undefined} onClick={() => { setFolderId(folder.id); setSelected(null); }} {...dropProps(folder.id)}>{folder.name}</button></span>)}
         </nav>
       </div>
-      <label className="explorer-search">搜尋捷徑<input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="輸入名稱…" /></label>
+      <label className="explorer-search">{tr("explorer.searchShortcuts")}<input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tr("explorer.typeAName")} /></label>
 
       {editing ? (
         <>
           <div className="explorer-authoring">
-            <button type="button" className="w98-btn" onClick={addFolder}>新增資料夾</button>
-            <button type="button" className="w98-btn" onClick={() => setDialog({ type: "create-shortcut" })}>建立捷徑</button>
+            <button type="button" className="w98-btn" onClick={addFolder}>{tr("explorer.newFolder2")}</button>
+            <button type="button" className="w98-btn" onClick={() => setDialog({ type: "create-shortcut" })}>{tr("explorer.createShortcut")}</button>
           </div>
-          <p className="w98-hint explorer-scope">資料夾只存在於這個 Explorer 視窗；捷徑只是指向視窗、OC 或貼文的參照，刪除捷徑不會刪除原本的內容。</p>
+          <p className="w98-hint explorer-scope">{tr("explorer.foldersExistOnlyInThis")}</p>
         </>
       ) : null}
 
       {search ? (
-        <ul className="explorer-results" aria-label="搜尋結果">{searchResults.map((shortcut) => <li key={shortcut.id}><button type="button" onClick={() => openShortcut(shortcut)}>▣ {shortcut.label}</button><small>{pathLabel(content.folders, shortcut.parentId)}</small></li>)}</ul>
+        <ul className="explorer-results" aria-label={tr("explorer.searchResults")}>{searchResults.map((shortcut) => <li key={shortcut.id}><button type="button" onClick={() => openShortcut(shortcut)}>▣ {shortcut.label}</button><small>{pathLabel(content.folders, shortcut.parentId)}</small></li>)}</ul>
       ) : (
-        <div className="explorer-grid" role="list" aria-label={active?.name ?? ROOT_LABEL} onClick={(event) => { if (event.target === event.currentTarget) select(null); }}>
-          {folders.map((folder) => renderTile({ kind: "folder", id: folder.id }, folder.name, `資料夾 · ${folderItemCount(folder.id)} 項`, { glyph: "📁", icon: folder.icon, draft: folder.visibility === "draft" }))}
+        <div className="explorer-grid" role="list" aria-label={active?.name ?? rootLabel()} onClick={(event) => { if (event.target === event.currentTarget) select(null); }}>
+          {folders.map((folder) => renderTile({ kind: "folder", id: folder.id }, folder.name, tr("explorer.folderItems", { v1: folderItemCount(folder.id) }), { glyph: "📁", icon: folder.icon, draft: folder.visibility === "draft" }))}
           {shortcuts.map((shortcut) => {
             const state = statusOf(shortcut);
-            return renderTile({ kind: "shortcut", id: shortcut.id }, shortcut.label, state.status === "missing" ? "⚠ 目標已失效" : state.status === "ok" ? `${state.kindLabel}：${state.name}` : `${state.kindLabel}捷徑`, { glyph: GLYPH[shortcut.target.kind], icon: shortcut.icon, shortcut: true, broken: state.status === "missing", draft: shortcut.visibility === "draft" });
+            return renderTile({ kind: "shortcut", id: shortcut.id }, shortcut.label, state.status === "missing" ? tr("explorer.targetIsNoLongerAvailable") : state.status === "ok" ? `${state.kindLabel}：${state.name}` : tr("explorer.shortcut", { kindLabel: state.kindLabel }), { glyph: GLYPH[shortcut.target.kind], icon: shortcut.icon, shortcut: true, broken: state.status === "missing", draft: shortcut.visibility === "draft" });
           })}
-          {!folders.length && !shortcuts.length ? <p className="explorer-empty">這個資料夾是空的。{editing ? "用上方的「新增資料夾」或「建立捷徑」開始。" : ""}</p> : null}
+          {!folders.length && !shortcuts.length ? <p className="explorer-empty">{tr("explorer.folderEmpty")}{editing ? " " + tr("explorer.useNewFolderOrCreate") : ""}</p> : null}
         </div>
       )}
 
@@ -305,24 +307,24 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
         {editing ? (
           <>
             {selected && (selectedFolder || selectedShortcut) ? (
-              <div ref={actionBar} className="explorer-actions" role="toolbar" aria-label="選取項目的操作">
-                <span className="explorer-selected">已選取：<strong>{selectedFolder?.name ?? selectedShortcut?.label}</strong>{selectedShortcut && selectedStatus ? <small>{selectedStatus.status === "missing" ? "⚠ 目標已失效" : selectedStatus.status === "ok" ? `${selectedStatus.kindLabel}：${selectedStatus.name}` : `${selectedStatus.kindLabel}捷徑`}</small> : <small>資料夾</small>}</span>
-                <button type="button" className="w98-btn" onClick={() => setRenamingId(selected.id)}>重新命名</button>
+              <div ref={actionBar} className="explorer-actions" role="toolbar" aria-label={tr("explorer.actionsForTheSelectedItem")}>
+                <span className="explorer-selected">{tr("explorer.selected")}<strong>{selectedFolder?.name ?? selectedShortcut?.label}</strong>{selectedShortcut && selectedStatus ? <small>{selectedStatus.status === "missing" ? tr("explorer.targetIsNoLongerAvailable") : selectedStatus.status === "ok" ? `${selectedStatus.kindLabel}：${selectedStatus.name}` : tr("explorer.shortcut", { kindLabel: selectedStatus.kindLabel })}</small> : <small>{tr("explorer.folder")}</small>}</span>
+                <button type="button" className="w98-btn" onClick={() => setRenamingId(selected.id)}>{tr("explorer.rename")}</button>
                 <IconPickerAction key={`${window.id}:${selected.kind}:${selected.id}`} mediaTarget={{ windowId: window.id, windowType: "explorer", itemId: selected.id, itemKind: selected.kind }} siteId={ctx.siteId} upload={ctx.upload} value={(selectedFolder ?? selectedShortcut)?.icon ?? ""} defaultValue="" defaultPreview={selectedFolder ? "folder" : "link"} label={selectedFolder?.name ?? selectedShortcut?.label} onChange={(icon) => setIcon(selected, icon)} />
-                <button type="button" className="w98-btn" onClick={() => setDialog({ type: "move", item: selected })}>移動到…</button>
-                {selectedShortcut ? <button type="button" className="w98-btn" onClick={() => duplicateShortcut(selectedShortcut)}>建立副本捷徑</button> : null}
-                {selectedShortcut && selectedStatus?.status === "missing" ? <button type="button" className="w98-btn primary" onClick={() => setDialog({ type: "repair", shortcutId: selectedShortcut.id })}>修復目標…</button> : null}
-                <button type="button" className="w98-btn" onClick={() => setVisibility(selected, (selectedFolder ?? selectedShortcut)?.visibility === "draft" ? "published" : "draft")}>{(selectedFolder ?? selectedShortcut)?.visibility === "draft" ? "設為公開" : "設為草稿"}</button>
-                <button type="button" className="w98-btn danger" onClick={() => requestDelete(selected)}>刪除</button>
+                <button type="button" className="w98-btn" onClick={() => setDialog({ type: "move", item: selected })}>{tr("explorer.moveTo")}</button>
+                {selectedShortcut ? <button type="button" className="w98-btn" onClick={() => duplicateShortcut(selectedShortcut)}>{tr("explorer.duplicateShortcut")}</button> : null}
+                {selectedShortcut && selectedStatus?.status === "missing" ? <button type="button" className="w98-btn primary" onClick={() => setDialog({ type: "repair", shortcutId: selectedShortcut.id })}>{tr("explorer.repairTarget")}</button> : null}
+                <button type="button" className="w98-btn" onClick={() => setVisibility(selected, (selectedFolder ?? selectedShortcut)?.visibility === "draft" ? "published" : "draft")}>{(selectedFolder ?? selectedShortcut)?.visibility === "draft" ? tr("explorer.makePublic") : tr("explorer.makeDraft")}</button>
+                <button type="button" className="w98-btn danger" onClick={() => requestDelete(selected)}>{tr("links.delete")}</button>
               </div>
             ) : null}
           </>
         ) : null}
       </div>
 
-      {dialog?.type === "create-shortcut" ? <TargetPickerDialog title="建立捷徑" hint={`捷徑會放在「${pathLabel(content.folders, folderId)}」，點選要指向的內容。`} confirmLabel="建立捷徑" options={targetOptions} onPick={createShortcut} onClose={() => setDialog(null)} /> : null}
-      {dialog?.type === "repair" && repairing ? <TargetPickerDialog title={`修復捷徑「${repairing.label}」`} hint="原本指向的內容已經不存在。選一個新的目標，捷徑名稱會保留。" confirmLabel="改指向這個" options={targetOptions} onPick={(option) => repairShortcut(repairing.id, option)} onClose={() => setDialog(null)} /> : null}
-      {moving ? <MoveDialog itemName={movingName} kindLabel={moving.kind === "folder" ? "資料夾" : "捷徑"} options={moveOptions(content, moving)} onPick={(parentId) => move(moving, parentId)} onClose={() => setDialog(null)} /> : null}
+      {dialog?.type === "create-shortcut" ? <TargetPickerDialog title={tr("explorer.createShortcut")} hint={tr("explorer.theShortcutWillBePlaced", { v1: pathLabel(content.folders, folderId) })} confirmLabel={tr("explorer.createShortcut")} options={targetOptions} onPick={createShortcut} onClose={() => setDialog(null)} /> : null}
+      {dialog?.type === "repair" && repairing ? <TargetPickerDialog title={tr("explorer.repairShortcut", { label: repairing.label })} hint={tr("explorer.theOriginalTargetNoLonger")} confirmLabel={tr("explorer.pointToThis")} options={targetOptions} onPick={(option) => repairShortcut(repairing.id, option)} onClose={() => setDialog(null)} /> : null}
+      {moving ? <MoveDialog itemName={movingName} kindLabel={moving.kind === "folder" ? tr("explorer.folder") : tr("explorer.shortcut2")} options={moveOptions(content, moving)} onPick={(parentId) => move(moving, parentId)} onClose={() => setDialog(null)} /> : null}
       {dialog?.type === "delete" && foldersById.get(dialog.folderId) ? (
         <DeleteFolderDialog
           folder={foldersById.get(dialog.folderId)!}
@@ -336,7 +338,7 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
             setDialog(null);
             setSelected(null);
             if (removedViewed) setFolderId(target.parentId);
-            setStatus(`已刪除資料夾「${target.name}」。原本的內容沒有被刪除，可以用「復原」找回。`);
+            setStatus(tr("explorer.deletedTheFolderTheOriginal", { name: target.name }));
           }}
         />
       ) : null}

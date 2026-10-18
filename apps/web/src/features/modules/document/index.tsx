@@ -1,21 +1,24 @@
 import { useId, useState } from "react";
+import { i18n } from "../../../i18n";
+import { useTranslation } from "react-i18next";
 import { makeBlock, type DocumentBlock, type DocumentBlockKind } from "@retrodesk/shared";
 import { UploadTaskList, useWindowMedia } from "../../media/editorMedia";
 import { FilePick, ImageUrlField, MiniBtn, SafeImg } from "../ui";
 import { moveById, opensNewTab, patchById, safeHref, type ModuleProps } from "../types";
 import "./editor.css";
 
-const LABEL: Record<DocumentBlockKind, string> = { heading: "標題", text: "段落", image: "圖片", button: "按鈕", link: "超連結", list: "清單", divider: "分隔線" };
+const LABEL = (): Record<DocumentBlockKind, string> => ({ heading: i18n.t("modules:document.heading"), text: i18n.t("modules:document.paragraph"), image: i18n.t("modules:document.image"), button: i18n.t("modules:document.button"), link: i18n.t("modules:document.hyperlink"), list: i18n.t("modules:document.list"), divider: i18n.t("modules:document.divider") });
 const ADD_ORDER: DocumentBlockKind[] = ["heading", "text", "image", "button", "list", "link", "divider"];
 const MAX_BLOCKS = 100;
 
 export function DocumentView({ window, ctx }: ModuleProps<"document">) {
+  const { t: tr } = useTranslation("modules");
   const { tv } = ctx;
   const blocks = window.content.blocks;
   const go = (event: React.MouseEvent, url: string) => {
     if (ctx.onLink) { event.preventDefault(); ctx.onLink({ target: "url", url }); }
   };
-  if (!blocks.length) return <p className="doc-empty">（這個文件還沒有內容）</p>;
+  if (!blocks.length) return <p className="doc-empty">{tr("document.thisDocumentHasNoContent")}</p>;
   return (
     <div className="doc-body document-view">
       {blocks.map((block) => {
@@ -39,6 +42,7 @@ export function DocumentView({ window, ctx }: ModuleProps<"document">) {
 }
 
 export function DocumentInlineEditor({ window, ctx, update }: ModuleProps<"document">) {
+  const { t: tr } = useTranslation("modules");
   const { tv } = ctx;
   const fieldPrefix = useId();
   const [selection, setSelection] = useState<{ windowId: string; blockId: string } | null>(null);
@@ -76,7 +80,7 @@ export function DocumentInlineEditor({ window, ctx, update }: ModuleProps<"docum
 
   return (
     <div className="doc-body editing document-editor">
-      <p className="document-editor-hint">直接編輯文字；選取區塊可排序、刪除或設定圖片與連結。</p>
+      <p className="document-editor-hint">{tr("document.editTheTextDirectlySelect")}</p>
       <UploadTaskList tasks={media.tasks} onRetry={media.retry} onDismiss={media.dismiss} />
       {blocks.map((block, index) => {
         const isActive = active === block.id;
@@ -86,56 +90,56 @@ export function DocumentInlineEditor({ window, ctx, update }: ModuleProps<"docum
             key={block.id}
             className="doc-block"
             role="group"
-            aria-label={`${LABEL[block.kind]}區塊 ${index + 1}`}
+            aria-label={tr("document.block", { v1: LABEL()[block.kind], v2: index + 1 })}
             tabIndex={0}
             data-block-id={block.id}
             data-active={isActive}
             onFocus={() => select(block.id)}
           >
             {isActive ? (
-              <div className="ie-row block-bar doc-block-toolbar" role="group" aria-label="區塊工具">
-                <span className="block-tag">{LABEL[block.kind]}</span>
+              <div className="ie-row block-bar doc-block-toolbar" role="group" aria-label={tr("document.blockTools")}>
+                <span className="block-tag">{LABEL()[block.kind]}</span>
                 {block.kind === "text" ? (
-                  <div className="doc-text-format" role="group" aria-label="段落格式">
-                    <MiniBtn label="粗體" on={block.bold} aria-pressed={block.bold} onClick={() => patch(block.id, { bold: !block.bold } as never)}><b>B</b></MiniBtn>
-                    <MiniBtn label="斜體" on={block.italic} aria-pressed={block.italic} onClick={() => patch(block.id, { italic: !block.italic } as never)}><i>I</i></MiniBtn>
-                    <MiniBtn label="靠左" on={block.align === "left"} aria-pressed={block.align === "left"} onClick={() => patch(block.id, { align: "left" } as never)}>靠左</MiniBtn>
-                    <MiniBtn label="置中" on={block.align === "center"} aria-pressed={block.align === "center"} onClick={() => patch(block.id, { align: "center" } as never)}>置中</MiniBtn>
-                    <MiniBtn label="靠右" on={block.align === "right"} aria-pressed={block.align === "right"} onClick={() => patch(block.id, { align: "right" } as never)}>靠右</MiniBtn>
+                  <div className="doc-text-format" role="group" aria-label={tr("document.paragraphFormatting")}>
+                    <MiniBtn label={tr("document.bold")} on={block.bold} aria-pressed={block.bold} onClick={() => patch(block.id, { bold: !block.bold } as never)}><b>B</b></MiniBtn>
+                    <MiniBtn label={tr("document.italic")} on={block.italic} aria-pressed={block.italic} onClick={() => patch(block.id, { italic: !block.italic } as never)}><i>I</i></MiniBtn>
+                    <MiniBtn label={tr("document.alignLeft")} on={block.align === "left"} aria-pressed={block.align === "left"} onClick={() => patch(block.id, { align: "left" } as never)}>{tr("document.alignLeft")}</MiniBtn>
+                    <MiniBtn label={tr("document.center")} on={block.align === "center"} aria-pressed={block.align === "center"} onClick={() => patch(block.id, { align: "center" } as never)}>{tr("document.center")}</MiniBtn>
+                    <MiniBtn label={tr("document.alignRight")} on={block.align === "right"} aria-pressed={block.align === "right"} onClick={() => patch(block.id, { align: "right" } as never)}>{tr("document.alignRight")}</MiniBtn>
                   </div>
                 ) : null}
                 <div className="doc-block-actions">
-                  <MiniBtn label="上移" disabled={index === 0} onClick={() => setBlocks((list) => moveById(list, block.id, -1))}>▲</MiniBtn>
-                  <MiniBtn label="下移" disabled={index === blocks.length - 1} onClick={() => setBlocks((list) => moveById(list, block.id, 1))}>▼</MiniBtn>
-                  <MiniBtn label="刪除區塊" danger onClick={() => { setBlocks((list) => list.filter((item) => item.id !== block.id)); setSelection(null); }}>×</MiniBtn>
+                  <MiniBtn label={tr("document.moveUp")} disabled={index === 0} onClick={() => setBlocks((list) => moveById(list, block.id, -1))}>▲</MiniBtn>
+                  <MiniBtn label={tr("document.moveDown")} disabled={index === blocks.length - 1} onClick={() => setBlocks((list) => moveById(list, block.id, 1))}>▼</MiniBtn>
+                  <MiniBtn label={tr("document.deleteBlock")} danger onClick={() => { setBlocks((list) => list.filter((item) => item.id !== block.id)); setSelection(null); }}>×</MiniBtn>
                 </div>
               </div>
             ) : null}
 
-            {block.kind === "heading" ? <textarea className="ie heading" rows={1} value={block.text} maxLength={500} placeholder="標題" aria-label="標題" style={{ color: tv.titleFrom }} onChange={(event) => patch(block.id, { text: event.target.value }, "text")} /> : null}
-            {block.kind === "text" ? <textarea className="ie" rows={2} value={block.text} maxLength={10_000} placeholder="輸入段落文字…" aria-label="段落" style={{ textAlign: block.align, fontWeight: block.bold ? 700 : 400, fontStyle: block.italic ? "italic" : "normal" }} onChange={(event) => patch(block.id, { text: event.target.value }, "text")} /> : null}
-            {block.kind === "list" ? <textarea className="ie" rows={3} value={block.text} maxLength={10_000} placeholder="每行一個項目" aria-label="清單，每行一項" onChange={(event) => patch(block.id, { text: event.target.value }, "text")} /> : null}
+            {block.kind === "heading" ? <textarea className="ie heading" rows={1} value={block.text} maxLength={500} placeholder={tr("document.heading")} aria-label={tr("document.heading")} style={{ color: tv.titleFrom }} onChange={(event) => patch(block.id, { text: event.target.value }, "text")} /> : null}
+            {block.kind === "text" ? <textarea className="ie" rows={2} value={block.text} maxLength={10_000} placeholder={tr("document.typeParagraphText")} aria-label={tr("document.paragraph")} style={{ textAlign: block.align, fontWeight: block.bold ? 700 : 400, fontStyle: block.italic ? "italic" : "normal" }} onChange={(event) => patch(block.id, { text: event.target.value }, "text")} /> : null}
+            {block.kind === "list" ? <textarea className="ie" rows={3} value={block.text} maxLength={10_000} placeholder={tr("document.oneItemPerLine")} aria-label={tr("document.listOneItemPerLine")} onChange={(event) => patch(block.id, { text: event.target.value }, "text")} /> : null}
             {block.kind === "image" ? (
               <figure className="doc-fig">
-                {block.src ? <SafeImg src={block.src} alt={block.alt} className="doc-img" style={{ boxShadow: tv.sunken }} /> : <div className="doc-img-ph ph" style={{ boxShadow: tv.sunken }}>選取此區塊加入圖片</div>}
+                {block.src ? <SafeImg src={block.src} alt={block.alt} className="doc-img" style={{ boxShadow: tv.sunken }} /> : <div className="doc-img-ph ph" style={{ boxShadow: tv.sunken }}>{tr("document.selectThisBlockToAdd")}</div>}
                 {(block.caption ?? block.alt) ? <figcaption>{block.caption ?? block.alt}</figcaption> : null}
                 {isActive ? (
-                  <div className="doc-block-settings" role="group" aria-label="圖片設定">
-                    <FilePick onFiles={(files) => uploadInto(block, files[0])}>{block.src ? "更換圖片…" : "上傳圖片…"}</FilePick>
+                  <div className="doc-block-settings" role="group" aria-label={tr("document.imageSettings")}>
+                    <FilePick onFiles={(files) => uploadInto(block, files[0])}>{block.src ? tr("document.replaceImage") : tr("document.uploadImage")}</FilePick>
                     <label className="doc-setting-label">
-                      <span>圖片網址</span>
-                      <ImageUrlField raw={block.srcUrl} label="圖片網址" placeholder="https://（支援 Google 雲端公開連結）" onCommit={(raw, src) => patch(block.id, { srcUrl: raw, src } as never)} />
+                      <span>{tr("document.imageUrl")}</span>
+                      <ImageUrlField raw={block.srcUrl} label={tr("document.imageUrl")} placeholder={tr("document.httpsPublicGoogleDriveLinks")} onCommit={(raw, src) => patch(block.id, { srcUrl: raw, src } as never)} />
                     </label>
                     <label className="doc-setting-label">
-                      <span>圖說</span>
-                      <input className="ie small" value={block.caption ?? block.alt} maxLength={300} placeholder="顯示在圖片下方的文字" aria-label="圖說" aria-describedby={`${fieldId}-caption-help`} onChange={(event) => patch(block.id, { caption: event.target.value } as never, "caption")} />
+                      <span>{tr("document.caption")}</span>
+                      <input className="ie small" value={block.caption ?? block.alt} maxLength={300} placeholder={tr("document.textShownBelowTheImage")} aria-label={tr("document.caption")} aria-describedby={`${fieldId}-caption-help`} onChange={(event) => patch(block.id, { caption: event.target.value } as never, "caption")} />
                     </label>
-                    <small id={`${fieldId}-caption-help`} className="doc-setting-help">圖說會顯示在公開頁；留空可隱藏。</small>
+                    <small id={`${fieldId}-caption-help`} className="doc-setting-help">{tr("document.theCaptionAppearsOnThe")}</small>
                     <label className="doc-setting-label">
-                      <span>替代文字</span>
-                      <input className="ie small" value={block.alt} maxLength={300} placeholder="描述圖片中的內容" aria-label="替代文字" aria-describedby={`${fieldId}-alt-help`} onChange={(event) => changeAlt(block.id, event.target.value)} />
+                      <span>{tr("document.altText")}</span>
+                      <input className="ie small" value={block.alt} maxLength={300} placeholder={tr("document.describeWhatsInTheImage")} aria-label={tr("document.altText")} aria-describedby={`${fieldId}-alt-help`} onChange={(event) => changeAlt(block.id, event.target.value)} />
                     </label>
-                    <small id={`${fieldId}-alt-help`} className="doc-setting-help">提供螢幕閱讀器描述圖片；裝飾圖片可留空，不會改變圖說。</small>
+                    <small id={`${fieldId}-alt-help`} className="doc-setting-help">{tr("document.describesTheImageForScreen")}</small>
                   </div>
                 ) : null}
               </figure>
@@ -146,18 +150,18 @@ export function DocumentInlineEditor({ window, ctx, update }: ModuleProps<"docum
                   className={`ie ${block.kind === "button" ? "btn-text" : "link-text"}`}
                   value={block.text}
                   maxLength={block.kind === "button" ? 200 : 500}
-                  aria-label={block.kind === "button" ? "按鈕文字" : "連結文字"}
+                  aria-label={block.kind === "button" ? tr("document.buttonText") : tr("document.linkText")}
                   style={block.kind === "button" ? { background: tv.face, color: tv.text, boxShadow: tv.bevel } : { color: tv.accent }}
                   onChange={(event) => patch(block.id, { text: event.target.value }, "text")}
                 />
                 {isActive ? (
                   <div className="doc-block-settings">
                     <label className="doc-setting-label">
-                      <span>{block.kind === "button" ? "按鈕網址" : "連結網址"}</span>
-                      <input className="ie small" value={block.url} maxLength={2048} placeholder="https://" aria-label={block.kind === "button" ? "按鈕網址" : "連結網址"} aria-invalid={!!block.url && safeHref(block.url) === "#"} aria-describedby={`${fieldId}-url-help`} onChange={(event) => patch(block.id, { url: event.target.value }, "url")} />
+                      <span>{block.kind === "button" ? tr("document.buttonUrl") : tr("document.linkUrl")}</span>
+                      <input className="ie small" value={block.url} maxLength={2048} placeholder="https://" aria-label={block.kind === "button" ? tr("document.buttonUrl") : tr("document.linkUrl")} aria-invalid={!!block.url && safeHref(block.url) === "#"} aria-describedby={`${fieldId}-url-help`} onChange={(event) => patch(block.id, { url: event.target.value }, "url")} />
                     </label>
-                    <small id={`${fieldId}-url-help`} className="doc-setting-help">支援 https://、http:// 或 mailto:。公開頁會使用這個網址。</small>
-                    {block.url && safeHref(block.url) === "#" ? <small className="ie-error" role="alert">請輸入完整的 http://、https:// 或 mailto: 網址。</small> : null}
+                    <small id={`${fieldId}-url-help`} className="doc-setting-help">{tr("document.supportsHttpsHttpOrMailto")}</small>
+                    {block.url && safeHref(block.url) === "#" ? <small className="ie-error" role="alert">{tr("document.enterAFullHttpHttps")}</small> : null}
                   </div>
                 ) : null}
               </div>
@@ -167,13 +171,13 @@ export function DocumentInlineEditor({ window, ctx, update }: ModuleProps<"docum
         );
       })}
       <div className="ie-box add-bar">
-        <span className="w98-hint">＋ 新增</span>
+        <span className="w98-hint">{tr("document.add")}</span>
         <div className="ie-row">
           {ADD_ORDER.map((kind) => (
-            <MiniBtn key={kind} label={`新增${LABEL[kind]}`} className="mini-btn wide" disabled={blocks.length >= MAX_BLOCKS} onClick={() => { const block = makeBlock(kind); setBlocks((list) => list.length < MAX_BLOCKS ? [...list, block] : list); select(block.id); }}>{LABEL[kind]}</MiniBtn>
+            <MiniBtn key={kind} label={tr("document.add2", { v1: LABEL()[kind] })} className="mini-btn wide" disabled={blocks.length >= MAX_BLOCKS} onClick={() => { const block = makeBlock(kind); setBlocks((list) => list.length < MAX_BLOCKS ? [...list, block] : list); select(block.id); }}>{LABEL()[kind]}</MiniBtn>
           ))}
         </div>
-        {blocks.length >= MAX_BLOCKS ? <small className="doc-setting-help">已達 100 個區塊上限。</small> : null}
+        {blocks.length >= MAX_BLOCKS ? <small className="doc-setting-help">{tr("document.youveReachedTheLimitOf")}</small> : null}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { i18n } from "../../../i18n";
 
 export type PlaybackStatus = "idle" | "loading" | "playing" | "paused" | "error";
 
@@ -88,7 +89,7 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
       if (snapshot.status !== "idle" && snapshot.status !== "error") emit({ status: "paused" });
     });
     audio.addEventListener("ended", () => { if (snapshot.windowId && snapshot.url) { cancelTimeout(); syncTime(); emit({ status: "paused" }); } });
-    audio.addEventListener("error", () => { if (snapshot.windowId && snapshot.url) mediaError("音訊無法載入，請檢查網址、權限或跨站限制。"); });
+    audio.addEventListener("error", () => { if (snapshot.windowId && snapshot.url) mediaError(i18n.t("music:audioCoordinator.theAudioCouldntBeLoaded")); });
     return audio;
   };
 
@@ -96,7 +97,7 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
     const request = ++generation;
     if (!playableUrl(url)) {
       stopAll();
-      emit({ status: "error", windowId, trackId, url, error: "音訊必須使用有效的 HTTPS 直連網址或已授權的上傳檔案。", currentTime: 0, duration: null, canSeek: false });
+      emit({ status: "error", windowId, trackId, url, error: i18n.t("music:audioCoordinator.audioMustUseAValid"), currentTime: 0, duration: null, canSeek: false });
       return false;
     }
     const player = ensureAudio();
@@ -111,7 +112,7 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
     emit({ status: "loading", windowId, trackId, url, currentTime: changed ? 0 : snapshot.currentTime, duration: changed ? null : snapshot.duration, canSeek: changed ? false : snapshot.canSeek, error: "" });
     timeoutId = setTimer(() => {
       timeoutId = null;
-      if (snapshot.status === "loading" && snapshot.windowId === windowId && snapshot.trackId === trackId) mediaError("音訊載入逾時，請開啟原連結確認來源是否仍可用。");
+      if (snapshot.status === "loading" && snapshot.windowId === windowId && snapshot.trackId === trackId) mediaError(i18n.t("music:audioCoordinator.audioLoadingTimedOutOpen"));
     }, loadTimeoutMs);
     try {
       await player.play();
@@ -120,7 +121,7 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
       emit({ status: "playing", error: "" });
       return true;
     } catch {
-      if (generation === request) mediaError("瀏覽器未能播放這個音訊；請再次操作或開啟原連結。");
+      if (generation === request) mediaError(i18n.t("music:audioCoordinator.theBrowserCouldntPlayThis"));
       return false;
     }
   }
@@ -130,15 +131,15 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
     const request = ++generation;
     emit({ status: "loading", windowId, trackId, url: "", error: "" });
     timeoutId = setTimer(() => {
-      if (generation === request) mediaError("音訊載入逾時，請重試或確認素材權限。");
+      if (generation === request) mediaError(i18n.t("music:audioCoordinator.audioLoadingTimedOutRetry"));
     }, loadTimeoutMs);
     try {
       const url = await resolve();
       if (generation !== request) return false;
-      if (!url) { mediaError("音訊無法載入，請檢查素材權限並重試。"); return false; }
+      if (!url) { mediaError(i18n.t("music:audioCoordinator.theAudioCouldntBeLoaded2")); return false; }
       return play(windowId, trackId, url);
     } catch {
-      if (generation === request) mediaError("音訊無法載入，請檢查素材權限並重試。");
+      if (generation === request) mediaError(i18n.t("music:audioCoordinator.theAudioCouldntBeLoaded2"));
       return false;
     }
   }

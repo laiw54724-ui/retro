@@ -1,4 +1,5 @@
 import type { WindowOf } from "../types";
+import { i18n } from "../../../i18n";
 
 export type ExplorerContent = WindowOf<"explorer">["content"];
 export type Folder = ExplorerContent["folders"][number];
@@ -7,7 +8,7 @@ export type ShortcutTarget = Shortcut["target"];
 
 export const MAX_DEPTH = 8;
 export const MAX_ITEMS = 500;
-export const ROOT_LABEL = "桌面";
+export const rootLabel = () => i18n.t("modules:explorerModel.desktop");
 
 const byOrder = <T extends { order: number }>(a: T, b: T, nameA: string, nameB: string) => a.order - b.order || nameA.localeCompare(nameB);
 export const sortFolders = (folders: Folder[]) => [...folders].sort((a, b) => byOrder(a, b, a.name, b.name));
@@ -41,13 +42,13 @@ export function subtreeHeight(folders: Folder[], id: string): number {
 
 /** "桌面 / 角色 / 主角", so folders with the same name stay distinguishable. */
 export function pathLabel(folders: Folder[], id: string | null): string {
-  if (!id) return ROOT_LABEL;
+  if (!id) return rootLabel();
   const byId = new Map(folders.map((folder) => [folder.id, folder]));
   const names: string[] = [];
   const seen = new Set<string>();
   let cursor = byId.get(id);
   while (cursor && !seen.has(cursor.id)) { names.unshift(cursor.name); seen.add(cursor.id); cursor = cursor.parentId ? byId.get(cursor.parentId) : undefined; }
-  return [ROOT_LABEL, ...names].join(" / ");
+  return [rootLabel(), ...names].join(" / ");
 }
 
 export type MoveOption = { id: string | null; path: string; disabled: boolean; reason: string; current: boolean };
@@ -58,12 +59,12 @@ export function moveOptions(content: ExplorerContent, item: { kind: "folder" | "
   const blocked = folder ? descendants(content.folders, folder.id) : new Set<string>();
   const height = folder ? subtreeHeight(content.folders, folder.id) : 0;
   const currentParent = folder ? folder.parentId : content.shortcuts.find((candidate) => candidate.id === item.id)?.parentId ?? null;
-  const options: MoveOption[] = [{ id: null, path: ROOT_LABEL, disabled: false, reason: "", current: currentParent === null }];
+  const options: MoveOption[] = [{ id: null, path: rootLabel(), disabled: false, reason: "", current: currentParent === null }];
   const folders = content.folders.map((candidate) => ({ candidate, path: pathLabel(content.folders, candidate.id) })).sort((a, b) => a.path.localeCompare(b.path));
   for (const { candidate, path } of folders) {
     let reason = "";
-    if (blocked.has(candidate.id)) reason = candidate.id === item.id ? "不能移到自己裡面" : "不能移到自己的子資料夾裡";
-    else if (folder && folderDepth(content.folders, candidate.id) + height > MAX_DEPTH) reason = `資料夾最多 ${MAX_DEPTH} 層`;
+    if (blocked.has(candidate.id)) reason = candidate.id === item.id ? i18n.t("modules:explorerModel.cantMoveItIntoItself") : i18n.t("modules:explorerModel.cantMoveItIntoIts");
+    else if (folder && folderDepth(content.folders, candidate.id) + height > MAX_DEPTH) reason = i18n.t("modules:explorerModel.foldersCanBeAtMost", { MAX_DEPTH });
     options.push({ id: candidate.id, path, disabled: !!reason, reason, current: currentParent === candidate.id });
   }
   return options;
@@ -73,7 +74,7 @@ export type MoveResult = { ok: true; content: ExplorerContent } | { ok: false; r
 
 export function moveItem(content: ExplorerContent, item: { kind: "folder" | "shortcut"; id: string }, parentId: string | null): MoveResult {
   const option = moveOptions(content, item).find((candidate) => candidate.id === parentId);
-  if (!option) return { ok: false, reason: "找不到目的資料夾。" };
+  if (!option) return { ok: false, reason: i18n.t("modules:explorerModel.couldntFindTheDestinationFolder") };
   if (option.disabled) return { ok: false, reason: option.reason };
   const nextOrder = (items: Array<{ parentId: string | null; order: number }>) => items.filter((entry) => entry.parentId === parentId).reduce((max, entry) => Math.max(max, entry.order + 1), 0);
   if (item.kind === "folder") {
@@ -109,12 +110,12 @@ export function uniqueName(base: string, siblings: string[]): string {
 
 export type CreateCheck = { ok: true } | { ok: false; reason: string };
 export function canCreateFolder(content: ExplorerContent, parentId: string | null): CreateCheck {
-  if (content.folders.length >= MAX_ITEMS) return { ok: false, reason: `Explorer 已達 ${MAX_ITEMS} 個資料夾上限；請先刪除資料夾再新增。` };
-  if (folderDepth(content.folders, parentId) >= MAX_DEPTH) return { ok: false, reason: `資料夾最多 ${MAX_DEPTH} 層；請回到上一層再新增。` };
+  if (content.folders.length >= MAX_ITEMS) return { ok: false, reason: i18n.t("modules:explorerModel.explorerHasReachedItsLimit", { MAX_ITEMS }) };
+  if (folderDepth(content.folders, parentId) >= MAX_DEPTH) return { ok: false, reason: i18n.t("modules:explorerModel.foldersCanBeAtMost2", { MAX_DEPTH }) };
   return { ok: true };
 }
 export function canCreateShortcut(content: ExplorerContent): CreateCheck {
-  return content.shortcuts.length >= MAX_ITEMS ? { ok: false, reason: `Explorer 已達 ${MAX_ITEMS} 個捷徑上限；請先刪除捷徑再新增。` } : { ok: true };
+  return content.shortcuts.length >= MAX_ITEMS ? { ok: false, reason: i18n.t("modules:explorerModel.explorerHasReachedItsLimit2", { MAX_ITEMS }) } : { ok: true };
 }
 
 export const nextOrderIn = (items: Array<{ parentId: string | null; order: number }>, parentId: string | null) =>
@@ -122,11 +123,11 @@ export const nextOrderIn = (items: Array<{ parentId: string | null; order: numbe
 
 export type TargetOption = { kind: ShortcutTarget["kind"]; id: string; label: string; group: string };
 export type TargetStatus = { status: "ok"; kindLabel: string; name: string } | { status: "missing"; kindLabel: string; name: string } | { status: "unknown"; kindLabel: string; name: string };
-const KIND_LABEL: Record<ShortcutTarget["kind"], string> = { window: "視窗", profile: "OC", post: "貼文" };
+const kindLabels = (): Record<ShortcutTarget["kind"], string> => ({ window: i18n.t("modules:explorerModel.window"), profile: "OC", post: i18n.t("modules:explorerModel.post") });
 
 /** Whether a shortcut still points at something. "unknown" = the host did not provide enough to check. */
 export function targetStatus(target: ShortcutTarget, options: TargetOption[], canVerify: Record<ShortcutTarget["kind"], boolean>): TargetStatus {
-  const kindLabel = KIND_LABEL[target.kind];
+  const kindLabel = kindLabels()[target.kind];
   const hit = options.find((option) => option.kind === target.kind && option.id === target.id);
   if (hit) return { status: "ok", kindLabel, name: hit.label };
   return { status: canVerify[target.kind] ? "missing" : "unknown", kindLabel, name: "" };
