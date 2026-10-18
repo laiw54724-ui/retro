@@ -18,7 +18,8 @@
     "licenses:audit": "node scripts/audit-dependency-licenses.mjs",
     "licenses:report": "node scripts/audit-dependency-licenses.mjs --write",
     "security:audit": "node scripts/audit-secrets.mjs",
-    "verify:contributor": "pnpm security:audit && pnpm assets:audit:release && pnpm licenses:audit && pnpm typecheck && pnpm test:unit && pnpm build && pnpm security:audit -- --artifacts-only && pnpm test:e2e"
+    "verify:contributor": "pnpm security:audit && pnpm assets:audit:release && pnpm licenses:audit && pnpm typecheck && pnpm test:unit && pnpm build && pnpm security:audit -- --artifacts-only && pnpm test:e2e",
+    "test:e2e:i18n-preview": "VITE_I18N_PREVIEW_LOCALES=true playwright test tests/e2e/i18n.spec.ts tests/e2e/i18n-coverage.spec.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",

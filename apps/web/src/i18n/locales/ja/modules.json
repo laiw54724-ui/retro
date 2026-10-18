@@ -197,7 +197,16 @@
     "retroColor": "レトロカラー",
     "pixelColor": "ピクセルカラー",
     "pixelMono": "ピクセルモノクロ",
-    "myUploads": "マイアップロード"
+    "myUploads": "マイアップロード",
+    "purposes": {
+      "folder": "フォルダー",
+      "document": "ドキュメント",
+      "image": "画像",
+      "music": "音楽",
+      "person": "人物",
+      "tool": "ツール",
+      "other": "その他"
+    }
   },
   "linkDestinationSummary": {
     "noInSiteWindowChosen": "サイト内ウィンドウが未選択です",

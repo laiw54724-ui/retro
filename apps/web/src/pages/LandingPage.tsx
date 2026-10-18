@@ -35,7 +35,7 @@ export function LandingPage() {
           <div className="hero-demo">
             <div className="demo-desktop">
               <div className="desktop-icons-demo"><span>{t("landing.demoCard")}</span><span>{t("landing.demoGallery")}</span><span>{t("landing.demoLinks")}</span></div>
-              <div className="demo-win one"><b>{t("landing.demoCard")}.exe</b><div className="demo-card-lines"><i /><strong>Mochi 麻糬</strong><i /><i /></div></div>
+              <div className="demo-win one"><b>{t("landing.demoCard")}.exe</b><div className="demo-card-lines"><i /><strong>{/* i18n-ignore: fictional sample character name */}Mochi 麻糬</strong><i /><i /></div></div>
               <div className="demo-win two"><b>{t("landing.demoGallery")}</b><div className="demo-grid">{Array.from({ length: 6 }).map((_, index) => <i key={index} />)}</div></div>
               <div className="demo-taskbar"><RetroButton>{t("desktop.start")}</RetroButton></div>
             </div>

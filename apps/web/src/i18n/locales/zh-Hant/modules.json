@@ -197,7 +197,16 @@
     "retroColor": "彩色復古",
     "pixelColor": "彩色像素",
     "pixelMono": "單色像素",
-    "myUploads": "我的上傳"
+    "myUploads": "我的上傳",
+    "purposes": {
+      "folder": "資料夾",
+      "document": "文件",
+      "image": "圖片",
+      "music": "音樂",
+      "person": "人物",
+      "tool": "工具",
+      "other": "其他"
+    }
   },
   "linkDestinationSummary": {
     "noInSiteWindowChosen": "尚未選擇站內視窗",

@@ -8,6 +8,7 @@ on:
       - claude/retro-release-candidate
       - claude/retro-i18n-foundation
       - claude/retro-oc-ig-editor
+      - claude/retro-i18n-expansion
   workflow_dispatch:
 
 permissions:

@@ -45,7 +45,7 @@ export function LeftPanel({ document, selectedId, view, onAdd, onSelect, onToggl
 function AddTab({ onAdd }: { onAdd: Props["onAdd"] }) {
   const { t } = useTranslation("editor");
   // The legacy coming-soon list contains product labels, not persisted window data.
-  const comingSoonKeys: Record<string, "add.diary" | "add.characterProfile" | "add.visualNovel"> = { "日記": "add.diary", "角色檔案": "add.characterProfile", "視覺小說": "add.visualNovel" };
+  const comingSoonKeys: Record<string, "add.diary" | "add.characterProfile" | "add.visualNovel"> = { "日記": "add.diary", "角色檔案": "add.characterProfile", "視覺小說": "add.visualNovel" }; // i18n-ignore: lookup keys of legacy product labels
   return (
     <>
       <strong>{t("add.heading")}</strong>

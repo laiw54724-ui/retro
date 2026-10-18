@@ -197,7 +197,16 @@
     "retroColor": "Retro color",
     "pixelColor": "Pixel color",
     "pixelMono": "Pixel mono",
-    "myUploads": "My uploads"
+    "myUploads": "My uploads",
+    "purposes": {
+      "folder": "Folders",
+      "document": "Documents",
+      "image": "Images",
+      "music": "Music",
+      "person": "People",
+      "tool": "Tools",
+      "other": "Other"
+    }
   },
   "linkDestinationSummary": {
     "noInSiteWindowChosen": "No in-site window chosen yet",

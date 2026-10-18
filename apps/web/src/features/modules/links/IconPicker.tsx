@@ -50,6 +50,8 @@ const categoryList = (): Array<{ id: Category; label: string }> => [
 
 type CatalogNames = { name: string; nameEn: string; nameJa: string; nameKo: string };
 /** Display name of a library icon in the UI language. */
+const PURPOSE_IDS = ["folder", "document", "image", "music", "person", "tool", "other"] as const;
+const purposeLabel = (id: string, fallback: string) => (PURPOSE_IDS as readonly string[]).includes(id) ? i18n.t(`modules:iconPicker.purposes.${id as (typeof PURPOSE_IDS)[number]}`) : fallback;
 const catalogName = (item: CatalogNames, locale: string) => locale === "zh-Hant" ? item.name : locale === "ja" ? item.nameJa : locale === "ko" ? item.nameKo : item.nameEn;
 
 /** Readable name for a stored icon value without loading the catalog. */
@@ -336,7 +338,7 @@ function IconLibraryDialog({ siteId, value, onChange, upload, defaultValue, defa
           {catalog && category !== "mine" && category !== "windows" ? (
             <div className="ilib-chips" role="group" aria-label={tr("iconPicker.filterByPurpose")}>
               <button type="button" aria-pressed={!purpose} className={"ilib-chip" + (!purpose ? " on" : "")} onClick={() => setPurpose("")}>{tr("iconPicker.allPurposes")}</button>
-              {Object.entries(catalog.ICON_PURPOSES).map(([id, name]) => <button key={id} type="button" aria-pressed={purpose === id} className={"ilib-chip" + (purpose === id ? " on" : "")} onClick={() => setPurpose(purpose === id ? "" : id)}>{name}</button>)}
+              {Object.entries(catalog.ICON_PURPOSES).map(([id, name]) => <button key={id} type="button" aria-pressed={purpose === id} className={"ilib-chip" + (purpose === id ? " on" : "")} onClick={() => setPurpose(purpose === id ? "" : id)}>{purposeLabel(id, name)}</button>)}
             </div>
           ) : null}
           <div role="status" className="w98-hint ilib-count">{catalogError ? "" : !catalog && category !== "mine" ? tr("iconPicker.loadingTheLibrary") : tr("iconPicker.icons", { length: entries.length })}</div>

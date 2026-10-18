@@ -197,7 +197,16 @@
     "retroColor": "레트로 컬러",
     "pixelColor": "픽셀 컬러",
     "pixelMono": "픽셀 모노",
-    "myUploads": "내 업로드"
+    "myUploads": "내 업로드",
+    "purposes": {
+      "folder": "폴더",
+      "document": "문서",
+      "image": "이미지",
+      "music": "음악",
+      "person": "인물",
+      "tool": "도구",
+      "other": "기타"
+    }
   },
   "linkDestinationSummary": {
     "noInSiteWindowChosen": "사이트 내 창을 아직 선택하지 않았습니다",

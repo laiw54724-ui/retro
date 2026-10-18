@@ -61,11 +61,11 @@
         "description": "Profile fields, a bio, social links, and a banner."
       },
       "ig": {
-        "name": "Retro IG — pixel 日記",
+        "name": "Retro IG — pixel diary",
         "description": "Follower counts, a bio, and a post grid with a 2000s feel."
       },
       "oc": {
-        "name": "OC showcase — 月面圖書館",
+        "name": "OC showcase — Moon Library",
         "description": "Character profiles, reference galleries, and worldbuilding documents."
       },
       "portfolio": {

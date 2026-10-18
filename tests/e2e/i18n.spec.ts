@@ -220,7 +220,7 @@ test("white-box locale change preserves a focused dirty draft, caret, canonical 
   await expect(page.locator(".about.editing")).toBeVisible();
   // An incomplete title pauses autosave, keeping this a real dirty draft without timer races.
   await page.getByLabel("視窗標題", { exact: true }).fill("");
-  const bio = page.locator(".about.editing").getByRole("textbox", { name: "簡介", exact: true });
+  const bio = page.locator(".about.editing textarea").first(); // the bio field; its label is translated, so locate it structurally
   const originalBio = await bio.inputValue();
   await bio.fill(OC_BIO);
   await expect(page.locator(".save-text")).toHaveText("有欄位未完成，暫不儲存");
@@ -361,13 +361,13 @@ test("public music keeps playback position, volume and active track across nativ
   await page.keyboard.press("ArrowRight");
   await page.keyboard.press("ArrowRight");
   await expect(progress).toHaveValue("2");
-  const volume = dialog.getByRole("slider", { name: "音量", exact: true });
+  const volume = dialog.getByRole("slider").last(); // volume; its accessible name is translated on switch
   await volume.focus();
   await page.keyboard.press("ArrowLeft");
   await expect(volume).toHaveValue("0.95");
   await page.locator(".start-btn").click();
   await switchLanguage(page, page.locator(".start-menu").getByTestId("language-switcher"), "en");
-  await expect(dialog.locator(".music-play")).toHaveAttribute("aria-label", "暫停");
+  await expect(dialog.locator(".music-play")).toHaveAttribute("aria-label", "Pause");
   await expect(progress).toHaveValue("2");
   await expect(volume).toHaveValue("0.95");
   await expect(dialog.locator(".music-meta strong")).toHaveText(OC_NAME);
