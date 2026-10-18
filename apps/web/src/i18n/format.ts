@@ -19,6 +19,12 @@ export function formatTime(value: Date | number, locale: Locale, options?: Intl.
   return new Intl.DateTimeFormat(INTL_LOCALES[locale], options ?? { hour: "numeric", minute: "2-digit" }).format(value);
 }
 
+/** List with the locale's own separator. Traditional Chinese keeps the dun comma it always used. */
+export function formatList(items: readonly string[], locale: Locale): string {
+  if (locale === "zh-Hant") return items.join("、");
+  return new Intl.ListFormat(INTL_LOCALES[locale], { style: "short", type: "conjunction" }).format(items);
+}
+
 export function useLocaleFormatting() {
   const { i18n } = useTranslation("common");
   const locale = normalizeLocale(i18n.resolvedLanguage ?? i18n.language) ?? DEFAULT_LOCALE;
@@ -27,6 +33,7 @@ export function useLocaleFormatting() {
     fontFamily: fontStackForLocale(locale),
     formatNumber: (value: number | bigint, options?: Intl.NumberFormatOptions) => formatNumber(value, locale, options),
     formatDate: (value: Date | number, options?: Intl.DateTimeFormatOptions) => formatDate(value, locale, options),
-    formatTime: (value: Date | number, options?: Intl.DateTimeFormatOptions) => formatTime(value, locale, options)
+    formatTime: (value: Date | number, options?: Intl.DateTimeFormatOptions) => formatTime(value, locale, options),
+    formatList: (items: readonly string[]) => formatList(items, locale)
   }), [locale]);
 }

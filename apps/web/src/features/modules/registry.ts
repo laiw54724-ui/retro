@@ -1,4 +1,5 @@
 import { createElement, type ReactElement } from "react";
+import { localizeDefaults } from "../../i18n/localizedDefaults";
 import { makeWindow, type DesktopWindow } from "@retrodesk/shared";
 import type { ModuleCtx, ModuleProps, WindowModule, WindowOf } from "./types";
 import { DocumentInlineEditor, DocumentView } from "./document";
@@ -19,7 +20,7 @@ type Registry = { [K in WindowType]: WindowModule<K> };
 function factory<T extends WindowType>(type: T, index = 0): WindowOf<T> {
   const window = makeWindow(type, index);
   if (window.type !== type) throw new Error(`Window factory returned ${window.type} for ${type}`);
-  return window as WindowOf<T>;
+  return localizeDefaults(window) as WindowOf<T>;
 }
 
 const defaultCapabilities = { editor: true, visitor: true, mobile: true, links: true, uploads: true } as const;

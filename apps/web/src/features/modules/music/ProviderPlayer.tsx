@@ -1,4 +1,6 @@
 import { useEffect, useId, useState } from "react";
+import { i18n } from "../../../i18n";
+import { useTranslation } from "react-i18next";
 import { PLATFORM_LABELS, embedUrlFor, type MusicTrack } from "@retrodesk/shared";
 import { embedSession, useActiveEmbed } from "./mediaSession";
 
@@ -10,10 +12,10 @@ const ALLOW: Record<EmbedSource["provider"], string> = {
   youtube: "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share"
 };
 const HOST: Record<EmbedSource["provider"], string> = { spotify: "open.spotify.com", youtube: "www.youtube-nocookie.com" };
-const NOTE: Record<EmbedSource["provider"], string> = {
-  spotify: "能否完整播放取決於你的 Spotify 帳號、地區與瀏覽器 Cookie 設定；未登入時可能只有預覽片段。",
-  youtube: "部分影片不允許嵌入播放；遇到這種情況請改用「在 YouTube 開啟」。"
-};
+const providerNote = (): Record<EmbedSource["provider"], string> => ({
+  spotify: i18n.t("music:providerPlayer.whetherItPlaysInFull"),
+  youtube: i18n.t("music:providerPlayer.someVideosDontAllowEmbedded")
+});
 const SLOW_MS = 8000;
 
 type Props = {
@@ -29,6 +31,7 @@ type Props = {
  * clicks; the iframe URL is rebuilt from validated ids, never taken from stored text.
  */
 export function ProviderPlayer({ source, title, windowId, trackId, onOpenOriginal }: Props) {
+  const { t: tr } = useTranslation("music");
   const label = PLATFORM_LABELS[source.provider];
   const active = useActiveEmbed();
   const instanceId = useId();
@@ -54,12 +57,12 @@ export function ProviderPlayer({ source, title, windowId, trackId, onOpenOrigina
     : { aspectRatio: "16 / 9", minHeight: 200 };
 
   return (
-    <section className="music-embed" aria-label={`${label} 播放器`} data-provider={source.provider}>
+    <section className="music-embed" aria-label={tr("providerPlayer.player", { label })} data-provider={source.provider}>
       {isActive && src ? (
         <div className="music-embed-frame" style={{ minWidth: 200 }}>
           <iframe
             key={src}
-            title={`${label} 播放器：${title || "未命名曲目"}`}
+            title={tr("music.playerTitle", { label, title: title || tr("music.untitledTrackLabel") })}
             src={src}
             sandbox={SANDBOX}
             allow={ALLOW[source.provider]}
@@ -72,18 +75,18 @@ export function ProviderPlayer({ source, title, windowId, trackId, onOpenOrigina
         </div>
       ) : (
         <div className="music-embed-card">
-          <strong>{label} 播放器</strong>
-          <span>{src ? `按下「載入」才會連線到 ${HOST[source.provider]}；載入前不會向 ${label} 傳送任何資料。` : "這個來源的識別碼已失效，無法建立播放器。"}</span>
+          <strong>{tr("music.playerHeading", { label })}</strong>
+          <span>{src ? tr("providerPlayer.nothingConnectsToUntilYou", { v1: HOST[source.provider], label }) : tr("providerPlayer.thisSourcesIdIsNo")}</span>
         </div>
       )}
       <div className="music-embed-actions">
         {isActive
-          ? <button type="button" className="w98-btn" onClick={() => embedSession.dispose(windowId, trackId, instanceId)}>關閉播放器</button>
-          : <button type="button" className="w98-btn primary" disabled={!src} onClick={() => embedSession.activate(windowId, trackId, instanceId)}>載入 {label} 播放器</button>}
-        <button type="button" className="w98-btn music-open" onClick={onOpenOriginal}>在 {label} 開啟 ↗</button>
+          ? <button type="button" className="w98-btn" onClick={() => embedSession.dispose(windowId, trackId, instanceId)}>{tr("providerPlayer.closePlayer")}</button>
+          : <button type="button" className="w98-btn primary" disabled={!src} onClick={() => embedSession.activate(windowId, trackId, instanceId)}>{tr("music.loadPlayer", { label })}</button>}
+        <button type="button" className="w98-btn music-open" onClick={onOpenOriginal}>{tr("music.openOn", { label })}</button>
       </div>
-      <small className="music-embed-note">{NOTE[source.provider]}</small>
-      {isActive && slow && !loaded ? <div role="status" className="music-embed-slow">{label} 播放器還沒有回應。若一直沒有顯示，請使用「在 {label} 開啟」。</div> : null}
+      <small className="music-embed-note">{providerNote()[source.provider]}</small>
+      {isActive && slow && !loaded ? <div role="status" className="music-embed-slow">{tr("music.slowNotice", { label })}</div> : null}
     </section>
   );
 }

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export type IgScreen = "profile" | "feed" | "explore" | "saved" | "directory" | "collection" | "post" | "people";
 export type IgComment = { id: string; user: string; text: string };
@@ -8,6 +9,7 @@ type HistoryFrame = { route: Route; scrollTop: number };
 
 /** Visitor-only Instagram state. Lives in memory; never writes the document or API. */
 export function useIgSession(highlightCount: (profileId: string) => number, entryProfileId = "entry", sessionScope = "ig", initialPostId: string | null = null) {
+  const { t: tr } = useTranslation("instagram");
   const initialRoute = (): Route => ({ screen: initialPostId ? "post" : "profile", profileId: entryProfileId, postId: initialPostId, collectionId: null, peopleKind: null });
   const [route, setRoute] = useState<Route>(initialRoute);
   const history = useRef<HistoryFrame[]>([]);
@@ -122,13 +124,13 @@ export function useIgSession(highlightCount: (profileId: string) => number, entr
   };
   const toggleSave = (id: string) => {
     const key = interactionKey(id);
-    setSaved((state) => { const next = !state[key]; showToast(next ? "已加入收藏" : "已從收藏移除"); return { ...state, [key]: next }; });
+    setSaved((state) => { const next = !state[key]; showToast(next ? tr("useIgSession.addedToSaved") : tr("useIgSession.removedFromSaved")); return { ...state, [key]: next }; });
   };
   const postComment = (id: string) => {
     const key = interactionKey(id);
     const text = (drafts[key] ?? "").trim();
     if (!text) return;
-    setExtraComments((state) => ({ ...state, [key]: [...(state[key] ?? []), { id: crypto.randomUUID(), user: "你（訪客）", text }] }));
+    setExtraComments((state) => ({ ...state, [key]: [...(state[key] ?? []), { id: crypto.randomUUID(), user: tr("useIgSession.youVisitor"), text }] }));
     setDrafts((state) => ({ ...state, [key]: "" }));
     setShowAll((state) => ({ ...state, [key]: true }));
   };

@@ -1,4 +1,6 @@
 import { useId } from "react";
+import { translateSystemMessage } from "../../../i18n/systemMessages";
+import { useTranslation } from "react-i18next";
 import {
   addHighlightFrame,
   createHighlight,
@@ -19,6 +21,7 @@ type Props = { props: ModuleProps<"instagram"> };
 type Result = { ok: boolean; document?: SiteDocumentV2Input; diagnostics?: Array<{ message: string }> };
 
 export function CanonicalHighlightEditor({ props }: Props) {
+  const { t: tr } = useTranslation("instagram");
   const { ctx } = props;
   const profileId = ctx.profileId;
   const highlights = ctx.profileDirectory?.find((entry) => entry.id === profileId)?.highlights ?? [];
@@ -41,7 +44,7 @@ export function CanonicalHighlightEditor({ props }: Props) {
 
   const run = (result: Result, fallback: SiteDocumentV2Input) => {
     if (!result.ok || !result.document) {
-      setError(result.diagnostics?.[0]?.message ?? "精選更新失敗，請再試一次。");
+      setError(translateSystemMessage(result.diagnostics?.[0]?.message ?? "") || tr("canonicalHighlightEditor.couldntUpdateTheHighlightPlease"));
       return fallback;
     }
     return result.document;
@@ -54,7 +57,7 @@ export function CanonicalHighlightEditor({ props }: Props) {
     // A delayed upload must not follow a highlight that was deleted or reassigned.
     const target = document.entities.highlights?.find((highlight) => highlight.id === highlightId);
     if (!target || target.siteId !== siteId || target.ownerProfileId !== profileId) {
-      setError("精選已刪除或改指派，未加入這張圖片。");
+      setError(tr("canonicalHighlightEditor.theHighlightWasDeletedOr"));
       return document;
     }
     return run(addHighlightFrame(document, highlightId, {
@@ -68,34 +71,34 @@ export function CanonicalHighlightEditor({ props }: Props) {
     try {
       const src = await ctx.upload?.(file, "image");
       if (src) addFrame(highlightId, src, "");
-      else setError("圖片上傳失敗，請再試一次。");
+      else setError(tr("canonicalHighlightEditor.imageUploadFailedPleaseTry"));
     } catch {
-      setError("圖片上傳失敗，請再試一次。");
+      setError(tr("canonicalHighlightEditor.imageUploadFailedPleaseTry"));
     } finally { setUploading((current) => ({ ...current, [highlightId]: false })); }
   };
 
-  return <fieldset className="w98-fieldset ig-canonical-highlights"><legend>精選動態（{highlights.length}）</legend>
+  return <fieldset className="w98-fieldset ig-canonical-highlights"><legend>{tr("ig.highlightsCount", { count: highlights.length })}</legend>
     <div className="ie-row">
       <button type="button" className="w98-btn small" onClick={() => {
         const id = `highlight:${crypto.randomUUID()}`;
-        mutate((document) => run(createHighlight(document, { id, ownerProfileId: profileId, title: "新精選" }, { siteId }), document));
+        mutate((document) => run(createHighlight(document, { id, ownerProfileId: profileId, title: tr("canonicalHighlightEditor.newHighlight") }, { siteId }), document));
         setQuery("");
         setOpenId(id);
-      }}>＋ 新增精選</button>
-      <span className="w98-hint">每組最多 50 頁；第一頁會自動成為圓形封面。</span>
+      }}>{tr("canonicalHighlightEditor.addHighlight")}</button>
+      <span className="w98-hint">{tr("canonicalHighlightEditor.upTo50PagesPer")}</span>
     </div>
     {highlights.length ? <label className="w98-field">
-      <span className="w98-hint">搜尋精選</span>
-      <input className="w98-input compact" type="search" value={query} placeholder="依精選標題搜尋" onChange={(event) => {
+      <span className="w98-hint">{tr("canonicalHighlightEditor.searchHighlights")}</span>
+      <input className="w98-input compact" type="search" value={query} placeholder={tr("canonicalHighlightEditor.searchByHighlightTitle")} onChange={(event) => {
         setQuery(event.target.value);
         setOpenId(null);
       }} />
     </label> : null}
-    <p className="ig-editor-summary" role="status">符合搜尋 {matchingHighlights.length} / {highlights.length} 組 · 公開 {publishedCount} · 草稿 {highlights.length - publishedCount}{retainedEditor ? "。正在編輯的精選仍保留顯示。" : ""}</p>
-    {query ? <button type="button" className="w98-btn small" onClick={() => setQuery("")}>清除精選搜尋</button> : null}
-    {search ? <p className="w98-hint" id={`${editorId}-order-hint`}>清除搜尋後可調整完整精選順序。</p> : null}
+    <p className="ig-editor-summary" role="status">{tr("ig.highlightSummary", { matching: matchingHighlights.length, total: highlights.length, published: publishedCount, drafts: highlights.length - publishedCount })}{retainedEditor ? tr("ig.highlightRetained") : ""}</p>
+    {query ? <button type="button" className="w98-btn small" onClick={() => setQuery("")}>{tr("canonicalHighlightEditor.clearHighlightSearch")}</button> : null}
+    {search ? <p className="w98-hint" id={`${editorId}-order-hint`}>{tr("canonicalHighlightEditor.clearTheSearchToReorder")}</p> : null}
     {error ? <div role="alert" className="ie-error">{error}</div> : null}
-    {!highlights.length ? <p className="ig-editor-empty">尚未建立精選。新增一組精選，集中展示這個角色的旅程或小故事。</p> : !visibleHighlights.length ? <p className="ig-editor-empty">沒有符合搜尋的精選，請換個標題關鍵字。</p> : null}
+    {!highlights.length ? <p className="ig-editor-empty">{tr("canonicalHighlightEditor.noHighlightsYetAddOne")}</p> : !visibleHighlights.length ? <p className="ig-editor-empty">{tr("canonicalHighlightEditor.noHighlightsMatchTheSearch")}</p> : null}
     {visibleHighlights.map((highlight) => {
       const highlightIndex = highlights.findIndex((candidate) => candidate.id === highlight.id);
       const expanded = openId === highlight.id;
@@ -103,38 +106,38 @@ export function CanonicalHighlightEditor({ props }: Props) {
       return <article key={highlight.id} className="ig-canonical-post">
         <div className="ig-post-row">
           <span className="ig-thumb round ph">{highlight.coverSrc ? <SafeImg src={highlight.coverSrc} alt={highlight.coverAlt} compact style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : null}</span>
-          <button type="button" className="ig-post-toggle" aria-expanded={expanded} aria-controls={expanded ? bodyId : undefined} onClick={() => setOpenId(expanded ? null : highlight.id)}><span>{expanded ? "▾" : "▸"} {highlight.title || "（未命名精選）"}</span><small>{highlight.frames.length} / 50 頁 · {highlight.visibility === "published" ? "公開" : "草稿"}</small></button>
-          <button type="button" className="mini-btn" aria-label="精選往前" aria-describedby={search ? `${editorId}-order-hint` : undefined} disabled={!!search || highlightIndex === 0} onClick={() => mutate((document) => run(reorderHighlight(document, highlight.id, -1, { siteId }), document))}>▲</button>
-          <button type="button" className="mini-btn" aria-label="精選往後" aria-describedby={search ? `${editorId}-order-hint` : undefined} disabled={!!search || highlightIndex === highlights.length - 1} onClick={() => mutate((document) => run(reorderHighlight(document, highlight.id, 1, { siteId }), document))}>▼</button>
-          <button type="button" className="mini-btn danger" aria-label={`刪除精選 ${highlight.title || "未命名精選"}`} onClick={() => mutate((document) => run(deleteHighlight(document, highlight.id, { siteId }), document))}>×</button>
+          <button type="button" className="ig-post-toggle" aria-expanded={expanded} aria-controls={expanded ? bodyId : undefined} onClick={() => setOpenId(expanded ? null : highlight.id)}><span>{expanded ? "▾" : "▸"} {highlight.title || tr("canonicalHighlightEditor.untitledHighlight")}</span><small>{tr("ig.highlightMeta", { count: highlight.frames.length, status: highlight.visibility === "published" ? tr("canonicalCollectionEditor.public") : tr("canonicalCollectionEditor.draft") })}</small></button>
+          <button type="button" className="mini-btn" aria-label={tr("canonicalHighlightEditor.moveHighlightUp")} aria-describedby={search ? `${editorId}-order-hint` : undefined} disabled={!!search || highlightIndex === 0} onClick={() => mutate((document) => run(reorderHighlight(document, highlight.id, -1, { siteId }), document))}>▲</button>
+          <button type="button" className="mini-btn" aria-label={tr("canonicalHighlightEditor.moveHighlightDown")} aria-describedby={search ? `${editorId}-order-hint` : undefined} disabled={!!search || highlightIndex === highlights.length - 1} onClick={() => mutate((document) => run(reorderHighlight(document, highlight.id, 1, { siteId }), document))}>▼</button>
+          <button type="button" className="mini-btn danger" aria-label={tr("ig.deleteHighlight", { title: highlight.title || tr("ig.untitledHighlightShort") })} onClick={() => mutate((document) => run(deleteHighlight(document, highlight.id, { siteId }), document))}>×</button>
         </div>
         {expanded ? <div id={bodyId} className="ig-post-body ig-canonical-post-fields">
-          <label className="w98-field"><span className="w98-hint">精選標題</span><input className="w98-input compact" maxLength={40} value={highlight.title} onChange={(event) => mutate((document) => run(updateHighlight(document, highlight.id, { title: event.target.value }, { siteId }), document), `highlight-title-${highlight.id}`)} /></label>
-          <label className="check-row"><input type="checkbox" checked={highlight.visibility === "published"} onChange={(event) => mutate((document) => run(updateHighlight(document, highlight.id, { visibility: event.target.checked ? "published" : "draft" }, { siteId }), document))} />公開顯示</label>
-          {!highlight.frames.length ? <p className="ig-editor-empty">還沒有精選頁面。加入第一張圖片作為封面，再依故事順序新增頁面。</p> : null}
+          <label className="w98-field"><span className="w98-hint">{tr("canonicalHighlightEditor.highlightTitle")}</span><input className="w98-input compact" maxLength={40} value={highlight.title} onChange={(event) => mutate((document) => run(updateHighlight(document, highlight.id, { title: event.target.value }, { siteId }), document), `highlight-title-${highlight.id}`)} /></label>
+          <label className="check-row"><input type="checkbox" checked={highlight.visibility === "published"} onChange={(event) => mutate((document) => run(updateHighlight(document, highlight.id, { visibility: event.target.checked ? "published" : "draft" }, { siteId }), document))} />{tr("canonicalHighlightEditor.showPublicly")}</label>
+          {!highlight.frames.length ? <p className="ig-editor-empty">{tr("canonicalHighlightEditor.noHighlightPagesYetAdd")}</p> : null}
           {highlight.frames.map((frame, frameIndex) => <div key={frame.id} className="ig-highlight-frame-row">
             <span className="ig-thumb sq48 ph">{frame.src ? <SafeImg src={frame.src} alt={frame.alt} compact style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : null}</span>
             <div className="ig-col grow">
-              <strong>第 {frameIndex + 1} 頁{frameIndex === 0 ? "（封面）" : ""}</strong>
-              <input className="w98-input compact" aria-label={`精選第 ${frameIndex + 1} 頁替代文字`} value={frame.alt} placeholder="替代文字" onChange={(event) => mutate((document) => run(updateHighlightFrame(document, highlight.id, frame.id, { alt: event.target.value }, { siteId }), document), `highlight-alt-${frame.id}`)} />
-              <textarea className="w98-textarea" rows={2} aria-label={`精選第 ${frameIndex + 1} 頁文字`} value={frame.text} placeholder="可選的短文字" onChange={(event) => mutate((document) => run(updateHighlightFrame(document, highlight.id, frame.id, { text: event.target.value }, { siteId }), document), `highlight-text-${frame.id}`)} />
+              <strong>{tr("ig.frameHeading", { n: frameIndex + 1, cover: frameIndex === 0 ? tr("canonicalHighlightEditor.cover") : "" })}</strong>
+              <input className="w98-input compact" aria-label={tr("canonicalHighlightEditor.altTextForHighlightPage", { v1: frameIndex + 1 })} value={frame.alt} placeholder={tr("canonicalHighlightEditor.altText")} onChange={(event) => mutate((document) => run(updateHighlightFrame(document, highlight.id, frame.id, { alt: event.target.value }, { siteId }), document), `highlight-alt-${frame.id}`)} />
+              <textarea className="w98-textarea" rows={2} aria-label={tr("canonicalHighlightEditor.textForHighlightPage", { v1: frameIndex + 1 })} value={frame.text} placeholder={tr("canonicalHighlightEditor.optionalShortText")} onChange={(event) => mutate((document) => run(updateHighlightFrame(document, highlight.id, frame.id, { text: event.target.value }, { siteId }), document), `highlight-text-${frame.id}`)} />
             </div>
-            <button type="button" className="mini-btn" aria-label={`精選第 ${frameIndex + 1} 頁往前`} disabled={frameIndex === 0} onClick={() => mutate((document) => run(reorderHighlightFrame(document, highlight.id, frame.id, -1, { siteId }), document))}>▲</button>
-            <button type="button" className="mini-btn" aria-label={`精選第 ${frameIndex + 1} 頁往後`} disabled={frameIndex === highlight.frames.length - 1} onClick={() => mutate((document) => run(reorderHighlightFrame(document, highlight.id, frame.id, 1, { siteId }), document))}>▼</button>
-            <button type="button" className="mini-btn danger" aria-label={`刪除精選第 ${frameIndex + 1} 頁`} onClick={() => mutate((document) => run(deleteHighlightFrame(document, highlight.id, frame.id, { siteId }), document))}>×</button>
+            <button type="button" className="mini-btn" aria-label={tr("canonicalHighlightEditor.moveHighlightPageEarlier", { v1: frameIndex + 1 })} disabled={frameIndex === 0} onClick={() => mutate((document) => run(reorderHighlightFrame(document, highlight.id, frame.id, -1, { siteId }), document))}>▲</button>
+            <button type="button" className="mini-btn" aria-label={tr("canonicalHighlightEditor.moveHighlightPageLater", { v1: frameIndex + 1 })} disabled={frameIndex === highlight.frames.length - 1} onClick={() => mutate((document) => run(reorderHighlightFrame(document, highlight.id, frame.id, 1, { siteId }), document))}>▼</button>
+            <button type="button" className="mini-btn danger" aria-label={tr("canonicalHighlightEditor.deleteHighlightPage", { v1: frameIndex + 1 })} onClick={() => mutate((document) => run(deleteHighlightFrame(document, highlight.id, frame.id, { siteId }), document))}>×</button>
           </div>)}
           {highlight.frames.length < 50 ? <div className="ie-row">
-            <fieldset className="ig-upload-control" aria-label="精選圖片上傳" disabled={!!uploading[highlight.id] || !ctx.upload} aria-busy={!!uploading[highlight.id]}>
-              <FilePick className="w98-btn small" onFiles={(files) => { const file = files[0]; if (file) void uploadFrame(highlight.id, file); }}>{uploading[highlight.id] ? "上傳中…" : "上傳新一頁"}</FilePick>
+            <fieldset className="ig-upload-control" aria-label={tr("canonicalHighlightEditor.uploadHighlightImages")} disabled={!!uploading[highlight.id] || !ctx.upload} aria-busy={!!uploading[highlight.id]}>
+              <FilePick className="w98-btn small" onFiles={(files) => { const file = files[0]; if (file) void uploadFrame(highlight.id, file); }}>{uploading[highlight.id] ? tr("canonicalHighlightEditor.uploading") : tr("canonicalHighlightEditor.uploadANewPage")}</FilePick>
             </fieldset>
-            <input className="w98-input compact grow" aria-label="新增精選頁圖片網址" value={urls[highlight.id] ?? ""} placeholder="或貼上圖片網址" onChange={(event) => setUrls((current) => ({ ...current, [highlight.id]: event.target.value }))} />
+            <input className="w98-input compact grow" aria-label={tr("canonicalHighlightEditor.addHighlightPageImageUrl")} value={urls[highlight.id] ?? ""} placeholder={tr("canonicalHighlightEditor.orPasteAnImageUrl")} onChange={(event) => setUrls((current) => ({ ...current, [highlight.id]: event.target.value }))} />
             <button type="button" className="w98-btn small" onClick={() => {
               const raw = urls[highlight.id] ?? "";
               const normalized = normalizeImageUrl(raw);
-              if (!normalized.ok) { setError(normalized.reason); return; }
+              if (!normalized.ok) { setError(translateSystemMessage(normalized.reason)); return; }
               addFrame(highlight.id, normalized.url, raw.trim());
               setUrls((current) => ({ ...current, [highlight.id]: "" }));
-            }}>加入</button>
+            }}>{tr("canonicalHighlightEditor.add")}</button>
           </div> : null}
         </div> : null}
       </article>;

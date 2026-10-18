@@ -7,13 +7,15 @@ import { RetroButton } from "../components/RetroButton";
 import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { VisitorPreview } from "../features/editor/VisitorPreview";
 import { useLocaleFormatting } from "../i18n/format";
+import { localizeDefaults } from "../i18n/localizedDefaults";
 
 export function LandingPage() {
   const { t } = useTranslation("common");
-  const { fontFamily } = useLocaleFormatting();
+  const { fontFamily, locale } = useLocaleFormatting();
   const { user } = useAuth();
   const [demo, setDemo] = useState<DemoKind | null>(null);
-  const demoDocument = useMemo(() => demo ? createDemoDocument(demo) : null, [demo]);
+  // Sample content follows the UI language it is opened in; it is a throwaway preview, never saved.
+  const demoDocument = useMemo(() => demo ? localizeDefaults(createDemoDocument(demo)) : null, [demo, locale]);
   return (
     <main className="landing-shell" style={{ fontFamily }}>
       <section className="landing-window retro-panel">
@@ -33,7 +35,7 @@ export function LandingPage() {
           <div className="hero-demo">
             <div className="demo-desktop">
               <div className="desktop-icons-demo"><span>{t("landing.demoCard")}</span><span>{t("landing.demoGallery")}</span><span>{t("landing.demoLinks")}</span></div>
-              <div className="demo-win one"><b>{t("landing.demoCard")}.exe</b><div className="demo-card-lines"><i /><strong>Mochi 麻糬</strong><i /><i /></div></div>
+              <div className="demo-win one"><b>{t("landing.demoCard")}.exe</b><div className="demo-card-lines"><i /><strong>{/* i18n-ignore: fictional sample character name */}Mochi 麻糬</strong><i /><i /></div></div>
               <div className="demo-win two"><b>{t("landing.demoGallery")}</b><div className="demo-grid">{Array.from({ length: 6 }).map((_, index) => <i key={index} />)}</div></div>
               <div className="demo-taskbar"><RetroButton>{t("desktop.start")}</RetroButton></div>
             </div>

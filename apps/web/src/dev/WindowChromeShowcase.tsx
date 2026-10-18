@@ -1,5 +1,7 @@
 import { StrictMode, useState, type CSSProperties, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
+import { I18nextProvider } from "react-i18next";
+import { i18n, initI18n } from "../i18n";
 import { makeIgPost, makeWindow, THEME_PRESETS, type WindowChromePreset, type WindowChromeSection } from "@retrodesk/shared";
 import {
   WindowChrome, WindowChromeButton, WindowChromeSlot, WindowFooterActions,
@@ -289,4 +291,4 @@ export function WindowChromeShowcase() {
 }
 
 const root = document.getElementById("root");
-if (root) createRoot(root).render(<StrictMode><WindowChromeShowcase /></StrictMode>);
+if (root) void initI18n().then(() => createRoot(root).render(<StrictMode><I18nextProvider i18n={i18n}><WindowChromeShowcase /></I18nextProvider></StrictMode>));

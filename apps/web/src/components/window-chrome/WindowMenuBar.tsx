@@ -1,4 +1,5 @@
 import { useId, useLayoutEffect, useRef, useState, type CSSProperties, type HTMLAttributes, type KeyboardEvent } from "react";
+import { useTranslation } from "react-i18next";
 import styles from "./WindowChrome.module.css";
 
 export type WindowMenuItem = {
@@ -31,7 +32,9 @@ const canOpen = (menu: WindowMenu) => !menu.disabled && menu.items.some(isComman
 const itemKey = (menuId: string, itemId: string) => JSON.stringify([menuId, itemId]);
 
 /** A one-level application menubar. All commands remain ordinary, caller-owned callbacks. */
-export function WindowMenuBar({ menus, label = "視窗選單", className, onKeyDown, onBlur, ...props }: WindowMenuBarProps) {
+export function WindowMenuBar({ menus, label, className, onKeyDown, onBlur, ...props }: WindowMenuBarProps) {
+  const { t: tr } = useTranslation("editor");
+  const menuLabel = label ?? tr("windowMenuBar.windowMenu");
   const id = useId();
   const root = useRef<HTMLDivElement>(null);
   const popup = useRef<HTMLDivElement>(null);
@@ -272,7 +275,7 @@ export function WindowMenuBar({ menus, label = "視窗選單", className, onKeyD
       {...props}
       ref={root}
       role="menubar"
-      aria-label={props["aria-label"] ?? label}
+      aria-label={props["aria-label"] ?? menuLabel}
       aria-orientation="horizontal"
       className={`${styles.menuBar} ${className ?? ""}`}
       data-window-no-drag

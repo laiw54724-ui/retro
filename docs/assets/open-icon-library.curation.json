@@ -35,7 +35,9 @@
      "keywords": "directory 檔案夾",
      "purposes": [
       "folder"
-     ]
+     ],
+     "ja": "フォルダー",
+     "ko": "폴더"
     },
     {
      "src": "Folder_home",
@@ -45,7 +47,9 @@
      "keywords": "home 首頁 個人",
      "purposes": [
       "folder"
-     ]
+     ],
+     "ja": "ホームフォルダー",
+     "ko": "홈 폴더"
     },
     {
      "src": "Folder_download",
@@ -55,7 +59,9 @@
      "keywords": "下載 download",
      "purposes": [
       "folder"
-     ]
+     ],
+     "ja": "ダウンロードフォルダー",
+     "ko": "다운로드 폴더"
     },
     {
      "src": "Folder_apps",
@@ -65,7 +71,9 @@
      "keywords": "程式 應用 apps",
      "purposes": [
       "folder"
-     ]
+     ],
+     "ja": "アプリフォルダー",
+     "ko": "앱 폴더"
     },
     {
      "src": "Folder_config",
@@ -75,7 +83,9 @@
      "keywords": "設定 config",
      "purposes": [
       "folder"
-     ]
+     ],
+     "ja": "設定フォルダー",
+     "ko": "설정 폴더"
     },
     {
      "src": "Folder_development",
@@ -85,7 +95,9 @@
      "keywords": "程式碼 dev code",
      "purposes": [
       "folder"
-     ]
+     ],
+     "ja": "開発フォルダー",
+     "ko": "개발 폴더"
     },
     {
      "src": "Folder_fonts",
@@ -95,7 +107,9 @@
      "keywords": "字體 font",
      "purposes": [
       "folder"
-     ]
+     ],
+     "ja": "フォントフォルダー",
+     "ko": "글꼴 폴더"
     },
     {
      "src": "Folder_mail",
@@ -105,7 +119,9 @@
      "keywords": "信件 email",
      "purposes": [
       "folder"
-     ]
+     ],
+     "ja": "メールフォルダー",
+     "ko": "메일 폴더"
     },
     {
      "src": "Folder_people",
@@ -116,7 +132,9 @@
      "purposes": [
       "folder",
       "person"
-     ]
+     ],
+     "ja": "人物フォルダー",
+     "ko": "인물 폴더"
     },
     {
      "src": "Folder_prefs",
@@ -126,7 +144,9 @@
      "keywords": "設定 prefs",
      "purposes": [
       "folder"
-     ]
+     ],
+     "ja": "環境設定フォルダー",
+     "ko": "환경설정 폴더"
     },
     {
      "src": "File_Generic",
@@ -136,7 +156,9 @@
      "keywords": "文件 generic",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "ファイル",
+     "ko": "파일"
     },
     {
      "src": "File_Text",
@@ -146,7 +168,9 @@
      "keywords": "txt 文字 筆記",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "テキスト文書",
+     "ko": "텍스트 문서"
     },
     {
      "src": "File_Text_Open",
@@ -156,7 +180,9 @@
      "keywords": "打開 開啟",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "開いたテキスト文書",
+     "ko": "열린 텍스트 문서"
     },
     {
      "src": "File_PDF",
@@ -166,7 +192,9 @@
      "keywords": "pdf",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "PDF文書",
+     "ko": "PDF 문서"
     },
     {
      "src": "File_HTML",
@@ -176,7 +204,9 @@
      "keywords": "網頁 html web",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "HTMLファイル",
+     "ko": "HTML 파일"
     },
     {
      "src": "File_SourceCode",
@@ -187,7 +217,9 @@
      "purposes": [
       "document",
       "tool"
-     ]
+     ],
+     "ja": "ソースコード",
+     "ko": "소스 코드"
     },
     {
      "src": "File_Archive",
@@ -197,7 +229,9 @@
      "keywords": "壓縮 封存",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "アーカイブ",
+     "ko": "보관함"
     },
     {
      "src": "File_Archive_ZIP",
@@ -207,7 +241,9 @@
      "keywords": "zip 壓縮",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "ZIPアーカイブ",
+     "ko": "ZIP 압축 파일"
     },
     {
      "src": "File_Bookmark",
@@ -217,7 +253,9 @@
      "keywords": "書籤 收藏",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "ブックマーク",
+     "ko": "북마크"
     },
     {
      "src": "File_Task",
@@ -227,7 +265,9 @@
      "keywords": "任務 todo 待辦",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "タスク",
+     "ko": "할 일"
     },
     {
      "src": "File_Mail",
@@ -237,7 +277,9 @@
      "keywords": "信件",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "メールファイル",
+     "ko": "메일 파일"
     },
     {
      "src": "File_Chart_Open",
@@ -247,7 +289,9 @@
      "keywords": "圖表 簡報 統計",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "グラフ文書",
+     "ko": "차트 문서"
     },
     {
      "src": "File_Spreadsheet_Open",
@@ -257,7 +301,9 @@
      "keywords": "表格 data",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "スプレッドシート",
+     "ko": "스프레드시트"
     },
     {
      "src": "File_Database_Open",
@@ -267,7 +313,9 @@
      "keywords": "資料 db",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "データベース",
+     "ko": "데이터베이스"
     },
     {
      "src": "File_Image_1",
@@ -277,7 +325,9 @@
      "keywords": "照片 photo picture",
      "purposes": [
       "image"
-     ]
+     ],
+     "ja": "画像",
+     "ko": "이미지"
     },
     {
      "src": "File_Image_2",
@@ -287,7 +337,9 @@
      "keywords": "照片 photo picture",
      "purposes": [
       "image"
-     ]
+     ],
+     "ja": "画像（紫）",
+     "ko": "이미지(보라)"
     },
     {
      "src": "File_Graphics_Open",
@@ -297,7 +349,9 @@
      "keywords": "向量 繪圖 draw",
      "purposes": [
       "image"
-     ]
+     ],
+     "ja": "グラフィックファイル",
+     "ko": "그래픽 파일"
     },
     {
      "src": "File_Video",
@@ -307,7 +361,9 @@
      "keywords": "電影 影音 movie",
      "purposes": [
       "image"
-     ]
+     ],
+     "ja": "動画",
+     "ko": "동영상"
     },
     {
      "src": "App_ShowImage",
@@ -317,7 +373,9 @@
      "keywords": "相簿 照片 photo gallery",
      "purposes": [
       "image"
-     ]
+     ],
+     "ja": "画像ビューアー",
+     "ko": "이미지 뷰어"
     },
     {
      "src": "App_Screenshot",
@@ -328,7 +386,9 @@
      "purposes": [
       "image",
       "tool"
-     ]
+     ],
+     "ja": "スクリーンショット",
+     "ko": "스크린샷"
     },
     {
      "src": "File_Audio",
@@ -338,7 +398,9 @@
      "keywords": "音樂 聲音 music",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "音声ファイル",
+     "ko": "오디오 파일"
     },
     {
      "src": "File_Audio_2",
@@ -348,7 +410,9 @@
      "keywords": "音樂 歌曲 song",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "音楽ファイル",
+     "ko": "음악 파일"
     },
     {
      "src": "File_Playlist",
@@ -358,7 +422,9 @@
      "keywords": "歌單 list",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "プレイリスト",
+     "ko": "플레이리스트"
     },
     {
      "src": "App_MediaPlayer",
@@ -368,7 +434,9 @@
      "keywords": "播放 影音 player",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "メディアプレーヤー",
+     "ko": "미디어 플레이어"
     },
     {
      "src": "App_MidiPlayer",
@@ -378,7 +446,9 @@
      "keywords": "midi 合成",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "MIDIプレーヤー",
+     "ko": "MIDI 플레이어"
     },
     {
      "src": "App_SoundRecorder",
@@ -389,7 +459,9 @@
      "purposes": [
       "music",
       "tool"
-     ]
+     ],
+     "ja": "サウンドレコーダー",
+     "ko": "녹음기"
     },
     {
      "src": "App_CDPlayer",
@@ -399,7 +471,9 @@
      "keywords": "光碟 cd",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "CDプレーヤー",
+     "ko": "CD 플레이어"
     },
     {
      "src": "Device_CD",
@@ -409,7 +483,9 @@
      "keywords": "cd dvd 光碟片",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "CD",
+     "ko": "CD"
     },
     {
      "src": "Misc_Speaker",
@@ -419,7 +495,9 @@
      "keywords": "音量 聲音 sound",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "スピーカー",
+     "ko": "스피커"
     },
     {
      "src": "Misc_Speaker_Muted",
@@ -429,7 +507,9 @@
      "keywords": "靜音 mute",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "ミュート中のスピーカー",
+     "ko": "음소거된 스피커"
     },
     {
      "src": "Prefs_Sounds",
@@ -440,7 +520,9 @@
      "purposes": [
       "music",
       "tool"
-     ]
+     ],
+     "ja": "サウンド設定",
+     "ko": "소리 설정"
     },
     {
      "src": "App_People",
@@ -450,7 +532,9 @@
      "keywords": "人物 通訊錄 角色 contacts",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "連絡先",
+     "ko": "연락처"
     },
     {
      "src": "File_Person",
@@ -460,7 +544,9 @@
      "keywords": "角色 人 contact character",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "人物",
+     "ko": "인물"
     },
     {
      "src": "Misc_Phonebook",
@@ -470,7 +556,9 @@
      "keywords": "通訊錄 電話",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "電話帳",
+     "ko": "전화번호부"
     },
     {
      "src": "App_Chat",
@@ -480,7 +568,9 @@
      "keywords": "對話 訊息 message",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "チャット",
+     "ko": "채팅"
     },
     {
      "src": "App_Calculator",
@@ -490,7 +580,9 @@
      "keywords": "計算 數學 math",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "電卓",
+     "ko": "계산기"
     },
     {
      "src": "App_Clock",
@@ -500,7 +592,9 @@
      "keywords": "時間 time",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "時計",
+     "ko": "시계"
     },
     {
      "src": "App_Terminal",
@@ -510,7 +604,9 @@
      "keywords": "指令 cmd console",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "ターミナル",
+     "ko": "터미널"
     },
     {
      "src": "App_CharacterMap",
@@ -520,7 +616,9 @@
      "keywords": "字元 符號 symbols",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "文字コード表",
+     "ko": "문자표"
     },
     {
      "src": "App_Magnify",
@@ -530,7 +628,9 @@
      "keywords": "放大 搜尋 zoom",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "拡大鏡",
+     "ko": "돋보기"
     },
     {
      "src": "App_StyledEdit",
@@ -541,7 +641,9 @@
      "purposes": [
       "tool",
       "document"
-     ]
+     ],
+     "ja": "テキストエディター",
+     "ko": "텍스트 편집기"
     },
     {
      "src": "App_Icon-O-Matic",
@@ -552,7 +654,9 @@
      "purposes": [
       "tool",
       "image"
-     ]
+     ],
+     "ja": "アイコンエディター",
+     "ko": "아이콘 편집기"
     },
     {
      "src": "App_PackageInstaller",
@@ -562,7 +666,9 @@
      "keywords": "安裝 install",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "インストーラー",
+     "ko": "설치 프로그램"
     },
     {
      "src": "App_SoftwareUpdater",
@@ -572,7 +678,9 @@
      "keywords": "更新 update",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "ソフトウェアアップデート",
+     "ko": "소프트웨어 업데이트"
     },
     {
      "src": "App_DiskUsage",
@@ -582,7 +690,9 @@
      "keywords": "容量 空間",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "ディスク使用量",
+     "ko": "디스크 사용량"
     },
     {
      "src": "App_Workspaces",
@@ -592,7 +702,9 @@
      "keywords": "桌面 切換 desktop",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "ワークスペース",
+     "ko": "작업 공간"
     },
     {
      "src": "Prefs_Appearance",
@@ -602,7 +714,9 @@
      "keywords": "主題 色彩 theme",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "外観設定",
+     "ko": "모양 설정"
     },
     {
      "src": "Prefs_Backgrounds",
@@ -613,7 +727,9 @@
      "purposes": [
       "tool",
       "image"
-     ]
+     ],
+     "ja": "背景設定",
+     "ko": "배경 설정"
     },
     {
      "src": "Prefs_Fonts",
@@ -623,7 +739,9 @@
      "keywords": "字體 font",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "フォント設定",
+     "ko": "글꼴 설정"
     },
     {
      "src": "Prefs_Screen",
@@ -633,7 +751,9 @@
      "keywords": "顯示器 解析度 display",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "画面設定",
+     "ko": "화면 설정"
     },
     {
      "src": "Prefs_Keyboard",
@@ -643,7 +763,9 @@
      "keywords": "打字 keys",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "キーボード",
+     "ko": "키보드"
     },
     {
      "src": "Prefs_Mouse",
@@ -653,7 +775,9 @@
      "keywords": "游標 cursor",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "マウス",
+     "ko": "마우스"
     },
     {
      "src": "Prefs_Network",
@@ -663,7 +787,9 @@
      "keywords": "連線 網路 internet",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "ネットワーク設定",
+     "ko": "네트워크 설정"
     },
     {
      "src": "Prefs_Printer",
@@ -673,7 +799,9 @@
      "keywords": "列印 print",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "プリンター",
+     "ko": "프린터"
     },
     {
      "src": "Prefs_Media",
@@ -684,7 +812,9 @@
      "purposes": [
       "tool",
       "music"
-     ]
+     ],
+     "ja": "メディア設定",
+     "ko": "미디어 설정"
     },
     {
      "src": "Misc_Magic_Wand",
@@ -694,7 +824,9 @@
      "keywords": "魔法 特效 magic",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "魔法の杖",
+     "ko": "마법 지팡이"
     },
     {
      "src": "Misc_Marker",
@@ -705,7 +837,9 @@
      "purposes": [
       "tool",
       "image"
-     ]
+     ],
+     "ja": "マーカー",
+     "ko": "마커"
     },
     {
      "src": "Trash_Empty",
@@ -715,7 +849,9 @@
      "keywords": "垃圾 刪除 trash",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "空のゴミ箱",
+     "ko": "빈 휴지통"
     },
     {
      "src": "Trash_Full",
@@ -725,7 +861,9 @@
      "keywords": "垃圾 刪除 trash",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "いっぱいのゴミ箱",
+     "ko": "가득 찬 휴지통"
     },
     {
      "src": "Action_Search",
@@ -735,7 +873,9 @@
      "keywords": "尋找 find",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "検索",
+     "ko": "검색"
     },
     {
      "src": "Device_Clipboard",
@@ -745,7 +885,9 @@
      "keywords": "貼上 複製 paste",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "クリップボード",
+     "ko": "클립보드"
     },
     {
      "src": "Device_FlatbedScanner",
@@ -756,7 +898,9 @@
      "purposes": [
       "tool",
       "image"
-     ]
+     ],
+     "ja": "スキャナー",
+     "ko": "스캐너"
     },
     {
      "src": "App_Finance",
@@ -766,7 +910,9 @@
      "keywords": "金錢 帳務 money",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "財務",
+     "ko": "재무"
     },
     {
      "src": "Misc_Birthday_Cake",
@@ -776,7 +922,9 @@
      "keywords": "派對 生日 party",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "バースデーケーキ",
+     "ko": "생일 케이크"
     },
     {
      "src": "Misc_Book",
@@ -786,7 +934,9 @@
      "keywords": "閱讀 書本 read",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "本",
+     "ko": "책"
     },
     {
      "src": "Misc_Box",
@@ -796,7 +946,9 @@
      "keywords": "盒子 收納",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "箱",
+     "ko": "상자"
     },
     {
      "src": "Misc_Bug",
@@ -806,7 +958,9 @@
      "keywords": "除錯 昆蟲",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "虫",
+     "ko": "벌레"
     },
     {
      "src": "Misc_Earth",
@@ -816,7 +970,9 @@
      "keywords": "世界 地球儀 world",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "地球",
+     "ko": "지구"
     },
     {
      "src": "Misc_Hand",
@@ -826,7 +982,9 @@
      "keywords": "手掌",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "手",
+     "ko": "손"
     },
     {
      "src": "Misc_LAN",
@@ -836,7 +994,9 @@
      "keywords": "網路 電腦 network",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ローカルネットワーク",
+     "ko": "근거리 네트워크"
     },
     {
      "src": "Misc_Paper_Plane",
@@ -846,7 +1006,9 @@
      "keywords": "寄送 傳送 send",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "紙飛行機",
+     "ko": "종이비행기"
     },
     {
      "src": "Misc_Scroll",
@@ -856,7 +1018,9 @@
      "keywords": "卷軸 古書",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "巻物",
+     "ko": "두루마리"
     },
     {
      "src": "Misc_Sphere",
@@ -866,7 +1030,9 @@
      "keywords": "球 水晶球",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "球体",
+     "ko": "구체"
     },
     {
      "src": "Misc_Window",
@@ -876,7 +1042,9 @@
      "keywords": "窗戶",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ウィンドウ",
+     "ko": "창"
     },
     {
      "src": "Misc_WebSearch",
@@ -886,7 +1054,9 @@
      "keywords": "搜尋 網路",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "Web検索",
+     "ko": "웹 검색"
     },
     {
      "src": "Misc_Croissant",
@@ -896,7 +1066,9 @@
      "keywords": "麵包 食物 food",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "クロワッサン",
+     "ko": "크루아상"
     },
     {
      "src": "Alert_Idea",
@@ -906,7 +1078,9 @@
      "keywords": "燈泡 想法 lightbulb",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "アイデア",
+     "ko": "아이디어"
     },
     {
      "src": "Alert_Info",
@@ -916,7 +1090,9 @@
      "keywords": "提示 說明",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "情報",
+     "ko": "정보"
     },
     {
      "src": "Alert_Warning",
@@ -926,7 +1102,9 @@
      "keywords": "注意 caution",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "警告",
+     "ko": "경고"
     },
     {
      "src": "Alert_Stop",
@@ -936,7 +1114,9 @@
      "keywords": "禁止",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "停止",
+     "ko": "정지"
     },
     {
      "src": "Mail_Send",
@@ -946,7 +1126,9 @@
      "keywords": "傳送 信件",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "メール送信",
+     "ko": "메일 보내기"
     },
     {
      "src": "App_Mail",
@@ -956,7 +1138,9 @@
      "keywords": "電子郵件 email",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "メール",
+     "ko": "메일"
     },
     {
      "src": "Action_GoHome",
@@ -966,7 +1150,9 @@
      "keywords": "首頁 家 home",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ホームへ",
+     "ko": "홈으로"
     },
     {
      "src": "Action_Download",
@@ -976,7 +1162,9 @@
      "keywords": "下載",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ダウンロード",
+     "ko": "다운로드"
     },
     {
      "src": "Device_Harddisk",
@@ -986,7 +1174,9 @@
      "keywords": "磁碟 儲存 storage",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ハードディスク",
+     "ko": "하드 디스크"
     },
     {
      "src": "Device_Mobile",
@@ -996,7 +1186,9 @@
      "keywords": "行動裝置 phone",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "携帯電話",
+     "ko": "휴대폰"
     },
     {
      "src": "Device_Pendrive",
@@ -1006,7 +1198,9 @@
      "keywords": "usb",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "USBメモリ",
+     "ko": "USB 드라이브"
     },
     {
      "src": "Device_SD",
@@ -1016,7 +1210,9 @@
      "keywords": "sd 卡",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "SDカード",
+     "ko": "SD 카드"
     },
     {
      "src": "Device_Floppy",
@@ -1026,7 +1222,9 @@
      "keywords": "軟碟 儲存 save",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "フロッピーディスク",
+     "ko": "플로피 디스크"
     },
     {
      "src": "Device_NAS",
@@ -1036,7 +1234,9 @@
      "keywords": "伺服器 server",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "NAS",
+     "ko": "NAS"
     },
     {
      "src": "App_Teapot",
@@ -1046,7 +1246,9 @@
      "keywords": "茶 tea",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ティーポット",
+     "ko": "찻주전자"
     },
     {
      "src": "App_Mandelbrot",
@@ -1056,7 +1258,9 @@
      "keywords": "碎形 數學 fractal",
      "purposes": [
       "image"
-     ]
+     ],
+     "ja": "マンデルブロ集合",
+     "ko": "만델브로 집합"
     }
    ]
   },
@@ -1083,7 +1287,9 @@
      "keywords": "時間 提醒 alarm",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "目覚まし時計",
+     "ko": "알람 시계"
     },
     {
      "src": "birthday",
@@ -1093,7 +1299,9 @@
      "keywords": "蛋糕 派對 party",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "誕生日",
+     "ko": "생일"
     },
     {
      "src": "brush",
@@ -1104,7 +1312,9 @@
      "purposes": [
       "image",
       "tool"
-     ]
+     ],
+     "ja": "筆",
+     "ko": "붓"
     },
     {
      "src": "calc",
@@ -1114,7 +1324,9 @@
      "keywords": "計算 數學 math",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "電卓",
+     "ko": "계산기"
     },
     {
      "src": "calendar",
@@ -1124,7 +1336,9 @@
      "keywords": "日期 行事曆 date",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "カレンダー",
+     "ko": "달력"
     },
     {
      "src": "cash",
@@ -1134,7 +1348,9 @@
      "keywords": "錢 金錢 money",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "現金",
+     "ko": "현금"
     },
     {
      "src": "cassette",
@@ -1144,7 +1360,9 @@
      "keywords": "錄音帶 音樂 tape",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "カセットテープ",
+     "ko": "카세트테이프"
     },
     {
      "src": "cell-phone",
@@ -1154,7 +1372,9 @@
      "keywords": "電話 phone",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "携帯電話",
+     "ko": "휴대폰"
     },
     {
      "src": "cherries",
@@ -1164,7 +1384,9 @@
      "keywords": "水果 食物 fruit",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "さくらんぼ",
+     "ko": "체리"
     },
     {
      "src": "clock",
@@ -1174,7 +1396,9 @@
      "keywords": "時間 time",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "時計",
+     "ko": "시계"
     },
     {
      "src": "cloudy",
@@ -1184,7 +1408,9 @@
      "keywords": "天氣 雲 weather",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "くもり",
+     "ko": "흐림"
     },
     {
      "src": "comb",
@@ -1194,7 +1420,9 @@
      "keywords": "整理 髮",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "くし",
+     "ko": "빗"
     },
     {
      "src": "copy",
@@ -1205,7 +1433,9 @@
      "purposes": [
       "document",
       "tool"
-     ]
+     ],
+     "ja": "コピー",
+     "ko": "복사"
     },
     {
      "src": "cut",
@@ -1215,7 +1445,9 @@
      "keywords": "剪刀 scissors",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "切り取り",
+     "ko": "잘라내기"
     },
     {
      "src": "dices",
@@ -1225,7 +1457,9 @@
      "keywords": "遊戲 隨機 game",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "サイコロ",
+     "ko": "주사위"
     },
     {
      "src": "error",
@@ -1235,7 +1469,9 @@
      "keywords": "叉叉 失敗",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "エラー",
+     "ko": "오류"
     },
     {
      "src": "exit",
@@ -1245,7 +1481,9 @@
      "keywords": "出口 登出 logout",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "終了",
+     "ko": "나가기"
     },
     {
      "src": "eyes",
@@ -1255,7 +1493,9 @@
      "keywords": "看 眼 look",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "目",
+     "ko": "눈"
     },
     {
      "src": "film",
@@ -1265,7 +1505,9 @@
      "keywords": "電影 影片 movie",
      "purposes": [
       "image"
-     ]
+     ],
+     "ja": "フィルム",
+     "ko": "필름"
     },
     {
      "src": "flower",
@@ -1275,7 +1517,9 @@
      "keywords": "植物 花朵 plant",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "花",
+     "ko": "꽃"
     },
     {
      "src": "gem",
@@ -1285,7 +1529,9 @@
      "keywords": "鑽石 珠寶 jewel",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "宝石",
+     "ko": "보석"
     },
     {
      "src": "guitar",
@@ -1295,7 +1541,9 @@
      "keywords": "樂器 音樂 instrument",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "ギター",
+     "ko": "기타"
     },
     {
      "src": "heart",
@@ -1305,7 +1553,9 @@
      "keywords": "喜歡 愛 love",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ハート",
+     "ko": "하트"
     },
     {
      "src": "info",
@@ -1315,7 +1565,9 @@
      "keywords": "說明 information",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "情報",
+     "ko": "정보"
     },
     {
      "src": "laboratory",
@@ -1325,7 +1577,9 @@
      "keywords": "科學 燒瓶 science",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "実験室",
+     "ko": "실험실"
     },
     {
      "src": "lemon",
@@ -1335,7 +1589,9 @@
      "keywords": "水果 fruit",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "レモン",
+     "ko": "레몬"
     },
     {
      "src": "letter",
@@ -1345,7 +1601,9 @@
      "keywords": "信件 郵件 mail",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "封筒",
+     "ko": "편지 봉투"
     },
     {
      "src": "letter-open",
@@ -1355,7 +1613,9 @@
      "keywords": "信件 mail",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "開いた手紙",
+     "ko": "열린 편지"
     },
     {
      "src": "lollipop",
@@ -1365,7 +1625,9 @@
      "keywords": "糖果 甜 candy",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ロリポップ",
+     "ko": "막대사탕"
     },
     {
      "src": "music-on",
@@ -1375,7 +1637,9 @@
      "keywords": "音樂 喇叭 聲音 sound",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "音楽オン",
+     "ko": "음악 켜짐"
     },
     {
      "src": "music-off",
@@ -1385,7 +1649,9 @@
      "keywords": "靜音 mute",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "音楽オフ",
+     "ko": "음악 꺼짐"
     },
     {
      "src": "newfile",
@@ -1395,7 +1661,9 @@
      "keywords": "新增文件 new document",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "新規ファイル",
+     "ko": "새 파일"
     },
     {
      "src": "openfile",
@@ -1406,7 +1674,9 @@
      "purposes": [
       "folder",
       "document"
-     ]
+     ],
+     "ja": "ファイルを開く",
+     "ko": "파일 열기"
     },
     {
      "src": "orange",
@@ -1416,7 +1686,9 @@
      "keywords": "橘子 水果 fruit",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "オレンジ",
+     "ko": "오렌지"
     },
     {
      "src": "palette",
@@ -1427,7 +1699,9 @@
      "purposes": [
       "image",
       "tool"
-     ]
+     ],
+     "ja": "パレット",
+     "ko": "팔레트"
     },
     {
      "src": "paste",
@@ -1437,7 +1711,9 @@
      "keywords": "剪貼簿 clipboard",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "貼り付け",
+     "ko": "붙여넣기"
     },
     {
      "src": "peace",
@@ -1447,7 +1723,9 @@
      "keywords": "和平符號",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ピース",
+     "ko": "평화"
     },
     {
      "src": "pencil",
@@ -1458,7 +1736,9 @@
      "purposes": [
       "tool",
       "document"
-     ]
+     ],
+     "ja": "鉛筆",
+     "ko": "연필"
     },
     {
      "src": "pendrive",
@@ -1468,7 +1748,9 @@
      "keywords": "usb",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "USBメモリ",
+     "ko": "USB 드라이브"
     },
     {
      "src": "printer",
@@ -1478,7 +1760,9 @@
      "keywords": "列印 print",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "プリンター",
+     "ko": "프린터"
     },
     {
      "src": "question",
@@ -1488,7 +1772,9 @@
      "keywords": "疑問 說明 help",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "クエスチョン",
+     "ko": "물음표"
     },
     {
      "src": "rainy",
@@ -1498,7 +1784,9 @@
      "keywords": "天氣 雨 weather",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "雨",
+     "ko": "비"
     },
     {
      "src": "remove-file",
@@ -1508,7 +1796,9 @@
      "keywords": "移除 delete",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "ファイルを削除",
+     "ko": "파일 삭제"
     },
     {
      "src": "savefile",
@@ -1518,7 +1808,9 @@
      "keywords": "存檔 save",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "ファイルを保存",
+     "ko": "파일 저장"
     },
     {
      "src": "star-red",
@@ -1528,7 +1820,9 @@
      "keywords": "星 星號",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "赤い星",
+     "ko": "빨간 별"
     },
     {
      "src": "star-yellow",
@@ -1538,7 +1832,9 @@
      "keywords": "星 星號 收藏 favorite",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "黄色い星",
+     "ko": "노란 별"
     },
     {
      "src": "stormy",
@@ -1548,7 +1844,9 @@
      "keywords": "雷雨 天氣 storm",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "嵐",
+     "ko": "폭풍우"
     },
     {
      "src": "sunny",
@@ -1558,7 +1856,9 @@
      "keywords": "太陽 天氣 sun",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "晴れ",
+     "ko": "맑음"
     },
     {
      "src": "thermometer",
@@ -1568,7 +1868,9 @@
      "keywords": "溫度 temperature",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "温度計",
+     "ko": "온도계"
     },
     {
      "src": "tools",
@@ -1578,7 +1880,9 @@
      "keywords": "扳手 螺絲 wrench",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "ツール",
+     "ko": "도구"
     },
     {
      "src": "traffic-lights",
@@ -1588,7 +1892,9 @@
      "keywords": "交通",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "信号機",
+     "ko": "신호등"
     },
     {
      "src": "umbrella",
@@ -1598,7 +1904,9 @@
      "keywords": "雨 天氣 rain",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "傘",
+     "ko": "우산"
     },
     {
      "src": "warning",
@@ -1608,7 +1916,9 @@
      "keywords": "注意 驚嘆號",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "警告",
+     "ko": "경고"
     },
     {
      "src": "bananas",
@@ -1618,7 +1928,9 @@
      "keywords": "水果 fruit",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "バナナ",
+     "ko": "바나나"
     },
     {
      "src": "carrot",
@@ -1628,7 +1940,9 @@
      "keywords": "蔬菜 食物 vegetable",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "にんじん",
+     "ko": "당근"
     },
     {
      "src": "battery",
@@ -1638,7 +1952,9 @@
      "keywords": "電量 power",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "電池",
+     "ko": "배터리"
     },
     {
      "src": "old-tree",
@@ -1648,7 +1964,9 @@
      "keywords": "樹 植物 tree",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "古い木",
+     "ko": "오래된 나무"
     },
     {
      "src": "hotdog",
@@ -1658,7 +1976,9 @@
      "keywords": "食物 food",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ホットドッグ",
+     "ko": "핫도그"
     },
     {
      "src": "ant",
@@ -1668,7 +1988,9 @@
      "keywords": "昆蟲 insect",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "アリ",
+     "ko": "개미"
     },
     {
      "src": "notatnik",
@@ -1678,7 +2000,9 @@
      "keywords": "筆記 文字 note",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "メモ帳",
+     "ko": "메모장"
     },
     {
      "src": "potion-blue",
@@ -1688,7 +2012,9 @@
      "keywords": "魔法 遊戲 magic",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "青いポーション",
+     "ko": "파란 물약"
     },
     {
      "src": "potion-green",
@@ -1698,7 +2024,9 @@
      "keywords": "魔法 遊戲 magic",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "緑のポーション",
+     "ko": "초록 물약"
     },
     {
      "src": "potion-red",
@@ -1708,7 +2036,9 @@
      "keywords": "魔法 遊戲 magic",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "赤いポーション",
+     "ko": "빨간 물약"
     },
     {
      "src": "cpu",
@@ -1718,7 +2048,9 @@
      "keywords": "晶片 chip",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "プロセッサー",
+     "ko": "프로세서"
     }
    ]
   },
@@ -1745,7 +2077,9 @@
      "keywords": "directory 檔案夾",
      "purposes": [
       "folder"
-     ]
+     ],
+     "ja": "フォルダー",
+     "ko": "폴더"
     },
     {
      "src": "folder-plus",
@@ -1755,7 +2089,9 @@
      "keywords": "新增 add",
      "purposes": [
       "folder"
-     ]
+     ],
+     "ja": "新しいフォルダー",
+     "ko": "새 폴더"
     },
     {
      "src": "archive",
@@ -1766,7 +2102,9 @@
      "purposes": [
       "folder",
       "document"
-     ]
+     ],
+     "ja": "アーカイブ",
+     "ko": "보관함"
     },
     {
      "src": "inbox",
@@ -1776,7 +2114,9 @@
      "keywords": "信件 收件",
      "purposes": [
       "folder"
-     ]
+     ],
+     "ja": "受信トレイ",
+     "ko": "받은 편지함"
     },
     {
      "src": "package",
@@ -1786,7 +2126,9 @@
      "keywords": "包裹 打包",
      "purposes": [
       "folder"
-     ]
+     ],
+     "ja": "パッケージ",
+     "ko": "패키지"
     },
     {
      "src": "library",
@@ -1796,7 +2138,9 @@
      "keywords": "書 館藏",
      "purposes": [
       "folder"
-     ]
+     ],
+     "ja": "図書館",
+     "ko": "도서관"
     },
     {
      "src": "files",
@@ -1806,7 +2150,9 @@
      "keywords": "文件 documents",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "複数のファイル",
+     "ko": "여러 파일"
     },
     {
      "src": "file",
@@ -1816,7 +2162,9 @@
      "keywords": "文件",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "ファイル",
+     "ko": "파일"
     },
     {
      "src": "file-text",
@@ -1826,7 +2174,9 @@
      "keywords": "文字 txt",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "テキストファイル",
+     "ko": "텍스트 파일"
     },
     {
      "src": "article",
@@ -1836,7 +2186,9 @@
      "keywords": "文字 內容",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "記事",
+     "ko": "글"
     },
     {
      "src": "notes",
@@ -1846,7 +2198,9 @@
      "keywords": "記錄 note",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "ノート",
+     "ko": "노트"
     },
     {
      "src": "note",
@@ -1856,7 +2210,9 @@
      "keywords": "紙條",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "メモ",
+     "ko": "메모"
     },
     {
      "src": "notebook",
@@ -1866,7 +2222,9 @@
      "keywords": "日記 本子",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "ノートブック",
+     "ko": "공책"
     },
     {
      "src": "clipboard",
@@ -1877,7 +2235,9 @@
      "purposes": [
       "document",
       "tool"
-     ]
+     ],
+     "ja": "クリップボード",
+     "ko": "클립보드"
     },
     {
      "src": "sticky-note",
@@ -1887,7 +2247,9 @@
      "keywords": "貼紙 note",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "付箋",
+     "ko": "스티커 메모"
     },
     {
      "src": "bookmark",
@@ -1897,7 +2259,9 @@
      "keywords": "收藏",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "ブックマーク",
+     "ko": "북마크"
     },
     {
      "src": "book-open",
@@ -1907,7 +2271,9 @@
      "keywords": "閱讀 read",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "開いた本",
+     "ko": "펼친 책"
     },
     {
      "src": "calendar",
@@ -1917,7 +2283,9 @@
      "keywords": "日期 date",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "カレンダー",
+     "ko": "달력"
     },
     {
      "src": "receipt",
@@ -1927,7 +2295,9 @@
      "keywords": "發票 帳單",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "レシート",
+     "ko": "영수증"
     },
     {
      "src": "script",
@@ -1937,7 +2307,9 @@
      "keywords": "劇本 程式",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "スクリプト",
+     "ko": "스크립트"
     },
     {
      "src": "image",
@@ -1947,7 +2319,9 @@
      "keywords": "照片 photo picture",
      "purposes": [
       "image"
-     ]
+     ],
+     "ja": "画像",
+     "ko": "이미지"
     },
     {
      "src": "images",
@@ -1957,7 +2331,9 @@
      "keywords": "相簿 gallery",
      "purposes": [
       "image"
-     ]
+     ],
+     "ja": "複数の画像",
+     "ko": "여러 이미지"
     },
     {
      "src": "gallery-thumbnails",
@@ -1967,7 +2343,9 @@
      "keywords": "相簿 圖庫",
      "purposes": [
       "image"
-     ]
+     ],
+     "ja": "ギャラリー",
+     "ko": "갤러리"
     },
     {
      "src": "camera",
@@ -1977,7 +2355,9 @@
      "keywords": "拍照 photo",
      "purposes": [
       "image"
-     ]
+     ],
+     "ja": "カメラ",
+     "ko": "카메라"
     },
     {
      "src": "video",
@@ -1987,7 +2367,9 @@
      "keywords": "影音 movie",
      "purposes": [
       "image"
-     ]
+     ],
+     "ja": "動画",
+     "ko": "동영상"
     },
     {
      "src": "clapperboard",
@@ -1997,7 +2379,9 @@
      "keywords": "電影 拍攝",
      "purposes": [
       "image"
-     ]
+     ],
+     "ja": "カチンコ",
+     "ko": "클래퍼보드"
     },
     {
      "src": "frame",
@@ -2007,7 +2391,9 @@
      "keywords": "畫框",
      "purposes": [
       "image"
-     ]
+     ],
+     "ja": "額縁",
+     "ko": "액자"
     },
     {
      "src": "presentation",
@@ -2017,7 +2403,9 @@
      "keywords": "投影片 slides",
      "purposes": [
       "image"
-     ]
+     ],
+     "ja": "プレゼンテーション",
+     "ko": "프레젠테이션"
     },
     {
      "src": "projector",
@@ -2027,7 +2415,9 @@
      "keywords": "放映",
      "purposes": [
       "image"
-     ]
+     ],
+     "ja": "プロジェクター",
+     "ko": "프로젝터"
     },
     {
      "src": "colors-swatch",
@@ -2038,7 +2428,9 @@
      "purposes": [
       "image",
       "tool"
-     ]
+     ],
+     "ja": "カラースウォッチ",
+     "ko": "색상 견본"
     },
     {
      "src": "brush",
@@ -2049,7 +2441,9 @@
      "purposes": [
       "image",
       "tool"
-     ]
+     ],
+     "ja": "筆",
+     "ko": "붓"
     },
     {
      "src": "spray-can",
@@ -2059,7 +2453,9 @@
      "keywords": "塗鴉 graffiti",
      "purposes": [
       "image"
-     ]
+     ],
+     "ja": "スプレー缶",
+     "ko": "스프레이 캔"
     },
     {
      "src": "eraser",
@@ -2069,7 +2465,9 @@
      "keywords": "擦掉",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "消しゴム",
+     "ko": "지우개"
     },
     {
      "src": "shapes",
@@ -2079,7 +2477,9 @@
      "keywords": "圖形 幾何",
      "purposes": [
       "image"
-     ]
+     ],
+     "ja": "図形",
+     "ko": "도형"
     },
     {
      "src": "sparkles",
@@ -2089,7 +2489,9 @@
      "keywords": "星光 特效",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "きらきら",
+     "ko": "반짝임"
     },
     {
      "src": "music",
@@ -2099,7 +2501,9 @@
      "keywords": "音符 note song",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "音楽",
+     "ko": "음악"
     },
     {
      "src": "album",
@@ -2109,7 +2513,9 @@
      "keywords": "唱片 cd",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "アルバム",
+     "ko": "앨범"
     },
     {
      "src": "headphone",
@@ -2119,7 +2525,9 @@
      "keywords": "聽音樂 listen",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "ヘッドホン",
+     "ko": "헤드폰"
     },
     {
      "src": "drum",
@@ -2129,7 +2537,9 @@
      "keywords": "樂器 instrument",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "ドラム",
+     "ko": "드럼"
     },
     {
      "src": "volume-2",
@@ -2139,7 +2549,9 @@
      "keywords": "喇叭 聲音 speaker",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "音量",
+     "ko": "볼륨"
     },
     {
      "src": "volume-x",
@@ -2149,7 +2561,9 @@
      "keywords": "喇叭 靜音",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "ミュート",
+     "ko": "음소거"
     },
     {
      "src": "mic",
@@ -2159,7 +2573,9 @@
      "keywords": "錄音 mic",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "マイク",
+     "ko": "마이크"
     },
     {
      "src": "radio",
@@ -2169,7 +2585,9 @@
      "keywords": "廣播",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "ラジオ",
+     "ko": "라디오"
     },
     {
      "src": "play",
@@ -2179,7 +2597,9 @@
      "keywords": "開始 start",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "再生",
+     "ko": "재생"
     },
     {
      "src": "pause",
@@ -2189,7 +2609,9 @@
      "keywords": "停止",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "一時停止",
+     "ko": "일시정지"
     },
     {
      "src": "keyboard-music",
@@ -2199,7 +2621,9 @@
      "keywords": "鋼琴 piano",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "鍵盤楽器",
+     "ko": "건반 악기"
     },
     {
      "src": "audio-waveform",
@@ -2209,7 +2633,9 @@
      "keywords": "聲波",
      "purposes": [
       "music"
-     ]
+     ],
+     "ja": "波形",
+     "ko": "파형"
     },
     {
      "src": "human",
@@ -2219,7 +2645,9 @@
      "keywords": "人物 角色 person",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "人",
+     "ko": "사람"
     },
     {
      "src": "user",
@@ -2229,7 +2657,9 @@
      "keywords": "帳號 人物 account",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "ユーザー",
+     "ko": "사용자"
     },
     {
      "src": "users",
@@ -2239,7 +2669,9 @@
      "keywords": "群組 團隊 group",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "複数のユーザー",
+     "ko": "여러 사용자"
     },
     {
      "src": "user-plus",
@@ -2249,7 +2681,9 @@
      "keywords": "新增 加入",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "ユーザーを追加",
+     "ko": "사용자 추가"
     },
     {
      "src": "avatar-circle",
@@ -2259,7 +2693,9 @@
      "keywords": "頭像 大頭貼",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "丸いアイコン画像",
+     "ko": "원형 아바타"
     },
     {
      "src": "avatar-square",
@@ -2269,7 +2705,9 @@
      "keywords": "頭像 大頭貼",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "四角いアイコン画像",
+     "ko": "사각형 아바타"
     },
     {
      "src": "contact",
@@ -2279,7 +2717,9 @@
      "keywords": "通訊錄 名片",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "連絡先",
+     "ko": "연락처"
     },
     {
      "src": "membercard",
@@ -2289,7 +2729,9 @@
      "keywords": "名片 卡片",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "会員カード",
+     "ko": "회원 카드"
     },
     {
      "src": "robot",
@@ -2299,7 +2741,9 @@
      "keywords": "ai 機械",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "ロボット",
+     "ko": "로봇"
     },
     {
      "src": "robot-face",
@@ -2309,7 +2753,9 @@
      "keywords": "ai 機械",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "ロボットの顔",
+     "ko": "로봇 얼굴"
     },
     {
      "src": "smile",
@@ -2319,7 +2765,9 @@
      "keywords": "開心 表情",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "笑顔",
+     "ko": "미소"
     },
     {
      "src": "laugh",
@@ -2329,7 +2777,9 @@
      "keywords": "開心 表情",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "大笑い",
+     "ko": "웃음"
     },
     {
      "src": "frown",
@@ -2339,7 +2789,9 @@
      "keywords": "難過 表情",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "しかめ面",
+     "ko": "찡그림"
     },
     {
      "src": "meh",
@@ -2349,7 +2801,9 @@
      "keywords": "表情 普通",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "無表情",
+     "ko": "무표정"
     },
     {
      "src": "angry",
@@ -2359,7 +2813,9 @@
      "keywords": "憤怒 表情",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "怒り",
+     "ko": "화남"
     },
     {
      "src": "alien",
@@ -2369,7 +2825,9 @@
      "keywords": "ufo 太空",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "宇宙人",
+     "ko": "외계인"
     },
     {
      "src": "human-arms-up",
@@ -2379,7 +2837,9 @@
      "keywords": "人物 歡呼",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "万歳",
+     "ko": "만세"
     },
     {
      "src": "calculator",
@@ -2389,7 +2849,9 @@
      "keywords": "數學 math",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "電卓",
+     "ko": "계산기"
     },
     {
      "src": "clock",
@@ -2399,7 +2861,9 @@
      "keywords": "時間 time",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "時計",
+     "ko": "시계"
     },
     {
      "src": "alarm-clock",
@@ -2409,7 +2873,9 @@
      "keywords": "提醒 alarm",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "目覚まし時計",
+     "ko": "알람 시계"
     },
     {
      "src": "hourglass",
@@ -2419,7 +2885,9 @@
      "keywords": "等待 time",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "砂時計",
+     "ko": "모래시계"
     },
     {
      "src": "terminal",
@@ -2429,7 +2897,9 @@
      "keywords": "指令 console",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "ターミナル",
+     "ko": "터미널"
     },
     {
      "src": "code",
@@ -2439,7 +2909,9 @@
      "keywords": "開發 dev",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "コード",
+     "ko": "코드"
     },
     {
      "src": "settings-cog",
@@ -2449,7 +2921,9 @@
      "keywords": "設定 齒輪 config",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "設定",
+     "ko": "설정"
     },
     {
      "src": "gear",
@@ -2459,7 +2933,9 @@
      "keywords": "設定",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "歯車",
+     "ko": "톱니바퀴"
     },
     {
      "src": "sliders",
@@ -2469,7 +2945,9 @@
      "keywords": "調整 設定",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "スライダー",
+     "ko": "슬라이더"
     },
     {
      "src": "search",
@@ -2479,7 +2957,9 @@
      "keywords": "尋找 放大鏡 find",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "検索",
+     "ko": "검색"
     },
     {
      "src": "zoom-in",
@@ -2489,7 +2969,9 @@
      "keywords": "放大鏡",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "拡大",
+     "ko": "확대"
     },
     {
      "src": "zoom-out",
@@ -2499,7 +2981,9 @@
      "keywords": "放大鏡",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "縮小",
+     "ko": "축소"
     },
     {
      "src": "filter",
@@ -2509,7 +2993,9 @@
      "keywords": "過濾",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "フィルター",
+     "ko": "필터"
     },
     {
      "src": "scissors",
@@ -2519,7 +3005,9 @@
      "keywords": "剪下 cut",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "はさみ",
+     "ko": "가위"
     },
     {
      "src": "copy",
@@ -2529,7 +3017,9 @@
      "keywords": "拷貝",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "コピー",
+     "ko": "복사"
     },
     {
      "src": "tools",
@@ -2539,7 +3029,9 @@
      "keywords": "扳手 螺絲",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "ツール",
+     "ko": "도구"
     },
     {
      "src": "tool-case",
@@ -2549,7 +3041,9 @@
      "keywords": "工具 工具包",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "工具箱",
+     "ko": "공구함"
     },
     {
      "src": "key",
@@ -2559,7 +3053,9 @@
      "keywords": "密碼 鎖",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "鍵",
+     "ko": "열쇠"
     },
     {
      "src": "lock",
@@ -2569,7 +3065,9 @@
      "keywords": "安全 密碼",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "ロック",
+     "ko": "잠금"
     },
     {
      "src": "unlock",
@@ -2579,7 +3077,9 @@
      "keywords": "開鎖",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "ロック解除",
+     "ko": "잠금 해제"
     },
     {
      "src": "shield",
@@ -2589,7 +3089,9 @@
      "keywords": "防護 安全",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "盾",
+     "ko": "방패"
     },
     {
      "src": "link",
@@ -2599,7 +3101,9 @@
      "keywords": "網址 url",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "リンク",
+     "ko": "링크"
     },
     {
      "src": "share",
@@ -2609,7 +3113,9 @@
      "keywords": "傳送",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "共有",
+     "ko": "공유"
     },
     {
      "src": "download",
@@ -2619,7 +3125,9 @@
      "keywords": "下載",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "ダウンロード",
+     "ko": "다운로드"
     },
     {
      "src": "upload",
@@ -2629,7 +3137,9 @@
      "keywords": "上傳",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "アップロード",
+     "ko": "업로드"
     },
     {
      "src": "send",
@@ -2639,7 +3149,9 @@
      "keywords": "寄送",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "送信",
+     "ko": "보내기"
     },
     {
      "src": "mail",
@@ -2649,7 +3161,9 @@
      "keywords": "郵件 email",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "メール",
+     "ko": "메일"
     },
     {
      "src": "mail-open",
@@ -2659,7 +3173,9 @@
      "keywords": "郵件 email",
      "purposes": [
       "document"
-     ]
+     ],
+     "ja": "開いたメール",
+     "ko": "열린 메일"
     },
     {
      "src": "message",
@@ -2669,7 +3185,9 @@
      "keywords": "對話 聊天",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "メッセージ",
+     "ko": "메시지"
     },
     {
      "src": "comment",
@@ -2679,7 +3197,9 @@
      "keywords": "評論 對話",
      "purposes": [
       "person"
-     ]
+     ],
+     "ja": "コメント",
+     "ko": "댓글"
     },
     {
      "src": "phone",
@@ -2689,7 +3209,9 @@
      "keywords": "通話 call",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "電話",
+     "ko": "전화"
     },
     {
      "src": "smartphone",
@@ -2699,7 +3221,9 @@
      "keywords": "手機 mobile",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "スマートフォン",
+     "ko": "스마트폰"
     },
     {
      "src": "laptop",
@@ -2709,7 +3233,9 @@
      "keywords": "電腦 computer",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "ノートパソコン",
+     "ko": "노트북"
     },
     {
      "src": "computer",
@@ -2719,7 +3245,9 @@
      "keywords": "桌機 pc",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "コンピューター",
+     "ko": "컴퓨터"
     },
     {
      "src": "monitor",
@@ -2729,7 +3257,9 @@
      "keywords": "顯示器 screen",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "モニター",
+     "ko": "모니터"
     },
     {
      "src": "server",
@@ -2739,7 +3269,9 @@
      "keywords": "主機",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "サーバー",
+     "ko": "서버"
     },
     {
      "src": "database",
@@ -2749,7 +3281,9 @@
      "keywords": "資料 db",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "データベース",
+     "ko": "데이터베이스"
     },
     {
      "src": "keyboard",
@@ -2759,7 +3293,9 @@
      "keywords": "打字",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "キーボード",
+     "ko": "키보드"
     },
     {
      "src": "mouse",
@@ -2769,7 +3305,9 @@
      "keywords": "游標",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "マウス",
+     "ko": "마우스"
     },
     {
      "src": "printer",
@@ -2779,7 +3317,9 @@
      "keywords": "列印",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "プリンター",
+     "ko": "프린터"
     },
     {
      "src": "webcam",
@@ -2789,7 +3329,9 @@
      "keywords": "視訊 camera",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "Webカメラ",
+     "ko": "웹캠"
     },
     {
      "src": "qr-code",
@@ -2799,7 +3341,9 @@
      "keywords": "條碼 scan",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "QRコード",
+     "ko": "QR 코드"
     },
     {
      "src": "wifi",
@@ -2809,7 +3353,9 @@
      "keywords": "網路 訊號",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "Wi-Fi",
+     "ko": "Wi-Fi"
     },
     {
      "src": "plug",
@@ -2819,7 +3365,9 @@
      "keywords": "電源",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "プラグ",
+     "ko": "플러그"
     },
     {
      "src": "power",
@@ -2829,7 +3377,9 @@
      "keywords": "開關",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "電源",
+     "ko": "전원"
     },
     {
      "src": "lightbulb",
@@ -2839,7 +3389,9 @@
      "keywords": "點子 想法 idea",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "電球",
+     "ko": "전구"
     },
     {
      "src": "wand",
@@ -2849,7 +3401,9 @@
      "keywords": "魔法 magic",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "杖",
+     "ko": "지팡이"
     },
     {
      "src": "trash",
@@ -2859,7 +3413,9 @@
      "keywords": "刪除 delete",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "ゴミ箱",
+     "ko": "휴지통"
     },
     {
      "src": "undo",
@@ -2869,7 +3425,9 @@
      "keywords": "上一步",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "元に戻す",
+     "ko": "실행 취소"
     },
     {
      "src": "redo",
@@ -2879,7 +3437,9 @@
      "keywords": "下一步",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "やり直す",
+     "ko": "다시 실행"
     },
     {
      "src": "refresh",
@@ -2889,7 +3449,9 @@
      "keywords": "刷新 reload",
      "purposes": [
       "tool"
-     ]
+     ],
+     "ja": "更新",
+     "ko": "새로고침"
     },
     {
      "src": "home",
@@ -2899,7 +3461,9 @@
      "keywords": "家 house",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ホーム",
+     "ko": "홈"
     },
     {
      "src": "building",
@@ -2909,7 +3473,9 @@
      "keywords": "大樓",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "建物",
+     "ko": "건물"
     },
     {
      "src": "castle",
@@ -2919,7 +3485,9 @@
      "keywords": "遊戲 奇幻 fantasy",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "城",
+     "ko": "성"
     },
     {
      "src": "store",
@@ -2929,7 +3497,9 @@
      "keywords": "店 shop",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "お店",
+     "ko": "상점"
     },
     {
      "src": "shopping-cart",
@@ -2939,7 +3509,9 @@
      "keywords": "購物 buy",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ショッピングカート",
+     "ko": "장바구니"
     },
     {
      "src": "shopping-bag",
@@ -2949,7 +3521,9 @@
      "keywords": "購物 buy",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "買い物袋",
+     "ko": "쇼핑백"
     },
     {
      "src": "gift",
@@ -2959,7 +3533,9 @@
      "keywords": "送禮 present",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "プレゼント",
+     "ko": "선물"
     },
     {
      "src": "cake",
@@ -2969,7 +3545,9 @@
      "keywords": "生日 甜點",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ケーキ",
+     "ko": "케이크"
     },
     {
      "src": "balloon",
@@ -2979,7 +3557,9 @@
      "keywords": "派對 party",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "風船",
+     "ko": "풍선"
     },
     {
      "src": "party-popper",
@@ -2989,7 +3569,9 @@
      "keywords": "慶祝 party",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "クラッカー",
+     "ko": "파티 폭죽"
     },
     {
      "src": "trophy",
@@ -2999,7 +3581,9 @@
      "keywords": "冠軍 獎勵",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "トロフィー",
+     "ko": "트로피"
     },
     {
      "src": "crown",
@@ -3009,7 +3593,9 @@
      "keywords": "王 king",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "王冠",
+     "ko": "왕관"
     },
     {
      "src": "diamond-gem",
@@ -3019,7 +3605,9 @@
      "keywords": "鑽石 珠寶",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "宝石",
+     "ko": "보석"
     },
     {
      "src": "heart",
@@ -3029,7 +3617,9 @@
      "keywords": "喜歡 愛 love",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ハート",
+     "ko": "하트"
     },
     {
      "src": "flag",
@@ -3039,7 +3629,9 @@
      "keywords": "旗幟",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "旗",
+     "ko": "깃발"
     },
     {
      "src": "map",
@@ -3049,7 +3641,9 @@
      "keywords": "導航",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "地図",
+     "ko": "지도"
     },
     {
      "src": "map-pin",
@@ -3059,7 +3653,9 @@
      "keywords": "位置 地點",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "地図のピン",
+     "ko": "지도 핀"
     },
     {
      "src": "compass",
@@ -3069,7 +3665,9 @@
      "keywords": "方向 導航",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "方位磁針",
+     "ko": "나침반"
     },
     {
      "src": "earth",
@@ -3079,7 +3677,9 @@
      "keywords": "世界 world",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "地球",
+     "ko": "지구"
     },
     {
      "src": "globe",
@@ -3089,7 +3689,9 @@
      "keywords": "世界 world",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "地球儀",
+     "ko": "지구본"
     },
     {
      "src": "sun",
@@ -3099,7 +3701,9 @@
      "keywords": "晴天 weather",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "太陽",
+     "ko": "태양"
     },
     {
      "src": "moon",
@@ -3109,7 +3713,9 @@
      "keywords": "夜晚 night",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "月",
+     "ko": "달"
     },
     {
      "src": "cloud",
@@ -3119,7 +3725,9 @@
      "keywords": "天氣 weather",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "雲",
+     "ko": "구름"
     },
     {
      "src": "snowflake",
@@ -3129,7 +3737,9 @@
      "keywords": "冬天 snow",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "雪の結晶",
+     "ko": "눈 결정"
     },
     {
      "src": "leaf",
@@ -3139,7 +3749,9 @@
      "keywords": "植物 plant",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "葉",
+     "ko": "잎"
     },
     {
      "src": "tree",
@@ -3149,7 +3761,9 @@
      "keywords": "植物 plant",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "木",
+     "ko": "나무"
     },
     {
      "src": "tree-pine",
@@ -3159,7 +3773,9 @@
      "keywords": "植物 plant",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "松の木",
+     "ko": "소나무"
     },
     {
      "src": "fish",
@@ -3169,7 +3785,9 @@
      "keywords": "動物 animal",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "魚",
+     "ko": "물고기"
     },
     {
      "src": "dog",
@@ -3179,7 +3797,9 @@
      "keywords": "動物 animal pet",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "犬",
+     "ko": "개"
     },
     {
      "src": "snail",
@@ -3189,7 +3809,9 @@
      "keywords": "動物 animal",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "カタツムリ",
+     "ko": "달팽이"
     },
     {
      "src": "snake",
@@ -3199,7 +3821,9 @@
      "keywords": "動物 animal",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ヘビ",
+     "ko": "뱀"
     },
     {
      "src": "t-rex",
@@ -3209,7 +3833,9 @@
      "keywords": "恐龍 dinosaur",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ティラノサウルス",
+     "ko": "티라노사우루스"
     },
     {
      "src": "bug",
@@ -3219,7 +3845,9 @@
      "keywords": "昆蟲 insect",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "虫",
+     "ko": "벌레"
     },
     {
      "src": "coffee",
@@ -3229,7 +3857,9 @@
      "keywords": "飲料 drink",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "コーヒー",
+     "ko": "커피"
     },
     {
      "src": "mug",
@@ -3239,7 +3869,9 @@
      "keywords": "杯子 cup",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "マグカップ",
+     "ko": "머그컵"
     },
     {
      "src": "tea",
@@ -3249,7 +3881,9 @@
      "keywords": "飲料 drink",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "お茶",
+     "ko": "차"
     },
     {
      "src": "bed",
@@ -3259,7 +3893,9 @@
      "keywords": "睡覺 sleep",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ベッド",
+     "ko": "침대"
     },
     {
      "src": "sofa",
@@ -3269,7 +3905,9 @@
      "keywords": "家具 furniture",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ソファ",
+     "ko": "소파"
     },
     {
      "src": "car",
@@ -3279,7 +3917,9 @@
      "keywords": "交通 vehicle",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "車",
+     "ko": "자동차"
     },
     {
      "src": "bus",
@@ -3289,7 +3929,9 @@
      "keywords": "交通 vehicle",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "バス",
+     "ko": "버스"
     },
     {
      "src": "ship",
@@ -3299,7 +3941,9 @@
      "keywords": "交通 vehicle",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "船",
+     "ko": "배"
     },
     {
      "src": "helicopter",
@@ -3309,7 +3953,9 @@
      "keywords": "交通 vehicle",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ヘリコプター",
+     "ko": "헬리콥터"
     },
     {
      "src": "truck",
@@ -3319,7 +3965,9 @@
      "keywords": "交通 vehicle",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "トラック",
+     "ko": "트럭"
     },
     {
      "src": "gamepad",
@@ -3329,7 +3977,9 @@
      "keywords": "遊戲 game",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ゲームコントローラー",
+     "ko": "게임 패드"
     },
     {
      "src": "joystick",
@@ -3339,7 +3989,9 @@
      "keywords": "遊戲 game",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ジョイスティック",
+     "ko": "조이스틱"
     },
     {
      "src": "chess",
@@ -3349,7 +4001,9 @@
      "keywords": "遊戲 game",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "チェス",
+     "ko": "체스"
     },
     {
      "src": "bell",
@@ -3359,7 +4013,9 @@
      "keywords": "通知 notification",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "ベル",
+     "ko": "종"
     },
     {
      "src": "fire",
@@ -3369,7 +4025,9 @@
      "keywords": "火焰 hot",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "火",
+     "ko": "불"
     },
     {
      "src": "zap",
@@ -3379,7 +4037,9 @@
      "keywords": "電 power",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "稲妻",
+     "ko": "번개"
     },
     {
      "src": "smart-home",
@@ -3389,7 +4049,9 @@
      "keywords": "家 home",
      "purposes": [
       "other"
-     ]
+     ],
+     "ja": "スマートホーム",
+     "ko": "스마트 홈"
     }
    ]
   }

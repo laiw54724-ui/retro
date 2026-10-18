@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 type Props = {
   side: "left" | "right";
   expanded: boolean;
@@ -5,8 +7,9 @@ type Props = {
 };
 
 export function SidebarToggle({ side, expanded, onToggle }: Props) {
-  const panelName = side === "left" ? "左側工具欄" : "右側屬性欄";
-  const actionLabel = `${expanded ? "收合" : "展開"}${panelName}`;
+  const { t: tr } = useTranslation("editor");
+  const panelName = side === "left" ? tr("sidebarToggle.leftToolbar") : tr("sidebarToggle.rightPropertiesPanel");
+  const actionLabel = expanded ? tr("sidebarToggle.collapse", { panel: panelName }) : tr("sidebarToggle.expand", { panel: panelName });
   const direction = expanded === (side === "left") ? "left" : "right";
 
   return (

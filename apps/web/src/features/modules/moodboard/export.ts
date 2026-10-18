@@ -1,4 +1,5 @@
 import type { DesktopWindow, MoodboardElement } from "@retrodesk/shared";
+import { i18n } from "../../../i18n";
 
 type Content = Extract<DesktopWindow, { type: "moodboard" }>["content"];
 export type MoodboardExportResult = { ok: true; blob: Blob } | { ok: false; blocked: string[] };
@@ -68,7 +69,7 @@ export async function exportMoodboardPng(content: Content, stage: HTMLElement): 
 
   const canvas = document.createElement("canvas"); canvas.width = content.width; canvas.height = content.height;
   const context = canvas.getContext("2d");
-  if (!context) return { ok: false, blocked: ["瀏覽器不支援 Canvas 匯出"] };
+  if (!context) return { ok: false, blocked: [i18n.t("modules:export.thisBrowserDoesntSupportCanvas")] };
   context.fillStyle = content.background; context.fillRect(0, 0, content.width, content.height);
   const fontFamily = getComputedStyle(stage).fontFamily || "sans-serif";
   for (const element of [...content.elements].sort((a, b) => a.zOrder - b.zOrder)) {
@@ -78,9 +79,9 @@ export async function exportMoodboardPng(content: Content, stage: HTMLElement): 
   }
   try {
     const blob = await canvasBlob(canvas);
-    return blob ? { ok: true, blob } : { ok: false, blocked: ["瀏覽器無法建立 PNG"] };
+    return blob ? { ok: true, blob } : { ok: false, blocked: [i18n.t("modules:export.theBrowserCouldntCreateA")] };
   } catch {
-    return { ok: false, blocked: ["圖片來源不允許匯出"] };
+    return { ok: false, blocked: [i18n.t("modules:export.theImageSourceDoesntAllow")] };
   }
 }
 

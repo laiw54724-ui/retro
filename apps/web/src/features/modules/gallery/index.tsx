@@ -1,4 +1,6 @@
 import { useRef, useState } from "react";
+import { translateSystemMessage } from "../../../i18n/systemMessages";
+import { useTranslation } from "react-i18next";
 import { makeGalleryImage, normalizeImageUrl, type GalleryImage } from "@retrodesk/shared";
 import { FilePick, ImageUrlField, MiniBtn, SafeImg } from "../ui";
 import { moveById, patchById, safeHref, type ModuleProps } from "../types";
@@ -9,6 +11,7 @@ import { restoreFocusUnlessMoved } from "../../../lib/restoreFocus";
 import "./editor.css";
 
 export function GalleryView({ window, ctx }: ModuleProps<"gallery">) {
+  const { t: tr } = useTranslation("modules");
   const { tv } = ctx;
   const [open, setOpen] = useState(-1);
   const opener = useRef<HTMLButtonElement | null>(null);
@@ -19,12 +22,12 @@ export function GalleryView({ window, ctx }: ModuleProps<"gallery">) {
     setOpen(-1);
     restoreFocusUnlessMoved(() => opener.current?.isConnected ? opener.current : grid.current?.querySelector<HTMLButtonElement>(".gal-item"));
   };
-  if (!images.length) return <div className="empty-module">還沒有圖片</div>;
+  if (!images.length) return <div className="empty-module">{tr("gallery.noImagesYet")}</div>;
   return (
     <div className="gal-wrap">
       <div ref={grid} className="gal-grid" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
         {images.map((image, index) => (
-          <button type="button" key={image.id} className="gal-item" aria-label={`放大 ${image.title || "圖片"}`} onClick={(event) => { opener.current = event.currentTarget; setOpen(index); }}>
+          <button type="button" key={image.id} className="gal-item" aria-label={tr("gallery.enlarge", { title: image.title || tr("gallery.imageFallback") })} onClick={(event) => { opener.current = event.currentTarget; setOpen(index); }}>
             <span className="gal-thumb" style={{ boxShadow: tv.sunken }}>{image.src ? <SafeImg src={image.src} alt={image.alt ?? (image.caption || image.title)} compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : <span className="ph gal-ph" />}</span>
             <span className="gal-title">{image.title}</span>
           </button>
@@ -36,6 +39,7 @@ export function GalleryView({ window, ctx }: ModuleProps<"gallery">) {
 }
 
 export function GalleryInlineEditor({ window, ctx, update }: ModuleProps<"gallery">) {
+  const { t: tr } = useTranslation("modules");
   const { tv } = ctx;
   const media = useWindowMedia(window, ctx);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -51,7 +55,7 @@ export function GalleryInlineEditor({ window, ctx, update }: ModuleProps<"galler
   const patch = (id: string, change: Partial<GalleryImage>, key?: string) => setImages((list) => patchById(list, id, change), key);
 
   function addFiles(files: File[]) {
-    if (images.length >= 200) { setUrlError("相簿最多可放 200 張圖片。請先移除不需要的圖片。"); return; }
+    if (images.length >= 200) { setUrlError(tr("gallery.aGalleryCanHoldUp")); return; }
     const additions = files.map((file) => makeGalleryImage({ title: file.name.replace(/\.[^.]+$/, "").slice(0, 200) }));
     const selectionIds = additions.map((image) => image.id);
     files.forEach((file, index) => {
@@ -79,9 +83,9 @@ export function GalleryInlineEditor({ window, ctx, update }: ModuleProps<"galler
   }
 
   function addUrl() {
-    if (images.length >= 200) { setUrlError("相簿最多可放 200 張圖片。"); return; }
+    if (images.length >= 200) { setUrlError(tr("gallery.aGalleryCanHoldUp2")); return; }
     const result = normalizeImageUrl(url);
-    if (!result.ok) { setUrlError(result.reason); return; }
+    if (!result.ok) { setUrlError(translateSystemMessage(result.reason)); return; }
     const image = makeGalleryImage({ src: result.url, srcUrl: url.trim() });
     setImages((list) => list.length < 200 ? [...list, image] : list);
     setActiveId(image.id);
@@ -92,51 +96,51 @@ export function GalleryInlineEditor({ window, ctx, update }: ModuleProps<"galler
   return (
     <div className="gal-wrap editing gal-editor">
       <div className="ie-row gal-editor-toolbar">
-        <span>{images.length} / 200 張</span>
-        <span className="w98-hint">展示欄數</span>
-        {[2, 3, 4].map((count) => <MiniBtn key={count} label={`${count} 欄`} on={window.content.columns === count} onClick={() => update((current) => ({ ...current, content: { ...current.content, columns: count } }))}>{count}</MiniBtn>)}
-        <FilePick multiple disabled={images.length >= 200} onFiles={addFiles}><b>上傳圖片（可多選）</b></FilePick>
+        <span>{tr("gallery.countOfMax", { count: images.length })}</span>
+        <span className="w98-hint">{tr("gallery.displayColumns")}</span>
+        {[2, 3, 4].map((count) => <MiniBtn key={count} label={tr("gallery.columns", { count })} on={window.content.columns === count} onClick={() => update((current) => ({ ...current, content: { ...current.content, columns: count } }))}>{count}</MiniBtn>)}
+        <FilePick multiple disabled={images.length >= 200} onFiles={addFiles}><b>{tr("gallery.uploadImagesMultipleAllowed")}</b></FilePick>
       </div>
       <div className="ie-row gal-add-url">
-        <input className="w98-input small-input" value={url} maxLength={2048} placeholder="貼上圖片網址加入相簿" aria-label="新增圖片網址" onChange={(event) => { setUrl(event.target.value); setUrlError(""); }} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addUrl(); } }} />
-        <MiniBtn label="加入" className="mini-btn wide" disabled={images.length >= 200} onClick={addUrl}>加入</MiniBtn>
+        <input className="w98-input small-input" value={url} maxLength={2048} placeholder={tr("gallery.pasteAnImageUrlTo")} aria-label={tr("gallery.addImageUrl")} onChange={(event) => { setUrl(event.target.value); setUrlError(""); }} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addUrl(); } }} />
+        <MiniBtn label={tr("gallery.add")} className="mini-btn wide" disabled={images.length >= 200} onClick={addUrl}>{tr("gallery.add")}</MiniBtn>
       </div>
-      <span className="w98-hint">也支援 Google 雲端公開圖片連結。</span>
+      <span className="w98-hint">{tr("gallery.publicGoogleDriveImageLinks")}</span>
       {urlError ? <span role="alert" className="ie-error">{urlError}</span> : null}
       <UploadTaskList tasks={media.tasks} onRetry={media.retry} onDismiss={media.dismiss} />
-      {!images.length ? <p className="gal-editor-empty">還沒有圖片。上傳檔案或貼上圖片網址即可開始。</p> : (
+      {!images.length ? <p className="gal-editor-empty">{tr("gallery.noImagesYetUploadFiles")}</p> : (
         <div className="gal-editor-workspace">
-          <div className="gal-editor-list" role="group" aria-label="相簿縮圖">
+          <div className="gal-editor-list" role="group" aria-label={tr("gallery.galleryThumbnails")}>
             {images.map((image, index) => (
-              <button type="button" key={image.id} className="gal-editor-thumb" aria-label={`選取圖片 ${index + 1}：${image.title || "未命名圖片"}`} aria-pressed={selected?.id === image.id} onClick={() => setActiveId(image.id)}>
+              <button type="button" key={image.id} className="gal-editor-thumb" aria-label={tr("gallery.selectImage", { n: index + 1, title: image.title || tr("gallery.untitledImage") })} aria-pressed={selected?.id === image.id} onClick={() => setActiveId(image.id)}>
                 <span className="gal-thumb" style={{ boxShadow: tv.sunken }}>
                   {image.src ? <SafeImg src={image.src} alt="" compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : <span className="ph gal-ph" />}
                 </span>
-                <span className="gal-editor-thumb-title">{image.title || "未命名圖片"}</span>
+                <span className="gal-editor-thumb-title">{image.title || tr("gallery.untitledImage")}</span>
               </button>
             ))}
           </div>
           {selected ? (
-            <section className="gal-editor-properties" aria-label="圖片屬性" key={selected.id} onFocusCapture={() => setActiveId(selected.id)}>
+            <section className="gal-editor-properties" aria-label={tr("gallery.imageProperties")} key={selected.id} onFocusCapture={() => setActiveId(selected.id)}>
               <div className="ie-row">
-                <strong>圖片 {selectedIndex + 1} 的屬性</strong>
-                <MiniBtn label="往前" disabled={selectedIndex === 0} onClick={() => setImages((list) => moveById(list, selected.id, -1))}>◀</MiniBtn>
-                <MiniBtn label="往後" disabled={selectedIndex === images.length - 1} onClick={() => setImages((list) => moveById(list, selected.id, 1))}>▶</MiniBtn>
-                <MiniBtn label="刪除圖片" danger onClick={() => setImages((list) => list.filter((item) => item.id !== selected.id))}>×</MiniBtn>
+                <strong>{tr("gallery.imageProperties", { n: selectedIndex + 1 })}</strong>
+                <MiniBtn label={tr("gallery.moveUp")} disabled={selectedIndex === 0} onClick={() => setImages((list) => moveById(list, selected.id, -1))}>◀</MiniBtn>
+                <MiniBtn label={tr("gallery.moveDown")} disabled={selectedIndex === images.length - 1} onClick={() => setImages((list) => moveById(list, selected.id, 1))}>▶</MiniBtn>
+                <MiniBtn label={tr("gallery.deleteImage")} danger onClick={() => setImages((list) => list.filter((item) => item.id !== selected.id))}>×</MiniBtn>
               </div>
-              <label>圖片標題<input className="ie small" maxLength={200} value={selected.title} placeholder="圖片標題" onChange={(event) => patch(selected.id, { title: event.target.value }, historyKey("title", selected.id))} /></label>
-              <label>圖說<textarea className="ie small" rows={2} maxLength={1000} value={selected.caption} aria-label="圖說" placeholder="放大圖片時顯示的說明（選填）" onChange={(event) => patch(selected.id, { caption: event.target.value }, historyKey("caption", selected.id))} /></label>
-              <span className="w98-hint">圖說會顯示在放大圖片的下方。</span>
-              <label>替代文字<textarea className="ie small" rows={2} maxLength={300} value={selected.alt ?? ""} aria-label="替代文字" placeholder={selected.alt === undefined ? "目前沿用圖說或標題；輸入可獨立設定" : "描述畫面，供螢幕閱讀器使用"} onChange={(event) => patch(selected.id, { alt: event.target.value }, historyKey("alt", selected.id))} /></label>
-              <span className="w98-hint">替代文字不會顯示為圖說。{selected.alt === undefined ? "目前沿用圖說或標題，尚未設定獨立的替代文字。" : selected.alt === "" ? "這張圖片已標記為裝飾圖片，螢幕閱讀器會略過圖片內容。" : "螢幕閱讀器會朗讀這段畫面描述。"}</span>
+              <label>{tr("gallery.imageTitle")}<input className="ie small" maxLength={200} value={selected.title} placeholder={tr("gallery.imageTitle")} onChange={(event) => patch(selected.id, { title: event.target.value }, historyKey("title", selected.id))} /></label>
+              <label>{tr("document.caption")}<textarea className="ie small" rows={2} maxLength={1000} value={selected.caption} aria-label={tr("document.caption")} placeholder={tr("gallery.shownBelowTheEnlargedImage")} onChange={(event) => patch(selected.id, { caption: event.target.value }, historyKey("caption", selected.id))} /></label>
+              <span className="w98-hint">{tr("gallery.theCaptionAppearsBelowThe")}</span>
+              <label>{tr("document.altText")}<textarea className="ie small" rows={2} maxLength={300} value={selected.alt ?? ""} aria-label={tr("document.altText")} placeholder={selected.alt === undefined ? tr("gallery.currentlyFollowsTheCaptionOr") : tr("gallery.describeTheImageForScreen")} onChange={(event) => patch(selected.id, { alt: event.target.value }, historyKey("alt", selected.id))} /></label>
+              <span className="w98-hint">{tr("gallery.altNotCaption")} {selected.alt === undefined ? tr("gallery.currentlyFollowsTheCaptionOr2") : selected.alt === "" ? tr("gallery.thisImageIsMarkedAs") : tr("gallery.screenReadersWillReadThis")}</span>
               <div className="ie-row">
-                <MiniBtn label="設為裝飾圖片" className="mini-btn wide" disabled={selected.alt === ""} onClick={() => patch(selected.id, { alt: "" })}>設為裝飾圖片</MiniBtn>
-                {selected.alt !== undefined ? <MiniBtn label="沿用圖說或標題" className="mini-btn wide" onClick={() => patch(selected.id, { alt: undefined })}>沿用圖說或標題</MiniBtn> : null}
+                <MiniBtn label={tr("gallery.markAsDecorative")} className="mini-btn wide" disabled={selected.alt === ""} onClick={() => patch(selected.id, { alt: "" })}>{tr("gallery.markAsDecorative")}</MiniBtn>
+                {selected.alt !== undefined ? <MiniBtn label={tr("gallery.followCaptionOrTitle")} className="mini-btn wide" onClick={() => patch(selected.id, { alt: undefined })}>{tr("gallery.followCaptionOrTitle")}</MiniBtn> : null}
               </div>
-              <FilePick title="更換選取圖片" onFiles={(files) => replace(selected, files[0])}>更換圖片…</FilePick>
-              <label>圖片來源<ImageUrlField raw={selected.srcUrl} label="圖片網址" placeholder="圖片網址 / Google 雲端公開連結" onCommit={(raw, src) => patch(selected.id, { srcUrl: raw, src })} /></label>
-              <label>圖片連結<input className="ie small" value={selected.href} maxLength={2048} placeholder="https:// 或 mailto:（選填）" aria-invalid={!!selected.href && safeHref(selected.href) === "#"} onChange={(event) => patch(selected.id, { href: event.target.value }, historyKey("href", selected.id))} /></label>
-              {selected.href && safeHref(selected.href) === "#" ? <span role="alert" className="ie-error">請填寫有效的 http、https 或 mailto 連結。</span> : null}
+              <FilePick title={tr("gallery.replaceSelectedImage")} onFiles={(files) => replace(selected, files[0])}>{tr("document.replaceImage")}</FilePick>
+              <label>{tr("gallery.imageSource")}<ImageUrlField raw={selected.srcUrl} label={tr("document.imageUrl")} placeholder={tr("gallery.imageUrlPublicGoogleDrive")} onCommit={(raw, src) => patch(selected.id, { srcUrl: raw, src })} /></label>
+              <label>{tr("gallery.imageLink")}<input className="ie small" value={selected.href} maxLength={2048} placeholder={tr("gallery.httpsOrMailtoOptional")} aria-invalid={!!selected.href && safeHref(selected.href) === "#"} onChange={(event) => patch(selected.id, { href: event.target.value }, historyKey("href", selected.id))} /></label>
+              {selected.href && safeHref(selected.href) === "#" ? <span role="alert" className="ie-error">{tr("gallery.enterAValidHttpHttps")}</span> : null}
             </section>
           ) : null}
         </div>

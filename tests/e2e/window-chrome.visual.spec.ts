@@ -1,5 +1,8 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
+// The showcase renders translated module chrome; assertions below use the zh-Hant wording.
+test.use({ locale: "zh-TW" });
+
 const fixtureIds = ["error", "recorder", "paint", "help", "instagram"] as const;
 const presets = ["classic-95", "classic-98", "compact-98"] as const;
 const fixture = (page: Page, id: typeof fixtureIds[number]) => page.getByTestId(`fixture-${id}`);

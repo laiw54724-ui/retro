@@ -1,3 +1,4 @@
+import { i18n } from "../i18n";
 export type SiteAccessRole = "owner" | "editor" | "viewer";
 export type CollaboratorRole = Exclude<SiteAccessRole, "owner">;
 
@@ -46,10 +47,10 @@ type InviteDates = Pick<SiteInvite, "accepted_at" | "revoked_at" | "expires_at">
 export type InviteStatus = { code: "pending" | "accepted" | "revoked" | "expired"; label: string };
 
 export function inviteStatus(invite: InviteDates, now = new Date()): InviteStatus {
-  if (invite.accepted_at) return { code: "accepted", label: "已接受" };
-  if (invite.revoked_at) return { code: "revoked", label: "已撤銷" };
-  if (new Date(invite.expires_at).getTime() <= now.getTime()) return { code: "expired", label: "已過期" };
-  return { code: "pending", label: "等待接受" };
+  if (invite.accepted_at) return { code: "accepted", label: i18n.t("collab:collaboration.accepted") };
+  if (invite.revoked_at) return { code: "revoked", label: i18n.t("collab:collaboration.revoked") };
+  if (new Date(invite.expires_at).getTime() <= now.getTime()) return { code: "expired", label: i18n.t("collab:collaboration.expired") };
+  return { code: "pending", label: i18n.t("collab:collaboration.awaitingAcceptance") };
 }
 
 const TERMINAL_INVITE_ERRORS = new Set([

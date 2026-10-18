@@ -1,4 +1,5 @@
 import type { DesktopWindow, SiteDocument, SiteDocumentV2Input } from "@retrodesk/shared";
+import { i18n } from "../../i18n";
 import type { WindowOf } from "../modules/types";
 import { UploadTaskQueue, type UploadKind } from "./uploadTasks";
 
@@ -75,11 +76,11 @@ export function didMediaHistoryChange(state: EditorSnapshot, previous: EditorSna
 export function observeEditorMedia(queue: UploadTaskQueue, store: MediaEditorStore, siteId: string) {
   return store.subscribe((state, previous) => {
     if (state.siteId !== siteId || state.accessRole === "viewer") {
-      queue.invalidate("已離開原網站或失去編輯權限，未套用這次上傳。");
+      queue.invalidate(i18n.t("editor:windowMediaSession.youLeftTheOriginalSite"));
       return;
     }
     if (didMediaHistoryChange(state, previous)) {
-      queue.invalidate("已復原、重做或重新載入內容，未套用尚未完成的上傳。請重新選擇檔案。");
+      queue.invalidate(i18n.t("editor:windowMediaSession.theContentWasUndoneRedone"));
     } else {
       queue.invalidateStale();
     }

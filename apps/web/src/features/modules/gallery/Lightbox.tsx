@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import type { GalleryImage } from "@retrodesk/shared";
 import { lockBackground } from "../../../lib/backgroundLock";
@@ -20,6 +21,7 @@ type Props = {
  * clipping and stacking order cannot shrink or cover it, and it makes the page behind inert.
  */
 export function Lightbox({ images, index, onIndex, onClose, ctx }: Props) {
+  const { t: tr } = useTranslation("modules");
   const root = useRef<HTMLDivElement | null>(null);
   const latest = useRef({ index, count: images.length, onIndex, onClose });
   latest.current = { index, count: images.length, onIndex, onClose };
@@ -71,7 +73,7 @@ export function Lightbox({ images, index, onIndex, onClose, ctx }: Props) {
       className="lb-root"
       role="dialog"
       aria-modal="true"
-      aria-label="圖片檢視"
+      aria-label={tr("lightbox.imageViewer")}
       onPointerDown={contain}
       onMouseDown={contain}
       onClick={(event) => { event.stopPropagation(); if (event.target === event.currentTarget) onClose(); }}
@@ -82,7 +84,7 @@ export function Lightbox({ images, index, onIndex, onClose, ctx }: Props) {
     >
       <div className="lb-bar">
         <span className="lb-count">{index + 1} / {n}</span>
-        <button type="button" className="lb-btn sq32" style={btn} aria-label="關閉" onClick={onClose} autoFocus>×</button>
+        <button type="button" className="lb-btn sq32" style={btn} aria-label={tr("lightbox.close")} onClick={onClose} autoFocus>×</button>
       </div>
       <div className="lb-stage" onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
         {image.src
@@ -90,13 +92,13 @@ export function Lightbox({ images, index, onIndex, onClose, ctx }: Props) {
           : <div className="ph lb-placeholder" />}
       </div>
       <div className="lb-foot">
-        <button type="button" className="lb-btn sq36" style={btn} aria-label="上一張" disabled={n < 2} onClick={() => onIndex((index - 1 + n) % n)}>‹</button>
+        <button type="button" className="lb-btn sq36" style={btn} aria-label={tr("lightbox.previousImage")} disabled={n < 2} onClick={() => onIndex((index - 1 + n) % n)}>‹</button>
         <div className="lb-cap">
           <strong>{image.title}</strong>
           <span>{image.caption}</span>
-          {image.href ? <button type="button" className="lb-btn" style={btn} onClick={() => ctx.onLink({ target: "url", url: image.href, label: image.title })}>開啟連結 ↗</button> : null}
+          {image.href ? <button type="button" className="lb-btn" style={btn} onClick={() => ctx.onLink({ target: "url", url: image.href, label: image.title })}>{tr("lightbox.openLink")}</button> : null}
         </div>
-        <button type="button" className="lb-btn sq36" style={btn} aria-label="下一張" disabled={n < 2} onClick={() => onIndex((index + 1) % n)}>›</button>
+        <button type="button" className="lb-btn sq36" style={btn} aria-label={tr("lightbox.nextImage")} disabled={n < 2} onClick={() => onIndex((index + 1) % n)}>›</button>
       </div>
     </div>,
     globalThis.document.body

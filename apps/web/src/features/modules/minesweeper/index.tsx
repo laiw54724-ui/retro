@@ -1,8 +1,10 @@
 import { useEffect, useState, type KeyboardEvent } from "react";
+import { useTranslation } from "react-i18next";
 import type { ModuleProps } from "../types";
 import { freshGame, reveal, toggleFlag } from "./game";
 
 function Minesweeper({ window, editing, update }: ModuleProps<"minesweeper"> & { editing: boolean }) {
+  const { t: tr } = useTranslation("modules");
   const config = window.content;
   const [game, setGame] = useState(() => freshGame(config.rows, config.columns, config.mines));
   const [elapsed, setElapsed] = useState(0);
@@ -13,7 +15,7 @@ function Minesweeper({ window, editing, update }: ModuleProps<"minesweeper"> & {
     const timer = setInterval(() => setElapsed((value) => value + 1), 1000);
     return () => clearInterval(timer);
   }, [game.phase]);
-  const restart = () => { if (game.phase === "playing" && !globalThis.confirm("重新開始這局掃雷？")) return; setGame(freshGame(config.rows, config.columns, config.mines)); setElapsed(0); };
+  const restart = () => { if (game.phase === "playing" && !globalThis.confirm(tr("minesweeper.restartThisMinesweeperGame"))) return; setGame(freshGame(config.rows, config.columns, config.mines)); setElapsed(0); };
   const activate = (index: number, flag = flagMode) => setGame((current) => flag ? toggleFlag(current, index) : reveal(current, index));
   const key = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
     const row = Math.floor(index / config.columns), column = index % config.columns;
@@ -38,13 +40,13 @@ function Minesweeper({ window, editing, update }: ModuleProps<"minesweeper"> & {
     return { ...current, content: next };
   });
   return <div className="minesweeper-app">
-    <div className="minesweeper-status"><strong>{game.phase === "won" ? "🎉 完成" : game.phase === "lost" ? "💥 踩雷" : "🙂 掃雷"}</strong><span>{String(elapsed).padStart(3, "0")}</span><button type="button" className="w98-btn" onClick={restart}>重新開始</button></div>
-    <button type="button" className="w98-btn minesweeper-flag-mode" aria-pressed={flagMode} onClick={() => setFlagMode(!flagMode)}>🚩 手機標記模式</button>
-    <div className="minesweeper-board-scroll" aria-label="掃雷棋盤捲動區">
-      <div className="minesweeper-grid" role="grid" aria-label="掃雷棋盤" style={{ gridTemplateColumns: `repeat(${config.columns}, minmax(30px, 1fr))` }}>{game.cells.map((cell, index) => <button id={`${window.id}-mine-${index}`} role="gridcell" key={index} type="button" className={`mine-cell${cell.revealed ? " revealed" : ""}`} aria-label={`第 ${Math.floor(index / config.columns) + 1} 列第 ${index % config.columns + 1} 格${cell.flagged ? "，已標記" : cell.revealed ? cell.mine ? "，地雷" : `，周圍 ${cell.adjacent} 顆地雷` : "，未開啟"}`} onClick={() => activate(index)} onContextMenu={(event) => { event.preventDefault(); activate(index, true); }} onKeyDown={(event) => key(event, index)}>{cell.revealed ? cell.mine ? "💣" : cell.adjacent || "" : cell.flagged ? "🚩" : ""}</button>)}</div>
+    <div className="minesweeper-status"><strong>{game.phase === "won" ? tr("minesweeper.cleared") : game.phase === "lost" ? tr("minesweeper.boom") : tr("minesweeper.minesweeper")}</strong><span>{String(elapsed).padStart(3, "0")}</span><button type="button" className="w98-btn" onClick={restart}>{tr("minesweeper.restart")}</button></div>
+    <button type="button" className="w98-btn minesweeper-flag-mode" aria-pressed={flagMode} onClick={() => setFlagMode(!flagMode)}>{tr("minesweeper.mobileFlagMode")}</button>
+    <div className="minesweeper-board-scroll" aria-label={tr("minesweeper.minesweeperBoardScrollArea")}>
+      <div className="minesweeper-grid" role="grid" aria-label={tr("minesweeper.minesweeperBoard")} style={{ gridTemplateColumns: `repeat(${config.columns}, minmax(30px, 1fr))` }}>{game.cells.map((cell, index) => <button id={`${window.id}-mine-${index}`} role="gridcell" key={index} type="button" className={`mine-cell${cell.revealed ? " revealed" : ""}`} aria-label={tr("minesweeper.cellPosition", { row: Math.floor(index / config.columns) + 1, column: index % config.columns + 1, state: cell.flagged ? tr("minesweeper.stateFlagged") : cell.revealed ? cell.mine ? tr("minesweeper.stateMine") : tr("minesweeper.stateAdjacent", { count: cell.adjacent }) : tr("minesweeper.stateUnopened") })} onClick={() => activate(index)} onContextMenu={(event) => { event.preventDefault(); activate(index, true); }} onKeyDown={(event) => key(event, index)}>{cell.revealed ? cell.mine ? "💣" : cell.adjacent || "" : cell.flagged ? "🚩" : ""}</button>)}</div>
     </div>
-    {config.columns >= 10 ? <small className="minesweeper-scroll-hint">左右滑動棋盤可查看其餘格子；鍵盤方向鍵會跟隨選取格。</small> : null}
-    {editing ? <fieldset className="minesweeper-settings"><legend>遊戲設定</legend>{(["rows", "columns", "mines"] as const).map((field) => <label key={field}>{field === "rows" ? "列" : field === "columns" ? "欄" : "地雷"}<input type="number" min={field === "mines" ? 1 : 5} max={field === "mines" ? Math.min(40, config.rows * config.columns - 1) : 12} value={config[field]} onChange={(event) => configure(field, Number(event.target.value))} /></label>)}</fieldset> : null}
+    {config.columns >= 10 ? <small className="minesweeper-scroll-hint">{tr("minesweeper.swipeTheBoardSidewaysTo")}</small> : null}
+    {editing ? <fieldset className="minesweeper-settings"><legend>{tr("minesweeper.gameSettings")}</legend>{(["rows", "columns", "mines"] as const).map((field) => <label key={field}>{field === "rows" ? tr("minesweeper.row") : field === "columns" ? tr("minesweeper.column") : tr("minesweeper.mines")}<input type="number" min={field === "mines" ? 1 : 5} max={field === "mines" ? Math.min(40, config.rows * config.columns - 1) : 12} value={config[field]} onChange={(event) => configure(field, Number(event.target.value))} /></label>)}</fieldset> : null}
   </div>;
 }
 

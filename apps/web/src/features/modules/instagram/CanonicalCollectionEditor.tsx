@@ -1,4 +1,6 @@
 import { useId } from "react";
+import { translateSystemMessage } from "../../../i18n/systemMessages";
+import { useTranslation } from "react-i18next";
 import {
   createCollection,
   deleteCollection,
@@ -19,6 +21,7 @@ type Result = {
 };
 
 export function CanonicalCollectionEditor({ props }: Props) {
+  const { t: tr } = useTranslation("instagram");
   const { ctx } = props;
   const ownerId = ctx.profileId;
   const collections = (ctx.collections ?? []).filter(
@@ -46,7 +49,7 @@ export function CanonicalCollectionEditor({ props }: Props) {
   const siteId = ctx.siteId;
   const run = (result: Result, fallback: SiteDocumentV2Input) => {
     if (!result.ok || !result.document) {
-      setError(result.diagnostics?.[0]?.message ?? "合集更新失敗，請再試一次。");
+      setError(translateSystemMessage(result.diagnostics?.[0]?.message ?? "") || tr("canonicalCollectionEditor.couldntUpdateTheCollectionPlease"));
       return fallback;
     }
     return result.document;
@@ -72,7 +75,7 @@ export function CanonicalCollectionEditor({ props }: Props) {
 
   return (
     <fieldset className="w98-fieldset ig-canonical-collections">
-      <legend>合集（{collections.length}）</legend>
+      <legend>{tr("ig.collectionsCount", { count: collections.length })}</legend>
       <div className="ie-row">
         <button
           type="button"
@@ -82,26 +85,26 @@ export function CanonicalCollectionEditor({ props }: Props) {
             mutate((document) => run(createCollection(document, {
               id,
               ownerProfileId: ownerId,
-              title: "新合集",
+              title: tr("canonicalCollectionEditor.newCollection"),
             }, { siteId }), document));
             setQuery("");
             setOpenId(id);
           }}
-        >＋ 新增合集</button>
-        <span className="w98-hint">同一篇貼文可放入多個合集，不會複製圖片。</span>
+        >{tr("canonicalCollectionEditor.addCollection")}</button>
+        <span className="w98-hint">{tr("canonicalCollectionEditor.onePostCanBeIn")}</span>
       </div>
       {collections.length ? <label className="w98-field">
-        <span className="w98-hint">搜尋合集</span>
-        <input className="w98-input compact" type="search" value={query} placeholder="依合集標題或說明搜尋" onChange={(event) => {
+        <span className="w98-hint">{tr("canonicalCollectionEditor.searchCollections")}</span>
+        <input className="w98-input compact" type="search" value={query} placeholder={tr("canonicalCollectionEditor.searchByCollectionTitleOr")} onChange={(event) => {
           setQuery(event.target.value);
           setOpenId(null);
         }} />
       </label> : null}
-      <p className="ig-editor-summary" role="status">符合搜尋 {matchingCollections.length} / {collections.length} 組 · 公開 {publishedCount} · 草稿 {collections.length - publishedCount}{retainedEditor ? "。正在編輯的合集仍保留顯示。" : ""}</p>
-      {query ? <button type="button" className="w98-btn small" onClick={() => setQuery("")}>清除合集搜尋</button> : null}
-      {search ? <p className="w98-hint" id={`${editorId}-order-hint`}>清除搜尋後可調整完整合集順序。</p> : null}
+      <p className="ig-editor-summary" role="status">{tr("ig.collectionSummary", { matching: matchingCollections.length, total: collections.length, published: publishedCount, drafts: collections.length - publishedCount })}{retainedEditor ? tr("ig.collectionRetained") : ""}</p>
+      {query ? <button type="button" className="w98-btn small" onClick={() => setQuery("")}>{tr("canonicalCollectionEditor.clearCollectionSearch")}</button> : null}
+      {search ? <p className="w98-hint" id={`${editorId}-order-hint`}>{tr("canonicalCollectionEditor.clearTheSearchToReorder")}</p> : null}
       {error ? <div role="alert" className="ie-error">{error}</div> : null}
-      {!collections.length ? <p className="ig-editor-empty">尚未建立合集。依作品系列、世界觀或故事篇章整理這個角色的貼文。</p> : !visibleCollections.length ? <p className="ig-editor-empty">沒有符合搜尋的合集，請換個關鍵字。</p> : null}
+      {!collections.length ? <p className="ig-editor-empty">{tr("canonicalCollectionEditor.noCollectionsYetOrganizeThis")}</p> : !visibleCollections.length ? <p className="ig-editor-empty">{tr("canonicalCollectionEditor.noCollectionsMatchTheSearch")}</p> : null}
       {visibleCollections.map((collection) => {
         const collectionIndex = collections.findIndex((candidate) => candidate.id === collection.id);
         const expanded = openId === collection.id;
@@ -132,13 +135,13 @@ export function CanonicalCollectionEditor({ props }: Props) {
                 aria-controls={expanded ? bodyId : undefined}
                 onClick={() => setOpenId(expanded ? null : collection.id)}
               >
-                <span>{expanded ? "▾" : "▸"} {collection.title || "（未命名合集）"}</span>
-                <small>{collection.postIds.length} 篇 · {collection.visibility === "published" ? "公開" : "草稿"}</small>
+                <span>{expanded ? "▾" : "▸"} {collection.title || tr("canonicalCollectionEditor.untitledCollection")}</span>
+                <small>{tr("ig.collectionMeta", { count: collection.postIds.length, status: collection.visibility === "published" ? tr("canonicalCollectionEditor.public") : tr("canonicalCollectionEditor.draft") })}</small>
               </button>
               <button
                 type="button"
                 className="mini-btn"
-                aria-label="合集往前"
+                aria-label={tr("canonicalCollectionEditor.moveCollectionUp")}
                 aria-describedby={search ? `${editorId}-order-hint` : undefined}
                 disabled={!!search || collectionIndex === 0}
                 onClick={() => mutate((document) => run(reorderCollection(document, collection.id, -1, { siteId }), document))}
@@ -146,7 +149,7 @@ export function CanonicalCollectionEditor({ props }: Props) {
               <button
                 type="button"
                 className="mini-btn"
-                aria-label="合集往後"
+                aria-label={tr("canonicalCollectionEditor.moveCollectionDown")}
                 aria-describedby={search ? `${editorId}-order-hint` : undefined}
                 disabled={!!search || collectionIndex === collections.length - 1}
                 onClick={() => mutate((document) => run(reorderCollection(document, collection.id, 1, { siteId }), document))}
@@ -154,9 +157,9 @@ export function CanonicalCollectionEditor({ props }: Props) {
               <button
                 type="button"
                 className="mini-btn danger"
-                aria-label={`刪除合集 ${collection.title}`}
+                aria-label={tr("canonicalCollectionEditor.deleteCollection", { title: collection.title })}
                 onClick={() => {
-                  if (!window.confirm(`確定刪除合集「${collection.title}」？貼文本身會保留。`)) return;
+                  if (!window.confirm(tr("canonicalCollectionEditor.deleteTheCollectionThePosts", { title: collection.title }))) return;
                   mutate((document) => run(deleteCollection(document, collection.id, { siteId }), document));
                 }}
               >×</button>
@@ -164,20 +167,20 @@ export function CanonicalCollectionEditor({ props }: Props) {
             {expanded ? (
               <div id={bodyId} className="ig-post-body ig-canonical-collection-fields">
                 <label className="w98-field">
-                  <span className="w98-hint">合集標題</span>
+                  <span className="w98-hint">{tr("canonicalCollectionEditor.collectionTitle")}</span>
                   <input
                     className="w98-input compact"
-                    aria-label="合集標題"
+                    aria-label={tr("canonicalCollectionEditor.collectionTitle")}
                     maxLength={120}
                     value={collection.title}
                     onChange={(event) => patchCollection(collection, { title: event.target.value }, `collection-title-${collection.id}`)}
                   />
                 </label>
                 <label className="w98-field">
-                  <span className="w98-hint">合集說明</span>
+                  <span className="w98-hint">{tr("canonicalCollectionEditor.collectionDescription")}</span>
                   <textarea
                     className="w98-textarea"
-                    aria-label="合集說明"
+                    aria-label={tr("canonicalCollectionEditor.collectionDescription")}
                     rows={2}
                     maxLength={1000}
                     value={collection.description}
@@ -187,33 +190,33 @@ export function CanonicalCollectionEditor({ props }: Props) {
                 <label className="check-row">
                   <input
                     type="checkbox"
-                    aria-label="公開合集"
+                    aria-label={tr("canonicalCollectionEditor.publicCollection")}
                     checked={collection.visibility === "published"}
                     onChange={(event) => patchCollection(collection, { visibility: event.target.checked ? "published" : "draft" })}
-                  />公開合集
+                  />{tr("ig.publicCollection")}
                 </label>
-                <strong>收錄與排序</strong>
-                {postSearch ? <p className="w98-hint">排序依完整收錄順序，包含搜尋結果外的已收錄貼文。</p> : null}
-                <p className="ig-editor-summary" role="status">已收錄 {collection.postIds.length} 篇（公開 {selectedPublished} · 草稿 {selectedDrafts}）</p>
-                <p className="w98-hint">搜尋只改變下方清單；已收錄貼文與順序會保留。草稿貼文不會出現在公開合集。</p>
+                <strong>{tr("canonicalCollectionEditor.postsAndOrder")}</strong>
+                {postSearch ? <p className="w98-hint">{tr("canonicalCollectionEditor.orderFollowsTheFullList")}</p> : null}
+                <p className="ig-editor-summary" role="status">{tr("ig.selectedSummary", { count: collection.postIds.length, published: selectedPublished, drafts: selectedDrafts })}</p>
+                <p className="w98-hint">{tr("canonicalCollectionEditor.searchOnlyChangesTheList")}</p>
                 {posts.length ? <>
                   <label className="w98-field">
-                    <span className="w98-hint">搜尋合集貼文</span>
+                    <span className="w98-hint">{tr("canonicalCollectionEditor.searchPostsInTheCollection")}</span>
                     <input
                       className="w98-input compact"
                       type="search"
                       value={postQuery}
-                      placeholder="依貼文標題或內容搜尋"
+                      placeholder={tr("canonicalCollectionEditor.searchByPostTitleOr")}
                       onChange={(event) => setPostQueries((current) => ({ ...current, [collection.id]: event.target.value }))}
                     />
                   </label>
                   <div className="ie-row">
-                    <span className="ig-editor-summary" role="status">顯示 {visiblePosts.length} / {orderedPosts.length} 篇可收錄貼文</span>
-                    {postQuery ? <button type="button" className="w98-btn small" onClick={() => setPostQueries((current) => ({ ...current, [collection.id]: "" }))}>清除合集貼文搜尋</button> : null}
+                    <span className="ig-editor-summary" role="status">{tr("ig.eligiblePostsShown", { shown: visiblePosts.length, total: orderedPosts.length })}</span>
+                    {postQuery ? <button type="button" className="w98-btn small" onClick={() => setPostQueries((current) => ({ ...current, [collection.id]: "" }))}>{tr("canonicalCollectionEditor.clearPostSearchInThe")}</button> : null}
                   </div>
                 </> : null}
                 {visiblePosts.length ? (
-                  <div className="ig-collection-post-list" role="group" aria-label="合集貼文選擇">
+                  <div className="ig-collection-post-list" role="group" aria-label={tr("canonicalCollectionEditor.choosePostsForTheCollection")}>
                     {visiblePosts.map((post) => {
                       const selectedIndex = collection.postIds.indexOf(post.id);
                       const selected = selectedIndex >= 0;
@@ -226,7 +229,7 @@ export function CanonicalCollectionEditor({ props }: Props) {
                           <label className="check-row grow">
                             <input
                               type="checkbox"
-                              aria-label={`收錄 ${post.title || "無標題貼文"}`}
+                              aria-label={tr("ig.includePost", { title: post.title || tr("ig.untitledPost") })}
                               aria-describedby={`${bodyId}-visibility-${post.id}`}
                               checked={selected}
                               onChange={(event) => setPosts(
@@ -237,16 +240,16 @@ export function CanonicalCollectionEditor({ props }: Props) {
                               )}
                             />
                             <span className="ig-collection-post-copy">
-                              <span>{selected ? `${selectedIndex + 1}. ` : ""}{post.title || "（無標題）"}</span>
+                              <span>{selected ? `${selectedIndex + 1}. ` : ""}{post.title || tr("canonicalCollectionEditor.noTitle")}</span>
                               {post.caption ? <small>{post.caption}</small> : null}
                             </span>
                           </label>
-                          <small id={`${bodyId}-visibility-${post.id}`} className="ig-editor-badge" data-visibility={post.visibility}>{post.visibility === "published" ? "公開" : "草稿"}</small>
+                          <small id={`${bodyId}-visibility-${post.id}`} className="ig-editor-badge" data-visibility={post.visibility}>{post.visibility === "published" ? tr("canonicalCollectionEditor.public") : tr("canonicalCollectionEditor.draft")}</small>
                           {selected ? <>
                             <button
                               type="button"
                               className="mini-btn"
-                              aria-label={`合集貼文 ${post.title || "無標題"} 往前`}
+                              aria-label={tr("ig.moveCollectionPostUp", { title: post.title || tr("ig.untitledShort") })}
                               disabled={selectedIndex === 0}
                               onClick={() => {
                                 const next = [...collection.postIds];
@@ -257,7 +260,7 @@ export function CanonicalCollectionEditor({ props }: Props) {
                             <button
                               type="button"
                               className="mini-btn"
-                              aria-label={`合集貼文 ${post.title || "無標題"} 往後`}
+                              aria-label={tr("ig.moveCollectionPostDown", { title: post.title || tr("ig.untitledShort") })}
                               disabled={selectedIndex === collection.postIds.length - 1}
                               onClick={() => {
                                 const next = [...collection.postIds];
@@ -270,7 +273,7 @@ export function CanonicalCollectionEditor({ props }: Props) {
                       );
                     })}
                   </div>
-                ) : <p className="ig-editor-empty">{posts.length ? "沒有符合搜尋的貼文。已收錄的貼文仍保留在合集，可以清除搜尋再查看。" : "先建立這個角色的貼文，再加入合集。"}</p>}
+                ) : <p className="ig-editor-empty">{posts.length ? tr("canonicalCollectionEditor.noPostsMatchTheSearch") : tr("canonicalCollectionEditor.createPostsForThisCharacter")}</p>}
               </div>
             ) : null}
           </article>

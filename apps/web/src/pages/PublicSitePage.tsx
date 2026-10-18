@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { loadVersionedSiteDocument, makeWindow, normalizeDocument, projectPublicSiteDocument, projectV2ToLegacyDocument, ProfileEntityV2Schema, type ProfileEntityV2, type SiteDocument, type SiteDocumentV2 } from "@retrodesk/shared";
 import { Navigate, useParams } from "react-router-dom";
 import { api } from "../lib/api";
@@ -9,6 +10,7 @@ import { VisitorDesktop } from "../features/site/VisitorDesktop";
 import { buildProfileDirectory } from "../features/modules/instagram/profileDirectory";
 
 export function PublicSitePage() {
+  const { t: tr } = useTranslation("common");
   const { handle = "", profileId, postId } = useParams();
   const username = handle.startsWith("@") ? handle.slice(1) : "";
   const [document, setDocument] = useState<SiteDocument | null>(null);
@@ -27,31 +29,31 @@ export function PublicSitePage() {
       .then(({ site }) => {
         if (!active) return;
         const loaded = loadVersionedSiteDocument(site.published_document);
-        if (!loaded.ok) throw new Error(loaded.diagnostics[0]?.message ?? "公開文件格式無效");
+        if (!loaded.ok) throw new Error(loaded.diagnostics[0]?.message ?? tr("publicSite.thePublicDocumentFormatIs"));
         let publicV2: SiteDocumentV2 | null = null;
-        if (loaded.version === 1 && (profileId || postId)) throw new Error("找不到公開內容");
+        if (loaded.version === 1 && (profileId || postId)) throw new Error(tr("publicSite.publicContentNotFound"));
         if (loaded.version === 2) {
           const scope = loaded.document.entities.profiles[0]?.siteId ?? loaded.document.windows.find((window) => window.type === "instagram")?.content.profileRef.siteId ?? loaded.document.windows.flatMap((window) => window.type === "explorer" ? window.content.shortcuts : [])[0]?.target.siteId ?? "public-site";
           const projected = projectPublicSiteDocument(loaded.document, scope);
-          if (!projected.ok || projected.version !== 2 || projected.document.schemaVersion !== 2) throw new Error("公開角色投影無效");
+          if (!projected.ok || projected.version !== 2 || projected.document.schemaVersion !== 2) throw new Error(tr("publicSite.thePublicCharacterProjectionIs"));
           publicV2 = projected.document;
         }
         const legacy = loaded.version === 1 ? { ok: true as const, document: normalizeDocument(loaded.document) } : projectV2ToLegacyDocument(publicV2!);
-        if (!legacy.ok) throw new Error(legacy.diagnostics[0]?.message ?? "公開角色引用無效");
+        if (!legacy.ok) throw new Error(legacy.diagnostics[0]?.message ?? tr("publicSite.thePublicCharacterReferenceIs"));
         let renderedDocument = legacy.document;
         if (loaded.version === 2) {
           const directory = buildProfileDirectory(publicV2!, true);
           const requestedPost = postId ? publicV2!.entities.posts.find((post) => post.id === postId) : undefined;
           const requestedProfileId = profileId ?? requestedPost?.authorProfileId;
-          if ((profileId && !publicV2!.entities.profiles.some((profile) => profile.id === profileId)) || (postId && !requestedPost)) throw new Error("找不到公開內容");
+          if ((profileId && !publicV2!.entities.profiles.some((profile) => profile.id === profileId)) || (postId && !requestedPost)) throw new Error(tr("publicSite.publicContentNotFound"));
           const idsByWindow = Object.fromEntries(publicV2!.windows.flatMap((window) => window.type === "instagram" ? [[window.id, window.content.profileRef.id] as const] : []));
           if (requestedProfileId) {
             let targetWindow = publicV2!.windows.find((window) => window.type === "instagram" && window.content.profileRef.id === requestedProfileId)?.id;
             if (!targetWindow) {
               const entry = directory.find((candidate) => candidate.id === requestedProfileId);
-              if (!entry) throw new Error("找不到公開內容");
+              if (!entry) throw new Error(tr("publicSite.publicContentNotFound"));
               const viewer = makeWindow("instagram", renderedDocument.windows.length);
-              if (viewer.type !== "instagram") throw new Error("無法建立公開檢視器");
+              if (viewer.type !== "instagram") throw new Error(tr("publicSite.couldntCreateThePublicViewer"));
               viewer.id = `viewer:${requestedProfileId}`;
               viewer.title = `${entry.profile.name || entry.profile.username}.exe`;
               viewer.defaultOpen = false;
@@ -70,12 +72,12 @@ export function PublicSitePage() {
         const selected = profileId ? publicV2?.entities.profiles.find((profile) => profile.id === profileId)?.displayName : postId ? publicV2?.entities.posts.find((post) => post.id === postId)?.title : "";
         window.document.title = (selected ? `${selected} — ` : "") + site.site_name + " — Retro Desktop";
       })
-      .catch((reason) => { if (active) setError(reason instanceof Error ? reason.message : "找不到網站"); });
+      .catch((reason) => { if (active) setError(reason instanceof Error ? reason.message : tr("publicSite.siteNotFound")); });
     return () => { active = false; };
   }, [username, profileId, postId]);
 
   if (!username) return <Navigate to="/" replace />;
-  if (error) return <main className="not-found"><div><h1>找不到這個桌面</h1><p>{error}</p></div></main>;
+  if (error) return <main className="not-found"><div><h1>{tr("publicSite.thisDesktopCouldntBeFound")}</h1><p>{error}</p></div></main>;
   if (!document) return <div className="boot-screen">Loading desktop...</div>;
 
   return <PublishedDesktop key={`${username}:${profileId ?? ""}:${postId ?? ""}`} document={document} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialTarget={initialTarget} shareBaseUrl={`${window.location.origin}/@${encodeURIComponent(username)}`} siteHandle={username} />;

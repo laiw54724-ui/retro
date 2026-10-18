@@ -1,4 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
+import { i18n } from "../../i18n";
+import { useTranslation } from "react-i18next";
 import type { DesktopWindow } from "@retrodesk/shared";
 import { useEditorStore } from "../editor/store";
 import type { ModuleCtx, WindowOf } from "../modules/types";
@@ -10,12 +12,13 @@ const MediaContext = createContext<UploadTaskQueue | null>(null);
 
 /** Mount once for an editor site, so selecting another window never loses its queue. */
 export function EditorMediaProvider({ siteId, children }: { siteId: string; children: ReactNode }) {
+  const { t: tr } = useTranslation("editor");
   const [queue] = useState(() => new UploadTaskQueue());
   useEffect(() => {
     const unsubscribe = observeEditorMedia(queue, useEditorStore, siteId);
     return () => {
       unsubscribe();
-      queue.invalidate("已離開編輯器，未套用尚未完成的上傳。");
+      queue.invalidate(tr("editorMedia.youLeftTheEditorThe"));
     };
   }, [queue, siteId]);
   return <MediaContext.Provider value={queue}>{children}</MediaContext.Provider>;
@@ -42,24 +45,25 @@ export function useWindowMedia<T extends DesktopWindow["type"]>(window: WindowOf
   };
 }
 
-const STATUS = { queued: "排隊中", uploading: "上傳中", completed: "完成", failed: "失敗" } as const;
+const statusLabels = () => ({ queued: i18n.t("editor:editorMedia.queued"), uploading: i18n.t("editor:editorMedia.uploading"), completed: i18n.t("editor:editor.done"), failed: i18n.t("editor:editorMedia.failed") } as const);
 
 export function UploadTaskList({ tasks, onRetry, onDismiss }: { tasks: readonly UploadTask[]; onRetry: (id: string) => void; onDismiss: (id: string) => void }) {
+  const { t: tr } = useTranslation("editor");
   if (!tasks.length) return null;
   const count = (status: UploadTask["status"]) => tasks.filter((task) => task.status === status).length;
   return (
-    <section className="media-upload-tasks" aria-label="上傳任務">
+    <section className="media-upload-tasks" aria-label={tr("editorMedia.uploadTasks")}>
       <p className="media-upload-summary" role="status" aria-live="polite" aria-atomic="true">
-        完成 {count("completed")} 件 · 失敗 {count("failed")} 件 · 上傳中 {count("uploading")} 件 · 排隊 {count("queued")} 件
+        {tr("media.summary", { completed: count("completed"), failed: count("failed"), uploading: count("uploading"), queued: count("queued") })}
       </p>
       <ul>
         {tasks.map((task) => (
           <li key={task.id} data-upload-state={task.status}>
             <div className="media-upload-item">
               <span className="media-upload-name">{task.name}</span>
-              <strong>{STATUS[task.status]}</strong>
-              {task.status === "failed" && task.retryable ? <button type="button" className="mini-btn wide" aria-label={`重試 ${task.name}`} onClick={() => onRetry(task.id)}>重試</button> : null}
-              {task.status === "completed" || task.status === "failed" ? <button type="button" className="mini-btn" aria-label={`清除 ${task.name} 的紀錄`} title="清除紀錄，不會刪除已上傳的檔案" onClick={() => onDismiss(task.id)}>×</button> : null}
+              <strong>{statusLabels()[task.status]}</strong>
+              {task.status === "failed" && task.retryable ? <button type="button" className="mini-btn wide" aria-label={tr("editorMedia.retry", { name: task.name })} onClick={() => onRetry(task.id)}>{tr("editorMedia.retry2")}</button> : null}
+              {task.status === "completed" || task.status === "failed" ? <button type="button" className="mini-btn" aria-label={tr("editorMedia.clearTheRecordFor", { name: task.name })} title={tr("editorMedia.clearTheRecordUploadedFiles")} onClick={() => onDismiss(task.id)}>×</button> : null}
             </div>
             {task.error ? <p className="media-upload-error">{task.error}</p> : null}
           </li>

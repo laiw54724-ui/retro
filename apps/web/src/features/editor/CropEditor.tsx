@@ -1,4 +1,5 @@
 import { useRef, type PointerEvent } from "react";
+import { useTranslation } from "react-i18next";
 import type { ImageCrop } from "@retrodesk/shared";
 import { AvatarImage, DEFAULT_CROP } from "../../components/AvatarImage";
 import { RetroButton } from "../../components/RetroButton";
@@ -7,6 +8,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
 
 /** Drag to reposition, slider to zoom. Non-destructive: only stores x/y/zoom. */
 export function CropEditor({ src, crop = DEFAULT_CROP, onChange }: { src: string; crop?: ImageCrop; onChange: (crop: ImageCrop) => void }) {
+  const { t: tr } = useTranslation("editor");
   const drag = useRef<{ startX: number; startY: number; x: number; y: number; size: number } | null>(null);
 
   function down(event: PointerEvent<HTMLDivElement>) {
@@ -29,11 +31,11 @@ export function CropEditor({ src, crop = DEFAULT_CROP, onChange }: { src: string
       <div className="crop-frame" onPointerDown={down} onPointerMove={move} onPointerUp={() => { drag.current = null; }} onPointerCancel={() => { drag.current = null; }}>
         <AvatarImage src={src} crop={crop} />
       </div>
-      <small>拖曳調整位置，用滑桿縮放。</small>
-      <label className="crop-zoom">縮放
+      <small>{tr("cropEditor.dragToRepositionAndUse")}</small>
+      <label className="crop-zoom">{tr("cropEditor.zoom")}
         <input type="range" min={1} max={4} step={0.05} value={crop.zoom} onChange={(event) => onChange({ ...crop, zoom: Number(event.target.value) })} />
       </label>
-      <RetroButton type="button" onClick={() => onChange(DEFAULT_CROP)}>重設位置</RetroButton>
+      <RetroButton type="button" onClick={() => onChange(DEFAULT_CROP)}>{tr("cropEditor.resetPosition")}</RetroButton>
     </div>
   );
 }

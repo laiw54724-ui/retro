@@ -1,8 +1,11 @@
 import { useEffect, useId, useState, type ChangeEvent, type ReactNode } from "react";
+import { translateSystemMessage } from "../../i18n/systemMessages";
+import { i18n } from "../../i18n";
+import { useTranslation } from "react-i18next";
 import { normalizeImageUrl } from "@retrodesk/shared";
 import { useAssetSourceState } from "../../lib/assetSource";
 
-export const IMAGE_FAIL_TEXT = "圖片無法載入。Google 雲端連結請設為「知道連結的任何人」。";
+export const imageFailText = () => i18n.t("modules:ui.imageFailed");
 
 export function MiniBtn({ children, label, danger, on, ...rest }: { children: ReactNode; label: string; danger?: boolean; on?: boolean } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
@@ -30,9 +33,10 @@ export function FilePick({ children, onFiles, multiple, disabled, className = "m
 
 /** <img> that swaps to a clear message if the URL cannot be loaded. */
 export function SafeImg({ src, alt, className, style, compact }: { src: string; alt: string; className?: string; style?: React.CSSProperties; compact?: boolean }) {
+  const { t: tr } = useTranslation("modules");
   const [failedSource, setFailedSource] = useState<string | null>(null);
   const { source: resolved, status } = useAssetSourceState(src);
-  if (status === "failed" || (resolved && failedSource === resolved)) return <div className={"img-fail" + (compact ? " compact" : "")} role="alert">{compact ? "無法載入" : IMAGE_FAIL_TEXT}</div>;
+  if (status === "failed" || (resolved && failedSource === resolved)) return <div className={"img-fail" + (compact ? " compact" : "")} role="alert">{compact ? tr("ui.cantLoad") : imageFailText()}</div>;
   if (!resolved) return <span className={className} style={style} aria-label={alt} aria-busy={status === "loading" || undefined} />;
   return <img src={resolved} alt={alt} className={className} style={style} referrerPolicy="no-referrer" loading="lazy" decoding="async" onError={() => setFailedSource(resolved)} />;
 }
@@ -63,7 +67,7 @@ export function ImageUrlField({ raw, placeholder, label, onCommit, className = "
     }
     const result = normalizeImageUrl(value);
     if (!result.ok) {
-      setError(result.reason);
+      setError(translateSystemMessage(result.reason));
       return;
     }
     setError("");

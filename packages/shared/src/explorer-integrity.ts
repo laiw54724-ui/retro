@@ -19,6 +19,8 @@ export interface DanglingShortcut {
   label: string;
   /** "桌面 / 角色 / 主角設定"-style location of the shortcut inside its Explorer (without the Explorer title). */
   folderPath: string;
+  /** Folder names from the Explorer root down to the shortcut (without the localized root label). */
+  folderNames: string[];
   targetKind: "window" | "profile" | "post";
   targetId: string;
 }
@@ -33,7 +35,7 @@ function targetExists(document: IntegrityDocument, target: ShortcutLike["target"
   return !entities.posts || entities.posts.some((item) => item.id === target.id && item.siteId === target.siteId);
 }
 
-function folderPath(folders: FolderLike[], parentId: string | null): string {
+function folderNamesOf(folders: FolderLike[], parentId: string | null): string[] {
   const names: string[] = [];
   const byId = new Map(folders.map((folder) => [folder.id, folder]));
   for (let cursor = parentId, guard = 0; cursor && guard < 12; guard += 1) {
@@ -42,8 +44,9 @@ function folderPath(folders: FolderLike[], parentId: string | null): string {
     names.unshift(folder.name);
     cursor = folder.parentId;
   }
-  return ["桌面", ...names].join(" / ");
+  return names;
 }
+const folderPath = (folders: FolderLike[], parentId: string | null) => ["桌面", ...folderNamesOf(folders, parentId)].join(" / ");
 
 export function danglingExplorerShortcuts(document: IntegrityDocument): DanglingShortcut[] {
   const result: DanglingShortcut[] = [];
@@ -52,7 +55,7 @@ export function danglingExplorerShortcuts(document: IntegrityDocument): Dangling
     if (!content) continue;
     for (const shortcut of content.shortcuts) {
       if (targetExists(document, shortcut.target)) continue;
-      result.push({ explorerId: window.id, explorerTitle: window.title ?? "Explorer", shortcutId: shortcut.id, label: shortcut.label, folderPath: folderPath(content.folders, shortcut.parentId), targetKind: shortcut.target.kind, targetId: shortcut.target.id });
+      result.push({ explorerId: window.id, explorerTitle: window.title ?? "Explorer", shortcutId: shortcut.id, label: shortcut.label, folderPath: folderPath(content.folders, shortcut.parentId), folderNames: folderNamesOf(content.folders, shortcut.parentId), targetKind: shortcut.target.kind, targetId: shortcut.target.id });
     }
   }
   return result;
@@ -87,4 +90,14 @@ export function describeShortcutTarget(document: IntegrityDocument, item: Pick<D
   }
   const post = document.entities?.posts?.find((candidate) => candidate.id === item.targetId);
   return `貼文：${post?.title || "已刪除的貼文"}`;
+}
+
+/** Language-neutral form of {@link describeShortcutTarget}: the kind and the name from the document that still has it. */
+export function describeShortcutTargetParts(document: IntegrityDocument, item: Pick<DanglingShortcut, "targetKind" | "targetId">): { kind: DanglingShortcut["targetKind"]; name: string | null } {
+  if (item.targetKind === "window") return { kind: "window", name: document.windows.find((window) => window.id === item.targetId)?.title ?? null };
+  if (item.targetKind === "profile") {
+    const profile = document.entities?.profiles?.find((candidate) => candidate.id === item.targetId);
+    return { kind: "profile", name: profile?.displayName ?? profile?.name ?? null };
+  }
+  return { kind: "post", name: document.entities?.posts?.find((candidate) => candidate.id === item.targetId)?.title || null };
 }

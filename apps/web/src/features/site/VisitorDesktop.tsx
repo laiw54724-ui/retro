@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
+import { useTranslation } from "react-i18next";
 import type { DesktopWindow, ProfileEntityV2, SiteDocument } from "@retrodesk/shared";
 import type { ProfileDirectoryEntry } from "../modules/types";
 import { Icon } from "../../components/Icon";
@@ -43,6 +44,7 @@ function initialRuntime(document: SiteDocument, initialOpenId?: string): Runtime
 }
 
 export function VisitorDesktop({ document, profiles, profileIdsByWindow, profileDirectory, initialOpenId, initialPostId, publicShareBaseUrl, siteHandle }: { document: SiteDocument; profiles?: ProfileEntityV2[]; profileIdsByWindow?: Record<string, string>; profileDirectory?: ProfileDirectoryEntry[]; initialOpenId?: string; initialPostId?: string; publicShareBaseUrl?: string; siteHandle?: string }) {
+  const { t: tr } = useTranslation("editor");
   const [runtime, setRuntime] = useState<RuntimeMap>(() => initialRuntime(document, initialOpenId));
   const desktopRef = useRef<HTMLDivElement | null>(null);
   const gesture = useRef<Gesture | null>(null);
@@ -256,7 +258,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
           window: desktopWindow,
           visible: runtime[desktopWindow.id]?.status !== "closed",
           active: runtime[desktopWindow.id]?.status === "open" && runtime[desktopWindow.id]?.z === topZ,
-          statusLabel: music.windowId === desktopWindow.id && music.status === "playing" ? "播放中" : undefined
+          statusLabel: music.windowId === desktopWindow.id && music.status === "playing" ? tr("desktopCanvas.playing") : undefined
         }))}
         onOpen={openWindow}
         onToggle={taskbarToggle}

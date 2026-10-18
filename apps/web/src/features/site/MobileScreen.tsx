@@ -182,15 +182,15 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
               )) : null}
               {sheet === "theme" ? <ThemeAppearanceEditor theme={document.theme} onTheme={store.setTheme} upload={upload} /> : null}
               {sheet === "edit" ? (
-                selected ? <MobileEdit key={selected.id} theme={document.theme} window={selected} count={ordered.length} siteId={siteId} upload={upload} /> : <span className="m-note">先點一下桌面上的圖示，選取要編輯的視窗。</span>
+                selected ? <MobileEdit key={selected.id} theme={document.theme} window={selected} count={ordered.length} siteId={siteId} upload={upload} /> : <span className="m-note">{t("mobileScreen.clickAnIconOnThe")}</span>
               ) : null}
               {sheet === "edit" ? (
                 <>
-                  <div className="w98-field"><span className="w98-hint">圖示欄數</span>
-                    <div className="seg">{([3, 4] as const).map((count) => <button key={count} type="button" className={"w98-btn grow" + (document.mobileColumns === count ? " on" : "")} onClick={() => store.setMobileColumns(count)}>{count} 欄</button>)}</div>
+                  <div className="w98-field"><span className="w98-hint">{t("mobileEditor.iconColumns")}</span>
+                    <div className="seg">{([3, 4] as const).map((count) => <button key={count} type="button" className={"w98-btn grow" + (document.mobileColumns === count ? " on" : "")} onClick={() => store.setMobileColumns(count)}>{t("layout.columnCount", { count })}</button>)}</div>
                   </div>
-                  <label className="check-row m-check"><input type="checkbox" checked={store.versionedDocument?.seo?.indexing ?? true} onChange={(event) => store.setSeoIndexing(event.target.checked)} />允許搜尋引擎收錄公開頁面</label>
-                  <span className="w98-hint">關閉只會輸出 noindex，不會把公開網站變成私密。</span>
+                  <label className="check-row m-check"><input type="checkbox" checked={store.versionedDocument?.seo?.indexing ?? true} onChange={(event) => store.setSeoIndexing(event.target.checked)} />{t("rightPanel.allowSearchEnginesToIndex")}</label>
+                  <span className="w98-hint">{t("mobileScreen.turningThisOffOnlyOutputs")}</span>
                 </>
               ) : null}
             </div>
@@ -205,24 +205,25 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
 }
 
 function MobileEdit({ theme, window, count, siteId, upload }: { theme: SiteDocument["theme"]; window: DesktopWindow; count: number; siteId?: string; upload?: (file: File, kind?: "image" | "icon" | "audio") => Promise<string | null> }) {
+  const { t: tr } = useTranslation("editor");
   const store = useEditorStore();
   const patch = (change: Partial<DesktopWindow>, key?: string) => store.updateWindow(window.id, (current) => ({ ...current, ...change }) as DesktopWindow, key);
   return (
     <>
-      <label className="w98-field"><span className="w98-hint">視窗標題</span><input className="w98-input m-input" value={window.title} onChange={(event) => patch({ title: event.target.value }, "mt" + window.id)} /></label>
+      <label className="w98-field"><span className="w98-hint">{tr("mobileEditor.windowTitle")}</span><input className="w98-input m-input" value={window.title} onChange={(event) => patch({ title: event.target.value }, "mt" + window.id)} /></label>
       <WindowChromeEditor theme={theme} window={window} onChange={(chrome) => patch({ chrome })} />
       <WindowAppearanceEditor theme={theme} window={window} onChange={(appearance, historyKey) => patch({ appearance }, historyKey)} />
-      <span className="w98-hint">圖示</span>
+      <span className="w98-hint">{tr("rightPanel.icon")}</span>
       <IconPicker key={window.id} siteId={siteId} value={window.icon} upload={upload} mediaTarget={{ windowId: window.id, windowType: window.type }} size={28} label={window.title} defaultValue={makeWindow(window.type).icon} onChange={(icon) => patch({ icon })} />
-      <label className="check-row m-check"><input type="checkbox" checked={window.defaultOpen} onChange={(event) => patch({ defaultOpen: event.target.checked })} />訪客進站時自動開啟</label>
+      <label className="check-row m-check"><input type="checkbox" checked={window.defaultOpen} onChange={(event) => patch({ defaultOpen: event.target.checked })} />{tr("mobileScreen.openAutomaticallyWhenVisitorsArrive")}</label>
       <div className="m-actions">
-        <button type="button" className="w98-btn" disabled={window.layout.mobile.order === 0} onClick={() => store.reorderMobile(window.id, -1)}>▲ 圖示往前</button>
-        <button type="button" className="w98-btn" disabled={window.layout.mobile.order >= count - 1} onClick={() => store.reorderMobile(window.id, 1)}>▼ 圖示往後</button>
-        <button type="button" className="w98-btn" onClick={() => store.duplicateWindow(window.id)}>複製</button>
-        <button type="button" className="w98-btn danger" onClick={() => store.deleteWindow(window.id)}>刪除</button>
+        <button type="button" className="w98-btn" disabled={window.layout.mobile.order === 0} onClick={() => store.reorderMobile(window.id, -1)}>{tr("mobileScreen.moveIconEarlier")}</button>
+        <button type="button" className="w98-btn" disabled={window.layout.mobile.order >= count - 1} onClick={() => store.reorderMobile(window.id, 1)}>{tr("mobileScreen.moveIconLater")}</button>
+        <button type="button" className="w98-btn" onClick={() => store.duplicateWindow(window.id)}>{tr("mobileScreen.duplicate")}</button>
+        <button type="button" className="w98-btn danger" onClick={() => store.deleteWindow(window.id)}>{tr("inspectorContent.delete")}</button>
       </div>
       <div className="w98-sep" />
-      <span className="w98-hint">內容：關閉此面板，開啟視窗後按「編輯此視窗」，直接點文字或圖片編輯。</span>
+      <span className="w98-hint">{tr("mobileScreen.contentCloseThisPanelOpen")}</span>
     </>
   );
 }
