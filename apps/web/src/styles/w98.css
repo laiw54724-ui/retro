@@ -578,6 +578,12 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 .music-cover-editor { display: flex; align-items: flex-start; gap: 8px; }
 .music-cover-editor > div:last-child { min-width: 0; flex: 1; display: grid; gap: 6px; }
 .music-source-tabs { display: flex; }
+.music-source-field { display: grid; gap: 6px; min-width: 0; }
+.music-source-row { display: grid; gap: 4px; min-width: 0; }
+.music-source-inputs { display: flex; gap: 6px; min-width: 0; }
+.music-source-inputs .w98-input { flex: 1 1 auto; min-width: 0; }
+.music-source-inputs .w98-btn { flex: 0 0 auto; }
+.music-source-explain.bad { color: #8a0018; }
 .music-upload-source { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .music-preview { min-height: 38px; justify-self: start; }
 .music-track-editor .w98-textarea { width: 100%; resize: vertical; }
@@ -593,6 +599,8 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
   .music-editor-head > .w98-btn { min-height: 44px; }
   .music-cover-editor { flex-direction: column; }
   .music-source-tabs { display: grid; grid-template-columns: 1fr; }
+  .music-source-inputs { flex-direction: column; }
+  .music-source-inputs .w98-btn { min-height: 44px; }
   .music-source-tabs .w98-btn { min-height: 44px; }
 }
 

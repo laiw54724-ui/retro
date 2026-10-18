@@ -96,7 +96,31 @@
     "playerHeading": "{{label}} プレーヤー",
     "loadPlayer": "{{label}} プレーヤーを読み込む",
     "openOn": "{{label}} で開く ↗",
-    "slowNotice": "{{label}} プレーヤーからまだ応答がありません。表示されない場合は「{{label}} で開く」をご利用ください。"
+    "slowNotice": "{{label}} プレーヤーからまだ応答がありません。表示されない場合は「{{label}} で開く」をご利用ください。",
+    "source": {
+      "label": "リンクを貼り付けるかファイルをアップロード",
+      "placeholder": "YouTube・Spotify・音声ファイルのURLを貼り付け",
+      "auto": "貼り付けると自動で判別されます。先に種類を選ぶ必要はありません。",
+      "recognizedEmbed": "{{platform}}の{{resource}}として認識しました。訪問者が再生を押すと、このページ内で{{platform}}の公式プレーヤーを使えます。",
+      "recognizedAudio": "音声ファイルのURLとして認識しました。訪問者はこのページ内でそのまま再生できます。",
+      "recognizedVideoFile": "動画ファイルのURLです。動画ファイルはまだページ内で再生できないため、新しいタブで開く外部リンクとして保存しました。",
+      "recognizedPage": "一般的なウェブページです。ウェブページは音声として再生できないため、新しいタブで元のページを開く外部リンクとして保存しました。",
+      "reasonShortLink": "{{platform}}の短縮URLです。ページ内で再生するには完全なURL（open.spotify.com または youtube.com のリンク）を貼り付けてください。今は外部リンクとして保存します。",
+      "reasonUnsupportedResource": "この{{platform}}のリンクは曲・アルバム・プレイリスト・動画ではないため埋め込めません。元のサイトへの外部リンクとして保存しました。",
+      "reasonUnsupportedPlatform": "{{platform}}はまだページ内で再生できません。元のサイトへの外部リンクとして保存しました。",
+      "invalid": "https:// で始まる完全なURLを貼り付けてください。",
+      "invalidCredentials": "URLにユーザー名やパスワードを含めることはできません。",
+      "invalidPort": "URLにポートを指定することはできません。",
+      "invalidTooLong": "URLが長すぎます（最大2048文字）。",
+      "useExternal": "外部リンクに切り替える（元のサイトを開く）",
+      "usePlayer": "ページ内プレーヤーに切り替える",
+      "uploaded": "アップロードした音声ファイルを使用中です。訪問者はこのページ内で再生できます。リンクを貼り付けると置き換わります。",
+      "sourceLine": "ソース：{{platform}}（公式埋め込み）",
+      "playerNote": "訪問者が再生を押すまでプレーヤーは読み込まれません。",
+      "wasAudioPlatform": "これは音声ファイルとして保存された{{platform}}のウェブページのため再生できません。ページ内プレーヤーに切り替えてください。",
+      "canEmbed": "このリンクは{{platform}}の公式プレーヤーでページ内再生できます。",
+      "savedAudioNotAudio": "このURLは音声ファイルではないため音声として再生できません。外部リンクとして保存し直してください。"
+    }
   },
   "providerPlayer": {
     "player": "{{label}} プレーヤー",

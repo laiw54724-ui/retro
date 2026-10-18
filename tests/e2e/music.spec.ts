@@ -81,7 +81,7 @@ test("author uploads private audio, records rights, saves and reloads the stable
   const player = page.getByRole("dialog", { name: "Music Player.exe" });
   await player.getByRole("button", { name: "新增第一首" }).click();
   const editor = player.locator(".music-track-editor").first();
-  await editor.locator(".music-source-tabs input[type=file]").setInputFiles({ name: "theme.wav", mimeType: "audio/wav", buffer: Buffer.from("RIFF0000WAVEfmt ") });
+  await editor.locator(".music-source-field input[type=file]").setInputFiles({ name: "theme.wav", mimeType: "audio/wav", buffer: Buffer.from("RIFF0000WAVEfmt ") });
   await expect(editor.getByText("檔案會保存在私有草稿")).toBeVisible();
   await expect(editor.getByRole("button", { name: /試聽上傳檔|正在準備音訊/ })).toBeVisible();
   await editor.getByLabel("權利說明（發布必填）").fill("本人原創");
@@ -106,7 +106,7 @@ test("author adds, reorders, deletes and reloads a music playlist", async ({ pag
   let editors = player.locator(".music-track-editor");
   await editors.nth(0).getByLabel("曲名").fill("First Theme");
   await editors.nth(0).getByLabel("演出者").fill("Creator A");
-  await editors.nth(0).getByLabel("音訊直連（HTTPS）").fill("https://media.example.com/first.mp3");
+  await editors.nth(0).getByLabel("貼上連結或上傳檔案").fill("https://media.example.com/first.mp3");
   await player.getByRole("button", { name: "新增曲目" }).click();
   editors = player.locator(".music-track-editor");
   await editors.nth(1).getByLabel("曲名").fill("Second Theme");
@@ -133,7 +133,7 @@ test("editing an active preview source stops the old audio", async ({ page }) =>
   await page.getByRole("button", { name: /音樂播放器/ }).click();
   const player = page.getByRole("dialog", { name: "Music Player.exe" });
   await player.getByRole("button", { name: "新增第一首" }).click();
-  const source = player.getByLabel("音訊直連（HTTPS）");
+  const source = player.getByLabel("貼上連結或上傳檔案");
   await source.fill("https://media.example.com/first.mp3");
   await player.getByRole("button", { name: "試聽" }).click();
   await expect(player.getByRole("button", { name: "停止試聽" })).toBeVisible();
