@@ -111,7 +111,8 @@
     "theme": "テーマ",
     "preview": "プレビュー",
     "addWindow": "ウィンドウを追加",
-    "editWindowTitle": "ウィンドウを編集"
+    "editWindowTitle": "ウィンドウを編集",
+    "siteMenu": "サイトのオプション"
   },
   "integrity": {
     "targetWindow": "ウィンドウ：{{name}}",
@@ -158,7 +159,7 @@
     "windowsArentDraggedOnMobile": "モバイルではウィンドウをドラッグしません。追加してそのまま内容を編集し、デスクトップ上の位置はあとでパソコン表示で調整できます。",
     "windowTitle": "ウィンドウのタイトル",
     "desktopIcon": "デスクトップアイコン",
-    "openByDefaultWhenVisitors": "訪問者が来たときに既定で開く",
+    "openByDefaultWhenVisitors": "訪問者が来たときに既定で開く（デスクトップ版のみ）",
     "mobileIconOrder": "モバイルでのアイコンの順序",
     "moveUp": "前へ移動",
     "moveDown": "後ろへ移動",
@@ -452,7 +453,7 @@
     "general": "一般",
     "icon": "アイコン",
     "layout": "レイアウト",
-    "openByDefaultWhenVisitors": "訪問者がサイトを開いたときに既定で開く",
+    "openByDefaultWhenVisitors": "訪問者がサイトを開いたときに既定で開く（デスクトップ版のみ）",
     "bringToFront": "最前面へ移動",
     "duplicateWindow": "ウィンドウを複製",
     "theIconShownOnThe": "デスクトップとタスクバーに表示されるアイコンです。",
