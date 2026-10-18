@@ -1,0 +1,36 @@
+[WebServer] (node:23434) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 27 tests using 1 worker
+
+(node:23485) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests/quality/performance.spec.ts:84:7 › editor empty 320px cold/warm (5.7s)
+  ✓   2 tests/quality/performance.spec.ts:84:7 › editor empty 390px cold/warm (5.8s)
+  ✓   3 tests/quality/performance.spec.ts:84:7 › editor empty 1280px cold/warm (5.8s)
+  ✓   4 tests/quality/performance.spec.ts:84:7 › editor normal 320px cold/warm (6.2s)
+  ✓   5 tests/quality/performance.spec.ts:84:7 › editor normal 390px cold/warm (6.5s)
+  ✓   6 tests/quality/performance.spec.ts:84:7 › editor normal 1280px cold/warm (6.5s)
+  ✓   7 tests/quality/performance.spec.ts:84:7 › editor heavy 320px cold/warm (6.2s)
+  ✓   8 tests/quality/performance.spec.ts:84:7 › editor heavy 390px cold/warm (6.3s)
+  ✓   9 tests/quality/performance.spec.ts:84:7 › editor heavy 1280px cold/warm (6.7s)
+  ✓  10 tests/quality/performance.spec.ts:84:7 › public empty 320px cold/warm (5.6s)
+  ✓  11 tests/quality/performance.spec.ts:84:7 › public empty 390px cold/warm (5.6s)
+  ✓  12 tests/quality/performance.spec.ts:84:7 › public empty 1280px cold/warm (5.6s)
+  ✓  13 tests/quality/performance.spec.ts:84:7 › public normal 320px cold/warm (6.0s)
+  ✓  14 tests/quality/performance.spec.ts:84:7 › public normal 390px cold/warm (6.0s)
+  ✓  15 tests/quality/performance.spec.ts:84:7 › public normal 1280px cold/warm (6.2s)
+  ✓  16 tests/quality/performance.spec.ts:84:7 › public heavy 320px cold/warm (6.3s)
+  ✓  17 tests/quality/performance.spec.ts:84:7 › public heavy 390px cold/warm (6.1s)
+  ✓  18 tests/quality/performance.spec.ts:84:7 › public heavy 1280px cold/warm (6.1s)
+  ✓  19 tests/quality/performance.spec.ts:84:7 › sample card 320px cold/warm (6.1s)
+  ✓  20 tests/quality/performance.spec.ts:84:7 › sample card 390px cold/warm (6.1s)
+  ✓  21 tests/quality/performance.spec.ts:84:7 › sample card 1280px cold/warm (6.3s)
+  ✓  22 tests/quality/performance.spec.ts:84:7 › sample ig 320px cold/warm (6.0s)
+  ✓  23 tests/quality/performance.spec.ts:84:7 › sample ig 390px cold/warm (6.1s)
+  ✓  24 tests/quality/performance.spec.ts:84:7 › sample ig 1280px cold/warm (6.2s)
+  ✓  25 tests/quality/performance.spec.ts:84:7 › sample oc 320px cold/warm (6.1s)
+  ✓  26 tests/quality/performance.spec.ts:84:7 › sample oc 390px cold/warm (6.0s)
+  ✓  27 tests/quality/performance.spec.ts:84:7 › sample oc 1280px cold/warm (6.1s)
+
+  27 passed (2.9m)

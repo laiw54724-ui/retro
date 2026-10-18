@@ -10,8 +10,7 @@ import { ICON_LIBRARY_SETS } from "../../../lib/iconLibrary/ids.generated";
 import { hasLibraryIdShape, libraryNameOf, resolveLibraryIcon } from "../../../lib/iconLibrary/library";
 import { Icon } from "../../../components/Icon";
 import { ModalDialog } from "../../../components/ModalDialog";
-import { CURATED_WINDOWS_ICON_KEYS, WINDOWS_ICON_RECORDS, WINDOWS_ICON_SOURCE } from "../../../lib/windowsIconManifest";
-import { hasWindowsIconPack, WINDOWS_ICON_PACK_INSTALL_COMMAND } from "../../../lib/optionalIconPack";
+import { hasWindowsIconPack, WINDOWS_ICON_PACK_SOURCE as WINDOWS_ICON_SOURCE, WINDOWS_ICON_PACK_INSTALL_COMMAND } from "../../../lib/optionalIconPack";
 import { FilePick, MiniBtn } from "../ui";
 import { UploadTaskList, useMediaQueue } from "../../media/editorMedia";
 import { useEditorStore } from "../../editor/store";
@@ -36,6 +35,7 @@ type CommonProps = {
 };
 
 type Catalog = typeof import("../../../lib/iconLibrary/catalog.generated");
+type WindowsCatalog = typeof import("../../../lib/windowsIconManifest");
 type Category = "all" | "retro" | "pixel" | "mono" | "mine" | "windows";
 
 const builtinNames = (): Record<string, string> => ({ doc: i18n.t("modules:iconPicker.document"), folder: i18n.t("modules:iconPicker.folder"), photo: i18n.t("modules:iconPicker.photo"), link: i18n.t("modules:iconPicker.link"), user: i18n.t("modules:iconPicker.person"), heart: i18n.t("modules:iconPicker.heart"), star: i18n.t("modules:iconPicker.star"), mail: i18n.t("modules:iconPicker.mail"), music: i18n.t("modules:iconPicker.music"), computer: i18n.t("modules:iconPicker.computer"), palette: i18n.t("modules:iconPicker.palette"), camera: i18n.t("modules:iconPicker.camera"), trash: i18n.t("modules:iconPicker.trash") });
@@ -143,6 +143,8 @@ function IconLibraryDialog({ siteId, value, onChange, upload, defaultValue, defa
   const [search, setSearch] = useState("");
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [catalogError, setCatalogError] = useState(false);
+  const [windowsCatalog, setWindowsCatalog] = useState<WindowsCatalog | null>(null);
+  const [windowsCatalogError, setWindowsCatalogError] = useState(false);
   const [mine, setMine] = useState<AssetRecord[]>([]);
   const [status, setStatus] = useState("");
   const [url, setUrl] = useState("");
@@ -172,6 +174,17 @@ function IconLibraryDialog({ siteId, value, onChange, upload, defaultValue, defa
     import("../../../lib/iconLibrary/catalog.generated").then(setCatalog, () => setCatalogError(true));
   }, []);
   useEffect(() => { loadCatalog(); }, [loadCatalog]);
+
+  // The optional pack's full manifest is needed only when its installed tab is opened.
+  const loadWindowsCatalog = useCallback(() => {
+    setWindowsCatalogError(false);
+    import("../../../lib/windowsIconManifest").then(setWindowsCatalog, () => setWindowsCatalogError(true));
+  }, []);
+  useEffect(() => {
+    if (category === "windows" && packState === "available") loadWindowsCatalog();
+  }, [category, packState, loadWindowsCatalog]);
+  const currentCatalogError = category === "windows" ? windowsCatalogError : catalogError;
+  const currentCatalogReady = category === "windows" ? !!windowsCatalog : !!catalog;
 
   const refreshMine = useCallback(async () => {
     if (!siteId) return;
@@ -221,7 +234,8 @@ function IconLibraryDialog({ siteId, value, onChange, upload, defaultValue, defa
       if (category === "all") for (const key of BUILTIN_ICON_KEYS) if (matches(tr("iconPicker.builtinBuiltIn", { v1: builtinNames()[key] ?? key, key }).toLowerCase())) result.push({ value: key, name: tr("iconPicker.builtIn", { v1: builtinNames()[key] ?? key }) });
       for (const asset of mine) if (matches(tr("iconPicker.uploadMine", { name: asset.name }).toLowerCase())) result.push({ value: asset.url, name: asset.name || tr("iconPicker.myIcons") });
     }
-    if (category === "windows") {
+    if (category === "windows" && windowsCatalog) {
+      const { WINDOWS_ICON_RECORDS, CURATED_WINDOWS_ICON_KEYS } = windowsCatalog;
       const pool = terms.length ? WINDOWS_ICON_RECORDS : WINDOWS_ICON_RECORDS.filter((record) => CURATED_WINDOWS_ICON_KEYS.includes(record.key)).slice(0, 48);
       for (const record of pool) {
         if (matches(`${record.key} ${record.label} ${record.upstreamPath}`.toLowerCase())) result.push({ value: record.path, name: record.label });
@@ -229,7 +243,7 @@ function IconLibraryDialog({ siteId, value, onChange, upload, defaultValue, defa
       }
     }
     return result;
-  }, [catalog, category, purpose, terms, mine]);
+  }, [catalog, windowsCatalog, category, purpose, terms, mine]);
 
   const isTargetCurrent = useCallback(() => {
     if (!active.current || original.current.siteId !== siteId || original.current.targetKey !== iconTargetKey(mediaTarget)) return false;
@@ -341,8 +355,8 @@ function IconLibraryDialog({ siteId, value, onChange, upload, defaultValue, defa
               {Object.entries(catalog.ICON_PURPOSES).map(([id, name]) => <button key={id} type="button" aria-pressed={purpose === id} className={"ilib-chip" + (purpose === id ? " on" : "")} onClick={() => setPurpose(purpose === id ? "" : id)}>{purposeLabel(id, name)}</button>)}
             </div>
           ) : null}
-          <div role="status" className="w98-hint ilib-count">{catalogError ? "" : !catalog && category !== "mine" ? tr("iconPicker.loadingTheLibrary") : tr("iconPicker.icons", { length: entries.length })}</div>
-          {catalogError ? <div className="ilib-error">{tr("iconPicker.couldntLoadTheLibrary")}<button type="button" className="w98-btn" onClick={loadCatalog}>{tr("iconPicker.retry")}</button></div> : null}
+          <div role="status" className="w98-hint ilib-count">{currentCatalogError ? "" : !currentCatalogReady && category !== "mine" ? tr("iconPicker.loadingTheLibrary") : tr("iconPicker.icons", { length: entries.length })}</div>
+          {currentCatalogError ? <div className="ilib-error">{tr("iconPicker.couldntLoadTheLibrary")}<button type="button" className="w98-btn" onClick={category === "windows" ? loadWindowsCatalog : loadCatalog}>{tr("iconPicker.retry")}</button></div> : null}
           <div className="ilib-scroll" tabIndex={-1}>
             {entries.length ? (
               <ul ref={grid} className="ilib-grid" aria-label={tr("iconPicker.iconList")} onKeyDown={gridKey}>
@@ -351,7 +365,7 @@ function IconLibraryDialog({ siteId, value, onChange, upload, defaultValue, defa
                   return <Tile key={entry.value} value={entry.value} name={entry.name} pixel={entry.pixel} selected={draft === entry.value} current={value === entry.value} tabbable={index === tabbableIndex} onSelect={() => selectDraft(entry.value)} onRemove={asset ? () => void remove(asset) : undefined} />;
                 })}
               </ul>
-            ) : catalog || category === "mine" ? <div className="empty-module">{category === "mine" ? tr("iconPicker.youHaventUploadedAnyIcons") : tr("iconPicker.noMatchingIconsTryAnother")}</div> : null}
+            ) : currentCatalogReady || category === "mine" ? <div className="empty-module">{category === "mine" ? tr("iconPicker.youHaventUploadedAnyIcons") : tr("iconPicker.noMatchingIconsTryAnother")}</div> : null}
           </div>
           {category === "mine" || category === "all" ? (
             <div className="ilib-upload">
