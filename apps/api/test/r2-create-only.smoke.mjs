@@ -39,7 +39,7 @@ try {
   // Bundle only this checkout's code into our disposable directory.
   const bundle = join(scratch, "publish.mjs");
   await build({ entryPoints: [fileURLToPath(new URL("../src/lib/publish.ts", import.meta.url))], outfile: bundle, bundle: true, platform: "node", format: "esm", logLevel: "silent" });
-  const { copyReferencedAssets, promotePublishedAssets, publicationAssetStageKey } = await import(pathToFileURL(bundle).href);
+  const { copyReferencedAssets, promotePublishedAssets, publicationAssetStageKey, writePublishedArtifact } = await import(pathToFileURL(bundle).href);
   const id = "11111111-1111-4111-8111-111111111111";
   const sourceKey = `draft/users/owner-local/sites/site-local/${id}.png`;
   const publicKey = `published/local-fixture/assets/${id}.png`;
@@ -57,7 +57,14 @@ try {
   assert.equal(await visible.text(), "synthetic bytes");
   assert.equal(visible.httpMetadata.contentType, "image/png");
   assert.equal(visible.httpMetadata.cacheControl, "public, max-age=31536000, immutable");
-  console.log("PASS: local R2 create-only, exactly one concurrent writer, actual private staging/public promotion helpers and metadata");
+  const artifactInput = { siteId: "site-local", username: "local-fixture", version: 1, document: prepared.document, publishedAt: "2026-10-18T00:00:00.000Z" };
+  assert.equal((await writePublishedArtifact(env, artifactInput)).artifactStatus, "synced");
+  assert.equal((await writePublishedArtifact(env, artifactInput)).artifactStatus, "synced");
+  const otherKey = "published/other-fixture/versions/1/site.json";
+  await bucket.put(otherKey, "OTHER-SITE-FIXTURE");
+  assert.equal((await writePublishedArtifact(env, { ...artifactInput, artifactKey: otherKey })).artifactKey, "published/local-fixture/versions/1/site.json");
+  assert.equal(await (await bucket.get(otherKey)).text(), "OTHER-SITE-FIXTURE");
+  console.log("PASS: local R2 create-only/concurrency, actual private staging/public promotion, immutable artifact write/retry and foreign-key isolation");
 } finally {
   await runtime.dispose();
   await rm(scratch, { recursive: true, force: true });

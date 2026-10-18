@@ -57,13 +57,13 @@ const base = "https://assets.example.invalid";
 const publicKey = (index: number) => `published/demo/assets/${ids[index]}.png`;
 const sourceKey = (index: number) => `draft/users/owner-a/sites/site-a/${ids[index]}.png`;
 const stageKey = (index: number) => publicationAssetStageKey("site-a", `${ids[index]}.png`);
-type Stored = { bytes: Uint8Array; httpMetadata: { contentType: string; cacheControl?: string } };
+type Stored = { bytes: Uint8Array; httpMetadata: { contentType: string; cacheControl?: string }; customMetadata?: Record<string, string> };
 const objects = new Map<string, Stored>();
 let beforePut: null | ((key: string) => Promise<void> | void) = null;
 let beforeGet: null | ((key: string) => Promise<void> | void) = null;
 function object(key: string) {
   const stored = objects.get(key);
-  return stored ? { body: new Blob([stored.bytes]).stream(), size: stored.bytes.length, httpEtag: '"fixture"', httpMetadata: stored.httpMetadata, writeHttpMetadata(headers: Headers) { headers.set("Content-Type", stored.httpMetadata.contentType); } } : null;
+  return stored ? { body: new Blob([stored.bytes]).stream(), size: stored.bytes.length, httpEtag: '"fixture"', httpMetadata: stored.httpMetadata, customMetadata: stored.customMetadata, writeHttpMetadata(headers: Headers) { headers.set("Content-Type", stored.httpMetadata.contentType); } } : null;
 }
 const storage = {
   head: vi.fn(async (key: string) => object(key)),
@@ -74,7 +74,7 @@ const storage = {
     const condition = options.onlyIf instanceof Headers ? options.onlyIf.get("If-None-Match") : undefined;
     if (condition === "*" && objects.has(key)) return null;
     state.events.push(`put:${key}`);
-    objects.set(key, { bytes, httpMetadata: options.httpMetadata as Stored["httpMetadata"] });
+    objects.set(key, { bytes, httpMetadata: options.httpMetadata as Stored["httpMetadata"], customMetadata: options.customMetadata });
     return object(key);
   }),
   delete: vi.fn(async () => { throw new Error("Publication must never delete stored objects"); }),
@@ -265,7 +265,7 @@ describe("publication commit and asset visibility", () => {
     const response = await retry();
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ artifactStatus: "synced", publishedVersion: 1 });
-    expect(storage.get).not.toHaveBeenCalled();
+    expect(storage.get.mock.calls).toEqual([["published/demo/versions/1/site.json"]]);
     expect(state.versions).toHaveLength(1);
   });
 });

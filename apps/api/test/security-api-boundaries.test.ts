@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Hono } from "hono";
 import { createStarterDocument, migrateSiteDocumentV2, projectPublicSiteDocument } from "@retrodesk/shared";
+import { publishedArtifactKey } from "../src/lib/publish";
 
 // Query-local filters and column selection are deliberate: an omitted site/owner
 // predicate or accidental draft selection must change the observed test result.
@@ -75,7 +76,12 @@ function storedObject(key: string) {
 const storage = {
   get: vi.fn(async (key: string) => storedObject(key)),
   head: vi.fn(async (key: string) => storedObject(key)),
-  put: vi.fn(async (key: string, body: BodyInit) => { objects.set(key, new Uint8Array(await new Response(body).arrayBuffer())); }),
+  put: vi.fn(async (key: string, body: BodyInit, options: R2PutOptions = {}) => {
+    const bytes = new Uint8Array(await new Response(body).arrayBuffer());
+    if (options.onlyIf instanceof Headers && options.onlyIf.get("If-None-Match") === "*" && objects.has(key)) return null;
+    objects.set(key, bytes);
+    return storedObject(key);
+  }),
   delete: vi.fn(async (key: string) => { objects.delete(key); }),
 };
 const env = { SUPABASE_URL: "https://db.example.invalid", SUPABASE_ANON_KEY: "fixture-anon", SUPABASE_SERVICE_ROLE_KEY: "fixture-service", ASSETS: storage, PUBLIC_ASSET_BASE_URL: "https://assets.example.invalid" } as never;
@@ -330,5 +336,65 @@ describe("asset boundary failures", () => {
     expect(await response.json()).toMatchObject({ error: { code: "file_too_large" } });
     expect(state.writes).toEqual([]);
     expect(storage.put).not.toHaveBeenCalled();
+  });
+});
+
+describe("artifact destination isolation (F3)", () => {
+  function committedOwnSite() {
+    Object.assign(state.tables.sites[0], {
+      published_document: createStarterDocument("Site A public fixture", "classic98", "blank"),
+      published_version: 1,
+      published_at: "2026-10-18T00:00:00.000Z",
+    });
+  }
+
+  it.each([
+    "published/other/versions/9/site.json",
+    "published/demo/../other/versions/9/site.json",
+    "published/%6fther/versions/9/site.json",
+    "published/demo/versions/9/site.json",
+    "https://assets.example.invalid/published/other/versions/9/site.json",
+    "draft/users/owner-b/sites/site-b/victim.png",
+  ])("ignores an owner-editable artifact key %s and preserves site B", async (untrustedKey) => {
+    committedOwnSite();
+    state.tables.sites[0].published_artifact_key = untrustedKey;
+    const victim = new TextEncoder().encode("SITE-B-ARTIFACT-FIXTURE");
+    objects.set(untrustedKey, victim);
+    const response = await request("/sites/site-a/publish/retry", "owner-a", { method: "POST" });
+    expect(response.status).toBe(200);
+    expect.soft(objects.get(untrustedKey)).toEqual(victim);
+    expect.soft(await response.json()).toMatchObject({ artifactKey: "published/demo/versions/1/site.json", artifactStatus: "synced" });
+    expect(storage.put.mock.calls.map(([key]) => key)).toEqual(["published/demo/versions/1/site.json"]);
+  });
+
+  it("preserves the old artifact after a valid handle rename and derives the new destination", async () => {
+    committedOwnSite();
+    const original = new TextEncoder().encode("ORIGINAL-PUBLISHED-FIXTURE");
+    objects.set("published/demo/versions/1/site.json", original);
+    Object.assign(state.tables.sites[0], { username: "renamed", published_artifact_key: "published/demo/versions/1/site.json" });
+    const response = await request("/sites/site-a/publish/retry", "owner-a", { method: "POST" });
+    expect(response.status).toBe(200);
+    expect.soft(objects.get("published/demo/versions/1/site.json")).toEqual(original);
+    expect(await response.json()).toMatchObject({ artifactKey: "published/renamed/versions/1/site.json", artifactStatus: "synced" });
+  });
+
+  it("never overwrites another site's historical artifact even if owner-edited handle/version point at its canonical key", async () => {
+    committedOwnSite();
+    Object.assign(state.tables.sites[0], { username: "reused-handle", published_version: 9, published_artifact_key: null });
+    const destination = "published/reused-handle/versions/9/site.json";
+    const victim = new TextEncoder().encode(JSON.stringify({ username: "reused-handle", version: 9, publishedAt: "2026-10-17T00:00:00.000Z", document: { siteName: "SITE-B-HISTORICAL-FIXTURE" } }));
+    objects.set(destination, victim);
+    const response = await request("/sites/site-a/publish/retry", "owner-a", { method: "POST" });
+    expect(response.status).toBe(200);
+    expect.soft(objects.get(destination)).toEqual(victim);
+    expect(await response.json()).toMatchObject({ artifactStatus: "failed", retryable: true });
+  });
+
+  it.each(["demo/../other", "%6fther", "demo%2fother", "demo\\other", "Demo", " demo"])("rejects noncanonical storage usernames without decoding: %s", (username) => {
+    expect(() => publishedArtifactKey(username, 1)).toThrow();
+  });
+
+  it.each([0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY, 2147483648])("rejects invalid artifact versions: %s", (version) => {
+    expect(() => publishedArtifactKey("demo", version)).toThrow();
   });
 });

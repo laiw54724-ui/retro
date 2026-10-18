@@ -1,7 +1,8 @@
 # API boundary review and bounded fixes — #76
 
-Both reproduced findings (F1 unpublished names and F2 precommit public asset copies)
-are fixed locally. The original F2 negative assertions are retained and now pass.
+Three reproduced findings (F1 unpublished names, F2 precommit public asset copies,
+F3 owner-controlled artifact destinations) are fixed locally. Negative assertions
+are retained and now pass.
 This Draft PR still needs review and final integration/deployment verification.
 No production data was inspected, changed or cleaned up.
 
@@ -134,6 +135,51 @@ rollback deletion.
 - Retry assumes the committed snapshot's configured public asset base is retained.
   Config/base changes and alternate-origin routing need deployment verification.
 
+## F3 — owner-controlled artifact destination, confirmed and fixed
+
+Review of **all migrations 0001–0009** found table-level
+`grant select, insert, update, delete on public.sites to authenticated` in
+`0001_initial.sql:113`; the owner UPDATE policy checks owner identity on the row,
+not which columns change. `0003_atomic_publish.sql` adds
+`published_artifact_key text`. No later migration revokes the sites UPDATE grant
+or limits it to selected columns. The publish RPC is service-only, but that does
+not revoke direct owner table updates. Actual deployed grants/RLS were not queried;
+this is a source-permission condition, not a remote exploit claim.
+
+At `c685388c5ec22e461e5aed9825854b6dcda98644`, retry read that mutable key and
+`writePublishedArtifact` used it for an unconditional service-role R2 write.
+Synthetic proof: owner A's own site row was given a B artifact key, then the actual
+Hono retry route overwrote B's fake artifact bytes. No real account, bucket or user
+data was used. The original focused F3 run had **20 failed cases** before the fix
+(other cases excluded by the test-name selector, not implementation skips).
+
+The fix does not treat mutable canonical fields as authorization. Retry no longer
+selects the stored artifact key; publish ignores the RPC key override. Both the
+orchestration and lowest writer derive the entire canonical key from strict raw
+lowercase handle syntax and positive PostgreSQL integer versions, without URL
+decoding, path normalization or suffix checks. SQL-compatible short handles remain.
+
+Crucially, JSON artifact puts are **create-only**, using `If-None-Match: *`.
+Even owner-edited canonical fields or handle namespace reuse cannot overwrite an
+existing artifact. A collision counts as synced only for compatible siteId metadata
+(if present), username/version, timestamp and semantic document content. Equivalent
+legacy metadata-less artifacts are accepted without rewriting, tolerating jsonb
+key order and equivalent timestamp formatting. Different siteId/content or malformed
+JSON yields a retryable failure and retains bytes; malformed contents are not
+echoed. New metadata binds siteId; the public payload keeps its existing fields.
+
+Tests cover foreign/encoded/traversal/URL/private/wrong-version key hints, valid
+handle rename preserving old content, namespace/version collision, invalid raw
+handles/versions, equivalent legacy content, mismatched siteId/content, malformed
+JSON and simultaneous identical retries. Local Miniflare also executes the actual
+artifact writer twice and proves a supplied B key leaves B's fixture unchanged.
+
+Owner table grants remain unchanged. This contains the privileged artifact-writing
+boundary; it does not claim direct DB writes are RPC-only or the entire inherited
+RLS model is hardened. A renamed/reused namespace collision may fail safe and need
+another version rather than replacing earlier bytes. Stable site-ID namespaces
+or column privilege changes would require a separate contract decision.
+
 ## Coverage and validation
 
 Real Hono handlers, bearer parsing/access rules, projection and helpers run against
@@ -148,6 +194,7 @@ model the SQL CAS; they do not certify real PostgreSQL locking or deployed RLS.
 | private assets | Authorized GET/HEAD/Range with private no-store; foreign ID/site/prefix and raw draft namespace rejected before storage. |
 | uploads | MIME, declared size, actual image/audio per-file oversize without Content-Length; existing namespace/quota/signature/DB-insert rollback cases. No load/stress test. |
 | F2/order/retry | Original missing-row regression; partial staging, missing source, DB conflicts/errors, commit-before-public-write, promotion retry after source removal, lost commit response, existing bytes, head/put race, two same-draft publishers, slow old publisher, old snapshot retry. No skips. |
+| F3 artifact boundary | Owner-editable key hints cannot control R2 destinations; strict canonical identity plus immutable put; handle/version reuse, old artifact compatibility, different site/content collisions and concurrent retries. |
 | R2 condition/storage | Local Miniflare verifies existing bytes retained, condition returns null, exactly one concurrent create wins; actual production helpers stage privately then promote with correct bytes/MIME/cache metadata. No real bucket. |
 | preview/content | Related web previewModel/sharing/collaboration/assetSource/uploadTasks plus shared parser/provider/projection; no browser DOM/escaping/provider session rerun. |
 | CSP/deployment | Deployed headers, true RLS/RPC, real accounts, mobile and platform playback unverified; outside API write ownership. |
@@ -169,11 +216,11 @@ git diff --check
 ```
 
 - Base API: **26 files / 110 tests PASS**.
-- Final API with original F2 assertion and 13 additional flow cases:
-  **28 files / 159 tests PASS**, no skips.
+- Final API with F1/F2/F3 assertions, including 13 publication-flow and 26 F3 cases:
+  **29 files / 185 tests PASS**, no skips (previous F2 candidate: 159 PASS).
 - Shared: **19 files / 175 tests PASS**. Focused Web: **5 files / 43 tests PASS**.
 - API/shared lint: **PASS**, both run production `tsc --noEmit`.
-- Local Miniflare R2 smoke and actual staging/promotion helpers: **PASS**. Requires a loopback socket; installed v5
+- Local Miniflare R2 smoke and actual staging/promotion/artifact retry helpers: **PASS**. Requires a loopback socket; installed v5
   required its V4-options converter. No project config changed.
 - Secret audit and diff check: **PASS**, secret values not printed.
 - Full contributor/build/browser gate, deployed headers, true accounts/RLS,
@@ -183,14 +230,17 @@ Local logs: `/tmp/retro-76-baseline.log`, `/tmp/retro-76-red.log`,
 `/tmp/retro-76-final-api.log` (initial F2 RED), `/tmp/retro-76-f2-final-api.log`
 (final GREEN), `/tmp/retro-76-final-shared.log`, `/tmp/retro-76-final-web.log`,
 `/tmp/retro-76-f2-lint.log`, `/tmp/retro-76-r2-conditional.log`,
-`/tmp/retro-76-secret-audit.log`. All target identities/URLs/UUIDs are synthetic;
+`/tmp/retro-76-secret-audit.log`, `/tmp/retro-76-f3-red.log`,
+`/tmp/retro-76-f3-final-api.log`, `/tmp/retro-76-f3-lint.log`,
+`/tmp/retro-76-f3-r2.log`, `/tmp/retro-76-f3-audit.log`.
+All target identities/URLs/UUIDs are synthetic;
 public prose contains no real target account, private URL, token or user content.
 The [R2 Workers API](https://developers.cloudflare.com/r2/api/workers/workers-api-reference/)
 documents conditional writes; installed types and local runtime were checked too.
 
 ## Integrator handoff
 
-Review F1/F2 source and failure/retry semantics; then run the applicable full gate
+Review F1/F2/F3 source and failure/retry semantics; then run the applicable full gate
 once on the final combined SHA. Add browser page/share/export name parity,
 preview non-writing, upload failure/retry messaging and old public content checks.
 Use authorized disposable staging identities for owner/editor/viewer/B/anonymous

@@ -229,8 +229,7 @@ sites.post("/sites/:siteId/publish", async (c) => {
     username: site.username,
     version: row.published_version,
     document: rewrittenProjection.document,
-    publishedAt: row.published_at,
-    artifactKey: row.artifact_key ?? publishedArtifactKey(site.username, row.published_version)
+    publishedAt: row.published_at
   });
   const statusResult = await recordArtifactStatus(supabase, site.id, access.ownerId, row.published_version, artifact.artifactStatus, artifact.error);
   const cleanupWarnings = artifact.artifactStatus === "synced" && statusResult.updated && !statusResult.error
@@ -247,7 +246,7 @@ sites.post("/sites/:siteId/publish/retry", async (c) => {
   if (access instanceof Response) return access;
   const { data: site, error } = await supabase
     .from("sites")
-    .select("id,owner_id,username,published_document,published_version,published_at,published_artifact_key")
+    .select("id,owner_id,username,published_document,published_version,published_at")
     .eq("id", access.siteId)
     .maybeSingle();
   if (error) return jsonError(c, 500, "db_error", "Could not load published site");
@@ -258,8 +257,7 @@ sites.post("/sites/:siteId/publish/retry", async (c) => {
     username: site.username,
     version: site.published_version,
     document: site.published_document,
-    publishedAt: site.published_at,
-    artifactKey: site.published_artifact_key ?? publishedArtifactKey(site.username, site.published_version)
+    publishedAt: site.published_at
   });
   const statusResult = await recordArtifactStatus(supabase, site.id, access.ownerId, site.published_version, artifact.artifactStatus, artifact.error);
   const cleanupWarnings = artifact.artifactStatus === "synced" && statusResult.updated && !statusResult.error
@@ -270,12 +268,14 @@ sites.post("/sites/:siteId/publish/retry", async (c) => {
 
 async function syncCommittedPublication(
   env: Env,
-  input: { siteId: string; username: string; version: number; document: unknown; publishedAt: string; artifactKey?: string }
+  input: { siteId: string; username: string; version: number; document: unknown; publishedAt: string }
 ): Promise<PublishArtifactResult> {
+  let artifactKey: string;
+  try { artifactKey = publishedArtifactKey(input.username, input.version); }
+  catch { return { artifactStatus: "failed", retryable: true, artifactKey: "", error: "Invalid publication storage identity" }; }
   const promoted = await promotePublishedAssets(env, input);
-  const { siteId: _siteId, ...artifactInput } = input;
-  if (!promoted.ok) return { artifactStatus: "failed", retryable: true, artifactKey: input.artifactKey ?? publishedArtifactKey(input.username, input.version), error: promoted.message };
-  return writePublishedArtifact(env, artifactInput);
+  if (!promoted.ok) return { artifactStatus: "failed", retryable: true, artifactKey, error: promoted.message };
+  return writePublishedArtifact(env, input);
 }
 
 sites.get("/public/sites/:username", async (c) => {
