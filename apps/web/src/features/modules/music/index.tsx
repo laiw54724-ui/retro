@@ -7,6 +7,7 @@ import { moveById, type ModuleProps } from "../types";
 import { musicPlayback, useMusicPlayback } from "./audioCoordinator";
 import { embedSession, playNative, playResolvedNative } from "./mediaSession";
 import { ProviderPlayer } from "./ProviderPlayer";
+import { TrackSourceField } from "./TrackSourceField";
 import { explainPlaybackFailure, insightForUrl } from "./sourceInsight";
 import { useAssetResolver, useAssetSource } from "../../../lib/assetSource";
 
@@ -31,10 +32,6 @@ const urlOfSource = (source: TrackSource): string => source.kind === "audioUrl" 
 const openableUrl = (source: TrackSource): string | null => {
   const url = source.kind === "uploadedAudio" ? "" : source.kind === "providerEmbed" ? source.canonicalUrl : source.url;
   return url && url !== "https://" ? url : null;
-};
-const embedSourceFrom = (raw: string): EmbedSource | null => {
-  const embed = insightForUrl(raw).embed;
-  return embed ? { kind: "providerEmbed", provider: embed.provider, resourceType: embed.resourceType, resourceId: embed.resourceId, canonicalUrl: embed.canonicalUrl, originalUrl: raw.trim() } : null;
 };
 const kindBadge = (source: TrackSource) => {
   if (source.kind === "providerEmbed") return PLATFORM_LABELS[source.provider];
@@ -181,18 +178,10 @@ function UploadedAudioPreview({ windowId, trackId, source, previewing, loading }
   return <button type="button" className="w98-btn music-preview" disabled={!playableUrl(resolved) || loading} onClick={() => previewing ? musicPlayback.pause(windowId) : resolved ? void playNative(windowId, trackId, resolved) : undefined}>{previewing ? tr("music.stopPreview") : resolved ? tr("music.previewUploadedFile") : tr("music.preparingAudio")}</button>;
 }
 
-type SourceTab = "upload" | "audioUrl" | "externalLink" | "embed";
-const tabOf = (source: TrackSource): SourceTab => source.kind === "uploadedAudio" ? "upload" : source.kind === "providerEmbed" ? "embed" : source.kind;
-
 export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">) {
   const { t: tr } = useTranslation("music");
   const tracks = orderedTracks(window);
   const playback = useMusicPlayback();
-  // The author's last typed link per track, so flipping source types never throws it away.
-  const [lastUrls, setLastUrls] = useState<Record<string, string>>({});
-  // Which source tab the author picked; the stored kind can lag behind while a link is not embeddable yet.
-  const [tabs, setTabs] = useState<Record<string, SourceTab>>({});
-  const [embedDrafts, setEmbedDrafts] = useState<Record<string, string>>({});
   const setTracks = (recipe: (tracks: MusicTrack[]) => MusicTrack[], key?: string) => update((current) => {
     const next = recipe(orderedTracks(current));
     return { ...current, content: { ...current.content, tracks: next, playlist: { ...current.content.playlist, trackIds: next.map((track) => track.id) } } };
@@ -205,24 +194,6 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
   const patchTrackSource = (id: string, source: TrackSource, key?: string) => {
     stopPreviewForTrack(id);
     patchTrack(id, { source }, key);
-  };
-  const rememberUrl = (id: string, url: string) => { if (url.trim() && url.trim() !== "https://") setLastUrls((current) => ({ ...current, [id]: url })); };
-  const carriedUrl = (track: MusicTrack) => {
-    const own = urlOfSource(track.source);
-    return own.trim() && own.trim() !== "https://" ? own : lastUrls[track.id] ?? "";
-  };
-  const chooseTab = (track: MusicTrack, tab: Exclude<SourceTab, "upload">) => {
-    const carried = carriedUrl(track);
-    rememberUrl(track.id, carried);
-    setTabs((current) => ({ ...current, [track.id]: tab }));
-    if (tab === "audioUrl") patchTrackSource(track.id, { kind: "audioUrl", url: carried || "https://" });
-    else if (tab === "externalLink") patchTrackSource(track.id, { kind: "externalLink", url: carried || "https://" });
-    else {
-      // Embeddable: switch immediately. Otherwise keep the link as an external link and explain what to paste.
-      const embed = embedSourceFrom(carried);
-      setEmbedDrafts((current) => ({ ...current, [track.id]: carried }));
-      patchTrackSource(track.id, embed ?? { kind: "externalLink", url: carried || "https://" });
-    }
   };
   const addTrack = () => setTracks((list) => {
     const track: MusicTrack = { id: newId(), title: tr("music.newTrack"), artist: "", cover: null, coverUrl: "", source: { kind: "audioUrl", url: "https://" }, lyrics: "", rightsNote: "" };
@@ -240,7 +211,6 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
     stopPreviewForTrack(trackId);
     const stored = await ctx.upload?.(file, "audio");
     if (stored) {
-      setTabs((current) => ({ ...current, [trackId]: "upload" }));
       patchTrackSource(trackId, { kind: "uploadedAudio", asset: stored });
     }
   };
@@ -255,14 +225,12 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
       <p className="w98-hint">{tr("music.uploadMp3OggWavFiles")}</p>
       {!tracks.length ? <div className="music-editor-empty"><strong>{tr("music.noTracksYet")}</strong><span>{tr("music.addOneFirstThenEnter")}</span><button type="button" className="w98-btn" onClick={addTrack}>{tr("music.addTheFirstTrack")}</button></div> : null}
       {tracks.map((track, index) => {
-        const tab = tabs[track.id] ?? tabOf(track.source);
         const previewing = playback.windowId === window.id && playback.trackId === track.id && playback.status === "playing";
         const failed = playback.windowId === window.id && playback.trackId === track.id && playback.status === "error";
         const sourceUrl = urlOfSource(track.source);
-        const insight = insightForUrl(tab === "embed" ? embedDrafts[track.id] ?? sourceUrl : sourceUrl);
+        const insight = insightForUrl(sourceUrl);
         const directUrl = track.source.kind === "audioUrl" ? track.source.url : null;
         const platformBlocked = track.source.kind === "audioUrl" && insight.isPlatformPage;
-        const embedSource = track.source.kind === "providerEmbed" ? track.source : null;
         const original = openableUrl(track.source);
         return (
           <fieldset key={track.id} className="w98-fieldset music-track-editor">
@@ -281,80 +249,14 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
               <div><FilePick className="w98-btn small" onFiles={(files) => void uploadCover(track.id, files[0])}>{tr("music.uploadCover")}</FilePick><ImageUrlField raw={track.coverUrl} label={tr("music.coverImageUrl")} placeholder="https://…" onCommit={(raw, cover) => patchTrack(track.id, { coverUrl: raw, cover })} /></div>
             </div>
 
-            <div className="seg music-source-tabs" role="group" aria-label={tr("music.sourceType")}>
-              <FilePick className={`w98-btn grow${tab === "upload" ? " on" : ""}`} accept="audio/mpeg,audio/ogg,audio/wav,.mp3,.ogg,.wav" onFiles={(files) => void uploadAudio(track.id, files[0])}>{tr("music.uploadAudio")}</FilePick>
-              <button type="button" className={`w98-btn grow${tab === "audioUrl" ? " on" : ""}`} aria-pressed={tab === "audioUrl"} onClick={() => chooseTab(track, "audioUrl")}>{tr("music.httpsAudio")}</button>
-              <button type="button" className={`w98-btn grow${tab === "externalLink" ? " on" : ""}`} aria-pressed={tab === "externalLink"} onClick={() => chooseTab(track, "externalLink")}>{tr("music.externalLink")}</button>
-              <button type="button" className={`w98-btn grow${tab === "embed" ? " on" : ""}`} aria-pressed={tab === "embed"} onClick={() => chooseTab(track, "embed")}>{tr("music.platformPlayerTab")}</button>
-            </div>
-            <p className="w98-hint music-source-explain">
-              {tab === "upload" ? tr("music.playsHereUploadAnAudio") : tab === "audioUrl" ? tr("music.playsHerePasteTheHttps") : tab === "externalLink" ? tr("music.opensExternallyVisitorsClickOpen") : tr("music.platformPlayerAfterVisitorsPress")}
-            </p>
-
-            {tab === "upload"
-              ? track.source.kind === "uploadedAudio"
-                ? <div className="music-upload-source"><FilePick className="w98-btn" accept="audio/mpeg,audio/ogg,audio/wav,.mp3,.ogg,.wav" onFiles={(files) => void uploadAudio(track.id, files[0])}>{tr("music.replaceAudioFile")}</FilePick><span className="w98-hint">{tr("music.theFileIsStoredIn")}</span></div>
-                : <span className="w98-hint">{tr("music.afterYouChooseAFile")}</span>
-              : null}
-
-            {tab === "audioUrl" || tab === "externalLink" ? (
-              <label>
-                <span>{tab === "audioUrl" ? tr("music.directAudioHttps") : tr("music.platformWorkPageLink")}</span>
-                <input
-                  className="w98-input"
-                  value={track.source.kind === "audioUrl" || track.source.kind === "externalLink" ? track.source.url : ""}
-                  onChange={(event) => { rememberUrl(track.id, event.target.value); patchTrackSource(track.id, tab === "audioUrl" ? { kind: "audioUrl", url: event.target.value } : { kind: "externalLink", url: event.target.value }, `music-source-${track.id}`); }}
-                />
-              </label>
-            ) : null}
-
-            {tab === "embed" ? (
-              <label>
-                <span>{tr("music.spotifyYoutubeUrl")}</span>
-                <input
-                  className="w98-input"
-                  value={embedDrafts[track.id] ?? sourceUrl}
-                  placeholder={tr("music.httpsOpenSpotifyComTrack")}
-                  onChange={(event) => {
-                    const raw = event.target.value;
-                    setEmbedDrafts((current) => ({ ...current, [track.id]: raw }));
-                    rememberUrl(track.id, raw);
-                    const embed = embedSourceFrom(raw);
-                    if (embed) patchTrackSource(track.id, embed, `music-source-${track.id}`);
-                    else if (/^https?:\/\/\S*$/i.test(raw.trim()) || !raw.trim()) patchTrackSource(track.id, { kind: "externalLink", url: raw.trim() || "https://" }, `music-source-${track.id}`);
-                  }}
-                />
-              </label>
-            ) : null}
-
-            {platformBlocked && insight.platformLabel ? (
-              <div role="note" className="music-notice">
-                <strong>{tr("music.thisIsWebLink", { platform: insight.platformLabel })}</strong>
-                <span>{insight.embed ? tr("music.youCanSwitchThisTo", { platformLabel: insight.platformLabel }) : insight.embedProblem}</span>
-                <div className="music-notice-actions">
-                  {insight.embed ? <button type="button" className="w98-btn small primary" onClick={() => chooseTab(track, "embed")}>{tr("music.changeToPlatform", { platform: insight.platformLabel })}</button> : null}
-                  <button type="button" className="w98-btn small" onClick={() => chooseTab(track, "externalLink")}>{tr("music.changeToExternalLink")}</button>
-                </div>
-              </div>
-            ) : null}
-            {tab === "audioUrl" && !platformBlocked && track.source.kind === "audioUrl" && insight.looksLikeAudioFile === false && sourceUrl.trim() && sourceUrl.trim() !== "https://" ? <p className="w98-hint">{tr("music.thisUrlDoesntLookLike")}</p> : null}
-            {tab === "externalLink" && insight.embed ? (
-              <div role="note" className="music-notice soft">
-                <span>{tr("music.canEmbed", { platform: insight.platformLabel, resource: resourceLabel()[insight.embed.resourceType].toLocaleLowerCase() })}</span>
-                <div className="music-notice-actions"><button type="button" className="w98-btn small" onClick={() => chooseTab(track, "embed")}>{tr("music.changeToPlatformPlayer")}</button></div>
-              </div>
-            ) : null}
-            {tab === "externalLink" && insight.platform && !insight.embed && insight.embedProblem ? <p className="w98-hint">{insight.embedProblem}</p> : null}
-            {tab === "embed" && !embedSource && insight.platform ? <p role="status" className="w98-hint">{insight.embedProblem ?? tr("music.pasteASpotifyTrackAlbum")} {tr("music.savedAsExternal")}</p> : null}
-            {tab === "embed" && !embedSource && !insight.platform && (embedDrafts[track.id] ?? sourceUrl).trim() && (embedDrafts[track.id] ?? sourceUrl).trim() !== "https://" ? <p role="status" className="w98-hint">{tr("music.onlySpotifyAndYoutubeUrls")}</p> : null}
-
-            {embedSource ? (
-              <>
-                <p className="w98-hint music-embed-summary">{tr("music.recognized", { platform: PLATFORM_LABELS[embedSource.provider], resource: resourceLabel()[embedSource.resourceType], id: embedSource.resourceId })}</p>
-                <ProviderPlayer source={embedSource} title={track.title} windowId={window.id} trackId={track.id} onOpenOriginal={() => openLink(original, track.title)} />
-                <button type="button" className="w98-btn small" style={{ alignSelf: "flex-start" }} onClick={() => chooseTab(track, "externalLink")}>{tr("music.changeToExternalLinkKeep")}</button>
-              </>
-            ) : null}
+            <TrackSourceField
+              track={track}
+              windowId={window.id}
+              patchSource={(source, key) => patchTrackSource(track.id, source, key)}
+              uploadAudio={(file) => void uploadAudio(track.id, file)}
+              onOpenOriginal={() => openLink(original, track.title)}
+              resourceName={(type) => resourceLabel()[type]}
+            />
 
             {track.source.kind === "audioUrl" ? <button type="button" className="w98-btn music-preview" disabled={!playableUrl(directUrl) || platformBlocked || playback.status === "loading" && playback.trackId === track.id} onClick={() => previewing ? musicPlayback.pause(window.id) : directUrl ? void playNative(window.id, track.id, directUrl) : undefined}>{previewing ? tr("music.stopPreview") : tr("music.preview")}</button> : track.source.kind === "uploadedAudio" ? <UploadedAudioPreview windowId={window.id} trackId={track.id} source={track.source.asset} previewing={previewing} loading={playback.status === "loading" && playback.trackId === track.id} /> : track.source.kind === "externalLink" ? <span className="w98-hint">{tr("music.visitorsWillSeeOpenOriginal")}</span> : null}
             {failed ? (
