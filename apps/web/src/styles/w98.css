@@ -389,6 +389,8 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 /* Real phone: the plain mobile layout fills the area below the preview bar, no device frame. */
 .preview-phone-real { height: 100%; }
 .preview-phone-real .visitor-mobile, .draft-viewer-phone .visitor-mobile:not(.framed) { min-height: 0; height: 100%; }
+/* A grid item shrink-wraps its content, and an open app is absolutely positioned: give the plain phone view the full width. */
+.draft-viewer-phone .visitor-mobile:not(.framed) { width: 100%; }
 .preview-phone-real .m-screen, .draft-viewer-phone .visitor-mobile:not(.framed) .m-screen { height: 100%; }
 
 /* ---- private draft viewer ---- */
@@ -475,7 +477,9 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 .visitor-mobile.framed { min-height: 0; padding: 0; display: grid; place-items: center; }
 .m-bezel { width: 360px; max-width: 100%; height: 720px; max-height: 100%; background: #000; border-radius: 40px; padding: 11px; box-shadow: 0 20px 50px rgba(0, 0, 0, .35); }
 .m-bezel .m-screen { border-radius: 30px; }
-.m-screen { position: relative; width: 100%; height: 100vh; min-height: 0; display: flex; flex-direction: column; overflow: hidden; font-size: 15px; }
+/* --m-safe-bottom is the home-indicator inset on a real phone (viewport-fit=cover); tests override it to prove the layout honours it. */
+:root { --m-safe-bottom: env(safe-area-inset-bottom, 0px); }
+.m-screen { position: relative; width: 100%; height: 100vh; height: 100dvh; min-height: 0; display: flex; flex-direction: column; overflow: hidden; font-size: 15px; padding-bottom: var(--m-safe-bottom); }
 .framed .m-screen { height: 100%; }
 .m-status { height: 30px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; font-size: 12px; font-weight: 700; }
 .m-titlebar { height: 44px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 0 12px; color: #fff; font-weight: 700; }
@@ -494,13 +498,13 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 .m-btn { min-height: 38px; padding: 0 10px; border: 0; font: inherit; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
 .m-btn.sq { width: 38px; padding: 0; justify-content: center; font-size: 18px; }
 .m-win-body { flex: 1; min-height: 0; margin-top: 3px; background: #fff; color: #111; padding: 2px; overflow: auto; position: relative; }
-.m-fab { position: absolute; right: 14px; bottom: 14px; z-index: 6; min-height: 44px; padding: 0 18px; background: #000080; color: #fff; font-weight: 700; border: 1px solid #000; cursor: pointer; box-shadow: 2px 2px 0 #000; }
-.m-taskbar { height: 52px; flex-shrink: 0; display: flex; align-items: center; gap: 6px; padding: 4px 6px 8px; }
-.m-taskbar .m-btn { min-height: 40px; }
-.m-current { flex: 1; min-width: 0; height: 40px; padding: 0 10px; display: flex; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap; }
-.m-toolbar { height: 62px; flex-shrink: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; padding: 4px 4px 8px; background: #c0c0c0; box-shadow: inset 0 1px #fff; }
+.m-toolbar { height: 62px; flex-shrink: 0; margin-bottom: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; padding: 4px 4px 8px; background: #c0c0c0; box-shadow: inset 0 1px #fff; }
 .m-tool { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border: 0; background: #c0c0c0; color: #000; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; box-shadow: var(--w98-raised); min-height: 44px; }
 .m-tool[aria-pressed="true"] { box-shadow: var(--w98-pressed); }
+.m-site-menu { position: relative; display: inline-flex; align-items: center; gap: 4px; }
+.m-playing { display: inline-grid; place-items: center; min-width: 24px; height: 44px; font-weight: 700; }
+.m-site-panel { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; width: min(280px, calc(100vw - 16px)); padding: 10px; color: #000; background: #c0c0c0; }
+.m-edit-toggle[aria-pressed="true"] { box-shadow: var(--w98-pressed); }
 .m-scrim { position: absolute; inset: 0; z-index: 20; background: rgba(0, 0, 0, .4); }
 .m-sheet { position: absolute; left: 0; right: 0; bottom: 0; max-height: 74%; z-index: 21; display: flex; flex-direction: column; color: #000; font-size: 14px; }
 .m-sheet-title { display: flex; align-items: center; gap: 8px; height: 46px; flex-shrink: 0; padding: 0 6px 0 12px; background: linear-gradient(90deg, #000080, #1084d0); color: #fff; margin: 3px 3px 0; }
@@ -557,6 +561,9 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 .music-embed-note { color: #4d4d4d; line-height: 1.5; }
 .music-embed-slow { padding: 6px 8px; border: 1px solid #7a5b00; background: #ffffe1; font-size: 12px; }
 .music-track-list { min-height: 82px; max-height: 190px; overflow: auto; background: #fff; }
+/* On a phone the window body is the one scroll area: no nested list/lyrics scrollers (the desktop keeps its compact areas). */
+.m-win-body .music-track-list { max-height: none; overflow: visible; }
+.m-win-body .music-lyrics pre { max-height: none; overflow: visible; }
 .music-track { width: 100%; min-height: 46px; display: grid; grid-template-columns: 28px minmax(0, 1fr) 24px; align-items: center; gap: 7px; padding: 5px 7px; border: 0; border-bottom: 1px dotted #8d8d8d; background: #fff; color: #111; font: inherit; text-align: left; cursor: pointer; }
 .music-track:last-child { border-bottom: 0; }
 .music-track.selected { background: #000080; color: #fff; }

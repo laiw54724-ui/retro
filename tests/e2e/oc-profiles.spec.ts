@@ -968,7 +968,7 @@ for (const width of [1280, 390]) {
     const win = page.getByRole("dialog", { name: "Instagram.exe" });
     await expect(win.locator(".ig-frame")).toHaveCSS("background-color", "rgb(18, 52, 86)");
     await expect(win.getByRole("button", { name: "+ Follow" })).toHaveCSS("background-color", "rgb(255, 0, 170)");
-    const outerTitle = width < 500 ? page.locator(".m-titlebar") : win.locator(".retro-titlebar");
+    const outerTitle = width < 500 ? page.locator(".m-win-title") : win.locator(".retro-titlebar");
     await expect(outerTitle).not.toHaveCSS("background-color", "rgb(18, 52, 86)");
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
   });

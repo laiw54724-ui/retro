@@ -38,14 +38,18 @@ async function expectContained(surface: Locator) {
 }
 
 async function expectLastControlAboveDone(dialog: Locator, control: Locator) {
-  await dialog.locator(".m-win-body").evaluate((element) => { element.scrollTop = element.scrollHeight; });
+  const body = dialog.locator(".m-win-body");
+  await body.evaluate((element) => { element.scrollTop = element.scrollHeight; });
   const controlBox = await control.boundingBox();
-  // The editor-owned action is a sibling of the shared WindowChrome dialog.
-  const done = dialog.locator("..").getByRole("button", { name: "完成編輯", exact: true });
+  const bodyBox = await body.boundingBox();
+  // The finish-editing action now lives in the window's title bar, so it can never cover a control; the last control
+  // must still be fully reachable inside the scrolled content area.
+  const done = dialog.getByRole("button", { name: "完成編輯", exact: true });
   await expect(done).toBeVisible();
   const doneBox = await done.boundingBox();
-  if (!controlBox || !doneBox) throw new Error("mobile control is missing");
-  expect(controlBox.y + controlBox.height).toBeLessThanOrEqual(doneBox.y);
+  if (!controlBox || !doneBox || !bodyBox) throw new Error("mobile control is missing");
+  expect(doneBox.y + doneBox.height).toBeLessThanOrEqual(bodyBox.y + 1);
+  expect(controlBox.y + controlBox.height).toBeLessThanOrEqual(bodyBox.y + bodyBox.height + 1);
 }
 
 test("about groups retain edited fields, undo deletion, save, reload and render on the public page", async ({ page }) => {

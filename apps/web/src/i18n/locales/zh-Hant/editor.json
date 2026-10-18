@@ -111,7 +111,8 @@
     "theme": "主題",
     "preview": "預覽",
     "addWindow": "新增視窗",
-    "editWindowTitle": "編輯視窗"
+    "editWindowTitle": "編輯視窗",
+    "siteMenu": "網站選項"
   },
   "integrity": {
     "targetWindow": "視窗：{{name}}",
@@ -158,7 +159,7 @@
     "windowsArentDraggedOnMobile": "手機上不拖曳視窗。新增後直接編輯內容，桌面位置之後可在桌面版調整。",
     "windowTitle": "視窗標題",
     "desktopIcon": "桌面圖示",
-    "openByDefaultWhenVisitors": "訪客進入時預設開啟",
+    "openByDefaultWhenVisitors": "訪客進入時預設開啟（僅桌面版）",
     "mobileIconOrder": "手機圖示順序",
     "moveUp": "往前",
     "moveDown": "往後",
@@ -452,7 +453,7 @@
     "general": "通用",
     "icon": "圖示",
     "layout": "版面",
-    "openByDefaultWhenVisitors": "訪客打開網站時預設開啟",
+    "openByDefaultWhenVisitors": "訪客打開網站時預設開啟（僅桌面版）",
     "bringToFront": "移到最前",
     "duplicateWindow": "複製視窗",
     "theIconShownOnThe": "桌面與工作列上的圖示。",
