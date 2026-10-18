@@ -1,0 +1,22 @@
+{
+  "base": "386c209dd8cb47bae96a749a7751cc7189032183",
+  "sources": {
+    "74": "e174d9d93dd8cef349c2ca51905faee34c77b079",
+    "77": "3d362aba671be19a67b022f97f18cef8c894753b",
+    "79": "bc44a2fc92c63498175f610f23a97fe36dfb220f",
+    "80": "bd0031934fce8be5d82a03f0394c855c8834ac58",
+    "81": "f0b351f2dce503b1ae057606a297043d30c7d6cb",
+    "82": "279451d44cb57660d807a1a2be3d5448dabe1cc0",
+    "78": "bab35d67b66f4f4c3a5e8bf8b4ff5718af0a7801"
+  },
+  "allSourceHeadsVerifiedAncestors": true,
+  "excluded": [
+    "#83 docs",
+    "unlisted/unpublished sources"
+  ],
+  "integrationFollowups": [
+    "four phone draft/public integration cases",
+    "reuse desktop-only MobileEdit checkbox translation key",
+    "add exact integration branch to existing workflow push list"
+  ]
+}

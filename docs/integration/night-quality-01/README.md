@@ -12,12 +12,13 @@ Base: `386c209dd8cb47bae96a749a7751cc7189032183`. Worktree: `task-2/retro-night-
 | #80 | `bd0031934fce8be5d82a03f0394c855c8834ac58` |
 | #82 | `279451d44cb57660d807a1a2be3d5448dabe1cc0` |
 | #81 R4 (subsequently approved by parent) | `f0b351f2dce503b1ae057606a297043d30c7d6cb` |
+| #78 security F1/F2/F3 (final reviewed source) | `bab35d67b66f4f4c3a5e8bf8b4ff5718af0a7801` |
 
 All heads matched the supplied values after fetch. The first five merge commits preserve their ancestry; R4 was added in a sixth merge after the parent approved its bounded review. No conflicts or integration runtime fixes were needed. The source merge snapshot is `d8fc380e93fd122986848991265bdec961fddef7`, tree `4b654587817df94bb6283d8b551c642c4b59407d`; this document and the additional phone-boundary test are committed afterward.
 
-**#78 is not included.** Its last supplied head `c685388c5ec22e461e5aed9825854b6dcda98644` is under further independent review for an existing RLS/published_artifact_key trust-boundary question. Wait for the parent to provide the final reviewed head and authorize the one final complete gate. This candidate is not release-approved.
+**#78 final source is now included.** The parent approved the final F1/F2/F3 head `bab35d67b66f4f4c3a5e8bf8b4ff5718af0a7801` after independent source review. The complete branch ancestry was merged, not just its last commit. The earlier `c685388c5ec22e461e5aed9825854b6dcda98644` checkpoint was intentionally held until the RLS/published_artifact_key trust-boundary follow-up was complete. This candidate remains a Draft for review, not a release approval.
 
-Excluded by ancestry: docs #83 `3c39b388968dfe0e9431ea2b8a0c27186d534d3d`, and #78. R4 was initially excluded and later included only after explicit parent authorization of its exact head; no other phone UX or additional PRs were silently included.
+Excluded by ancestry: docs #83 `3c39b388968dfe0e9431ea2b8a0c27186d534d3d`. R4 was initially excluded and later included only after explicit parent authorization of its exact head; no other phone UX or additional PRs were silently included.
 
 ## Existing overlapping candidate
 
@@ -40,4 +41,12 @@ After parent confirmation, exact source `f0b351f2dce503b1ae057606a297043d30c7d6c
 
 The one bounded review follow-up changes MobileEdit's defaultOpen checkbox from `mobileScreen.openAutomaticallyWhenVisitorsArrive` to the existing four-language `mobileEditor.openByDefaultWhenVisitors`, whose wording explicitly says desktop only. No translation resource was modified. One assertion was added to the existing phone-editor-shell test to verify the checkbox's accessible name. That test and the four night owner/viewer × 320/390 draft/public checks passed: [5-test receipt](r4-interface.txt). No existing assertion was removed or weakened.
 
-#78 remains absent and the final complete gate remains paused pending the parent's final reviewed security head.
+#78 was absent at this R4 checkpoint; the final reviewed security source was subsequently approved and merged as recorded above.
+
+## Final candidate validation protocol
+
+The old overlapping candidate's run [39148791420](https://github.com/laiw54724-ui/retro/actions/runs/39148791420) completed successfully at 2026-10-18 17:31 UTC; it is not proof for this new composition. Before final preparation no other actual local Playwright test, pnpm gate or Runner.Worker process was seen.
+
+Only `integration/retro-night-quality-01` was added to the existing integration workflow push-branch list. Permissions, secrets, job steps, test assertions, snapshot baselines and gates remain unchanged. Its Ubuntu job will record exact HEAD/tree, run lint, unmodified `pnpm verify:contributor`, ja/ko preview E2E, the dedicated Chromium Linux baseline suite and WebKit smoke, then verify tracked source is unchanged and upload diagnostics. The regular general suite's pre-existing visual skips must be reported with their dedicated-suite results, never counted as passed.
+
+The stable candidate SHA/tree and the actual complete-gate outcome are recorded in the Draft PR validation receipt after the workflow finishes, so no evidence-only commit changes the tested source identity. If a failure occurs, diagnose it before any repair; do not rerun unchanged jobs or update screenshots. No merge to main, deployment, secret/permission changes or source PR/issue closures are authorized. Real iOS/Android, provider playback, production headers/caching and live DB/RLS/deployment verification remain outside this synthetic local/CI receipt.
