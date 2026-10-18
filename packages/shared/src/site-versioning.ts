@@ -711,3 +711,24 @@ export function deleteOrRetargetProfile(document: SiteDocumentV2Input, profileId
 export const createProfileEntity = createProfile;
 export const updateProfileEntity = updateProfile;
 export const duplicateProfileEntity = duplicateProfile;
+
+
+/** JSON text with object keys sorted and undefined members dropped, so equal content always compares equal. */
+export function stableDocumentText(value: unknown): string {
+  const normalize = (item: unknown): unknown => {
+    if (Array.isArray(item)) return item.map(normalize);
+    if (item && typeof item === "object") {
+      return Object.fromEntries(Object.entries(item as Record<string, unknown>)
+        .filter(([, member]) => member !== undefined)
+        .sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)
+        .map(([key, member]) => [key, normalize(member)]));
+    }
+    return item;
+  };
+  return JSON.stringify(normalize(value));
+}
+
+/** Content equality that ignores key order (a stored jsonb copy reorders keys) and undefined members. */
+export function sameDocumentContent(a: unknown, b: unknown): boolean {
+  return stableDocumentText(a) === stableDocumentText(b);
+}

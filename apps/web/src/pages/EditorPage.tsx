@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { translateSystemMessage } from "../i18n/systemMessages";
 import { i18n } from "../i18n";
-import { buildPublishChecks, CollectionEntityV2Schema, createProfile, deleteOrRetargetProfile, duplicateProfile, hasBlockingCheck, loadVersionedSiteDocument, normalizeDocument, parseSiteDocument, PostEntityV2Schema, ProfileEntityV2Schema, projectV2ToLegacyDocument, updateProfile, type DesktopWindow, type SiteDocumentV2Input } from "@retrodesk/shared";
+import { buildPublishChecks, CollectionEntityV2Schema, createProfile, deleteOrRetargetProfile, duplicateProfile, hasBlockingCheck, hasUnpublishedChanges as hasUnpublishedDraftChanges, loadVersionedSiteDocument, normalizeDocument, parseSiteDocument, PostEntityV2Schema, ProfileEntityV2Schema, projectV2ToLegacyDocument, updateProfile, type DesktopWindow, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { api, ApiError, type AssetRecord, type SiteRecord } from "../lib/api";
@@ -133,6 +133,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     // adapter, so an autosave can never observe a stale v2 document after reload.
     setVersionedDraft(loadedDraft.version === 2 ? loadedDraft.document : null);
     store.setVersionedDocument(loadedDraft.version === 2 ? loadedDraft.document : null);
+    store.setPublishedRaw(site.published_document ?? null);
     if (loadedDraft.migrated) store.setSaveStatus("dirty");
   }
 
@@ -331,9 +332,8 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
   const hasUnpublishedChanges = useMemo(() => {
     if (!store.document) return false;
-    if (!store.publishedDocument) return true;
-    return !sameDocument(store.document, store.publishedDocument);
-  }, [store.document, store.publishedDocument]);
+    return hasUnpublishedDraftChanges({ siteId, draftLegacy: store.document, publishedLegacy: store.publishedDocument, draftCanonical: store.versionedDocument, publishedRaw: store.publishedRaw });
+  }, [siteId, store.document, store.publishedDocument, store.versionedDocument, store.publishedRaw]);
 
   const legacyAssets = assetInventory.filter((asset) => asset.storageScope === "legacy_public");
   const pendingPublicCopyAssets = assetInventory.filter((asset) => asset.publicCopyRemaining);
