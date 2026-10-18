@@ -10,6 +10,7 @@ import { buildProfileDirectory } from "../modules/instagram/profileDirectory";
 import { AssetSourceProvider } from "../../lib/assetSource";
 import type { SiteRecord } from "../../lib/api";
 import { useThemeView } from "../../lib/themeView";
+import { useIsPhoneViewport } from "../../lib/useViewport";
 import { MobileScreen } from "../site/MobileScreen";
 import { VisitorDesktop } from "../site/VisitorDesktop";
 
@@ -43,7 +44,10 @@ function DraftViewerContent({ site, draft }: { site: SiteRecord; draft: ReturnTy
   const { t: tr } = useTranslation("collab");
   const navigate = useNavigate();
   const { signOut } = useAuth();
-  const [device, setDevice] = useState<"desktop" | "mobile">(() => window.matchMedia("(max-width: 767px)").matches ? "mobile" : "desktop");
+  const phone = useIsPhoneViewport();
+  const [chosen, setDevice] = useState<"desktop" | "mobile">("desktop");
+  // A real phone only has the mobile layout (the desktop renderer is hidden there); larger screens may simulate either.
+  const device = phone ? "mobile" : chosen;
   const tv = useThemeView(draft.document.theme);
   const imageWallpaper = draft.document.theme.pattern === "image" && !!draft.document.theme.wallImage;
 
@@ -55,10 +59,10 @@ function DraftViewerContent({ site, draft }: { site: SiteRecord; draft: ReturnTy
           <strong className="draft-viewer-badge">{tr("draftViewer.privateDraftViewOnly")}</strong>
           <span className="draft-viewer-name">{site.site_name}</span>
           <div className="top-spacer" />
-          <div role="group" aria-label={tr("draftViewer.device")} className="device-toggle">
+          {phone ? null : <div role="group" aria-label={tr("draftViewer.device")} className="device-toggle">
             <button type="button" aria-pressed={device === "desktop"} className={"w98-btn" + (device === "desktop" ? " on" : "")} onClick={() => setDevice("desktop")}>{tr("draftViewer.desktop")}</button>
             <button type="button" aria-pressed={device === "mobile"} className={"w98-btn" + (device === "mobile" ? " on" : "")} onClick={() => setDevice("mobile")}>{tr("draftViewer.mobile")}</button>
-          </div>
+          </div>}
           <RetroButton onClick={async () => { await signOut(); navigate("/"); }}>{tr("draftViewer.signOut")}</RetroButton>
         </header>
         <section className={"draft-viewer-body " + device} aria-label={tr("draft.preview", { device: device === "desktop" ? tr("draft.deviceDesktop") : tr("draft.deviceMobile") })}>
@@ -67,7 +71,7 @@ function DraftViewerContent({ site, draft }: { site: SiteRecord; draft: ReturnTy
               <VisitorDesktop document={draft.document} profiles={draft.profiles} profileIdsByWindow={draft.profileIdsByWindow} profileDirectory={draft.profileDirectory} />
             </div>
           ) : (
-            <div className="draft-viewer-phone"><MobileScreen document={draft.document} mode="visitor" framed profiles={draft.profiles} profileIdsByWindow={draft.profileIdsByWindow} profileDirectory={draft.profileDirectory} /></div>
+            <div className="draft-viewer-phone"><MobileScreen document={draft.document} mode="visitor" framed={!phone} profiles={draft.profiles} profileIdsByWindow={draft.profileIdsByWindow} profileDirectory={draft.profileDirectory} /></div>
           )}
         </section>
       </main>
