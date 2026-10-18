@@ -22,7 +22,7 @@ all four languages (so "フォルダー" / "폴더" find the folder icon).
 
 ## What is intentionally not translated
 
-* Authored content: OC names, character data, posts, tags, author window titles, text typed by the user.
+* Authored content (including the **site name typed at onboarding**, even when it equals a built-in default such as "相簿" — the name is built in as a placeholder and restored after defaults are localized; covered by unit and e2e tests): OC names, character data, posts, tags, author window titles, text typed by the user.
 * **Creation defaults** (e.g. a new "About me" window) are localized once at creation. Existing works are never
   re-translated when the interface language changes (`localizedDefaults.ts`, exact-match on the zh default only).
 * Shared-package Chinese system messages are translated at the view boundary by exact wording (`systemMessages.ts`).

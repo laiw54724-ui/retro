@@ -62,6 +62,11 @@ jobs:
           trap 'if [ -d test-results ]; then cp -a test-results .candidate-evidence/contributor-test-results; fi' EXIT
           pnpm verify:contributor 2>&1 | tee .candidate-evidence/contributor.log
 
+      - name: ja/ko preview-mode i18n flows
+        run: |
+          set -euo pipefail
+          pnpm test:e2e:i18n-preview 2>&1 | tee .candidate-evidence/i18n-preview.log
+
       - name: Window chrome Chromium baselines
         run: |
           set -euo pipefail

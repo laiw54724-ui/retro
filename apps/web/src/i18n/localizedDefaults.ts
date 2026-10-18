@@ -105,3 +105,20 @@ export function localizeDefaults<T>(value: T): T {
 }
 
 export const DEFAULT_TEXT_KEYS: readonly string[] = [...Object.values(DEFAULTS), ...PATTERNS.map(([, key]) => key)];
+
+const SITE_NAME_SENTINEL = "__RETRO_SITE_NAME_9f3a__";
+
+function substituteDeep<T>(value: T, from: string, to: string): T {
+  if (typeof value === "string") return value.split(from).join(to) as T;
+  if (Array.isArray(value)) return value.map((item) => substituteDeep(item, from, to)) as T;
+  if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, substituteDeep(item, from, to)])) as T;
+  return value;
+}
+
+/**
+ * Builds a new document and localizes its built-in default text, while the author's own site name is carried through
+ * verbatim: the name is built in as a placeholder, so it can never be mistaken for (or rewritten as) a default string.
+ */
+export function createLocalizedDocument<T>(siteName: string, create: (name: string) => T): T {
+  return substituteDeep(localizeDefaults(create(SITE_NAME_SENTINEL)), SITE_NAME_SENTINEL, siteName);
+}

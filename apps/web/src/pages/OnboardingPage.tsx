@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { localizeDefaults } from "../i18n/localizedDefaults";
+import { createLocalizedDocument } from "../i18n/localizedDefaults";
 import { themeLabel } from "../i18n/themeNames";
 import { useTranslation } from "react-i18next";
 import { createTemplateDocument, THEME_PRESETS, UsernameSchema, type StarterTemplate } from "@retrodesk/shared";
@@ -36,7 +36,7 @@ export function OnboardingPage() {
     if (!validUsername.success || available === false) return;
     setBusy(true);
     try {
-      const document = localizeDefaults(createTemplateDocument(siteName, themeId, template));
+      const document = createLocalizedDocument(siteName, (name) => createTemplateDocument(name, themeId, template));
       const { site } = await api.createSite({ username: validUsername.data, siteName, document });
       navigate("/editor/" + site.id);
     } finally {

@@ -190,6 +190,26 @@ for (const locale of LOCALES) {
       }
     });
 
+    test(`a site name that equals a built-in default is stored exactly as typed`, async ({ page }) => {
+      await setLocale(page, locale);
+      const backend = await mockBackend(page);
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto("/onboarding");
+      await page.getByPlaceholder("your-name").fill("mochi");
+      await page.getByRole("textbox").nth(1).fill("相簿");
+      await expect(page.getByText(tx(locale, "common:onboarding.thisUrlIsAvailable"))).toBeVisible();
+      await page.getByRole("button", { name: tx(locale, "common:onboarding.next") }).click();
+      await page.getByRole("button", { name: tx(locale, "common:onboarding.next") }).click();
+      await page.getByRole("button", { name: new RegExp(tx(locale, "common:onboarding.digitalCard")) }).first().click();
+      await page.getByRole("button", { name: tx(locale, "common:onboarding.doneOpenTheEditor") }).click();
+      await expect.poll(() => backend.created()).not.toBeNull();
+      const body = backend.created()! as { siteName: string; document: unknown };
+      expect(body.siteName).toBe("相簿");
+      const text = JSON.stringify(body.document);
+      expect(text).toContain("相簿"); // carried into the document, not rewritten as the localized default "Gallery"
+      expect(text).not.toContain("__RETRO_SITE_NAME");
+    });
+
     test(`switching language keeps text, caret selection and undo, and causes no save`, async ({ page }) => {
       await setLocale(page, locale === "en" ? "ja" : "en"); // start in another language, then switch
       const backend = await mockBackend(page, v2(documentFixture));
