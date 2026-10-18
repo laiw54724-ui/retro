@@ -6,11 +6,11 @@ User has authorized direct execution, branch push and a Draft PR. Execute inline
 
 - [x] Read issues, inspect remote/worktrees and preserve all dirty work.
 - [x] Build production baseline in isolated worktree with locked dependencies.
-- [ ] Measure editor/public empty, normal, heavy fixtures at 320/390/1280, plus native sample card/ig/oc. Three cold/warm pairs each, no external network, no request interception that disables cache.
-- [ ] Confirm the Windows manifest appears in the entry bundle before changing runtime.
-- [ ] If confirmed, change only IconPicker.tsx to dynamically import the manifest for an installed pack, reuse current loading/error/retry copy and preserve selection/upload behavior.
-- [ ] Add production request-boundary tests and exercise installed-pack selection, failure/retry and missing-pack fallback; run existing icon-picker E2E.
-- [ ] Run identical after matrix. Report exact bytes, requests, timing spread, decoded dimensions, long tasks and lifecycle limitations. Do not claim field INP or React commits from browser-only metrics.
+- [x] Measure editor/public empty, normal, heavy fixtures at 320/390/1280, plus native sample card/ig/oc. Three cold/warm pairs each, no external network, no request interception that disables cache.
+- [x] Confirm the Windows manifest appears in the entry bundle before changing runtime.
+- [x] If confirmed, change only IconPicker.tsx to dynamically import the manifest for an installed pack, reuse current loading/error/retry copy and preserve selection/upload behavior.
+- [x] Add production request-boundary tests and exercise installed-pack selection, failure/retry and missing-pack fallback; run existing icon-picker E2E.
+- [x] Run identical after matrix. Report exact bytes, requests, timing spread, decoded dimensions, long tasks and lifecycle limitations. Do not claim field INP or React commits from browser-only metrics.
 - [ ] Once candidate is complete, run one appropriate full gate (lint/typecheck/unit/build/audits/E2E); preserve failures and no retries/skip changes. Pin validation SHA.
 - [ ] Push only this branch and create Draft PR against integration/retro-preview-r1-r3, Refs #75. No merge/deploy/closing issues.
 
