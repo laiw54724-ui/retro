@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { translateSystemMessage } from "../../../i18n/systemMessages";
 import { useTranslation } from "react-i18next";
 import { addFollow, removeFollow, setProfileExtraCounts, type SiteDocumentV2Input } from "@retrodesk/shared";
 import type { ModuleProps } from "../types";
@@ -18,7 +19,7 @@ export function CanonicalSocialEditor({ props }: Props) {
 
   const mutate = (recipe: (document: SiteDocumentV2Input) => ReturnType<typeof addFollow>, historyKey?: string) => ctx.updateContent?.((document) => {
     const result = recipe(document);
-    if (!result.ok) { setError(result.diagnostics[0]?.message ?? tr("canonicalSocialEditor.theCharacterInteractionDataIs")); return document; }
+    if (!result.ok) { setError(translateSystemMessage(result.diagnostics[0]?.message ?? "") || tr("canonicalSocialEditor.theCharacterInteractionDataIs")); return document; }
     setError("");
     return result.document;
   }, historyKey);

@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { translateSystemMessage } from "../../../i18n/systemMessages";
 import { useTranslation } from "react-i18next";
 import { makeGalleryImage, normalizeImageUrl, type GalleryImage } from "@retrodesk/shared";
 import { FilePick, ImageUrlField, MiniBtn, SafeImg } from "../ui";
@@ -84,7 +85,7 @@ export function GalleryInlineEditor({ window, ctx, update }: ModuleProps<"galler
   function addUrl() {
     if (images.length >= 200) { setUrlError(tr("gallery.aGalleryCanHoldUp2")); return; }
     const result = normalizeImageUrl(url);
-    if (!result.ok) { setUrlError(result.reason); return; }
+    if (!result.ok) { setUrlError(translateSystemMessage(result.reason)); return; }
     const image = makeGalleryImage({ src: result.url, srcUrl: url.trim() });
     setImages((list) => list.length < 200 ? [...list, image] : list);
     setActiveId(image.id);

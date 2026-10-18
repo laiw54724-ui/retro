@@ -1,5 +1,7 @@
 import { useId } from "react";
+import { translateSystemMessage } from "../../../i18n/systemMessages";
 import { useTranslation } from "react-i18next";
+import { useLocaleFormatting } from "../../../i18n/format";
 import {
   addPostMedia,
   createActorComment,
@@ -31,6 +33,7 @@ type Uploaded = { src: string; name: string };
 
 export function CanonicalPostEditor({ props }: Props) {
   const { t: tr } = useTranslation("instagram");
+  const { formatDate } = useLocaleFormatting();
   const { ctx } = props;
   const authorId = ctx.profileId;
   const posts = (ctx.posts ?? []).filter((post) => post.authorProfileId === authorId);
@@ -58,7 +61,7 @@ export function CanonicalPostEditor({ props }: Props) {
   };
   const run = <T extends { ok: boolean; document?: SiteDocumentV2Input; diagnostics?: Array<{ message: string }> }>(result: T, fallback: SiteDocumentV2Input) => {
     if (!result.ok || !result.document) {
-      setError(result.diagnostics?.[0]?.message ?? tr("canonicalPostEditor.couldntUpdateTheContentPlease"));
+      setError(translateSystemMessage(result.diagnostics?.[0]?.message ?? "") || tr("canonicalPostEditor.couldntUpdateTheContentPlease"));
       return fallback;
     }
     return result.document;
@@ -90,7 +93,7 @@ export function CanonicalPostEditor({ props }: Props) {
         id,
         authorProfileId: authorId,
         title,
-        date: new Date().toLocaleDateString("zh-TW"),
+        date: formatDate(new Date(), { year: "numeric", month: "numeric", day: "numeric" }),
         media: items.slice(0, 10).map((item) => ({ id: `media:${crypto.randomUUID()}`, ...item }))
       }, { siteId });
       if (result.ok) {
@@ -129,7 +132,7 @@ export function CanonicalPostEditor({ props }: Props) {
       <input className="w98-input compact grow" aria-label={tr("canonicalPostEditor.newPostImageUrl")} value={newPostUrl} onChange={(event) => setNewPostUrl(event.target.value)} placeholder={tr("canonicalHighlightEditor.orPasteAnImageUrl")} />
       <button type="button" className="w98-btn small" onClick={() => {
         const result = normalizeImageUrl(newPostUrl);
-        if (!result.ok) { setError(result.reason); return; }
+        if (!result.ok) { setError(translateSystemMessage(result.reason)); return; }
         addPostFromMedia([{ src: result.url, srcUrl: newPostUrl.trim(), alt: "" }]);
         setNewPostUrl("");
       }}>{tr("canonicalPostEditor.add")}</button>
@@ -224,7 +227,7 @@ export function CanonicalPostEditor({ props }: Props) {
               <button type="button" className="w98-btn small" onClick={() => {
                 const raw = mediaUrls[post.id] ?? "";
                 const result = normalizeImageUrl(raw);
-                if (!result.ok) { setError(result.reason); return; }
+                if (!result.ok) { setError(translateSystemMessage(result.reason)); return; }
                 addMediaItems(post, [{ src: result.url, srcUrl: raw.trim(), alt: "" }]);
                 setMediaUrls((current) => ({ ...current, [post.id]: "" }));
               }}>{tr("canonicalHighlightEditor.add")}</button>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { translateSystemMessage } from "../i18n/systemMessages";
 import { i18n } from "../i18n";
 import { buildPublishChecks, CollectionEntityV2Schema, createProfile, deleteOrRetargetProfile, duplicateProfile, hasBlockingCheck, loadVersionedSiteDocument, normalizeDocument, parseSiteDocument, PostEntityV2Schema, ProfileEntityV2Schema, projectV2ToLegacyDocument, updateProfile, type DesktopWindow, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { Link, useNavigate } from "react-router-dom";
@@ -147,7 +148,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   }
 
   function profileError(result: { ok: false; diagnostics: Array<{ message: string }> }) {
-    setMessage(result.diagnostics[0]?.message ?? t("editor.invalidCharacterData"));
+    setMessage(translateSystemMessage(result.diagnostics[0]?.message ?? "") || t("editor.invalidCharacterData"));
   }
 
   function selectProfile(profileId: string, windowId?: string) {
@@ -696,7 +697,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
               <h2>{t("editor.prePublishCheck")}</h2>
               <p>{t("editor.publicUrl")}<strong>retrodesk.me/{store.username}</strong></p>
               <ul className="publish-checks" aria-label={t("editor.prePublishCheckResults")}>
-                {publishChecks.map((check, index) => <li key={index} className={check.level}><span aria-hidden="true">{check.level === "ok" ? "✓" : check.level === "warn" ? "!" : "×"}</span>{check.text}</li>)}
+                {publishChecks.map((check, index) => <li key={index} className={check.level}><span aria-hidden="true">{check.level === "ok" ? "✓" : check.level === "warn" ? "!" : "×"}</span>{translateSystemMessage(check.text)}</li>)}
               </ul>
               <p>{hasBlockingCheck(publishChecks) ? t("editor.fixTheRedItemsFirst") : t("editor.yellowItemsAreSuggestionsAnd")}</p>
               {publishing ? <div className="publish-progress" role="progressbar" aria-label={t("editor.publishing")}><i /></div> : null}

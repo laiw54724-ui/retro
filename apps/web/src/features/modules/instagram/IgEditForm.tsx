@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { translateSystemMessage } from "../../../i18n/systemMessages";
 import { i18n } from "../../../i18n";
 import { useTranslation } from "react-i18next";
 import { makeIgComment, makeIgHighlight, makeIgPost, normalizeImageUrl, type IgPost } from "@retrodesk/shared";
@@ -63,7 +64,7 @@ export function IgEditForm({ window, ctx, update, children, section = "all" }: M
   }
   function addPostUrl() {
     const result = normalizeImageUrl(newUrl);
-    if (!result.ok) { setNewUrlError(result.reason); return; }
+    if (!result.ok) { setNewUrlError(translateSystemMessage(result.reason)); return; }
     setPosts((list) => [...list, makeIgPost({ src: result.url, srcUrl: newUrl.trim(), date: today() })]);
     setNewUrl("");
     setNewUrlError("");
@@ -77,7 +78,7 @@ export function IgEditForm({ window, ctx, update, children, section = "all" }: M
   function addExtraUrl(id: string) {
     const raw = extraUrl[id] ?? "";
     const result = normalizeImageUrl(raw);
-    if (!result.ok) { setExtraError((o) => ({ ...o, [id]: result.reason })); return; }
+    if (!result.ok) { setExtraError((o) => ({ ...o, [id]: translateSystemMessage(result.reason) })); return; }
     setPosts((list) => list.map((post) => post.id === id && post.extra.length < 9 ? { ...post, extra: [...post.extra, { id: crypto.randomUUID(), src: result.url, srcUrl: raw.trim() }] } : post));
     setExtraUrl((o) => ({ ...o, [id]: "" }));
     setExtraError((o) => ({ ...o, [id]: "" }));

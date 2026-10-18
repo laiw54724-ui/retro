@@ -1,4 +1,5 @@
 import { useEffect, useId, useState, type ChangeEvent, type ReactNode } from "react";
+import { translateSystemMessage } from "../../i18n/systemMessages";
 import { i18n } from "../../i18n";
 import { useTranslation } from "react-i18next";
 import { normalizeImageUrl } from "@retrodesk/shared";
@@ -66,7 +67,7 @@ export function ImageUrlField({ raw, placeholder, label, onCommit, className = "
     }
     const result = normalizeImageUrl(value);
     if (!result.ok) {
-      setError(result.reason);
+      setError(translateSystemMessage(result.reason));
       return;
     }
     setError("");

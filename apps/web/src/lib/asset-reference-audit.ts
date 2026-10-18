@@ -1,4 +1,5 @@
 import { parseAssetReference, type VersionedSiteDocumentInput } from "@retrodesk/shared";
+import { i18n } from "../i18n";
 import type { AssetRecord } from "./api";
 
 export type AssetReferenceLocation = {
@@ -36,64 +37,64 @@ function profileName(value: unknown, fallback: string): string {
 }
 
 function describePath(document: AnyRecord, path: Array<string | number>): string {
-  if (path.length === 2 && path[0] === "theme" && path[1] === "wallImage") return "桌面背景";
+  if (path.length === 2 && path[0] === "theme" && path[1] === "wallImage") return i18n.t("collab:assetReferenceAudit.desktopBackground");
   if (path[0] === "windows" && typeof path[1] === "number") {
     const window = record((document.windows as unknown[] | undefined)?.[path[1]]);
-    const windowTitle = titleFor(window, `視窗 ${path[1] + 1}`);
+    const windowTitle = titleFor(window, i18n.t("collab:assetReferenceAudit.window", { v1: path[1] + 1 }));
     const field = path[2];
-    if (field === "icon") return `${windowTitle} 的圖示`;
+    if (field === "icon") return i18n.t("collab:assetReferenceAudit.iconOf", { windowTitle });
     const content = record(window?.content);
-    if (field === "content" && window?.type === "about" && (path[3] === "avatar" || path[3] === "avatarUrl")) return `${windowTitle} 的頭像`;
-    if (field === "content" && window?.type === "about" && path[3] === "banner") return `${windowTitle} 的橫幅`;
-    if (field === "content" && window?.type === "gallery" && path[3] === "images" && typeof path[4] === "number") return `${windowTitle} 的相簿第 ${path[4] + 1} 張`;
+    if (field === "content" && window?.type === "about" && (path[3] === "avatar" || path[3] === "avatarUrl")) return i18n.t("collab:assetReferenceAudit.avatarOf", { windowTitle });
+    if (field === "content" && window?.type === "about" && path[3] === "banner") return i18n.t("collab:assetReferenceAudit.bannerOf", { windowTitle });
+    if (field === "content" && window?.type === "gallery" && path[3] === "images" && typeof path[4] === "number") return i18n.t("collab:assetReferenceAudit.galleryImageOf", { windowTitle, v2: path[4] + 1 });
     if (field === "content" && window?.type === "music" && path[3] === "tracks" && typeof path[4] === "number" && path[5] === "source" && path[6] === "asset") {
       const track = (content?.tracks as unknown[] | undefined)?.[path[4]];
-      return `${windowTitle} 的曲目「${titleFor(track, `第 ${path[4] + 1} 首`)}」音訊`;
+      return i18n.t("collab:assetRef.trackAudio", { windowTitle, title: titleFor(track, i18n.t("collab:assetRef.trackN", { n: path[4] + 1 })) });
     }
-    if (field === "content" && path[3] === "profile" && path[4] === "avatar") return `${windowTitle} 的頭像`;
-    if (field === "content" && path[3] === "profile" && path[4] === "avatarUrl") return `${windowTitle} 的頭像網址`;
+    if (field === "content" && path[3] === "profile" && path[4] === "avatar") return i18n.t("collab:assetReferenceAudit.avatarOf", { windowTitle });
+    if (field === "content" && path[3] === "profile" && path[4] === "avatarUrl") return i18n.t("collab:assetReferenceAudit.avatarUrlOf", { windowTitle });
     if (field === "content" && path[3] === "profile" && path[4] === "highlights" && typeof path[5] === "number") {
       const highlight = (record(content?.profile)?.highlights as unknown[] | undefined)?.[path[5]];
-      return `${windowTitle} 的精選「${titleFor(highlight, `第 ${path[5] + 1} 頁`)}」封面`;
+      return i18n.t("collab:assetRef.highlightCover", { windowTitle, title: titleFor(highlight, i18n.t("collab:assetRef.pageN", { n: path[5] + 1 })) });
     }
     if (field === "content" && path[3] === "profile" && path[4] === "images" && typeof path[5] === "number") {
       const profile = record(content?.profile);
       const image = (profile?.images as unknown[] | undefined)?.[path[5]];
-      const postTitle = titleFor(image, `第 ${path[5] + 1} 篇貼文`);
-      if (path[6] === "extra" && typeof path[7] === "number") return `${windowTitle} 的「${postTitle}」輪播第 ${path[7] + 2} 張`;
-      return `${windowTitle} 的「${postTitle}」貼文主圖`;
+      const postTitle = titleFor(image, i18n.t("collab:assetReferenceAudit.post", { v1: path[5] + 1 }));
+      if (path[6] === "extra" && typeof path[7] === "number") return i18n.t("collab:assetReferenceAudit.carouselImageOfIn", { windowTitle, postTitle, v3: path[7] + 2 });
+      return i18n.t("collab:assetReferenceAudit.mainImageOfThePost", { windowTitle, postTitle });
     }
     if (field === "content" && path[3] === "images" && typeof path[4] === "number") {
       const image = (content?.images as unknown[] | undefined)?.[path[4]];
-      const postTitle = titleFor(image, `第 ${path[4] + 1} 篇貼文`);
-      if (path[5] === "extra" && typeof path[6] === "number") return `${windowTitle} 的「${postTitle}」輪播第 ${path[6] + 2} 張`;
-      return `${windowTitle} 的「${postTitle}」貼文主圖`;
+      const postTitle = titleFor(image, i18n.t("collab:assetReferenceAudit.post", { v1: path[4] + 1 }));
+      if (path[5] === "extra" && typeof path[6] === "number") return i18n.t("collab:assetReferenceAudit.carouselImageOfIn", { windowTitle, postTitle, v3: path[6] + 2 });
+      return i18n.t("collab:assetReferenceAudit.mainImageOfThePost", { windowTitle, postTitle });
     }
-    if (field === "content") return `${windowTitle} 的內容（結構化路徑：${path.slice(3).join(".")}）`;
-    return `${windowTitle}（結構化路徑：${path.slice(2).join(".")}）`;
+    if (field === "content") return i18n.t("collab:assetReferenceAudit.contentOfStructuredPath", { windowTitle, v2: path.slice(3).join(".") });
+    return i18n.t("collab:assetReferenceAudit.structuredPath", { windowTitle, v2: path.slice(2).join(".") });
   }
   if (path[0] === "entities" && path[1] === "profiles" && typeof path[2] === "number") {
     const profile = list(record(document.entities)?.profiles)[path[2]];
-    const name = profileName(profile, `角色 ${path[2] + 1}`);
-    if (path[3] === "avatar" || path[3] === "avatarUrl") return `角色「${name}」的頭像`;
-    if (path[3] === "highlights" && typeof path[4] === "number") return `角色「${name}」的精選第 ${path[4] + 1} 頁`;
-    return `角色「${name}」（結構化路徑：${path.slice(3).join(".")}）`;
+    const name = profileName(profile, i18n.t("collab:assetReferenceAudit.character", { v1: path[2] + 1 }));
+    if (path[3] === "avatar" || path[3] === "avatarUrl") return i18n.t("collab:assetReferenceAudit.avatarOfTheCharacter", { name });
+    if (path[3] === "highlights" && typeof path[4] === "number") return i18n.t("collab:assetReferenceAudit.pageOfTheHighlightOf", { name, v2: path[4] + 1 });
+    return i18n.t("collab:assetReferenceAudit.theCharacterStructuredPath", { name, v2: path.slice(3).join(".") });
   }
   if (path[0] === "entities" && path[1] === "posts" && typeof path[2] === "number") {
     const post = list(record(document.entities)?.posts)[path[2]];
-    const title = titleFor(post, `第 ${path[2] + 1} 篇貼文`);
-    if (path[3] === "media" && typeof path[4] === "number") return `「${title}」媒體第 ${path[4] + 1} 張`;
-    if (path[3] === "src" || path[3] === "srcUrl") return `「${title}」貼文主圖`;
-    return `「${title}」（結構化路徑：${path.slice(3).join(".")}）`;
+    const title = titleFor(post, i18n.t("collab:assetReferenceAudit.post", { v1: path[2] + 1 }));
+    if (path[3] === "media" && typeof path[4] === "number") return i18n.t("collab:assetReferenceAudit.mediaOf", { title, v2: path[4] + 1 });
+    if (path[3] === "src" || path[3] === "srcUrl") return i18n.t("collab:assetReferenceAudit.mainImageOf", { title });
+    return i18n.t("collab:assetReferenceAudit.structuredPath2", { title, v2: path.slice(3).join(".") });
   }
   if (path[0] === "entities" && path[1] === "highlights" && typeof path[2] === "number") {
     const highlight = list(record(document.entities)?.highlights)[path[2]];
-    const name = titleFor(highlight, `第 ${path[2] + 1} 組`);
-    if (path[3] === "coverSrc" || path[3] === "coverSrcUrl") return `精選「${name}」封面`;
-    if (path[3] === "frames" && typeof path[4] === "number") return `精選「${name}」第 ${path[4] + 1} 頁`;
-    return `精選「${name}」內容`;
+    const name = titleFor(highlight, i18n.t("collab:assetReferenceAudit.group", { v1: path[2] + 1 }));
+    if (path[3] === "coverSrc" || path[3] === "coverSrcUrl") return i18n.t("collab:assetReferenceAudit.coverOfTheHighlight", { name });
+    if (path[3] === "frames" && typeof path[4] === "number") return i18n.t("collab:assetReferenceAudit.pageOfTheHighlight", { name, v2: path[4] + 1 });
+    return i18n.t("collab:assetReferenceAudit.contentOfTheHighlight", { name });
   }
-  return `結構化路徑：${path.map(String).join(".")}`;
+  return i18n.t("collab:assetReferenceAudit.structuredPath3", { v1: path.map(String).join(".") });
 }
 
 function matchesAsset(value: string, asset: AssetRecord): boolean {

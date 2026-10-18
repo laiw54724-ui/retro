@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { translateSystemMessage } from "../../../i18n/systemMessages";
 import { i18n } from "../../../i18n";
 import { useTranslation } from "react-i18next";
+import { useLocaleFormatting } from "../../../i18n/format";
 import { normalizeImageUrl } from "@retrodesk/shared";
 import { api, type AssetRecord } from "../../../lib/api";
 import { BUILTIN_ICON_KEYS, isImageIcon } from "../../../lib/icons";
@@ -45,6 +47,10 @@ const categoryList = (): Array<{ id: Category; label: string }> => [
   { id: "mono", label: i18n.t("modules:iconPicker.pixelMono") },
   { id: "mine", label: i18n.t("modules:iconPicker.myUploads") },
 ];
+
+type CatalogNames = { name: string; nameEn: string; nameJa: string; nameKo: string };
+/** Display name of a library icon in the UI language. */
+const catalogName = (item: CatalogNames, locale: string) => locale === "zh-Hant" ? item.name : locale === "ja" ? item.nameJa : locale === "ko" ? item.nameKo : item.nameEn;
 
 /** Readable name for a stored icon value without loading the catalog. */
 export function describeIcon(value: string): string {
@@ -128,6 +134,7 @@ function Tile({ value, name, selected, current, tabbable, onSelect, onRemove, pi
 
 function IconLibraryDialog({ siteId, value, onChange, upload, defaultValue, defaultPreview, label, mediaTarget, onClose }: CommonProps & { onClose: () => void }) {
   const { t: tr } = useTranslation("modules");
+  const { locale } = useLocaleFormatting();
   const [draft, setDraft] = useState(value);
   const [category, setCategory] = useState<Category>("all");
   const [purpose, setPurpose] = useState("");
@@ -205,7 +212,7 @@ function IconLibraryDialog({ siteId, value, onChange, upload, defaultValue, defa
         if (category !== "all" && meta.category !== category) continue;
         if (purpose && !item.purposes.includes(purpose)) continue;
         if (!matches(`${item.keywords} ${item.id}`)) continue;
-        result.push({ value: item.id, name: item.name });
+        result.push({ value: item.id, name: catalogName(item, locale) });
       }
     }
     if ((category === "all" || category === "mine") && !purpose) {
@@ -279,7 +286,7 @@ function IconLibraryDialog({ siteId, value, onChange, upload, defaultValue, defa
 
   function useUrl() {
     const result = normalizeImageUrl(url);
-    if (!result.ok) { setStatus(result.reason); return; }
+    if (!result.ok) { setStatus(translateSystemMessage(result.reason)); return; }
     selectDraft(result.url);
     setUrl("");
     setStatus(tr("iconPicker.urlIconSelectedPressApply"));
@@ -369,8 +376,8 @@ function IconLibraryDialog({ siteId, value, onChange, upload, defaultValue, defa
             <div className="ilib-taskbar"><Icon name={shown} size={16} /><span>{previewLabel}</span></div>
           </div>
           <div className="ilib-meta">
-            <strong data-testid="icon-preview-name">{draftEntry?.name ?? (draftIcon ? libraryNameOf(draftIcon.id) : draft ? describeIcon(draft) : tr("iconPicker.defaultIcon"))}</strong>
-            {draftEntry ? <span>{draftEntry.nameEn}</span> : null}
+            <strong data-testid="icon-preview-name">{draftEntry ? catalogName(draftEntry, locale) : (draftIcon ? libraryNameOf(draftIcon.id) : draft ? describeIcon(draft) : tr("iconPicker.defaultIcon"))}</strong>
+            {draftEntry && locale !== "en" ? <span>{draftEntry.nameEn}</span> : null}
             {draftSet ? <span>{draftSet.label} · {draftSet.license}</span> : null}
             <span>{changed ? tr("iconPicker.notAppliedYet") : tr("iconPicker.inUse")}</span>
           </div>

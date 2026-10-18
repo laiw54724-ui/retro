@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { translateSystemMessage } from "../../../i18n/systemMessages";
 import { useTranslation } from "react-i18next";
 import {
   addHighlightFrame,
@@ -43,7 +44,7 @@ export function CanonicalHighlightEditor({ props }: Props) {
 
   const run = (result: Result, fallback: SiteDocumentV2Input) => {
     if (!result.ok || !result.document) {
-      setError(result.diagnostics?.[0]?.message ?? tr("canonicalHighlightEditor.couldntUpdateTheHighlightPlease"));
+      setError(translateSystemMessage(result.diagnostics?.[0]?.message ?? "") || tr("canonicalHighlightEditor.couldntUpdateTheHighlightPlease"));
       return fallback;
     }
     return result.document;
@@ -133,7 +134,7 @@ export function CanonicalHighlightEditor({ props }: Props) {
             <button type="button" className="w98-btn small" onClick={() => {
               const raw = urls[highlight.id] ?? "";
               const normalized = normalizeImageUrl(raw);
-              if (!normalized.ok) { setError(normalized.reason); return; }
+              if (!normalized.ok) { setError(translateSystemMessage(normalized.reason)); return; }
               addFrame(highlight.id, normalized.url, raw.trim());
               setUrls((current) => ({ ...current, [highlight.id]: "" }));
             }}>{tr("canonicalHighlightEditor.add")}</button>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { themeLabel } from "../../i18n/themeNames";
 import { i18n } from "../../i18n";
 import { useTranslation } from "react-i18next";
 import { THEME_PRESETS, type RetroTheme } from "@retrodesk/shared";
@@ -39,7 +40,7 @@ export function ThemeAppearanceEditor({ theme, onTheme, upload }: { theme: Retro
             return (
               <button key={preset.id} type="button" className={"preset" + (draft.id === preset.id ? " on" : "")} aria-pressed={draft.id === preset.id} onClick={() => setDraft(preset)}>
                 <span className="preset-thumb" style={{ backgroundColor: preset.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize }}><i style={{ background: tv.titleBg }} /></span>
-                <span>{preset.name}</span>
+                <span>{themeLabel(preset)}</span>
               </button>
             );
           })}

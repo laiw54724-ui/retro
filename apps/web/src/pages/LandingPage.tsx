@@ -7,13 +7,15 @@ import { RetroButton } from "../components/RetroButton";
 import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { VisitorPreview } from "../features/editor/VisitorPreview";
 import { useLocaleFormatting } from "../i18n/format";
+import { localizeDefaults } from "../i18n/localizedDefaults";
 
 export function LandingPage() {
   const { t } = useTranslation("common");
-  const { fontFamily } = useLocaleFormatting();
+  const { fontFamily, locale } = useLocaleFormatting();
   const { user } = useAuth();
   const [demo, setDemo] = useState<DemoKind | null>(null);
-  const demoDocument = useMemo(() => demo ? createDemoDocument(demo) : null, [demo]);
+  // Sample content follows the UI language it is opened in; it is a throwaway preview, never saved.
+  const demoDocument = useMemo(() => demo ? localizeDefaults(createDemoDocument(demo)) : null, [demo, locale]);
   return (
     <main className="landing-shell" style={{ fontFamily }}>
       <section className="landing-window retro-panel">

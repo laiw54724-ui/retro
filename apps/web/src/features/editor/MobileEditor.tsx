@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { themeLabel } from "../../i18n/themeNames";
 import { useTranslation } from "react-i18next";
 import { THEME_PRESETS, type DesktopWindow, type SiteDocument } from "@retrodesk/shared";
 import { RetroButton } from "../../components/RetroButton";
@@ -151,7 +152,7 @@ export function MobileEditor({
               {Object.values(THEME_PRESETS).map((theme) => (
                 <button key={theme.id} className={document.theme.id === theme.id ? "selected" : ""} onClick={() => onTheme(theme)}>
                   <i style={{ background: theme.wall }}><b style={{ background: `linear-gradient(90deg,${theme.titleFrom},${theme.titleTo})` }} /></i>
-                  <span>{theme.name}</span>
+                  <span>{themeLabel(theme)}</span>
                 </button>
               ))}
             </div>

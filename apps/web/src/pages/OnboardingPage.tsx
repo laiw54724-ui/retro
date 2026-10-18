@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { localizeDefaults } from "../i18n/localizedDefaults";
+import { themeLabel } from "../i18n/themeNames";
 import { useTranslation } from "react-i18next";
 import { createTemplateDocument, THEME_PRESETS, UsernameSchema, type StarterTemplate } from "@retrodesk/shared";
 import { useNavigate } from "react-router-dom";
@@ -34,7 +36,7 @@ export function OnboardingPage() {
     if (!validUsername.success || available === false) return;
     setBusy(true);
     try {
-      const document = createTemplateDocument(siteName, themeId, template);
+      const document = localizeDefaults(createTemplateDocument(siteName, themeId, template));
       const { site } = await api.createSite({ username: validUsername.data, siteName, document });
       navigate("/editor/" + site.id);
     } finally {
@@ -90,7 +92,7 @@ export function OnboardingPage() {
                       <div className="theme-preview" style={{ background: theme.wall }}>
                         <i style={{ background: theme.face }}><b style={{ background: `linear-gradient(90deg,${theme.titleFrom},${theme.titleTo})` }} /></i>
                       </div>
-                      <span>{theme.name}</span>
+                      <span>{themeLabel(theme)}</span>
                     </button>
                   ))}
                 </div>
@@ -117,7 +119,7 @@ export function OnboardingPage() {
                 <div className="starter-summary">
                   <strong>{siteName}</strong>
                   <span>/@{username}</span>
-                  <span>{THEME_PRESETS[themeId].name}</span>
+                  <span>{themeLabel(THEME_PRESETS[themeId])}</span>
                 </div>
               </>
             ) : null}

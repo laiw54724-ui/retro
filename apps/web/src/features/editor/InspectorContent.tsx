@@ -1,4 +1,5 @@
 import { useId, useState, type ChangeEvent } from "react";
+import { translateSystemMessage } from "../../i18n/systemMessages";
 import { i18n } from "../../i18n";
 import { useTranslation } from "react-i18next";
 import { makeGalleryImage, makeIgPost, makeLink, normalizeImageUrl, type DesktopWindow, type DocumentBlock } from "@retrodesk/shared";
@@ -95,7 +96,7 @@ function MediaUpload({ siteId, label, onUploaded, onMessage }: {
   function useLink() {
     const result = normalizeImageUrl(link);
     if (!result.ok) {
-      onMessage(result.reason);
+      onMessage(translateSystemMessage(result.reason));
       return;
     }
     onUploaded(result.url);

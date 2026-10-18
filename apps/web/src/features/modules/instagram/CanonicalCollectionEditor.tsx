@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { translateSystemMessage } from "../../../i18n/systemMessages";
 import { useTranslation } from "react-i18next";
 import {
   createCollection,
@@ -48,7 +49,7 @@ export function CanonicalCollectionEditor({ props }: Props) {
   const siteId = ctx.siteId;
   const run = (result: Result, fallback: SiteDocumentV2Input) => {
     if (!result.ok || !result.document) {
-      setError(result.diagnostics?.[0]?.message ?? tr("canonicalCollectionEditor.couldntUpdateTheCollectionPlease"));
+      setError(translateSystemMessage(result.diagnostics?.[0]?.message ?? "") || tr("canonicalCollectionEditor.couldntUpdateTheCollectionPlease"));
       return fallback;
     }
     return result.document;

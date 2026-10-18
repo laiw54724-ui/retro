@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { i18n } from "../../../i18n";
 import { useTranslation } from "react-i18next";
+import { useLocaleFormatting } from "../../../i18n/format";
 import { api, ApiError, type GuestbookEntry, type GuestbookStatus } from "../../../lib/api";
 import type { ModuleProps } from "../types";
 
@@ -8,6 +9,7 @@ const statusLabel = (): Record<GuestbookStatus, string> => ({ pending: i18n.t("m
 
 function VisitorGuestbook({ window, ctx }: ModuleProps<"guestbook">) {
   const { t: tr } = useTranslation("modules");
+  const { formatDate } = useLocaleFormatting();
   const [entries, setEntries] = useState<GuestbookEntry[]>([]);
   const [displayName, setDisplayName] = useState("");
   const [body, setBody] = useState("");
@@ -46,7 +48,7 @@ function VisitorGuestbook({ window, ctx }: ModuleProps<"guestbook">) {
       {message ? <p role="status" className="guestbook-status">{message}</p> : null}
     </form>
     <section className="guestbook-list" aria-label={tr("guestbook.approvedMessages")}>
-      {entries.map((entry) => <article key={entry.id}><header><strong>{entry.displayName}</strong><time dateTime={entry.createdAt}>{new Date(entry.createdAt).toLocaleDateString()}</time></header><p>{entry.body}</p><button type="button" className="w98-btn small" onClick={() => void report(entry.id)}>{tr("guestbook.report")}</button></article>)}
+      {entries.map((entry) => <article key={entry.id}><header><strong>{entry.displayName}</strong><time dateTime={entry.createdAt}>{formatDate(new Date(entry.createdAt))}</time></header><p>{entry.body}</p><button type="button" className="w98-btn small" onClick={() => void report(entry.id)}>{tr("guestbook.report")}</button></article>)}
       {!entries.length ? <p>{tr("guestbook.noApprovedMessagesYet")}</p> : null}
     </section>
   </div>;
