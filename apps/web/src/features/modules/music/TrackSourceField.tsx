@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PLATFORM_LABELS, type MusicTrack } from "@retrodesk/shared";
 import { FilePick } from "../ui";
@@ -36,6 +36,16 @@ export function TrackSourceField({ track, windowId, patchSource, uploadAudio, on
   const [pending, setPending] = useState<string | null>(null);
   // The author chose the external link for this embeddable URL; keeps the choice until they paste something different.
   const [externalFor, setExternalFor] = useState<string | null>(null);
+
+  // The source can change under us (upload, undo/redo, another edit). Text that was only ever typed here and never saved
+  // must not outlive that: drop it and any "choose external" memory, so the field always reflects the real source.
+  const lastSource = useRef(track.source);
+  useEffect(() => {
+    if (lastSource.current === track.source) return;
+    lastSource.current = track.source;
+    setPending(null);
+    setExternalFor(null);
+  }, [track.source]);
 
   const stored = urlOf(track.source);
   const value = pending ?? stored;

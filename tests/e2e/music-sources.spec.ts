@@ -187,6 +187,45 @@ test.describe("author: paste a link, Retro works out what it is", () => {
   });
 });
 
+test.describe("author: the field always reflects the real source", () => {
+  test("typed-but-unsaved text and its error disappear when an upload replaces the source", async ({ page }) => {
+    await stubPlatforms(page);
+    const { player, saves } = await openEditor(page, doc(musicWindow("Music.exe", [track("t1", "Pasted", { kind: "audioUrl", url: "https://" })])));
+    const uploadedId = "11111111-1111-4111-8111-111111111111";
+    await page.route("**/api/sites/site-1/assets", (route) => route.request().method() === "POST"
+      ? route.fulfill({ status: 201, json: { asset: { id: uploadedId, url: `retro-asset:${uploadedId}`, mimeType: "audio/wav", size: 800, kind: "audio", name: "theme" } } })
+      : route.fulfill({ json: { assets: [] } }));
+    const editor = player.locator(".music-track-editor").first();
+    const field = editor.getByLabel("貼上連結或上傳檔案");
+    await field.fill("htp:/broken");
+    await expect(editor.getByTestId("source-explanation")).toContainText("https://");
+    await expect(field).toHaveAttribute("aria-invalid", "true");
+
+    await editor.locator(".music-source-field input[type=file]").setInputFiles({ name: "theme.wav", mimeType: "audio/wav", buffer: silentWav() });
+    await expect.poll(() => lastTrackSource(saves)).toMatchObject({ kind: "uploadedAudio" });
+    await expect(field).toHaveValue("");
+    await expect(field).toHaveAttribute("aria-invalid", "false");
+    await expect(editor.getByTestId("source-explanation")).toContainText("已上傳的音訊檔");
+    await expect(editor.getByTestId("source-explanation")).not.toContainText("請貼上以 https://");
+  });
+
+  test("undo drops a half-typed URL and shows the restored source, not the stale text", async ({ page }) => {
+    await stubPlatforms(page);
+    const { player, saves } = await openEditor(page, doc(musicWindow("Music.exe", [track("t1", "Pasted", { kind: "audioUrl", url: "https://" })])));
+    const editor = player.locator(".music-track-editor").first();
+    const field = editor.getByLabel("貼上連結或上傳檔案");
+    await field.fill("https://media.example.com/theme.mp3");
+    await expect.poll(() => lastTrackSource(saves)).toMatchObject({ kind: "audioUrl" });
+    await field.fill("htp:/broken");
+    await expect(field).toHaveAttribute("aria-invalid", "true");
+    // blur the field so the editor's undo (not the browser's text undo) applies, then undo the saved link
+    await page.getByRole("button", { name: "復原", exact: true }).click();
+    await expect(field).toHaveValue("");
+    await expect(field).toHaveAttribute("aria-invalid", "false");
+    await expect(editor.getByTestId("source-explanation")).not.toContainText("請貼上以 https://");
+  });
+});
+
 test.describe("visitor: official platform players", () => {
   const spotify = track("sp", "Spotify Song", embedSource("spotify", SPOTIFY_WITH_PARAMS));
   const youtube = track("yt", "YouTube Song", embedSource("youtube", YOUTUBE));
