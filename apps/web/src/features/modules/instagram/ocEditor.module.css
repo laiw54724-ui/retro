@@ -1,0 +1,97 @@
+.editor,
+.workspace,
+.modePanel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.editor [hidden] { display: none !important; }
+.editor > :global(.ig-modes) { background: #c0c0c0; color: #000; }
+.workspace { color: #000; background: #c0c0c0; container-type: inline-size; }
+.switcher { flex: 0 1 auto; min-height: 0; overflow-y: auto; padding: 8px; background: #dfdfdf; border-bottom: 1px solid #808080; }
+.currentRole { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.workspace .currentRole > :global(.ig-thumb) { width: 34px; height: 34px; flex-shrink: 0; }
+.currentRole label { flex: 1; min-width: 0; }
+.currentRole select { width: 100%; min-width: 0; }
+.currentRole > button { flex-shrink: 0; }
+.roleHint { margin: 5px 0 0; font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
+.roleHint strong { font-weight: 700; }
+.directory { margin-top: 5px; }
+.directory summary,
+.management summary { cursor: pointer; padding: 5px 2px; font-weight: 700; }
+.directory > div { margin-top: 5px; }
+.directory > div > select { max-width: 100%; }
+.roleList { display: flex; flex-direction: column; gap: 4px; max-height: 150px; overflow-y: auto; list-style: none; padding: 0; margin: 6px 0 0; }
+.roleList :global(.profile-option-button) { min-width: 0; overflow-wrap: anywhere; }
+.roleList em { font-size: 11px; font-style: normal; }
+.sections { display: grid; grid-template-columns: 1fr .8fr 1.3fr .8fr .8fr; flex-shrink: 0; gap: 3px; padding: 6px; border-bottom: 1px solid #808080; }
+.sections > button { min-width: 0; white-space: normal; overflow-wrap: anywhere; padding: 6px 3px; min-height: 32px; line-height: 1.25; }
+.sections > button[aria-selected="true"] { background: #000080; color: #fff; box-shadow: inset 1px 1px #000, inset -1px -1px #fff; }
+.content { flex: 1 0 110px; min-height: 0; padding: 8px; }
+.panel { display: flex; flex-direction: column; min-width: 0; gap: 10px; padding-bottom: 4px; }
+.panel > :global(.ig-edit) { padding: 0; box-shadow: none; }
+.panel :global(.w98-fieldset) { min-width: 0; max-width: 100%; }
+.panel :global(.w98-fieldset) > legend { max-width: 100%; overflow-wrap: anywhere; }
+.panel :global(.w98-field) { min-width: 0; }
+.panel :global(.w98-input),
+.panel :global(.w98-textarea) { min-width: 0; max-width: 100%; }
+.panel :global(.ig-profile-editor) { display: flex; flex-direction: column; gap: 8px; }
+.panel :global(.ig-profile-editor) :global(.w98-fieldset) { display: flex; flex-direction: column; gap: 8px; }
+.panel :global(.ig-social-editor),
+.panel :global(.ig-canonical-highlights) { display: flex; flex-direction: column; gap: 8px; }
+.panel :global(.ig-post-filters) { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.panel :global(.ig-post-filters) > label { flex: 1 1 100%; }
+.panel :global(.ig-post-filters) input[type="search"] { width: 100%; }
+.panel :global(.ig-post-filter-status) { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.panel :global(.ig-post-filter-status) > select { flex: 1; min-width: 90px; }
+.panel :global(.ig-post-social-details) { min-width: 0; }
+.panel :global(.ig-post-social-details) > summary { cursor: pointer; padding: 8px 0; font-weight: 700; }
+.panel :global(.ig-editor-summary),
+.panel :global(.ig-post-retained-note) { margin: 3px 0; overflow-wrap: anywhere; line-height: 1.5; }
+.panel :global(.ig-editor-empty),
+.panel :global(.ig-post-empty) { padding: 10px; margin: 0; border: 1px dashed #808080; overflow-wrap: anywhere; }
+.panel :global(.ig-editor-badge) { display: inline-block; flex-shrink: 0; font-size: 11px; line-height: 1.4; padding: 2px 5px; border: 1px solid #666; background: #fff; }
+.panel :global(.ig-editor-badge[data-visibility="draft"]) { background: #fff4cd; }
+.panel :global(.ig-collection-post-list) { max-height: 280px; overflow-y: auto; overscroll-behavior: contain; }
+.panel :global(.ig-collection-post-copy) { display: flex !important; flex-direction: column; gap: 3px; min-width: 0; }
+.panel :global(.ig-collection-post-copy) > * { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.panel :global(.ig-upload-control) { display: inline-flex; border: 0; padding: 0; margin: 0; min-width: 0; }
+.panel :global(.ie-row) { min-width: 0; }
+.panel :global(.ie-row) > :global(.grow) { min-width: 0; }
+.management { padding: 7px; border: 1px solid #808080; }
+.management p { width: 100%; margin: 5px 0; overflow-wrap: anywhere; }
+.management select { max-width: 100%; }
+.profileDetails { padding: 7px 0; border-top: 1px solid currentColor; min-width: 0; }
+.profileDetails summary { cursor: pointer; font-weight: 700; }
+.profileDetails dl { display: grid; grid-template-columns: minmax(64px, 1fr) minmax(0, 2fr); gap: 6px 10px; margin: 10px 0 0; }
+.profileDetails dt { font-weight: 700; }
+.profileDetails dd { margin: 0; white-space: pre-wrap; }
+.profileDetails dt,
+.profileDetails dd { overflow-wrap: anywhere; min-width: 0; }
+.worldTags { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0 0; padding: 0; list-style: none; }
+.worldTags li { padding: 2px 5px; border: 1px solid currentColor; font-size: 12px; overflow-wrap: anywhere; min-width: 0; }
+
+@container (max-width: 370px) {
+  .currentRole { gap: 5px; }
+  .currentRole > :global(.ig-thumb) { display: none; }
+  .currentRole > button { max-width: 80px; white-space: normal; }
+  .sections { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .panel :global(.ig-fields),
+  .panel :global(.ig-trio),
+  .panel :global(.ig-toggles) { grid-template-columns: minmax(0, 1fr); }
+  .panel :global(.ig-canonical-posts) > :global(.ie-row) { flex-wrap: wrap; }
+  .panel :global(.ig-canonical-posts) > :global(.ie-row) > input { flex-basis: calc(100% - 60px); }
+  .panel :global(.ig-media-edit-row),
+  .panel :global(.ig-highlight-frame-row) { flex-wrap: wrap; }
+  .panel :global(.ig-media-edit-row) > :global(.grow),
+  .panel :global(.ig-highlight-frame-row) > :global(.grow) { flex-basis: calc(100% - 70px); }
+  .panel :global(.ig-profile-editor) :global(.ie-row) { flex-wrap: wrap; }
+  .panel :global(.ig-profile-editor) :global(.ie-row) > input:first-child { width: 100%; }
+}
+
+@media (forced-colors: active) {
+  .sections > button[aria-selected="true"] { border: 2px solid Highlight; color: HighlightText; background: Highlight; }
+}

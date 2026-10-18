@@ -6,6 +6,7 @@ import { safeHref, type ModuleProps, type ProfileDirectoryPost } from "../types"
 import { igIcons } from "./igIcons";
 import { useIgSession } from "./useIgSession";
 import { buildPublicEntityUrl, sharePublicUrl } from "../../../lib/publicShare";
+import { ProfileDetails } from "./ProfileDetails";
 
 const Ic = ({ bg, size = 24 }: { bg: string; size?: number }) => <span aria-hidden="true" className="ig-ic" style={{ width: size, height: size, background: bg }} />;
 
@@ -36,6 +37,12 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
     else s.showToast(result === "shared" ? "已開啟分享" : "已複製連結");
   };
   const directoryEntry = ctx.profileDirectory?.find((entry) => entry.id === s.activeProfileId);
+  // Only read the active OC in the caller's existing directory/projection. Never
+  // fall back to the entry OC's details after visitor navigation or a stale ID.
+  const profileDetails = directoryEntry ? ctx.profiles?.find((item) =>
+    item.id === s.activeProfileId && item.siteId === directoryEntry.siteId &&
+    (ctx.editing || item.visibility === "published"),
+  ) : undefined;
   const profile = directoryEntry?.profile ?? window.content.profile;
   const posts = directoryEntry?.posts ?? window.content.images;
   const collections = directoryEntry?.collections ?? [];
@@ -272,6 +279,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
                 <span className="ig-world-label">角色世界觀內容</span>
                 <span><strong>{profile.name}</strong> <span className="ig-gray">{profile.alt}</span></span>
                 {profile.bio ? <span className="ig-pre">{profile.bio}</span> : null}
+                <ProfileDetails profile={profileDetails} />
                 {profile.linkLabel ? <a href={safeHref(profile.linkUrl)} className="ig-link" onClick={(event) => { event.preventDefault(); ctx.onLink({ target: "url", url: profile.linkUrl, label: profile.linkLabel }); }}>↗ {profile.linkLabel}</a> : null}
                 {profile.showFollowedBy && profile.followedBy ? <span className="ig-followed">{profile.followedBy}</span> : null}
               </div>
