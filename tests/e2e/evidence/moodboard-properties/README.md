@@ -33,3 +33,14 @@ No shared shell, preview, OC, Music, API, schema, CI, global CSS or centralized 
 ## Remaining boundaries
 
 This is only the Moodboard subset of #44; it does not close #44 or #40. API calls use deterministic local fixtures; no live accounts or deployments are changed. Mobile checks emulate Chromium touch, not iOS/Android hardware. Desktop undo/redo is exercised; shared mobile history UI is outside scope. Native IME, screen-reader/device validation, real storage/publication, WebKit and the final integrated contributor gate remain with the integrator. No merge, main push, deployment, migration, secrets or permission changes.
+
+## Independent review follow-up: numeric draft lost on canvas selection
+
+Reproduced on initial UX commit `0cbf57d7115332e7546f1f2d21263af45d2c429f` using ordinary clicks: type X=230 without Enter, click another canvas object or blank canvas, then select the original note. Both returned X=80 (2 failures); the layer-list path and Enter/Escape/external Undo control cases passed (2 passes). Canvas pointerdown changed selection and unmounted the keyed fieldset before the browser's normal blur could commit the draft.
+
+Fix: finish the focused geometry input's blur in the canvas pointer capture phase, before selection changes. Keep blur/Enter as commits and Escape/blank as cancellation. Initialize a drag's base from its first move snapshot, so a numeric commit immediately followed by dragging starts at the newly committed position. Numeric and drag changes remain separate atomic undo steps. No changes to GeometryInput's public contract, shared editor history, schema or translations.
+
+Follow-up verification on the amended source:
+- `PLAYWRIGHT_PORT=5184 pnpm exec playwright test tests/e2e/moodboard-properties.spec.ts --grep 'geometry commits on|geometry Enter|drag starts from' --workers=1 --timeout=10000` — **8 passed**: desktop click and 320 touch tap for object/blank/layer, Enter/Escape/external Undo with repeated Enter/no duplicate step, and numeric-edit-to-drag continuity with two separate undos. No force clicks or fixed sleeps.
+- `corepack pnpm --filter @retrodesk/web exec vitest run src/features/modules/moodboard/editing.test.ts src/features/editor/store.test.ts` — **14 passed**; web typecheck and diff whitespace check passed.
+- Initial UX screenshots/10-case results above remain evidence for the original UX commit. The follow-up intentionally reran only this affected small group, not the full contributor gate. A first drag test attempt clicked an offscreen coordinate; it was corrected to scroll the target into view using the normal locator API, with assertions unchanged.

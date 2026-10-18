@@ -133,3 +133,89 @@ for (const width of [1440, 320, 390]) {
     });
   });
 }
+
+for (const width of [1440, 320]) {
+  test.describe(`numeric draft ${width}px`, () => {
+    test.use({ hasTouch: width < 768 });
+    for (const destination of ["object", "blank", "layer"] as const) {
+      test(`Moodboard geometry commits on ${destination} selection without Enter`, async ({ page }) => {
+        await openEditor(page, width);
+        const editor = page.locator(".moodboard-editor:visible");
+        const list = editor.getByRole("list", { name: "Moodboard 內容" });
+        const inspector = editor.getByRole("complementary", { name: "選取物件屬性" });
+        const note = list.getByRole("button", { name: "文字：Hidden note", exact: true });
+        const x = inspector.getByRole("spinbutton", { name: "X", exact: true });
+        const act = async (target: ReturnType<Page["locator"]>) => width < 768 ? target.tap() : target.click();
+        await act(note);
+        await x.fill("230");
+        if (destination === "object") await act(editor.locator('[data-moodboard-id="cover"]'));
+        else if (destination === "blank") {
+          const stage = editor.locator(".moodboard-stage");
+          if (width < 768) await stage.tap({ position: { x: 8, y: 8 } });
+          else await stage.click({ position: { x: 8, y: 8 } });
+        } else await act(list.getByRole("button", { name: "色塊 #f5b7d2", exact: true }));
+        await act(note);
+        await expect(x).toHaveValue("230");
+        if (width === 1440) {
+          await page.getByRole("button", { name: "復原", exact: true }).click();
+          await expect(x).toHaveValue("80");
+          await expect(page.getByRole("button", { name: "復原", exact: true })).toBeDisabled();
+          await page.getByRole("button", { name: "重做", exact: true }).click();
+          await expect(x).toHaveValue("230");
+        }
+      });
+    }
+  });
+}
+
+test("Moodboard geometry Enter, Escape and external Undo stay atomic", async ({ page }) => {
+  await openEditor(page, 1440);
+  const editor = page.locator(".moodboard-editor:visible");
+  const list = editor.getByRole("list", { name: "Moodboard 內容" });
+  const note = list.getByRole("button", { name: "文字：Hidden note", exact: true });
+  const x = editor.getByRole("spinbutton", { name: "X", exact: true });
+  const undo = page.getByRole("button", { name: "復原", exact: true });
+  const redo = page.getByRole("button", { name: "重做", exact: true });
+  await note.click();
+  await x.fill("230"); await x.press("Enter"); await x.press("Enter");
+  await x.fill("350"); await x.press("Escape");
+  await editor.locator(".moodboard-stage").click({ position: { x: 8, y: 8 } });
+  await note.click();
+  await expect(x).toHaveValue("230");
+  await undo.click();
+  await expect(x).toHaveValue("80");
+  await expect(undo).toBeDisabled();
+  await redo.click();
+  await expect(x).toHaveValue("230");
+  await x.fill("240");
+  await undo.click();
+  await expect(x).toHaveValue("230");
+  await undo.click();
+  await expect(x).toHaveValue("80");
+  await expect(undo).toBeDisabled();
+});
+
+test("Moodboard drag starts from the numeric draft committed on pointerdown", async ({ page }) => {
+  await openEditor(page, 1440);
+  const editor = page.locator(".moodboard-editor:visible");
+  const list = editor.getByRole("list", { name: "Moodboard 內容" });
+  const inspector = editor.getByRole("complementary", { name: "選取物件屬性" });
+  await list.getByRole("button", { name: "文字：Hidden note", exact: true }).click();
+  await inspector.getByRole("button", { name: "移到最前" }).click();
+  const x = inspector.getByRole("spinbutton", { name: "X", exact: true });
+  await x.fill("230");
+  await editor.locator('[data-moodboard-id="note"]').scrollIntoViewIfNeeded();
+  const object = await editor.locator('[data-moodboard-id="note"]').boundingBox();
+  const stage = await editor.locator(".moodboard-stage").boundingBox();
+  if (!object || !stage) throw new Error("missing board geometry");
+  const start = { x: object.x + object.width / 2, y: object.y + object.height / 2 };
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(start.x + stage.width * 64 / 800, start.y, { steps: 3 });
+  await page.mouse.up();
+  await expect(x).toHaveValue("294");
+  await page.getByRole("button", { name: "復原", exact: true }).click();
+  await expect(x).toHaveValue("230");
+  await page.getByRole("button", { name: "復原", exact: true }).click();
+  await expect(x).toHaveValue("80");
+});

@@ -44,8 +44,9 @@ export function MoodboardInlineEditor({ window, ctx, update }: ModuleProps<"mood
   const { t: tr } = useTranslation("modules");
   const { t: te } = useTranslation("editor");
   const [selectedId, setSelectedId] = useState<string | null>(window.content.elements[0]?.id ?? null);
-  const drag = useRef<{ id: string; startX: number; startY: number; x: number; y: number } | null>(null);
+  const drag = useRef<{ id: string; startX: number; startY: number; x: number | null; y: number | null } | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
+  const geometryRef = useRef<HTMLFieldSetElement | null>(null);
   const [exportStatus, setExportStatus] = useState("");
   const [limitStatus, setLimitStatus] = useState("");
   const content = window.content;
@@ -84,7 +85,7 @@ export function MoodboardInlineEditor({ window, ctx, update }: ModuleProps<"mood
     event.stopPropagation(); setSelectedId(element.id);
     if (element.locked) return;
     event.currentTarget.setPointerCapture(event.pointerId);
-    drag.current = { id: element.id, startX: event.clientX, startY: event.clientY, x: element.x, y: element.y };
+    drag.current = { id: element.id, startX: event.clientX, startY: event.clientY, x: null, y: null };
   }
   function pointerMove(event: ReactPointerEvent<HTMLButtonElement>) {
     const active = drag.current;
@@ -92,8 +93,9 @@ export function MoodboardInlineEditor({ window, ctx, update }: ModuleProps<"mood
     const stage = event.currentTarget.parentElement?.getBoundingClientRect();
     const element = content.elements.find((item) => item.id === active.id);
     if (!stage || !element) return;
-    const x = clamp(active.x + (event.clientX - active.startX) * content.width / stage.width, 0, content.width - element.width);
-    const y = clamp(active.y + (event.clientY - active.startY) * content.height / stage.height, 0, content.height - element.height);
+    // Use the first move snapshot: pointerdown may just have committed a numeric draft.
+    const x = clamp((active.x ??= element.x) + (event.clientX - active.startX) * content.width / stage.width, 0, content.width - element.width);
+    const y = clamp((active.y ??= element.y) + (event.clientY - active.startY) * content.height / stage.height, 0, content.height - element.height);
     patch(active.id, { x: Math.round(x), y: Math.round(y) }, `moodboard-drag-${active.id}`);
   }
   function duplicate(element: MoodboardElement) {
@@ -132,7 +134,10 @@ export function MoodboardInlineEditor({ window, ctx, update }: ModuleProps<"mood
         {exportStatus ? <span role="status" className="moodboard-export-status">{exportStatus}</span> : null}
       </div>
       <div className="moodboard-workspace">
-        <div ref={stageRef} className="moodboard-stage editing" style={{ aspectRatio: `${content.width}/${content.height}`, background: content.background }} onPointerDown={() => setSelectedId(null)}>
+        <div ref={stageRef} className="moodboard-stage editing" style={{ aspectRatio: `${content.width}/${content.height}`, background: content.background }} onPointerDownCapture={() => {
+          // Pointer selection can unmount the keyed inspector before the browser's normal blur.
+          geometryRef.current?.querySelector<HTMLInputElement>("input:focus")?.blur();
+        }} onPointerDown={() => setSelectedId(null)}>
           {orderedElements(content.elements).map((element) => <button key={element.id} type="button" data-moodboard-id={element.id} aria-label={tr("moodboard.select", { v1: label(element) })} aria-pressed={selectedId === element.id} className={`moodboard-element ${element.kind}${selectedId === element.id ? " selected" : ""}${element.locked ? " locked" : ""}`} style={geometry(element, content.width, content.height)} onClick={() => setSelectedId(element.id)} onPointerDown={(event) => pointerDown(event, element)} onPointerMove={pointerMove} onPointerUp={() => { drag.current = null; }} onPointerCancel={() => { drag.current = null; }}><ElementContent element={element} /></button>)}
         </div>
         <div className="moodboard-sidebar">
@@ -151,7 +156,7 @@ export function MoodboardInlineEditor({ window, ctx, update }: ModuleProps<"mood
           <aside className="moodboard-inspector" aria-label={tr("moodboard.selectedObjectProperties")}>
             {selected ? <>
               <strong>{label(selected)}</strong>
-              <fieldset className="moodboard-geometry" key={selected.id} disabled={selected.locked}>
+              <fieldset ref={geometryRef} className="moodboard-geometry" key={selected.id} disabled={selected.locked}>
                 <legend>{te("rightPanel.layout")} · px</legend>
                 {(["x", "y", "width", "height"] as const).map((field) => <GeometryInput key={field}
                   label={field === "x" ? "X" : field === "y" ? "Y" : te(field === "width" ? "rightPanel.w" : "rightPanel.h")}

@@ -17,3 +17,5 @@ Implementation (inline, no additional implementers):
 All displayed prose reuses existing four-language keys. X/Y are coordinate symbols; no new translation resources are required.
 
 Result: 15 focused unit tests and web typecheck passed; 10 distinct focused browser cases passed. See `tests/e2e/evidence/moodboard-properties/README.md` for commands, screenshots, evidence boundaries and remaining integration/device validation. Review screenshots are isolated under that dedicated test-evidence directory.
+
+Independent review follow-up: confirmed numeric drafts were lost when canvas pointerdown unmounted the selected fieldset before blur (ordinary-click object/blank cases failed; layer and Enter/Escape controls passed). Canvas capture now blurs the numeric field before changing selection; drag starts from the first move's current geometry. Desktop/320 transition tests plus Enter/Escape/external Undo and numeric-to-drag undo checks: 8 passed; 14 relevant units and web typecheck passed. Only this reported P2 was handled; no full gate or new feature scope.
