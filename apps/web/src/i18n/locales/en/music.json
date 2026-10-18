@@ -96,7 +96,31 @@
     "playerHeading": "{{label}} player",
     "loadPlayer": "Load {{label}} player",
     "openOn": "Open on {{label}} ↗",
-    "slowNotice": "The {{label}} player hasn't responded yet. If it never appears, use \"Open on {{label}}\"."
+    "slowNotice": "The {{label}} player hasn't responded yet. If it never appears, use \"Open on {{label}}\".",
+    "source": {
+      "label": "Paste a link or upload a file",
+      "placeholder": "Paste a YouTube, Spotify or audio-file URL",
+      "auto": "The source is recognised automatically — you don’t need to choose a type first.",
+      "recognizedEmbed": "Recognised as {{platform}} {{resource}}: visitors press play and use the official {{platform}} player right on the page.",
+      "recognizedAudio": "Recognised as an audio file URL: visitors can play it right on the page.",
+      "recognizedVideoFile": "This is a video file URL. Video files can’t be played inside the page yet, so it is saved as an external link that opens in a new tab.",
+      "recognizedPage": "This is an ordinary web page. A web page can’t be played as audio, so it is saved as an external link that opens the original page in a new tab.",
+      "reasonShortLink": "This is a {{platform}} short link. Paste the full URL (an open.spotify.com or youtube.com link) to play it in the page; for now it is saved as an external link.",
+      "reasonUnsupportedResource": "This {{platform}} link isn’t a track, album, playlist or video, so it can’t be embedded; it is saved as an external link to the original site.",
+      "reasonUnsupportedPlatform": "{{platform}} can’t be played inside the page yet; it is saved as an external link to the original site.",
+      "invalid": "Paste a full URL that starts with https://.",
+      "invalidCredentials": "The URL can’t contain a username or password.",
+      "invalidPort": "The URL can’t specify a port.",
+      "invalidTooLong": "The URL is too long (2048 characters at most).",
+      "useExternal": "Use an external link instead (opens the original site)",
+      "usePlayer": "Use the in-page player",
+      "uploaded": "Using the uploaded audio file; visitors can play it right on the page. Pasting a link replaces it.",
+      "sourceLine": "Source: {{platform}} (official embed)",
+      "playerNote": "The player isn’t loaded until a visitor presses play.",
+      "wasAudioPlatform": "This is a {{platform}} web page that was saved as an audio file, so it can’t play. Switch to the in-page player.",
+      "canEmbed": "This link can be played in the page with the official {{platform}} player.",
+      "savedAudioNotAudio": "This URL isn’t an audio file, so it can’t be played as audio. Save it as an external link instead."
+    }
   },
   "providerPlayer": {
     "player": "{{label}} player",

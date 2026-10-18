@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import type { SiteDocument } from "@retrodesk/shared";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { documentFixture } from "./fixture";
 
 const session = { access_token: "a.b.c", refresh_token: "r", expires_at: 4102444800, expires_in: 3600, token_type: "bearer", user: { id: "u", email: "x@y.z", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01" } };
@@ -104,46 +106,84 @@ const lastTrackSource = (saves: SiteDocument[]) => {
   return window && window.type === "music" ? (window.content.tracks[0].source as Record<string, unknown>) : undefined;
 };
 
-test.describe("author: platform links stored as audio", () => {
-  test("explains that a Spotify page is not an audio file, keeps the pasted URL and never plays it", async ({ page }) => {
+test.describe("author: paste a link, Retro works out what it is", () => {
+  test("a Spotify page stored as audio by older data is explained and fixed without losing the link", async ({ page }) => {
     await stubPlatforms(page);
     const { player, saves } = await openEditor(page, doc(musicWindow("Music.exe", [track("t1", "Pasted", { kind: "audioUrl", url: SPOTIFY_WITH_PARAMS })])));
     const editor = player.locator(".music-track-editor").first();
-    await expect(editor.getByRole("note")).toContainText("這是 Spotify 的網頁連結，不是音訊檔");
+    await expect(editor.getByTestId("source-explanation")).toContainText("這是 Spotify 的網頁連結，原本被存成音訊檔，無法播放");
     await expect(editor.getByRole("button", { name: "▶ 試聽" })).toBeDisabled();
-    await expect(editor.getByLabel("音訊直連（HTTPS）")).toHaveValue(SPOTIFY_WITH_PARAMS);
+    await expect(editor.getByLabel("貼上連結或上傳檔案")).toHaveValue(SPOTIFY_WITH_PARAMS);
 
-    // switching types never replaces the link with "https://"
-    await editor.getByRole("button", { name: "改成外部連結" }).click();
-    await expect(editor.getByLabel("平台／作品頁連結")).toHaveValue(SPOTIFY_WITH_PARAMS);
-    await editor.getByRole("button", { name: "HTTPS 音訊" }).click();
-    await expect(editor.getByLabel("音訊直連（HTTPS）")).toHaveValue(SPOTIFY_WITH_PARAMS);
-    await editor.getByRole("button", { name: "外部連結", exact: true }).click();
-    await expect(editor.getByLabel("平台／作品頁連結")).toHaveValue(SPOTIFY_WITH_PARAMS);
+    // keep it as an external link: the pasted URL is never replaced by "https://"
+    await editor.getByRole("button", { name: "改用外部連結（只開原站）" }).click();
+    await expect(editor.getByLabel("貼上連結或上傳檔案")).toHaveValue(SPOTIFY_WITH_PARAMS);
     await expect.poll(() => lastTrackSource(saves)).toMatchObject({ kind: "externalLink", url: SPOTIFY_WITH_PARAMS });
   });
 
-  test("offers an official player for Spotify/YouTube and stores only validated ids", async ({ page }) => {
+  test("pasting a supported platform link builds the in-page player automatically and stores only validated ids", async ({ page }) => {
     await stubPlatforms(page);
-    const { player, saves } = await openEditor(page, doc(musicWindow("Music.exe", [track("t1", "Pasted", { kind: "externalLink", url: SPOTIFY_WITH_PARAMS })])));
+    const { player, saves } = await openEditor(page, doc(musicWindow("Music.exe", [track("t1", "Pasted", { kind: "audioUrl", url: "https://" })])));
     const editor = player.locator(".music-track-editor").first();
-    await expect(editor.getByRole("note")).toContainText("Spotify 的單曲");
-    await editor.getByRole("button", { name: "改為平台播放器" }).click();
-    await expect(editor.getByText("已辨識：Spotify 單曲")).toBeVisible();
+    const field = editor.getByLabel("貼上連結或上傳檔案");
+
+    await field.fill(SPOTIFY_WITH_PARAMS);
+    await expect(editor.getByTestId("source-explanation")).toContainText("已辨識為 Spotify 單曲");
+    await expect(editor.getByText("來源：Spotify（官方嵌入）")).toBeVisible();
     await expect(editor.locator("iframe")).toHaveCount(0); // nothing loads until someone clicks
     await expect.poll(() => lastTrackSource(saves)).toEqual({ kind: "providerEmbed", provider: "spotify", resourceType: "track", resourceId: "50q2aUjWoTn6CJIfSPRJQA", canonicalUrl: SPOTIFY, originalUrl: SPOTIFY_WITH_PARAMS });
 
-    // pasting a YouTube link into the player field switches provider; unsupported links stay external with an explanation
-    const field = editor.getByLabel("Spotify / YouTube 網址");
+    // a different platform link switches provider by itself — no source type to pick
     await field.fill(YOUTUBE);
-    await expect(editor.getByText("已辨識：YouTube 影片")).toBeVisible();
+    await expect(editor.getByTestId("source-explanation")).toContainText("已辨識為 YouTube 影片");
     await expect.poll(() => lastTrackSource(saves)).toMatchObject({ kind: "providerEmbed", provider: "youtube", resourceId: "dQw4w9WgXcQ", originalUrl: YOUTUBE });
+
+    // unsupported platform / look-alike hosts / web pages stay external links with the reason, never a player
     await field.fill("https://soundcloud.com/artist/song");
-    await expect(editor.getByRole("status")).toContainText("SoundCloud");
+    await expect(editor.getByTestId("source-explanation")).toContainText("SoundCloud");
     await expect.poll(() => lastTrackSource(saves)).toMatchObject({ kind: "externalLink", url: "https://soundcloud.com/artist/song" });
     await field.fill("https://open.spotify.com.evil.example/track/50q2aUjWoTn6CJIfSPRJQA");
+    await expect(editor.getByTestId("source-explanation")).toContainText("一般網頁連結");
     await expect.poll(() => lastTrackSource(saves)).toMatchObject({ kind: "externalLink" });
     expect(JSON.stringify(saves.at(-1))).not.toContain('"providerEmbed"');
+  });
+
+  test("a direct audio file URL plays natively; a web page or video file is never handed to the audio player", async ({ page }) => {
+    await stubPlatforms(page);
+    const { player, saves } = await openEditor(page, doc(musicWindow("Music.exe", [track("t1", "Pasted", { kind: "audioUrl", url: "https://" })])));
+    const editor = player.locator(".music-track-editor").first();
+    const field = editor.getByLabel("貼上連結或上傳檔案");
+    await field.fill("https://media.example.com/theme.mp3?x=1");
+    await expect(editor.getByTestId("source-explanation")).toContainText("音訊檔網址");
+    await expect.poll(() => lastTrackSource(saves)).toMatchObject({ kind: "audioUrl", url: "https://media.example.com/theme.mp3?x=1" });
+    await expect(editor.getByRole("button", { name: "▶ 試聽" })).toBeEnabled();
+
+    await field.fill("https://example.com/my-song-page");
+    await expect(editor.getByTestId("source-explanation")).toContainText("一般網頁連結");
+    await expect.poll(() => lastTrackSource(saves)).toMatchObject({ kind: "externalLink", url: "https://example.com/my-song-page" });
+    await expect(editor.getByRole("button", { name: "▶ 試聽" })).toHaveCount(0);
+
+    await field.fill("https://media.example.com/clip.mp4");
+    await expect(editor.getByTestId("source-explanation")).toContainText("影片檔網址");
+    await expect.poll(() => lastTrackSource(saves)).toMatchObject({ kind: "externalLink", url: "https://media.example.com/clip.mp4" });
+  });
+
+  test("choosing the external link for a supported URL is respected until a different link is pasted", async ({ page }) => {
+    await stubPlatforms(page);
+    const { player, saves } = await openEditor(page, doc(musicWindow("Music.exe", [track("t1", "Pasted", { kind: "audioUrl", url: "https://" })])));
+    const editor = player.locator(".music-track-editor").first();
+    const field = editor.getByLabel("貼上連結或上傳檔案");
+    await field.fill(YOUTUBE);
+    await expect.poll(() => lastTrackSource(saves)).toMatchObject({ kind: "providerEmbed" });
+    await editor.getByRole("button", { name: "改用外部連結（只開原站）" }).click();
+    await expect.poll(() => lastTrackSource(saves)).toMatchObject({ kind: "externalLink", url: YOUTUBE });
+    await expect(editor.getByTestId("source-explanation")).toContainText("可以用 YouTube 的官方播放器");
+    await editor.getByRole("button", { name: "改用站內播放器" }).click();
+    await expect.poll(() => lastTrackSource(saves)).toMatchObject({ kind: "providerEmbed", provider: "youtube" });
+    // a half-typed URL is held in the field and never saved over the last good source
+    await field.fill("htp:/broken");
+    await expect(editor.getByTestId("source-explanation")).toContainText("https://");
+    await expect.poll(() => lastTrackSource(saves)).toMatchObject({ kind: "providerEmbed", provider: "youtube" });
   });
 });
 
@@ -184,7 +224,7 @@ test.describe("visitor: official platform players", () => {
     await expect(player.locator("iframe")).toHaveCount(0); // the old frame is gone, the new one waits for a click
     await player.getByRole("button", { name: "載入 YouTube 播放器" }).click();
     await expect(player.locator("iframe")).toHaveCount(1);
-    await expect(player.locator("iframe")).toHaveAttribute("src", "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?rel=0&playsinline=1");
+    await expect(player.locator("iframe")).toHaveAttribute("src", "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?rel=0&playsinline=1&autoplay=1");
     const box = await player.locator("iframe").boundingBox();
     expect(box!.width).toBeGreaterThanOrEqual(200);
     expect(box!.height).toBeGreaterThanOrEqual(200);
@@ -363,5 +403,29 @@ for (const width of [320, 390, 430]) {
     await expect(page.locator("iframe")).toHaveCount(1);
     await page.getByRole("dialog", { name: "Music.exe", exact: true }).getByRole("button", { name: "最小化", exact: true }).click();
     await expect(page.locator("iframe")).toHaveCount(0);
+  });
+}
+
+// Four languages. ja/ko are beta and only enabled in preview builds (see `pnpm test:e2e:i18n-preview`).
+const PREVIEW_LOCALES = process.env.VITE_I18N_PREVIEW_LOCALES === "true";
+for (const locale of (PREVIEW_LOCALES ? ["en", "ja", "ko"] : ["en"]) as Array<"en" | "ja" | "ko">) {
+  test(`the source field explains what it recognised in ${locale}`, async ({ page }) => {
+    const music = JSON.parse(readFileSync(join(__dirname, `../../apps/web/src/i18n/locales/${locale}/music.json`), "utf8")).music as { source: Record<string, string>; video: string; uploadAudio: string };
+    const fill = (template: string, values: Record<string, string>) => template.replace(/\{\{(\w+)\}\}/g, (_m, key: string) => values[key] ?? "");
+    await page.addInitScript((value) => localStorage.setItem("retrodesk:locale", value), locale);
+    await stubPlatforms(page);
+    const { player } = await openEditor(page, doc(musicWindow("Music.exe", [track("t1", "Pasted", { kind: "audioUrl", url: "https://" })])));
+    const editor = player.locator(".music-track-editor").first();
+    const field = editor.getByLabel(music.source.label);
+    await expect(field).toHaveAttribute("placeholder", music.source.placeholder);
+    await field.fill(YOUTUBE);
+    await expect(editor.getByTestId("source-explanation")).toHaveText(fill(music.source.recognizedEmbed, { platform: "YouTube", resource: music.video }));
+    await expect(editor.getByText(fill(music.source.sourceLine, { platform: "YouTube" }), { exact: false })).toBeVisible();
+    await field.fill("https://example.com/some-page");
+    await expect(editor.getByTestId("source-explanation")).toHaveText(music.source.recognizedPage);
+    await field.fill("https://media.example.com/clip.mp4");
+    await expect(editor.getByTestId("source-explanation")).toHaveText(music.source.recognizedVideoFile);
+    await field.fill("htp:/broken");
+    await expect(editor.getByTestId("source-explanation")).toHaveText(music.source.invalid);
   });
 }
