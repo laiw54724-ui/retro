@@ -1,12 +1,11 @@
 import { useRef, useState } from "react";
 import { i18n } from "../../i18n";
 import { useTranslation } from "react-i18next";
-import { loadVersionedSiteDocument, normalizeDocument, ProfileEntityV2Schema, projectV2ToLegacyDocument } from "@retrodesk/shared";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../app/AuthProvider";
 import { Icon } from "../../components/Icon";
 import { RetroButton } from "../../components/RetroButton";
-import { buildProfileDirectory } from "../modules/instagram/profileDirectory";
+import { buildPreviewModel } from "../editor/previewModel";
 import { AssetSourceProvider } from "../../lib/assetSource";
 import type { SiteRecord } from "../../lib/api";
 import { useThemeView } from "../../lib/themeView";
@@ -16,20 +15,9 @@ import { createPreviewNavigation } from "../site/previewNavigation";
 import { VisitorDesktop } from "../site/VisitorDesktop";
 
 function projectDraft(site: SiteRecord) {
-  const loaded = loadVersionedSiteDocument(site.draft_document, { siteId: site.id });
-  if (!loaded.ok) throw new Error(loaded.diagnostics[0]?.message ?? i18n.t("collab:draftViewer.thePrivateDraftFormatIs"));
-  if (loaded.version === 1) return { document: normalizeDocument(loaded.document), profiles: [], profileIdsByWindow: {}, profileDirectory: [] };
-  const legacy = projectV2ToLegacyDocument(loaded.document);
-  if (!legacy.ok) throw new Error(legacy.diagnostics[0]?.message ?? i18n.t("collab:draftViewer.invalidCharacterReference"));
-  return {
-    document: legacy.document,
-    profiles: loaded.document.entities.profiles.flatMap((profile) => {
-      const parsed = ProfileEntityV2Schema.safeParse(profile);
-      return parsed.success ? [parsed.data] : [];
-    }),
-    profileIdsByWindow: Object.fromEntries(loaded.document.windows.flatMap((window) => window.type === "instagram" ? [[window.id, window.content.profileRef.id] as const] : [])),
-    profileDirectory: buildProfileDirectory(loaded.document)
-  };
+  const model = buildPreviewModel("draft", site.draft_document, site.id);
+  if (!model) throw new Error(i18n.t("collab:draftViewer.thePrivateDraftFormatIs"));
+  return model;
 }
 
 export function DraftViewer({ site }: { site: SiteRecord }) {

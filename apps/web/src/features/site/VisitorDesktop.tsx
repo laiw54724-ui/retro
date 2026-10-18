@@ -44,7 +44,7 @@ function initialRuntime(document: SiteDocument, initialOpenId?: string): Runtime
   ]));
 }
 
-export function VisitorDesktop({ document, profiles, profileIdsByWindow, profileDirectory, initialOpenId, initialPostId, navigation, publicShareBaseUrl, siteHandle }: { navigation?: PreviewNavigation; document: SiteDocument; profiles?: ProfileEntityV2[]; profileIdsByWindow?: Record<string, string>; profileDirectory?: ProfileDirectoryEntry[]; initialOpenId?: string; initialPostId?: string; publicShareBaseUrl?: string; siteHandle?: string }) {
+export function VisitorDesktop({ document, profiles, profileIdsByWindow, profileDirectory, initialOpenId, initialPostId, navigation, canShareEntity, publicShareBaseUrl, siteHandle }: { navigation?: PreviewNavigation; canShareEntity?: (kind: "oc" | "post", id: string) => boolean; document: SiteDocument; profiles?: ProfileEntityV2[]; profileIdsByWindow?: Record<string, string>; profileDirectory?: ProfileDirectoryEntry[]; initialOpenId?: string; initialPostId?: string; publicShareBaseUrl?: string; siteHandle?: string }) {
   const { t: tr } = useTranslation("editor");
   const [runtime, setRuntime] = useState<RuntimeMap>(() => initialRuntime(document, initialOpenId ?? (navigation?.openId && document.windows.some((window) => window.id === navigation.openId) ? navigation.openId : undefined)));
   const desktopRef = useRef<HTMLDivElement | null>(null);
@@ -248,7 +248,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
               titleBarProps={{ onDoubleClick: () => toggleMaximize(window.id), style: { touchAction: "none" } }}
               style={{ height: "100%" }}
             >
-              <WindowRenderer window={window} theme={document.theme} allWindows={document.windows} onOpenWindow={openWindow} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialPostId={window.id === initialOpenId ? initialPostId : undefined} navigation={navigation} publicShareBaseUrl={publicShareBaseUrl} siteHandle={siteHandle} />
+              <WindowRenderer window={window} theme={document.theme} allWindows={document.windows} onOpenWindow={openWindow} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialPostId={window.id === initialOpenId ? initialPostId : undefined} navigation={navigation} canShareEntity={canShareEntity} publicShareBaseUrl={publicShareBaseUrl} siteHandle={siteHandle} />
             </RetroWindow>
             {!state.maximized ? <span className="window-resize-handle" aria-hidden="true" /> : null}
           </div>

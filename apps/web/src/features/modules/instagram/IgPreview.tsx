@@ -45,6 +45,9 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
   const [shareFallback, setShareFallback] = useState<string | null>(null);
   const shareEntity = async (kind: "oc" | "post", id: string, title: string) => {
     if (!ctx.publicShareBaseUrl) { s.showToast(tr("igPreview.publishBeforeSharing")); return; }
+    // In a preview a link may only point at something that exists in the stored public snapshot: a published site does not
+    // make its unpublished characters and posts shareable.
+    if (ctx.canShareEntity && !ctx.canShareEntity(kind, id)) { s.showToast(tr(kind === "oc" ? "igPreview.characterNotPublicYet" : "igPreview.postNotPublicYet")); return; }
     const base = new URL(ctx.publicShareBaseUrl, globalThis.location?.origin ?? "https://retro.invalid");
     const handle = decodeURIComponent(base.pathname.replace(/^\/@/, "").split("/")[0] ?? "");
     const url = buildPublicEntityUrl(base.origin, handle, kind, id);
@@ -382,11 +385,11 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
       ) : null}
 
       {story ? (
-        <div role="dialog" aria-label={tr("igEditForm.highlightStories")} className="ig-story" tabIndex={-1} autoFocus onKeyDown={(event) => {
+        <div role="dialog" aria-label={tr("igEditForm.highlightStories")} className="ig-story" tabIndex={-1} ref={(node) => { if (node && !node.contains(globalThis.document.activeElement)) node.focus(); }} onKeyDown={(event) => {
           if (event.key === "ArrowLeft") s.stepStory(-1);
           if (event.key === "ArrowRight") s.stepStory(1);
           if (event.key === " " || event.key === "Spacebar") { event.preventDefault(); s.toggleStoryPause(); }
-          if (event.key === "Escape") s.closeStory();
+          if (event.key === "Escape") { event.preventDefault(); s.closeStory(); }
         }}>
           <div className="ig-bars">{storyFrames.map((frame, i) => <span key={frame.id}><span style={{ width: i < s.story ? "100%" : i === s.story ? `${s.storyProgress}%` : "0%" }} /></span>)}</div>
           <div className="ig-story-head">{avatar(28)}<strong>{profile.username}</strong><span className="ig-story-title">{story.highlightTitle}{story.frameCount > 1 ? ` · ${story.frameIndex + 1}/${story.frameCount}` : ""}</span><button type="button" aria-label={s.storyPaused ? tr("igPreview.resumePlayback") : tr("igPreview.pausePlayback")} onClick={s.toggleStoryPause}>{s.storyPaused ? "▶" : "Ⅱ"}</button><button type="button" aria-label={tr("igPreview.close")} onClick={s.closeStory}>×</button></div>

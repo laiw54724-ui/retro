@@ -474,12 +474,19 @@
   },
   "visitorPreview": {
     "visitorMode": "Visitor mode",
-    "previewingThePublishedVersionRetrodesk": "Previewing the published version · retrodesk.me/{{username}}",
-    "previewingTheCurrentDraftVisitors": "Previewing the current draft · visitors can't see unpublished content",
     "device": "Device",
     "desktop": "Desktop",
     "mobile": "Mobile",
-    "backToEditor": "‹ Back to editor"
+    "backToEditor": "‹ Back to editor",
+    "source": "Preview content",
+    "showPublishable": "After publishing",
+    "showDraft": "Current draft",
+    "sampleReadOnly": "Sample · read-only, nothing is saved",
+    "draftLabel": "Current draft · visitors can’t see unpublished content",
+    "notPublishedYet": "Not published yet · this is how it will look once published; it isn’t online",
+    "hasUnpublishedChanges": "Has unpublished changes · this is how it will look once published; it isn’t online yet",
+    "sameAsPublished": "Same as the published version",
+    "backToSamples": "‹ Back to samples"
   },
   "sidebarToggle": {
     "leftToolbar": "Left toolbar",

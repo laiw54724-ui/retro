@@ -474,12 +474,19 @@
   },
   "visitorPreview": {
     "visitorMode": "訪客模式",
-    "previewingThePublishedVersionRetrodesk": "預覽已發布版本 · retrodesk.me/{{username}}",
-    "previewingTheCurrentDraftVisitors": "預覽目前草稿 · 尚未發布的內容訪客看不到",
     "device": "裝置",
     "desktop": "桌面版",
     "mobile": "手機版",
-    "backToEditor": "‹ 回到編輯器"
+    "backToEditor": "‹ 回到編輯器",
+    "source": "預覽內容",
+    "showPublishable": "發布後的樣子",
+    "showDraft": "目前草稿",
+    "sampleReadOnly": "範例 · 唯讀，不會儲存任何內容",
+    "draftLabel": "目前草稿 · 訪客看不到尚未發布的內容",
+    "notPublishedYet": "尚未發布 · 這是發布後的樣子，目前還沒有上線",
+    "hasUnpublishedChanges": "有未發布的變更 · 這是發布後的樣子，尚未上線",
+    "sameAsPublished": "與已發布版本相同",
+    "backToSamples": "‹ 返回範例"
   },
   "sidebarToggle": {
     "leftToolbar": "左側工具欄",

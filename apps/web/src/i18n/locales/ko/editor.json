@@ -474,12 +474,19 @@
   },
   "visitorPreview": {
     "visitorMode": "방문자 모드",
-    "previewingThePublishedVersionRetrodesk": "게시된 버전 미리보기 · retrodesk.me/{{username}}",
-    "previewingTheCurrentDraftVisitors": "현재 초안 미리보기 · 게시되지 않은 내용은 방문자에게 보이지 않습니다",
     "device": "기기",
     "desktop": "데스크톱",
     "mobile": "모바일",
-    "backToEditor": "‹ 편집기로 돌아가기"
+    "backToEditor": "‹ 편집기로 돌아가기",
+    "source": "미리보기 내용",
+    "showPublishable": "게시 후 모습",
+    "showDraft": "현재 초안",
+    "sampleReadOnly": "샘플 · 읽기 전용이며 아무것도 저장되지 않습니다",
+    "draftLabel": "현재 초안 · 게시되지 않은 내용은 방문자에게 보이지 않습니다",
+    "notPublishedYet": "아직 게시되지 않음 · 게시 후의 모습입니다(아직 온라인이 아닙니다)",
+    "hasUnpublishedChanges": "게시되지 않은 변경 사항이 있음 · 게시 후의 모습입니다(아직 온라인이 아닙니다)",
+    "sameAsPublished": "게시된 버전과 같습니다",
+    "backToSamples": "‹ 샘플로 돌아가기"
   },
   "sidebarToggle": {
     "leftToolbar": "왼쪽 도구 모음",

@@ -290,7 +290,9 @@
     "copyTheShareLinkManually": "Copy the share link manually",
     "couldntCopyAutomatically": "Couldn't copy automatically",
     "selectTheUrlBelowAnd": "Select the URL below and copy it manually.",
-    "shareUrl": "Share URL"
+    "shareUrl": "Share URL",
+    "characterNotPublicYet": "This character isn’t public yet. Publish it before sharing.",
+    "postNotPublicYet": "This post isn’t public yet. Publish it before sharing."
   },
   "profileDetails": {
     "characterInfo": "Character info",

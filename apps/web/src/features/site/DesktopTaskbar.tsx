@@ -60,7 +60,8 @@ export function DesktopTaskbar({ document, tasks, onOpen, onToggle, visitor = fa
       if (!rootRef.current?.contains(event.target as Node)) setStartOpen(false);
     };
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      event.preventDefault(); // handled here: a surrounding preview must not also close on this Escape
       setStartOpen(false);
       window.requestAnimationFrame(() => startButtonRef.current?.focus());
     };

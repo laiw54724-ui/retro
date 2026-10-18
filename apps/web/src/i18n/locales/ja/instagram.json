@@ -290,7 +290,9 @@
     "copyTheShareLinkManually": "共有リンクを手動でコピー",
     "couldntCopyAutomatically": "自動でコピーできませんでした",
     "selectTheUrlBelowAnd": "下のURLを選択して手動でコピーしてください。",
-    "shareUrl": "共有URL"
+    "shareUrl": "共有URL",
+    "characterNotPublicYet": "このキャラクターはまだ公開されていません。公開してから共有してください。",
+    "postNotPublicYet": "この投稿はまだ公開されていません。公開してから共有してください。"
   },
   "profileDetails": {
     "characterInfo": "キャラクター情報",

@@ -290,7 +290,9 @@
     "copyTheShareLinkManually": "공유 링크 직접 복사",
     "couldntCopyAutomatically": "자동으로 복사하지 못했습니다",
     "selectTheUrlBelowAnd": "아래 URL을 선택해 직접 복사하세요.",
-    "shareUrl": "공유 URL"
+    "shareUrl": "공유 URL",
+    "characterNotPublicYet": "이 캐릭터는 아직 공개되지 않았습니다. 게시한 뒤에 공유하세요.",
+    "postNotPublicYet": "이 게시물은 아직 공개되지 않았습니다. 게시한 뒤에 공유하세요."
   },
   "profileDetails": {
     "characterInfo": "캐릭터 정보",

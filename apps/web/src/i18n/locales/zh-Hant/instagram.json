@@ -290,7 +290,9 @@
     "copyTheShareLinkManually": "手動複製分享連結",
     "couldntCopyAutomatically": "無法自動複製",
     "selectTheUrlBelowAnd": "請選取下方網址手動複製。",
-    "shareUrl": "分享網址"
+    "shareUrl": "分享網址",
+    "characterNotPublicYet": "這個角色尚未公開發布，發布後才能分享。",
+    "postNotPublicYet": "這則貼文尚未公開發布，發布後才能分享。"
   },
   "profileDetails": {
     "characterInfo": "角色資料",

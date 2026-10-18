@@ -22,6 +22,7 @@ type Props = {
   profileId?: string;
   initialPostId?: string;
   navigation?: PreviewNavigation;
+  canShareEntity?: (kind: "oc" | "post", id: string) => boolean;
   publicShareBaseUrl?: string;
   siteHandle?: string;
   profileIdsByWindow?: Record<string, string>;
@@ -47,7 +48,7 @@ function openExternal(url: string) {
   }
 }
 
-export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, mobile = false, editing = false, siteId, upload, onUpdate, profiles, posts, collections, profileId, initialPostId, navigation, publicShareBaseUrl, siteHandle, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
+export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, mobile = false, editing = false, siteId, upload, onUpdate, profiles, posts, collections, profileId, initialPostId, navigation, canShareEntity, publicShareBaseUrl, siteHandle, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
   const tv = useThemeView(theme);
   const onLink = (action: LinkAction) => {
     if (editing) return; // links are inert while editing
@@ -58,7 +59,7 @@ export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, m
   const profileThemeOverride = profiles?.find((profile) => profile.id === resolvedProfileId)?.themeOverride;
   const ctx: ModuleCtx = {
     theme, tv, editing: editing && !!onUpdate, mobile, siteId,
-    windows: (allWindows ?? []).map((candidate) => ({ id: candidate.id, title: candidate.title })), initialPostId, navigation, publicShareBaseUrl, siteHandle,
+    windows: (allWindows ?? []).map((candidate) => ({ id: candidate.id, title: candidate.title })), initialPostId, navigation, canShareEntity, publicShareBaseUrl, siteHandle,
     onLink, upload, profiles, posts, collections, profileId: resolvedProfileId, profileThemeOverride,
     onProfileSelect: (id) => onProfileSelect?.(id, win.id),
     onProfileAdd: () => onProfileAdd?.(win.id),

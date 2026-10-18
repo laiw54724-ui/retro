@@ -47,12 +47,13 @@ type Props = {
   initialPostId?: string;
   /** Visitor previews: shared with the other layouts so rotation keeps the open app and character. */
   navigation?: PreviewNavigation;
+  canShareEntity?: (kind: "oc" | "post", id: string) => boolean;
   publicShareBaseUrl?: string;
   siteHandle?: string;
 };
 
 /** The single-window phone experience. Used for visitors, the editor preview and the mobile editor. */
-export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview, profiles, posts, collections, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument, initialOpenId, initialPostId, navigation, publicShareBaseUrl, siteHandle }: Props) {
+export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview, profiles, posts, collections, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument, initialOpenId, initialPostId, navigation, canShareEntity, publicShareBaseUrl, siteHandle }: Props) {
   const { t } = useTranslation("editor");
   const { t: common } = useTranslation("common");
   const { t: musicText } = useTranslation("music");
@@ -76,7 +77,8 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const back = () => { const closingId = openId; if (closingId) stopWindowMedia(closingId); if (navigation) navigation.openId = null; setOpenId(null); setInlineEdit(false); if (closingId) requestAnimationFrame(() => iconRefs.current.get(closingId)?.focus()); };
   useEffect(() => {
     if (!openId) return;
-    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") back(); };
+    // preventDefault marks the key as handled, so a surrounding preview does not also close on the same Escape
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape" && !event.defaultPrevented) { event.preventDefault(); back(); } };
     globalThis.document.addEventListener("keydown", escape);
     return () => globalThis.document.removeEventListener("keydown", escape);
   }, [openId]);
@@ -146,6 +148,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
                 socialDocument={socialDocument}
                 initialPostId={openWindow.id === initialOpenId ? initialPostId : undefined}
                 navigation={navigation}
+                canShareEntity={canShareEntity}
                 publicShareBaseUrl={publicShareBaseUrl}
                 siteHandle={siteHandle}
               />
