@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { trustedPublicAssetBaseUrls } from "../lib/publicAssets";
 import { translateSystemMessage } from "../i18n/systemMessages";
 import { i18n } from "../i18n";
 import { buildPublishChecks, CollectionEntityV2Schema, createProfile, deleteOrRetargetProfile, duplicateProfile, hasBlockingCheck, hasUnpublishedChanges as hasUnpublishedDraftChanges, loadVersionedSiteDocument, normalizeDocument, parseSiteDocument, PostEntityV2Schema, ProfileEntityV2Schema, projectV2ToLegacyDocument, updateProfile, type DesktopWindow, type SiteDocumentV2Input } from "@retrodesk/shared";
@@ -332,8 +333,8 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
   const hasUnpublishedChanges = useMemo(() => {
     if (!store.document) return false;
-    return hasUnpublishedDraftChanges({ siteId, draftLegacy: store.document, publishedLegacy: store.publishedDocument, draftCanonical: store.versionedDocument, publishedRaw: store.publishedRaw });
-  }, [siteId, store.document, store.publishedDocument, store.versionedDocument, store.publishedRaw]);
+    return hasUnpublishedDraftChanges({ siteId, assets: { username: store.username, trustedAssetBaseUrls: trustedPublicAssetBaseUrls() }, draftLegacy: store.document, publishedLegacy: store.publishedDocument, draftCanonical: store.versionedDocument, publishedRaw: store.publishedRaw });
+  }, [siteId, store.username, store.document, store.publishedDocument, store.versionedDocument, store.publishedRaw]);
 
   const legacyAssets = assetInventory.filter((asset) => asset.storageScope === "legacy_public");
   const pendingPublicCopyAssets = assetInventory.filter((asset) => asset.publicCopyRemaining);
