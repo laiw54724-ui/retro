@@ -158,7 +158,7 @@ test("late list response after owner window closes cannot replace the reopened q
   await expect(dialog).not.toContainText("Old response");
 });
 
-test("closing and navigating during a submission never changes a later visitor draft", async ({ page }) => {
+test("closing during submission and navigating during report leave later visitor state intact", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 720 });
   const draft = document();
   await page.route("**/api/public/sites/demo", (route) => route.fulfill({ json: { site: { username: "demo", site_name: "Demo", published_document: draft, published_version: 1, published_at: "2026-10-17T00:00:00.000Z" } } }));
@@ -168,6 +168,11 @@ test("closing and navigating during a submission never changes a later visitor d
     return route.fulfill({ status: 202, json: { entry: entry(2, "Pending visitor", "pending") } });
   });
   let releaseSubmission: (() => void) | undefined;
+  let releaseReport: (() => void) | undefined;
+  await page.route(`**/api/public/sites/demo/guestbook/${id(1)}/reports`, async (route) => {
+    await new Promise<void>((resolve) => { releaseReport = resolve; });
+    await route.fulfill({ json: { accepted: true } }).catch(() => {}); // Navigation may cancel the old page's request.
+  });
   await page.goto("/@demo");
   const icon = page.locator(".visitor-mobile").getByRole("button", { name: "Guestbook.exe" });
   await icon.click();
@@ -187,6 +192,13 @@ test("closing and navigating during a submission never changes a later visitor d
   await settled;
   await expect(body).toHaveValue("Fresh unsent draft");
   await expect(dialog).not.toContainText("已送出待審");
+  await dialog.getByRole("button", { name: "檢舉" }).click();
+  await expect.poll(() => Boolean(releaseReport)).toBe(true);
   await page.goto("/");
   await expect(page.locator(".landing-shell")).toBeVisible();
+  releaseReport?.();
+  await page.goto("/@demo");
+  await icon.click();
+  await expect(dialog).toContainText("Public visitor");
+  await expect(dialog).not.toContainText("已收到檢舉");
 });
