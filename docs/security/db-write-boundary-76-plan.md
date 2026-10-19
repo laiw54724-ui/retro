@@ -36,23 +36,23 @@ trusted infrastructure: SQL receives the owner ID already checked by the Worker.
 
 ## Implementation plan
 
-- [ ] Add `tests/security/db-write-boundary/` as an isolated, pinned local
+- [x] Add `tests/security/db-write-boundary/` as an isolated, pinned local
   PostgreSQL-WASM test package. Bootstrap only fake Supabase roles, `auth.users`
   and `auth.uid()`; execute actual migrations 0001–0009 unchanged.
-- [ ] Demonstrate that the post-migration security assertions fail on the legacy
+- [x] Demonstrate that the post-migration security assertions fail on the legacy
   source schema, using only synthetic rows in an in-memory database.
-- [ ] Add `supabase/migrations/0010_worker_write_boundary.sql`: transactional
+- [x] Add `supabase/migrations/0010_worker_write_boundary.sql`: transactional
   table/column ACL changes, six write-policy removals, required Worker grants,
   and service-only publication/asset-migration RPC ACLs. Do not alter rows.
-- [ ] Test owner/editor/viewer/unrelated/anonymous direct writes, every protected
+- [x] Test owner/editor/viewer/unrelated/anonymous direct writes, every protected
   column, insert/upsert/delete, table and column drift, read isolation, RPC ACLs,
   CAS publication, private asset migration and Worker-style service mutations.
   Reapply 0010 to prove safe repeatability. Separately test RLS after a deliberate
   local-only table grant so ACL failure does not mask policy regressions.
-- [ ] Add a metadata-only read-back SQL receipt and deployment guide naming the
+- [x] Add a metadata-only read-back SQL receipt and deployment guide naming the
   exact owner-approved action, staging-first acceptance, backups and safe roll
   forward. Local success must never be presented as live enforcement.
-- [ ] Run this isolated database suite, relevant existing API tests, typecheck,
+- [x] Run this isolated database suite, relevant existing API tests, typecheck,
   secret audit and diff checks. Review and open a Draft PR to `main` with Refs #76.
   Do not run the full browser gate, apply remotely, merge, deploy or close #76.
 
@@ -62,3 +62,6 @@ The disposable runtime exercises real PostgreSQL SQL/ACL/RLS semantics, with an
 explicit minimal Auth fixture. It does not validate deployed grants, PostgREST
 schema cache, real JWT role mapping, R2 or Worker secrets. Those require separate
 owner-approved staging read-back and synthetic account acceptance.
+
+Delivered as Draft PR [#96](https://github.com/laiw54724-ui/retro/pull/96).
+The remote application/acceptance steps remain unperformed and require owner approval.
