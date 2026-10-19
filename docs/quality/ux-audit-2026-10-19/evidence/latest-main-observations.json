@@ -1,0 +1,129 @@
+{
+  "sha": "f11ad8d5cb869d47849834cdd8a692a5059d8021",
+  "observations": {
+    "shell-probe-1440.json": {
+      "width": 1440,
+      "publishInitialFocusInside": false,
+      "publishTabFocusInside": false,
+      "publishAfterEscape": true
+    },
+    "shell-probe-320.json": {
+      "width": 320,
+      "saves": 1,
+      "undoVisible": false,
+      "saveStatusVisible": false,
+      "sheetInitialFocusInside": false,
+      "sheetShiftTabFocusInside": false,
+      "sheetAfterEscape": true,
+      "appAfterEscape": false,
+      "publishInitialFocusInside": false,
+      "publishTabFocusInside": false,
+      "publishAfterEscape": true
+    },
+    "shell-probe-390.json": {
+      "width": 390,
+      "saves": 1,
+      "undoVisible": false,
+      "saveStatusVisible": false,
+      "sheetInitialFocusInside": false,
+      "sheetShiftTabFocusInside": false,
+      "sheetAfterEscape": true,
+      "appAfterEscape": false,
+      "publishInitialFocusInside": false,
+      "publishTabFocusInside": false,
+      "publishAfterEscape": true
+    },
+    "shell-probe-430.json": {
+      "width": 430,
+      "saves": 1,
+      "undoVisible": false,
+      "saveStatusVisible": false,
+      "sheetInitialFocusInside": false,
+      "sheetShiftTabFocusInside": false,
+      "sheetAfterEscape": true,
+      "appAfterEscape": false,
+      "publishInitialFocusInside": false,
+      "publishTabFocusInside": false,
+      "publishAfterEscape": true
+    },
+    "touch-draft-320.json": {
+      "width": 320,
+      "hasTouch": true,
+      "finishPrompt": false,
+      "after": "retro",
+      "saveCount": 0
+    },
+    "touch-draft-390.json": {
+      "width": 390,
+      "hasTouch": true,
+      "finishPrompt": false,
+      "after": "retro",
+      "saveCount": 0
+    },
+    "touch-draft-430.json": {
+      "width": 430,
+      "hasTouch": true,
+      "finishPrompt": false,
+      "after": "retro",
+      "saveCount": 0
+    },
+    "ig-switch-1440.json": {
+      "saves": 1,
+      "profileRef": {
+        "kind": "profile",
+        "id": "profile:second",
+        "siteId": "site-1"
+      }
+    },
+    "ig-switch-320.json": {
+      "saves": 1,
+      "profileRef": {
+        "kind": "profile",
+        "id": "profile:second",
+        "siteId": "site-1"
+      }
+    },
+    "ig-switch-390.json": {
+      "saves": 1,
+      "profileRef": {
+        "kind": "profile",
+        "id": "profile:second",
+        "siteId": "site-1"
+      }
+    },
+    "ig-switch-430.json": {
+      "saves": 1,
+      "profileRef": {
+        "kind": "profile",
+        "id": "profile:second",
+        "siteId": "site-1"
+      }
+    },
+    "mines-number-1440.json": {
+      "emptyInputDisplayed": "5",
+      "savedRows": 5,
+      "saves": 1
+    },
+    "mines-number-320.json": {
+      "emptyInputDisplayed": "5",
+      "savedRows": 5,
+      "saves": 1
+    },
+    "onboarding-failure-1440.json": {
+      "status": "正在檢查...",
+      "nextDisabled": true,
+      "buttons": [
+        "上一步",
+        "下一步 ›"
+      ]
+    },
+    "onboarding-failure-320.json": {
+      "status": "正在檢查...",
+      "nextDisabled": true,
+      "buttons": [
+        "上一步",
+        "下一步 ›"
+      ]
+    }
+  }
+}

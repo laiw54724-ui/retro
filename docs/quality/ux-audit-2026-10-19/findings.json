@@ -1,0 +1,380 @@
+[
+  {
+    "id": "F01",
+    "sev": "P1",
+    "title": "手機可刪除內容，卻沒有可觸控的復原與持續儲存狀態",
+    "status": "已觀察",
+    "repro": "320/390/430px → 開文件 → 編輯此視窗 → 修改標題。等待 autosave；檢查上方與下方工具列。Undo、Redo、save-text 都不可見，JSON 證據 saves=1。其他元件仍提供立即刪除。",
+    "impact": "使用者無法用手機畫面找回誤刪；也無法分辨已儲存／尚有輸入／正在儲存。錯誤 Retry 會出現，但正常狀態缺席。",
+    "change": "縮減上方次要站台動作，把復原／重做與儲存狀態留在手機常駐編輯列。刪除後可給有 Undo 的簡短通知；不要只加確認框。區分本地未完成輸入、已儲存草稿、尚未發布。",
+    "accept": "三個手機寬度不依賴鍵盤即可刪除→復原→重做；控制至少44px觸控區且不遮欄位。儲存中、成功、失敗、尚未完成輸入各有可見狀態。成功可用 status 宣告，非每次字元都打斷讀屏。",
+    "files": [
+      [
+        "apps/web/src/pages/EditorPage.tsx",
+        619
+      ],
+      [
+        "apps/web/src/features/site/MobileScreen.tsx",
+        179
+      ],
+      [
+        "apps/web/src/styles/w98.css",
+        643
+      ],
+      [
+        "apps/web/src/features/editor/store.ts",
+        193
+      ]
+    ],
+    "evidence": [
+      "shell-probe-320.json",
+      "shell-probe-390.json",
+      "shell-probe-430.json"
+    ],
+    "image": "document-edit-320",
+    "baseline": "8e2e54241ecca4c79cb5d6190e7b4b0beb804075",
+    "latestMain": "f11ad8d5cb869d47849834cdd8a692a5059d8021",
+    "latestVerification": "targeted browser recheck"
+  },
+  {
+    "id": "F02",
+    "sev": "P1",
+    "title": "IG「完成編輯」無聲丟棄尚未完成的欄位草稿",
+    "status": "已觀察（觸控）",
+    "repro": "觸控 context 320/390/430 → IG → 編輯 → Handle 清空 → 點顯示名稱使其 blur → 完成編輯 → 再編輯。原本空字串消失，Handle 變回 retro；沒有放棄/繼續提示，也沒有存檔。",
+    "impact": "「完成」給出成功感，但使用者未完成內容其實被銷毀。這不是儲存回應競態；canonical 文件仍是舊值。",
+    "change": "把未完成欄位緩衝與 issue 註冊到 site/window/profile editor session。完成／關閉／返回前：有效草稿 commit；無效或未完成草稿提供繼續編輯與明確放棄。單純分類／角色／局部預覽切換保留緩衝。不要把無效值寫入 schema。",
+    "accept": "相同觸控重現不會無聲還原；繼續返回該欄位及游標，放棄才恢復已儲存值。有效 blur/Enter、IME、Undo/Redo、跨角色原始上傳目標各自測試。不得讓別的角色收到前一個草稿。",
+    "files": [
+      [
+        "apps/web/src/features/site/MobileScreen.tsx",
+        137
+      ],
+      [
+        "apps/web/src/features/modules/instagram/IgDraftInput.tsx",
+        1
+      ],
+      [
+        "apps/web/src/features/editor/editorSession.tsx",
+        23
+      ]
+    ],
+    "evidence": [
+      "touch-draft-320.json",
+      "touch-draft-390.json",
+      "touch-draft-430.json"
+    ],
+    "image": "ig-invalid-before-finish-320",
+    "baseline": "8e2e54241ecca4c79cb5d6190e7b4b0beb804075",
+    "latestMain": "f11ad8d5cb869d47849834cdd8a692a5059d8021",
+    "latestVerification": "targeted browser recheck"
+  },
+  {
+    "id": "F03",
+    "sev": "P1",
+    "title": "發布前檢查沒有 modal 焦點與鍵盤關閉契約",
+    "status": "已觀察",
+    "repro": "1440/320/390/430 → 發布。初始 focus 留在外面；將焦點放最後「確認發布」按 Tab，焦點離開 dialog；Escape 不關閉。",
+    "impact": "鍵盤／讀屏使用者可能離開目前決策層，甚至進入背景作者控制。宣告 aria-modal 不會自動提供 modal 行為。",
+    "change": "使用共用的 ModalDialog 或等效原生模式，將 initial focus 放可理解的檢查摘要或取消，循環 Tab、背景 inert、Escape 取消、焦點返回發起鈕。busy 時也需清楚可預期的退出規則。盤點同型的 transfer/conflict/assets/success dialog。",
+    "accept": "四寬度 Tab/Shift+Tab 不離開；Escape 只取消最上層且不發送 publish；背景 Undo/刪除不觸發；成功與失敗新狀態有宣告及 focus。保留 mock success/artifact-retry 回應隔離測試。",
+    "files": [
+      [
+        "apps/web/src/pages/EditorPage.tsx",
+        780
+      ],
+      [
+        "apps/web/src/components/ModalDialog.tsx",
+        23
+      ],
+      [
+        "apps/web/src/features/transfer/TransferDialog.tsx",
+        68
+      ]
+    ],
+    "evidence": [
+      "shell-probe-1440.json",
+      "shell-probe-320.json"
+    ],
+    "image": "publish-320",
+    "baseline": "8e2e54241ecca4c79cb5d6190e7b4b0beb804075",
+    "latestMain": "f11ad8d5cb869d47849834cdd8a692a5059d8021",
+    "latestVerification": "targeted browser recheck"
+  },
+  {
+    "id": "F04",
+    "sev": "P2",
+    "title": "手機視窗設定 sheet 按 Escape 關掉後面的元件",
+    "status": "已觀察",
+    "repro": "手機開文件並編輯 → 底部「編輯」→ 焦點放 sheet 關閉 → Shift+Tab 已離開 sheet；Escape 後 sheet 仍顯示，但原本文件 app 消失。三種寬度一致。",
+    "impact": "返回層級錯誤；使用者仍在設定某個已被關閉的內容，失去上下文。",
+    "change": "sheet 作為最上層處理 Escape、focus、背景限制及返回焦點；關閉只收起 sheet，保留底下開啟元件及內容編輯狀態。",
+    "accept": "每個 add/edit/theme sheet 均測 Escape、關閉鈕、遮罩、Tab；只收最上層且 openId/inlineEdit/scroll 不變。重新開啟不跳回桌面。",
+    "files": [
+      [
+        "apps/web/src/features/site/MobileScreen.tsx",
+        86
+      ],
+      [
+        "apps/web/src/features/site/MobileScreen.tsx",
+        194
+      ]
+    ],
+    "evidence": [
+      "shell-probe-320.json",
+      "shell-probe-390.json",
+      "shell-probe-430.json"
+    ],
+    "image": "sheet-escape-320",
+    "baseline": "8e2e54241ecca4c79cb5d6190e7b4b0beb804075",
+    "latestMain": "f11ad8d5cb869d47849834cdd8a692a5059d8021",
+    "latestVerification": "targeted browser recheck"
+  },
+  {
+    "id": "F05",
+    "sev": "P2",
+    "title": "「目前編輯角色」同時改變訪客入口",
+    "status": "已觀察＋設計語意問題",
+    "repro": "IG 的目前編輯角色 select 由 retro 改 second。四寬度皆出現一次 autosave，window.content.profileRef 變成 second。下方小字確有說明，但主操作仍呈現選取編輯對象。",
+    "impact": "只是查看／整理另一個角色，會改掉視窗首頁；後續發布可能帶出使用者沒打算更動的入口。",
+    "change": "將 editor currentProfileId 與 persisted entry profileRef 分開。上下文顯示「編輯角色 B」與「此視窗首頁 A」；只有「設為首頁角色」明確動作寫入。若本批只改版面，先正名既有 selector 為入口角色，行為拆分另做獨立 slice。",
+    "accept": "單純角色選取零 saves／零 Undo，該角色草稿／filter/scroll 保留；明確設定入口恰一個可 Undo 變更，reload 與 visitor 都開對角色。刪除/retarget 仍維持參照完整性。",
+    "files": [
+      [
+        "apps/web/src/features/modules/instagram/ProfileSwitcher.tsx",
+        35
+      ],
+      [
+        "apps/web/src/pages/EditorPage.tsx",
+        197
+      ]
+    ],
+    "evidence": [
+      "ig-switch-1440.json",
+      "ig-switch-320.json",
+      "ig-switch-390.json",
+      "ig-switch-430.json"
+    ],
+    "image": "ig-profile-390",
+    "baseline": "8e2e54241ecca4c79cb5d6190e7b4b0beb804075",
+    "latestMain": "f11ad8d5cb869d47849834cdd8a692a5059d8021",
+    "latestVerification": "targeted browser recheck"
+  },
+  {
+    "id": "F06",
+    "sev": "P2",
+    "title": "IG 貼文任務被固定上下文、上傳與篩選推到下方",
+    "status": "已觀察",
+    "repro": "320×900 → IG 編輯 → 貼文。不操作任何篩選，第一個貼文 row 約 y=826；底部工具列約 y=839，實質內容不在第一畫面。桌面預設420×700視窗也僅見第一篇標題/文字開頭。",
+    "impact": "最常見的「改這篇文字／圖片」要先穿過上傳、說明、搜尋、狀態、置頂等管理控制；不是缺少教學。",
+    "change": "清單頁只留新增、搜尋、篩選入口與貼文 row；點一篇進 focused detail，首屏直接顯示當前貼文與主要欄位。次要 metadata/虛構互動漸進展開。桌面可用既有臨時 maximize/focus 模式擴大編輯，不改公開幾何。",
+    "accept": "320×900 首屏能看見一筆可辨識貼文及新增動作；390/430不更差。選取一篇後 title/caption/media 可達；返回清單復原篩選、選取、scroll；新貼文焦點有明確位置；filter無匹配有clear。",
+    "files": [
+      [
+        "apps/web/src/features/modules/instagram/IgEditorWorkspace.tsx",
+        68
+      ],
+      [
+        "apps/web/src/features/modules/instagram/CanonicalPostEditor.tsx",
+        130
+      ],
+      [
+        "apps/web/src/features/modules/instagram/ocEditor.module.css",
+        17
+      ]
+    ],
+    "evidence": [
+      "ig-posts-320.json",
+      "ig-posts-1440.json"
+    ],
+    "image": "ig-posts-320",
+    "baseline": "8e2e54241ecca4c79cb5d6190e7b4b0beb804075",
+    "latestMain": "f11ad8d5cb869d47849834cdd8a692a5059d8021",
+    "latestVerification": "targeted browser recheck"
+  },
+  {
+    "id": "F07",
+    "sev": "P2",
+    "title": "精選故事與貼文合集擠在同一條長表單",
+    "status": "已觀察＋來源確認",
+    "repro": "精選／合集 tab 同時渲染 CanonicalHighlightEditor 與 CanonicalCollectionEditor；預設展開一個精選，手機畫面只見故事欄位，合集在更下面。",
+    "impact": "兩種不同任務共享同一列表／捲動上下文，使用者不容易找出自己要的是多頁故事還是既有貼文分組。",
+    "change": "分類內加「精選故事／貼文合集」切換，分別用清單→單項編輯。只隱藏非目前區域或把草稿狀態提升；不能用卸載來換取畫面整潔。",
+    "accept": "兩種入口在三個手機寬度均可見；切換零存檔且保留未完成標題、filter、選取、scroll；故事頁順序與合集選取順序不變；#124 任務狀態在收起後仍可找到。",
+    "files": [
+      [
+        "apps/web/src/features/modules/instagram/IgEditorWorkspace.tsx",
+        112
+      ],
+      [
+        "apps/web/src/features/modules/instagram/CanonicalHighlightEditor.tsx",
+        1
+      ],
+      [
+        "apps/web/src/features/modules/instagram/CanonicalCollectionEditor.tsx",
+        1
+      ]
+    ],
+    "evidence": [
+      "ig-collections-320.json",
+      "ig-collections-430.json"
+    ],
+    "image": "ig-collections-430",
+    "baseline": "8e2e54241ecca4c79cb5d6190e7b4b0beb804075",
+    "latestMain": "f11ad8d5cb869d47849834cdd8a692a5059d8021",
+    "latestVerification": "targeted browser recheck"
+  },
+  {
+    "id": "F08",
+    "sev": "P2",
+    "title": "IG 手機的排序／刪除控制太小且彼此緊鄰",
+    "status": "已量測",
+    "repro": "精選故事 row 的刪除按鈕在320/390/430皆22×20 CSS px，與上下排序相鄰；分類 tabs 為24px高。圖片與貼文也沿用 mini-btn。",
+    "impact": "小螢幕上誤觸破壞性動作的代價高，尤其目前還缺可觸控 Undo。",
+    "change": "手機改44px以上命中區，排序保留明確按鈕；低頻刪除移入已命名的項目操作選單，保留鍵盤捷徑與Undo。外觀可仍是復古小圖示，命中區不可跟著縮。",
+    "accept": "320/390/430量測可操作區至少44×44且不重疊；順序/刪除 accessible name 含項目名稱或序號；鍵盤可達；觸控操作成功且不需精準瞄準。這是產品目標，不宣稱完整WCAG稽核。",
+    "files": [
+      [
+        "apps/web/src/features/modules/instagram/CanonicalPostEditor.tsx",
+        181
+      ],
+      [
+        "apps/web/src/features/modules/instagram/CanonicalHighlightEditor.tsx",
+        1
+      ],
+      [
+        "apps/web/src/features/modules/instagram/ocEditor.module.css",
+        17
+      ]
+    ],
+    "evidence": [
+      "ig-collections-320.json",
+      "ig-collections-390.json",
+      "ig-collections-430.json"
+    ],
+    "image": null,
+    "baseline": "8e2e54241ecca4c79cb5d6190e7b4b0beb804075",
+    "latestMain": "f11ad8d5cb869d47849834cdd8a692a5059d8021",
+    "latestVerification": "targeted browser recheck"
+  },
+  {
+    "id": "F09",
+    "sev": "P2",
+    "title": "掃雷數值欄位清空就改成最小值並儲存",
+    "status": "已觀察",
+    "repro": "1440或320 → 掃雷編輯 → 清空「列」。欄位立即顯示5；等待後 savedRows=5、saves=1。使用者尚未輸入新數字。",
+    "impact": "正常的先清空再打字被當成已完成設定，還會重置試玩棋盤。與現有 geometry/IG count 草稿行為不一致。",
+    "change": "沿用既有數值 draft 模式，允許暫時空白；blur/Enter驗證範圍再 commit，Escape恢復已套用值。難度預設仍可立即套用。Moodboard字級直接clamp路徑另做相同驗證。",
+    "accept": "清空零存檔、棋盤不重置；輸入有效12後commit僅一個Undo；無效/小數不把舊值污染；手機numeric鍵盤與IME/Enter/Escape有獨立案例。",
+    "files": [
+      [
+        "apps/web/src/features/modules/minesweeper/index.tsx",
+        39
+      ],
+      [
+        "apps/web/src/features/modules/minesweeper/index.tsx",
+        57
+      ],
+      [
+        "apps/web/src/features/modules/moodboard/index.tsx",
+        183
+      ]
+    ],
+    "evidence": [
+      "mines-number-1440.json",
+      "mines-number-320.json"
+    ],
+    "image": "mines-empty-number-320",
+    "baseline": "8e2e54241ecca4c79cb5d6190e7b4b0beb804075",
+    "latestMain": "f11ad8d5cb869d47849834cdd8a692a5059d8021",
+    "latestVerification": "targeted browser recheck"
+  },
+  {
+    "id": "F10",
+    "sev": "P2",
+    "title": "建立桌面：網址可用性請求失敗後永久顯示「正在檢查」",
+    "status": "已觀察",
+    "repro": "本機將 /api/usernames/audit-demo/availability 回應500；有效網址填入後，請求已完成但畫面仍「正在檢查...」、下一步disabled，只有上一步/下一步兩個鈕。1440/320一致。",
+    "impact": "使用者不知道是網路失敗或還在等，沒有保持原輸入的明確重試。",
+    "change": "把 pending、available、taken、failed 分成獨立狀態；failed 顯示「暫時無法檢查」與重試，保留名稱/網址。回應序號仍綁最新輸入，避免舊結果覆蓋。",
+    "accept": "500/offline明確轉failed，retry同值成功能下一步；晚到結果不更新新網址；taken保留可編輯建議；三個手機寬度無溢出。",
+    "files": [
+      [
+        "apps/web/src/pages/OnboardingPage.tsx",
+        22
+      ]
+    ],
+    "evidence": [
+      "onboarding-failure-1440.json",
+      "onboarding-failure-320.json"
+    ],
+    "image": "onboarding-failure-320",
+    "baseline": "8e2e54241ecca4c79cb5d6190e7b4b0beb804075",
+    "latestMain": "f11ad8d5cb869d47849834cdd8a692a5059d8021",
+    "latestVerification": "targeted browser recheck"
+  },
+  {
+    "id": "F11",
+    "sev": "P2",
+    "title": "手機兩個「編輯」入口其實做不同事情",
+    "status": "已觀察＋設計判斷",
+    "repro": "打開元件，標題列「編輯此視窗」進內容編輯；底部「編輯」開視窗設定 sheet，內容編輯提示卻藏在該長sheet底部。",
+    "impact": "使用者按習慣的底部編輯會找不到文章/圖片內容，轉而面對chrome/色彩/圖示設定；上下兩層缺乏清楚範圍。",
+    "change": "底部正名「視窗設定」，標題列正名「編輯內容／完成」。若沒有選取，顯示選取提示；在設定頂端提供返回目前元件內容，不要在長表單底部才告知關閉與再找入口。",
+    "accept": "對每個registry元件同樣語意；兩個入口accessible name明確，切換不改 selectedId/openId，不丟未完成草稿；與F04的正確關層一起驗收。",
+    "files": [
+      [
+        "apps/web/src/features/site/MobileScreen.tsx",
+        135
+      ],
+      [
+        "apps/web/src/features/site/MobileScreen.tsx",
+        183
+      ],
+      [
+        "apps/web/src/features/site/MobileScreen.tsx",
+        250
+      ]
+    ],
+    "evidence": [
+      "sheet-320.json",
+      "document-edit-320.json"
+    ],
+    "image": null,
+    "baseline": "8e2e54241ecca4c79cb5d6190e7b4b0beb804075",
+    "latestMain": "f11ad8d5cb869d47849834cdd8a692a5059d8021",
+    "latestVerification": "source comparison; original visual observation"
+  },
+  {
+    "id": "F12",
+    "sev": "P3",
+    "title": "預設桌面小視窗與大預覽壓縮基本作者欄位",
+    "status": "已觀察，非發布阻擋",
+    "repro": "以makeWindow預設開About，1440×900時視窗約340×360，頭像預覽160px高，第一個姓名欄位落在捲動後；角色彈窗也先用大預覽再放資料。#122 Paint手機把長鍵盤說明置於畫布上方。",
+    "impact": "第一次操作要先捲動才能改核心內容；有足夠桌面空間卻沿用訪客尺寸編輯。",
+    "change": "讓頭像與主要文字並列或縮成緊湊列；提供「放大編輯」重用臨時maximize，保留公開尺寸。Paint手機把完整快捷鍵列表收進可開啟說明，當前工具/顏色/復原維持可見。",
+    "accept": "姓名/主要訊息在預設作者首屏可見；放大與還原不存layout；Paint320px canvas有合理可見面積且save/export仍可達。先修P1/P2，不為此加新模式或攔住#122。",
+    "files": [
+      [
+        "apps/web/src/features/modules/about/index.tsx",
+        76
+      ],
+      [
+        "apps/web/src/features/modules/character-dialog/index.tsx",
+        1
+      ],
+      [
+        "packages/shared/src/site.ts",
+        534
+      ]
+    ],
+    "evidence": [
+      "about-edit-1440.json",
+      "character-dialog-edit-1440.json"
+    ],
+    "image": "about-edit-1440",
+    "baseline": "8e2e54241ecca4c79cb5d6190e7b4b0beb804075",
+    "latestMain": "f11ad8d5cb869d47849834cdd8a692a5059d8021",
+    "latestVerification": "source comparison; original visual observation"
+  }
+]
