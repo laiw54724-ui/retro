@@ -37,6 +37,7 @@ import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { useLocaleFormatting } from "../i18n/format";
 import { PaintEditorEntry } from "../features/paint/PaintEditorEntry";
 import { useEditorLeaveGuard, useEditorSaveSession } from "../features/editor/editorSession";
+import { useIgHasPendingDrafts } from "../features/modules/instagram/useIgSessionValue";
 
 
 
@@ -90,6 +91,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const store = useEditorStore();
+  const hasPendingIgDrafts = useIgHasPendingDrafts();
   const captureSaveSession = useEditorSaveSession(siteId);
   const leaveGuard = useEditorLeaveGuard(siteId);
   const saveInFlight = useRef(false);
@@ -595,8 +597,9 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     : hasUnpublishedChanges
       ? { text: t("shell.unpublishedChanges"), bg: "#fff0e0", color: "#b35c00" }
       : { text: t("shell.published", { version: store.publishedVersion == null ? "" : formatNumber(store.publishedVersion) }), bg: "#e6f4ee", color: "#1f7a5c" };
+  const savedWithPendingIgInput = store.saveStatus === "saved" && hasPendingIgDrafts;
   const saveText = store.saveStatus === "error" ? t("shell.saveFailed")
-    : composing || (draftIssue && store.saveStatus === "dirty") ? t("shell.saveIncomplete")
+    : composing || savedWithPendingIgInput || (draftIssue && store.saveStatus === "dirty") ? t("shell.saveIncomplete")
       : store.saveStatus === "saving" ? t("shell.saving")
         : store.saveStatus === "dirty" ? t("shell.unsaved")
           : t("shell.saved");
@@ -626,7 +629,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         <div className="editor-history-controls">
           <RetroButton disabled={store.past.length === 0} onClick={store.undo} aria-label={t("shell.undo")} title={t("shell.undoTitle")}>↶ {t("shell.undo")}</RetroButton>
           <RetroButton disabled={store.future.length === 0} onClick={store.redo} aria-label={t("shell.redo")} title={t("shell.redoTitle")}>↷ {t("shell.redo")}</RetroButton>
-          <span className={"save-text " + (composing && store.saveStatus !== "error" ? "dirty" : store.saveStatus)} title={draftIssue ?? undefined} role="status" aria-atomic="true">{saveText}</span>
+          <span className={"save-text " + ((composing || savedWithPendingIgInput) && store.saveStatus !== "error" ? "dirty" : store.saveStatus)} title={draftIssue ?? undefined} role="status" aria-atomic="true">{saveText}</span>
           {store.saveStatus === "error" && !conflict && !upgradeRequired ? <RetroButton onClick={() => { setMessage(""); store.retrySave(); }}>{t("shell.retrySave")}</RetroButton> : null}
         </div>
         {store.accessRole === "editor" ? <span className="collaboration-role-note" title={t("shell.roleHint")}>{t("shell.roleNote")}</span> : null}
