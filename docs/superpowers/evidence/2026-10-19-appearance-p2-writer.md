@@ -16,9 +16,9 @@ Original branch point: reviewed #89, 7070296b231a021f5e8cad77013abadbab305956. A
 
 ## Default-off release guard
 
-**VITE_APPEARANCE_P2_WRITER=true** enables controls in a build; unset/default is off. The local enabled test runs do not enable any deployment. No environment/config file, credential, permission setting, migration or remote data was changed.
+**VITE_APPEARANCE_P2_WRITER=true** enables controls only in local development; unset/default is off. Production is hard off even with the flag, pending a minimal API/client preservation handshake. The local enabled test runs do not enable any deployment. No environment/config file, credential, permission setting, migration or remote data was changed.
 
-Writer enablement remains blocked until the release owner deploys the reader foundation to all API/web readers, verifies deployed canaries for save/reload/publish/public/export/import, records exact build SHAs, and proves old/stale editor handling prevents lossy submissions. Follow the reader evidence release plan. The build flag is a rollout guard, not an authorization boundary. After new fields are written, old strict readers reject them and old v1 readers may strip them; keep compatible readers and fix forward. No safe old-reader rollback is claimed.
+No stale-client exclusion is implemented in #91/#94. The exact required API/client code follow-up is specified in `docs/superpowers/specs/2026-10-19-appearance-p2-compatibility-guard.md`; manual tab refresh is not a substitute. Writer production enablement remains blocked until that code is reviewed and the release owner deploys the reader foundation to all API/web readers, verifies deployed canaries for save/reload/publish/public/export/import, records exact build SHAs, and proves old/stale editor handling prevents lossy submissions. Follow the reader evidence release plan. The build flag is a rollout guard, not an authorization boundary. After new fields are written, old strict readers reject them and old v1 readers may strip them; keep compatible readers and fix forward. No safe old-reader rollback is claimed.
 
 ## Executed focused checks
 
@@ -40,3 +40,8 @@ pnpm --filter @retrodesk/web build
 ```
 
 No Safari/real-device/200% zoom or deployed compatibility claim. Integrator owns the final aggregate gate. Both worktrees are preserved. This bounded slice does not complete Issue #35; P3+ and all excluded settings remain outside this batch.
+
+
+## Review follow-up: production exclusion strengthened
+
+Independent #91 review confirmed the missing stale-client enforcement mechanism. Reader head 879961d6 was left unchanged. Writer source changed only to hard-disable production authoring, even if its flag is true; local opt-in remains available for functional review. Three rollout-gate tests pass. A production build with VITE_APPEARANCE_P2_WRITER=true passes and its executable JS bundles contain no P2 writer DOM marker, confirming the production exclusion is compiled in. The required minimal API/client guard, route inventory, raw stored/incoming checks, existing compare-and-swap race protection, import handling and acceptance tests are specified in the compatibility-guard document. None of that server enforcement is implemented yet. Production readiness is blocked by this code follow-up plus deployed compatibility canaries; a manual refresh is not protection.
