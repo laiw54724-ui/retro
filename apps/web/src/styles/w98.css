@@ -657,6 +657,7 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 .modal-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; overflow: auto; min-height: 0; line-height: 1.5; }
 .modal-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 0 14px 14px; }
 .publish-preflight > .modal-body { overflow-wrap: anywhere; }
+.editor-message .conflict-reopen { min-height: 44px; flex-shrink: 0; }
 .publish-preflight > .w98-titlebar, .publish-preflight > .modal-actions { flex-shrink: 0; }
 @media (max-width: 767px) {
   .publish-preflight > .w98-titlebar { min-height: 48px; }

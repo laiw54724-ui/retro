@@ -97,6 +97,8 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   const [loadError, setLoadError] = useState("");
   const [message, setMessage] = useState<EditorMessage>("");
   const [conflict, setConflict] = useState(false);
+  // Dismissing recovery must not resume autosave against a conflicting version.
+  const [conflictRecoveryOpen, setConflictRecoveryOpen] = useState(false);
   const upgradePaused = useRef(false);
   const [upgradeRequired, setUpgradeRequired] = useState(false);
   const [upgradeRecoveryOpen, setUpgradeRecoveryOpen] = useState(false);
@@ -314,6 +316,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
           void leaveGuard.leaveAfterAccessLoss(() => navigate(`/auth?notice=${encodeURIComponent(t("page.lostEditAccess"))}`, { replace: true }));
         } else if (error instanceof ApiError && error.code === "version_conflict") {
           setConflict(true);
+          setConflictRecoveryOpen(true);
           setMessage({ fallback: "editor.anUpdateFromAnotherTab" });
         } else {
           setMessage({ code: error instanceof ApiError ? error.code : undefined, fallback: "editor.saveFailed" });
@@ -428,6 +431,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   }
 
   function requestPublish() {
+    if (conflict) { setConflictRecoveryOpen(true); return; }
     if (store.themePreview) { setMessage(t("imageInput.previewPending")); return; }
     if (upgradePaused.current) { setUpgradeRecoveryOpen(true); return; }
     const invalid = validationMessage(store.document);
@@ -464,7 +468,9 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       if (!isCurrentSession()) return;
       if (stopForUpgrade(error)) return;
       if (error instanceof ApiError && error.code === "version_conflict") {
+        setPublishPrompt(false);
         setConflict(true);
+        setConflictRecoveryOpen(true);
       }
       setMessage({ code: error instanceof ApiError ? error.code : undefined, fallback: "editor.publishingFailed" });
     } finally {
@@ -650,6 +656,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       ) : null}
 
       {upgradeRequired ? <div className="editor-message" role="status"><span>{t("documentCompatibility.paused")}</span><button onClick={() => setUpgradeRecoveryOpen(true)}>{t("documentCompatibility.title")}</button></div> : null}
+      {conflict ? <div className="editor-message" role="status"><span>{t("editor.autosaveWasStoppedToAvoid")}</span><RetroButton className="conflict-reopen" onClick={() => setConflictRecoveryOpen(true)}>{t("editor.versionConflict")}</RetroButton></div> : null}
       {upgradeRequired && upgradeRecoveryOpen && store.document ? <DocumentUpgradeRecovery key={siteId} siteId={siteId} localDocument={store.versionedDocument ?? versionedDraft ?? store.document} onClose={() => setUpgradeRecoveryOpen(false)} /> : null}
 
       {legacyAssets.length > 0 || pendingPublicCopyAssets.length > 0 ? <div className="editor-message asset-migration-message" role="status">
@@ -764,20 +771,17 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       {collaborationOpen ? <CollaborationDialog siteId={siteId} onClose={closeCollaboration} /> : null}
       {transferOpen ? <TransferDialog siteId={siteId} username={store.username} published={!!store.publishedDocument} onClose={() => setTransferOpen(false)} onImported={(newSiteId) => navigate(`/editor/${newSiteId}`)} /> : null}
 
-      {conflict ? (
-        <div className="modal-backdrop" role="presentation">
-          <section className="retro-panel editor-dialog" role="alertdialog" aria-modal="true" aria-labelledby="conflict-title">
-            <header className="landing-titlebar" id="conflict-title">{t("editor.versionConflict")}</header>
-            <div className="dialog-body">
-              <h2>{t("editor.aNewerVersionOfThe")}</h2>
-              <p>{t("editor.autosaveWasStoppedToAvoid")}</p>
-              <div className="button-row end">
-                <RetroButton onClick={copyLocalJson}>{t("editor.copyLocalJson")}</RetroButton>
-                <RetroButton className="primary" onClick={reloadRemote}>{t("editor.reloadTheCloudVersion")}</RetroButton>
-              </div>
-            </div>
-          </section>
-        </div>
+      {conflict && conflictRecoveryOpen ? (
+        <ModalDialog role="alertdialog" title={t("editor.versionConflict")} className="publish-preflight" width={520} dismissOnBackdrop={false} onClose={() => setConflictRecoveryOpen(false)} actions={
+          <>
+            <RetroButton data-autofocus onClick={copyLocalJson}>{t("editor.copyLocalJson")}</RetroButton>
+            <RetroButton onClick={() => setConflictRecoveryOpen(false)}>{t("editor.cancel")}</RetroButton>
+            <RetroButton className="primary" onClick={reloadRemote}>{t("editor.reloadTheCloudVersion")}</RetroButton>
+          </>
+        }>
+          <h2>{t("editor.aNewerVersionOfThe")}</h2>
+          <p>{t("editor.autosaveWasStoppedToAvoid")}</p>
+        </ModalDialog>
       ) : null}
 
       {publishPrompt ? (

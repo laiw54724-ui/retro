@@ -18,7 +18,7 @@ Base: `f11ad8d5cb869d47849834cdd8a692a5059d8021` (merged #127). Independent work
 
 ## Ownership and limits
 
-Shared ownership: ModalDialog.tsx, MobileScreen.tsx, EditorPage.tsx and w98.css. Mobile sheets share one wrapper, so Add and Theme inherit the accessible shell; their editing logic is untouched. IG, Paint, image editing, Undo/status, navigation infrastructure and publishing transport are outside this slice. Success/conflict dialogs remain separate future work. No real publication, staging access, deployment, schema, or flag changes.
+Shared ownership: ModalDialog.tsx, MobileScreen.tsx, EditorPage.tsx and w98.css. Mobile sheets share one wrapper, so Add and Theme inherit the accessible shell; their editing logic is untouched. IG, Paint, image editing, Undo/status, navigation infrastructure and publishing transport are outside this slice. The success dialog remains separate future work. Conflict recovery is included after the #130 review found that preflight left it inside the inert app root. No real publication, staging access, deployment, schema, or flag changes.
 
 ## Verification results
 
@@ -36,4 +36,24 @@ CI=1 PLAYWRIGHT_PORT=5217 pnpm exec playwright test \
   tests/e2e/icon-picker.spec.ts tests/e2e/mobile-shell.spec.ts tests/e2e/navigation-focus.spec.ts \
   --grep 'phone Edit Window|publish preflight|nested icon picker|pending publish|Add sheet|mobile theme changes|mobile window appearance|cancel, Escape|keyboard: open|edit/finish control|preview Back|nested keyboard returns|legacy helper call' \
   --workers=1 --retries=0 --reporter=list
+```
+
+
+## Review correction: publication conflict recovery
+
+The reviewer reproduced `409 version_conflict` leaving preflight open while recovery rendered inside the inert app root. The owned 390px regression also failed before this correction.
+
+- Close preflight on a current-session publication conflict and render recovery using ModalDialog with its existing `alertdialog` semantics. Topmost key handling now recognizes both dialog roles.
+- Copy initially receives focus. Cancel, close and Escape dismiss only recovery presentation; the existing conflict flag continues to pause autosave. A persistent 44px recovery opener remains available, and Publish reopens recovery instead of sending another stale version.
+- Only explicit Reload replaces local data. A phone test modifies the draft after Cancel, observes no autosave beyond the debounce, and copies that retained local edit before explicitly reloading.
+- Delta verification: **21 focused publish/recovery browser checks passed (30.8s)**. Includes desktop/phone 409, 500 dismissal, Copy/Cancel/reopen/Reload focus, paused saves, ordinary reload/access-loss behavior, stale publication and reload receipts, nested picker, and pending publication. After the final touch-target rule, both 409 checks passed again (8.4s); these are reruns, not two additional distinct cases.
+- Final web typecheck and diff check passed. Reviewed the 390px recovery screenshot. F11 changes are not included.
+
+Delta command:
+
+```sh
+CI=1 PLAYWRIGHT_PORT=5217 pnpm exec playwright test \
+  tests/e2e/editor-modal-accessibility.spec.ts tests/e2e/editor-save-session.spec.ts \
+  --grep 'publish|nested icon picker|ordinary remote reload|real current-session conflict|reload receipt' \
+  --workers=1 --retries=0 --reporter=list --output=test-results/conflict-final
 ```
