@@ -1,0 +1,137 @@
+import { expect, test } from "@playwright/test";
+import { mockColors } from "./appearance-p2-fixture";
+
+const enabled = process.env.VITE_APPEARANCE_P2_WRITER === "true";
+
+test("default build hides P2 writers while reading saved colors", async ({ page }) => {
+  test.skip(enabled, "Run this assertion in the default-off build");
+  await mockColors(page);
+  await page.setViewportSize({ width: 390, height: 850 });
+  await page.goto("/editor/site-1");
+  await page.getByRole("button", { name: "First.exe", exact: true }).click();
+  await page.getByRole("button", { name: "編輯", exact: true }).click();
+  await expect(page.locator("[data-appearance-p2-writer]")).toHaveCount(0);
+  await expect(page.getByRole("dialog", { name: "First.exe", exact: true })).toHaveCSS("background-color", "rgb(51, 68, 85)");
+});
+
+for (const width of [320, 390, 430]) {
+  test(`gated window draft cancel/apply/reset/reload at ${width}`, async ({ page }, testInfo) => {
+    test.skip(!enabled, "Requires the explicitly enabled local writer build");
+    const site = await mockColors(page);
+    await page.setViewportSize({ width, height: 850 });
+    await page.goto("/editor/site-1");
+    await page.getByRole("button", { name: "First.exe", exact: true }).click();
+    await page.getByRole("button", { name: "編輯", exact: true }).click();
+    let sheet = page.getByRole("dialog", { name: "編輯視窗", exact: true });
+    await sheet.getByRole("textbox", { name: "視窗框體色碼", exact: true }).fill("#12");
+    await expect(sheet.getByRole("textbox", { name: "視窗框體色碼", exact: true })).toHaveAttribute("aria-invalid", "true");
+    await sheet.getByRole("textbox", { name: "視窗框體色碼", exact: true }).fill("#332211");
+    await sheet.getByRole("textbox", { name: "內容底色色碼", exact: true }).fill("#fefddd");
+    await sheet.getByRole("button", { name: "取消色彩預覽", exact: true }).click();
+    await expect(sheet.getByRole("textbox", { name: "視窗框體色碼", exact: true })).toHaveValue("#334455");
+    // Observe past the autosave debounce: even complete draft color edits do not save.
+    await page.waitForTimeout(800);
+    expect(site.writes()).toBe(0);
+    await sheet.getByRole("textbox", { name: "視窗框體色碼", exact: true }).fill("#332211");
+    await sheet.getByRole("textbox", { name: "內容底色色碼", exact: true }).fill("#fefddd");
+    await sheet.getByRole("textbox", { name: "標題文字色碼", exact: true }).fill("#002244");
+    await expect(sheet.locator(".p2-contrast-warning")).toContainText(["4.5:1"]);
+    await sheet.getByRole("button", { name: "套用視窗色彩", exact: true }).click();
+    await expect.poll(() => site.writes()).toBe(1);
+    expect(site.saved().windows[0].appearance?.frameColor).toBe("#332211");
+    expect(site.saved().windows[0].appearance?.contentBackground).toBe("#fefddd");
+    expect(site.saved().windows[1].appearance).toBeUndefined();
+    await sheet.locator(".p2-preview").evaluate((element) => element.scrollIntoView({ block: "start" }));
+    await page.screenshot({ path: testInfo.outputPath(`p2-writer-${width}.png`) });
+    expect(await sheet.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+    await page.reload();
+    await page.getByRole("button", { name: "First.exe", exact: true }).click();
+    await expect(page.getByRole("dialog", { name: "First.exe", exact: true })).toHaveCSS("background-color", "rgb(51, 34, 17)");
+    await page.getByRole("button", { name: "編輯", exact: true }).click();
+    sheet = page.getByRole("dialog", { name: "編輯視窗", exact: true });
+    await sheet.getByRole("button", { name: "重設內容底色", exact: true }).click();
+    expect(site.saved().windows[0].appearance?.contentBackground).toBe("#fefddd");
+    await sheet.getByRole("button", { name: "套用視窗色彩", exact: true }).click();
+    await expect.poll(() => site.writes()).toBe(2);
+    expect(site.saved().windows[0].appearance?.contentBackground).toBeUndefined();
+    expect(site.saved().windows[0].appearance?.contentText).toBe("#331122");
+    expect(site.saved().windows[0].appearance?.desktopLabelText).toBe("#ffffff");
+    await sheet.getByRole("button", { name: "恢復主題設定", exact: true }).click();
+    await sheet.getByRole("button", { name: "套用視窗色彩", exact: true }).click();
+    await expect.poll(() => site.writes()).toBe(3);
+    expect(site.saved().windows[0].appearance?.titleFrom).toBeUndefined();
+    expect(site.saved().windows[0].appearance?.titleText).toBeUndefined();
+    expect(site.saved().windows[0].appearance?.frameColor).toBe("#332211");
+    expect(site.saved().windows[0].appearance?.desktopLabelBackground).toBe("#222222");
+    await sheet.getByRole("button", { name: "關閉", exact: true }).click();
+    await expect(page.getByRole("dialog", { name: "First.exe", exact: true }).locator(".module-host")).toHaveCSS("background-color", "rgb(221, 238, 255)");
+  });
+}
+
+test("gated desktop site defaults cancel/apply once, undo, preserve window overrides and stay scoped", async ({ page }) => {
+  test.skip(!enabled, "Requires the explicitly enabled local writer build");
+  const site = await mockColors(page);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/editor/site-1");
+  await page.getByRole("tab", { name: "主題", exact: true }).click();
+  const panel = page.getByRole("complementary", { name: "工具面板" });
+  await panel.getByRole("textbox", { name: "視窗框體色碼", exact: true }).fill("#224466");
+  await panel.getByRole("button", { name: "取消預覽", exact: true }).click();
+  await page.waitForTimeout(800);
+  expect(site.writes()).toBe(0);
+  await panel.getByRole("textbox", { name: "視窗框體色碼", exact: true }).fill("#224466");
+  await panel.getByRole("button", { name: "套用主題", exact: true }).click();
+  await expect.poll(() => site.writes()).toBe(1);
+  await expect(page.getByRole("dialog", { name: "Second.exe", exact: true })).toHaveCSS("background-color", "rgb(34, 68, 102)");
+  await expect(page.getByRole("dialog", { name: "First.exe", exact: true })).toHaveCSS("background-color", "rgb(51, 68, 85)");
+  await expect(panel).not.toHaveCSS("background-color", "rgb(34, 68, 102)");
+  const retained = structuredClone(site.saved().windows[0].appearance);
+  await page.getByRole("button", { name: "復原", exact: true }).click();
+  await expect.poll(() => site.saved().theme.appearance?.frameColor).toBe("#554433");
+  await page.getByRole("button", { name: "重做", exact: true }).click();
+  await expect.poll(() => site.saved().theme.appearance?.frameColor).toBe("#224466");
+  expect(site.saved().windows[0].appearance).toEqual(retained);
+  await panel.getByRole("button", { name: "粉紅 98", exact: true }).click();
+  await panel.getByRole("button", { name: "套用主題", exact: true }).click();
+  await expect.poll(() => site.saved().theme.id).toBe("pink98");
+  expect(site.saved().windows[0].appearance).toEqual(retained);
+});
+
+test("gated warnings require visual wallpaper checking and hide unsupported content controls", async ({ page }) => {
+  test.skip(!enabled, "Requires the explicitly enabled local writer build");
+  const site = await mockColors(page, { authoredModules: true });
+  const document = site.saved();
+  document.theme.pattern = "image";
+  document.theme.wallImage = "https://example.test/wallpaper.svg";
+  delete document.theme.appearance?.desktopLabelBackground;
+  delete document.windows[0].appearance?.desktopLabelBackground;
+  await page.route("https://example.test/wallpaper.svg", (route) => route.fulfill({ contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><rect width="10" height="20" fill="black"/><rect x="10" width="10" height="20" fill="white"/></svg>' }));
+  await page.setViewportSize({ width: 390, height: 850 });
+  await page.goto("/editor/site-1");
+  await page.getByRole("button", { name: "First.exe", exact: true }).click();
+  await page.getByRole("button", { name: "編輯", exact: true }).click();
+  let sheet = page.getByRole("dialog", { name: "編輯視窗", exact: true });
+  await expect(sheet.getByText(/透明標籤遇到圖樣或圖片桌布需目視確認/)).toBeVisible();
+  await sheet.getByRole("checkbox", { name: "自訂圖示名稱底色", exact: true }).check();
+  await expect(sheet.getByText(/透明標籤遇到圖樣或圖片桌布需目視確認/)).toHaveCount(0);
+  await sheet.getByRole("button", { name: "取消色彩預覽", exact: true }).click();
+  await sheet.getByRole("button", { name: "關閉", exact: true }).click();
+  await page.getByRole("button", { name: "關閉", exact: true }).click();
+  await page.getByRole("button", { name: "Canvas.exe", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Canvas.exe", exact: true }).locator(".moodboard-stage")).toHaveCSS("background-color", "rgb(170, 34, 187)");
+  await page.getByRole("button", { name: "編輯", exact: true }).click();
+  sheet = page.getByRole("dialog", { name: "編輯視窗", exact: true });
+  await expect(sheet.getByRole("textbox", { name: "內容底色色碼", exact: true })).toHaveCount(0);
+  await expect(sheet.getByRole("textbox", { name: "視窗框體色碼", exact: true })).toBeVisible();
+  await sheet.getByRole("button", { name: "關閉", exact: true }).click();
+  await page.getByRole("button", { name: "關閉", exact: true }).click();
+  await page.getByRole("button", { name: "Character.exe", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Character.exe", exact: true }).locator(".ig-frame")).toHaveCSS("background-color", "rgb(17, 34, 85)");
+  expect(site.writes()).toBe(0);
+  await page.goto("/@demo");
+  await page.getByRole("button", { name: "Canvas.exe", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Canvas.exe", exact: true }).locator(".moodboard-stage")).toHaveCSS("background-color", "rgb(170, 34, 187)");
+  await page.getByRole("button", { name: "關閉", exact: true }).click();
+  await page.getByRole("button", { name: "Character.exe", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Character.exe", exact: true }).locator(".ig-frame")).toHaveCSS("background-color", "rgb(17, 34, 85)");
+});

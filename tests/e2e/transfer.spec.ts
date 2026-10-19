@@ -33,11 +33,15 @@ test("owner exports, previews missing media, and imports a new desktop copy", as
     headers: { "Content-Type": "application/json", "Content-Disposition": 'attachment; filename="retro-demo-private-backup.json"' },
     body: JSON.stringify(fixture.value),
   }));
-  await page.route("**/api/imports/preview", (route) => route.fulfill({ json: {
+  await page.route("**/api/imports/preview?**", (route) => {
+    expect(new URL(route.request().url()).searchParams.get("clientAppearanceContract")).toBe("1");
+    return route.fulfill({ json: {
     preview: { siteName: "Demo Desk", sourceUsername: "demo", scope: "owner-backup", schemaVersion: 2, windowCount: fixture.document.windows.length, profileCount: fixture.document.entities.profiles.length, postCount: 0, mediaCount: fixture.value.mediaManifest.items.length, missingMedia: fixture.value.mediaManifest.missing },
     digest,
-  } }));
+  } });
+  });
   await page.route("**/api/imports/confirm?**", (route) => {
+    expect(new URL(route.request().url()).searchParams.get("clientAppearanceContract")).toBe("1");
     confirmed = { url: route.request().url(), body: route.request().postDataJSON() };
     return route.fulfill({ status: 201, json: { site: { id: "new-site", username: "demo-copy", site_name: "Demo Desk 複本", draft_version: 1 }, missingMedia: fixture.value.mediaManifest.missing } });
   });
@@ -69,7 +73,7 @@ test("owner exports, previews missing media, and imports a new desktop copy", as
 test("transfer rejects ZIP locally and remains usable at 320px", async ({ page }) => {
   await signedInOwner(page);
   let previewCalls = 0;
-  await page.route("**/api/imports/preview", (route) => { previewCalls += 1; return route.abort(); });
+  await page.route("**/api/imports/preview?**", (route) => { previewCalls += 1; return route.abort(); });
   await page.setViewportSize({ width: 320, height: 640 });
   await page.goto("/editor/site-transfer");
   await page.getByRole("button", { name: "匯出／匯入" }).click();

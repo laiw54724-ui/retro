@@ -1,3 +1,4 @@
+import { APPEARANCE_UPGRADE_MESSAGE, appearanceWriteBlocked } from "../lib/appearanceCompatibility";
 import { Hono, type Context } from "hono";
 import { buildPublicMetadata, projectPublicSiteDocument, UsernameSchema, validateSiteDocumentScope } from "@retrodesk/shared";
 import type { Env } from "../env";
@@ -96,7 +97,9 @@ sites.get("/sites", async (c) => {
 sites.post("/sites", async (c) => {
   const user = await requireUser(c);
   if (user instanceof Response) return user;
-  const body = CreateSiteSchema.safeParse(await c.req.json().catch(() => null));
+  const raw = await c.req.json().catch(() => null);
+  if (appearanceWriteBlocked(raw?.document, undefined, raw?.clientAppearanceContract)) return jsonError(c, 426, "client_upgrade_required", APPEARANCE_UPGRADE_MESSAGE);
+  const body = CreateSiteSchema.safeParse(raw);
   if (!body.success) return jsonError(c, 400, "invalid_site", "Invalid site payload", body.error.flatten());
 
   const supabase = serviceClient(c.env);
@@ -133,25 +136,29 @@ sites.get("/sites/:siteId", async (c) => {
     .maybeSingle();
   if (error) return jsonError(c, 500, "db_error", "Could not load site");
   if (!data) return jsonError(c, 404, "not_found", "Site not found");
-  return c.json({ site: { ...data, access_role: access.role } });
+  c.header("Cache-Control", "private, no-store");
+  return c.json({ site: { ...data, access_role: access.role, writeCompatibility: { appearanceP2: 1 } } });
 });
 
 sites.put("/sites/:siteId/draft", async (c) => {
   const user = await requireUser(c);
   if (user instanceof Response) return user;
-  const payload = SaveDraftSchema.safeParse(await c.req.json().catch(() => null));
-  if (!payload.success) return jsonError(c, 400, "invalid_draft", "Invalid draft payload", payload.error.flatten());
-
+  const raw = await c.req.json().catch(() => null);
   const supabase = serviceClient(c.env);
   const access = await loadSiteAccess(c, supabase, user.id, "write");
   if (access instanceof Response) return access;
   const { data: current, error: readError } = await supabase
     .from("sites")
-    .select("id,draft_version")
+    .select("id,draft_version,draft_document")
     .eq("id", access.siteId)
     .maybeSingle();
   if (readError) return jsonError(c, 500, "db_error", "Could not load draft");
   if (!current) return jsonError(c, 404, "not_found", "Site not found");
+  // This is the same snapshot whose version is retained in the conditional update.
+  // Incoming-only detection would allow an old current-version client to strip fields.
+  if (appearanceWriteBlocked(raw?.document, current.draft_document, raw?.clientAppearanceContract)) return jsonError(c, 426, "client_upgrade_required", APPEARANCE_UPGRADE_MESSAGE);
+  const payload = SaveDraftSchema.safeParse(raw);
+  if (!payload.success) return jsonError(c, 400, "invalid_draft", "Invalid draft payload", payload.error.flatten());
   const scopeDiagnostics = validateSiteDocumentScope(payload.data.document, current.id);
   if (scopeDiagnostics.length) return jsonError(c, 400, "invalid_draft", "Draft document does not belong to this site", { fieldErrors: scopeDiagnostics });
   if (current.draft_version !== payload.data.expectedVersion) {

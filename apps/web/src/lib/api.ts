@@ -1,8 +1,9 @@
+import { CLIENT_APPEARANCE_CONTRACT } from "./appearanceCompatibility";
 import type { ImportPreview, RetroExportPackage, SiteDocument, VersionedSiteDocument, VersionedSiteDocumentInput } from "@retrodesk/shared";
 import { supabase } from "./supabase";
 import type { CollaboratorRole, CreatedSiteInvite, SiteAccessRole, SiteInvite, SiteMember } from "./collaboration";
 
-const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8787").replace(/\/$/, "");
+export const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8787").replace(/\/$/, "");
 
 export type SiteRecord = {
   id: string;
@@ -15,6 +16,9 @@ export type SiteRecord = {
   published_at: string | null;
   updated_at: string;
   access_role: SiteAccessRole;
+  /** Response metadata only: never part of the persisted document. */
+  writeCompatibility?: unknown;
+  clientApiOrigin?: string;
 };
 
 export type SiteListRecord = Pick<SiteRecord, "id" | "username" | "site_name" | "draft_version" | "published_version" | "published_at" | "updated_at" | "access_role">;
@@ -83,15 +87,16 @@ export const api = {
     return request<{ sites: SiteListRecord[] }>("/api/sites");
   },
   createSite(input: { username: string; siteName: string; document: SiteDocument }) {
-    return request<{ site: Omit<SiteRecord, "access_role"> }>("/api/sites", { method: "POST", body: JSON.stringify(input) });
+    return request<{ site: Omit<SiteRecord, "access_role"> }>("/api/sites", { method: "POST", body: JSON.stringify({ ...input, clientAppearanceContract: CLIENT_APPEARANCE_CONTRACT }) });
   },
   getSite(siteId: string) {
-    return request<{ site: SiteRecord }>("/api/sites/" + siteId);
+    return request<{ site: SiteRecord }>("/api/sites/" + siteId, { cache: "no-store" })
+      .then((result) => ({ ...result, site: { ...result.site, clientApiOrigin: API_URL } }));
   },
   saveDraft(siteId: string, expectedVersion: number, document: VersionedSiteDocumentInput) {
     return request<{ version: number; updatedAt: string }>("/api/sites/" + siteId + "/draft", {
       method: "PUT",
-      body: JSON.stringify({ expectedVersion, document })
+      body: JSON.stringify({ expectedVersion, document, clientAppearanceContract: CLIENT_APPEARANCE_CONTRACT })
     });
   },
   publish(siteId: string, expectedVersion: number) {
@@ -114,10 +119,10 @@ export const api = {
     return download(`/api/sites/${encodeURIComponent(siteId)}/export?scope=${scope}`);
   },
   previewImport(value: unknown) {
-    return request<{ preview: ImportPreview; digest: string }>("/api/imports/preview", { method: "POST", body: JSON.stringify(value) });
+    return request<{ preview: ImportPreview; digest: string }>(`/api/imports/preview?clientAppearanceContract=${CLIENT_APPEARANCE_CONTRACT}`, { method: "POST", body: JSON.stringify(value) });
   },
   confirmImport(value: RetroExportPackage, input: { digest: string; username: string; siteName: string; allowMissingMedia: boolean }) {
-    const query = new URLSearchParams({ digest: input.digest, username: input.username, siteName: input.siteName, allowMissingMedia: String(input.allowMissingMedia) });
+    const query = new URLSearchParams({ clientAppearanceContract: String(CLIENT_APPEARANCE_CONTRACT), digest: input.digest, username: input.username, siteName: input.siteName, allowMissingMedia: String(input.allowMissingMedia) });
     return request<{ site: { id: string; username: string; site_name: string; draft_version: number }; missingMedia: ImportPreview["missingMedia"] }>(`/api/imports/confirm?${query}`, { method: "POST", body: JSON.stringify(value) });
   },
   publicGuestbook(username: string) {
