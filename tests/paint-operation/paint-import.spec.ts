@@ -23,6 +23,33 @@ async function pick(page: Page, name: string, buffer: Buffer, mimeType = "image/
   await page.getByLabel("Import image").setInputFiles({ name, mimeType, buffer });
 }
 
+async function delayDecodes(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const original = createImageBitmap;
+    const originalClose = ImageBitmap.prototype.close;
+    const waiting: Array<() => void> = [];
+    let closed = 0;
+    ImageBitmap.prototype.close = function () { closed++; originalClose.call(this); };
+    (window as any).closedDecodes = () => closed;
+    (window as any).releaseDecode = () => {
+      const release = waiting.shift();
+      if (!release) throw new Error("No pending image decode");
+      release();
+    };
+    window.createImageBitmap = async (...args) => {
+      await new Promise<void>((resolve) => waiting.push(resolve));
+      return original(...args);
+    };
+  });
+}
+
+async function releaseAndWaitForClose(page: Page, closed: number): Promise<void> {
+  await page.evaluate(() => (window as any).releaseDecode());
+  // close() runs only after the import continuation has discarded or applied
+  // the result, so pixel assertions cannot race a late decoder completion.
+  await expect.poll(() => page.evaluate(() => (window as any).closedDecodes())).toBe(closed);
+}
+
 test.beforeEach(async ({ page }) => {
   await page.goto("/paint-operation-debug.html");
   await expect(page.getByRole("status")).toContainText("640×480");
@@ -92,32 +119,24 @@ test("bad type, encoded size, corrupt decode, and decoded dimensions leave pixel
 test("cancelled, repeated, and edit-interrupted decodes cannot overwrite newer pixels", async ({ page }) => {
   const red = await png(page, "#ff0000");
   const blue = await png(page, "#0000ff");
-  await page.evaluate(() => {
-    const original = createImageBitmap;
-    const waiting: Array<() => void> = [];
-    (window as any).releaseDecode = () => waiting.shift()?.();
-    window.createImageBitmap = async (...args) => {
-      await new Promise<void>((resolve) => waiting.push(resolve));
-      return original(...args);
-    };
-  });
+  await delayDecodes(page);
   await pick(page, "red.png", red);
   await expect(page.getByRole("button", { name: "Cancel import" })).toBeVisible();
   await page.getByRole("button", { name: "Cancel import" }).click();
-  await page.evaluate(() => (window as any).releaseDecode());
+  await releaseAndWaitForClose(page, 1);
   await expect(page.getByRole("status")).toContainText("cancelled");
   expect((await pixel(page, 200, 240))[3]).toBe(0);
   await pick(page, "red.png", red);
   await pick(page, "blue.png", blue);
-  await page.evaluate(() => (window as any).releaseDecode()); // obsolete red
-  await page.evaluate(() => (window as any).releaseDecode()); // current blue
+  await releaseAndWaitForClose(page, 2); // obsolete red
+  await releaseAndWaitForClose(page, 3); // current blue
   await expect(page.getByRole("status")).toContainText("Image added");
   expect(await pixel(page, 200, 240)).toEqual([0, 0, 255, 255]);
   await pick(page, "red.png", red);
   const box = (await page.locator("canvas").boundingBox())!;
   await page.mouse.move(box.x + 10.5, box.y + 10.5);
   await page.mouse.down(); await page.mouse.up();
-  await page.evaluate(() => (window as any).releaseDecode());
+  await releaseAndWaitForClose(page, 4);
   expect(await pixel(page, 200, 240)).toEqual([0, 0, 255, 255]);
   expect((await pixel(page, 10, 10))[3]).toBe(255);
 });
@@ -143,12 +162,7 @@ test("tainted source failure is atomic, and touch during decode cancels import",
   const touchPage = await context.newPage();
   await touchPage.goto("/paint-operation-debug.html");
   const red = await png(touchPage, "#ff0000");
-  await touchPage.evaluate(() => {
-    const original = createImageBitmap;
-    let release!: () => void;
-    (window as any).releaseDecode = () => release();
-    window.createImageBitmap = async (...args) => { await new Promise<void>((resolve) => { release = resolve; }); return original(...args); };
-  });
+  await delayDecodes(touchPage);
   await pick(touchPage, "red.png", red);
   await expect(touchPage.getByRole("button", { name: "Cancel import" })).toBeVisible();
   await touchPage.locator("canvas").scrollIntoViewIfNeeded();
@@ -157,7 +171,7 @@ test("tainted source failure is atomic, and touch during decode cancels import",
   expect(tapped).not.toBeNull();
   await touchPage.touchscreen.tap(box.x + 20, box.y + 20);
   await expect(touchPage.getByRole("status")).toContainText("cancelled");
-  await touchPage.evaluate(() => (window as any).releaseDecode());
+  await releaseAndWaitForClose(touchPage, 1);
   expect((await pixel(touchPage, 200, 240))[3]).toBe(0);
   expect((await pixel(touchPage, tapped.x, tapped.y))[3]).toBe(255);
   await context.close();
