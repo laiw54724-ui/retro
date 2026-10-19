@@ -413,5 +413,11 @@
     "pending": "尚未套用。按 Enter 或離開欄位套用；Esc 取消。",
     "cancel": "取消",
     "cancelField": "取消編輯{{field}}"
+  },
+  "imageControls": {
+    "cancelUpload": "取消上傳",
+    "removeAvatar": "移除頭像",
+    "sourceChanged": "已變更頭像來源或取消上傳，保留原有圖片。",
+    "highlightPageUrl": "精選第 {{n}} 頁圖片網址"
   }
 }
