@@ -348,6 +348,7 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 .save-text { font-size: 12px; white-space: nowrap; flex-shrink: 0; color: var(--w98-success); }
 .save-text.error { color: var(--w98-error); }
 .save-text.dirty, .save-text.saving { color: var(--w98-muted); }
+.editor-history-controls { display: contents; }
 .collaboration-role-note { max-width: 230px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 3px 8px; color: #5c4300; background: #fff4bd; border: 1px solid #8a7200; font-size: 12px; font-weight: 700; }
 .editor-topbar .w98-btn { height: 30px; min-height: 30px; padding: 0 12px; flex-shrink: 0; }
 .device-toggle { display: flex; flex-shrink: 0; }
@@ -640,6 +641,10 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
   .editor-topbar .topbar-meta, .editor-topbar .mobile-hide, .left-panel2, .right-panel2, .sidebar-toggle-rail { display: none !important; }
   .editor-topbar .top-spacer { display: none; }
   .editor-topbar .w98-btn { height: 42px; min-height: 42px; padding: 0 9px; }
+  /* Keep recovery and save feedback in flow, below the primary actions. */
+  .editor-topbar .editor-history-controls { display: flex; order: 1; flex: 1 0 100%; min-width: 0; align-items: center; flex-wrap: wrap; gap: 6px; border-top: 1px solid #808080; padding-top: 6px; }
+  .editor-topbar .editor-history-controls .w98-btn { height: auto; min-height: 44px; min-width: 44px; padding-inline: 6px; }
+  .editor-history-controls .save-text { display: block; flex: 1 1 54px; min-width: 0; white-space: normal; overflow-wrap: anywhere; line-height: 1.4; }
   .editor-grid2 { display: flex; min-height: 0; }
   .editor-stage2 { flex: 1; height: auto; min-height: 0; padding: 0; display: grid; place-items: stretch; background: #222; }
   .editor-stage2 > .visitor-mobile { width: 100%; height: 100%; }
@@ -649,6 +654,14 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
   .template-grid { grid-template-columns: 1fr; }
   .preview-bar { height: auto; min-height: 46px; flex-wrap: wrap; padding: 6px 8px; }
   .preview-label { order: 4; flex-basis: 100%; }
+}
+
+/* Reclaim spacing when the keyboard leaves a short viewport; retain touch targets. */
+@media (max-width: 767px) and (max-height: 500px) {
+  .editor-topbar { row-gap: 2px; padding-block: 2px !important; }
+  .editor-topbar .editor-history-controls { padding-top: 2px; }
+  /* The editor actions are in flow; the old floating-action scroll gap can hide a focused field. */
+  .editor-stage2 .m-window[data-presentation="mobile"] .m-win-body { scroll-padding-bottom: 0; }
 }
 
 /* ---- shared modal dialog (portal) ---- */

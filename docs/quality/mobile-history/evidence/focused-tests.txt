@@ -1,0 +1,20 @@
+[WebServer] (node:73438) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:73472) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:73491) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › tests/e2e/mobile-history-status.spec.ts:69:9 › mobile history 320 › delete → undo → redo, empty history and saved draft (5.6s)
+  ✓  2 [chromium] › tests/e2e/mobile-history-status.spec.ts:89:9 › mobile history 320 › pending save, edit during request, failure and keyboard retry (5.1s)
+  ✓  3 [chromium] › tests/e2e/mobile-history-status.spec.ts:113:9 › mobile history 320 › incomplete input, composition, safe area and reduced keyboard viewport (2.5s)
+  ✓  4 [chromium] › tests/e2e/mobile-history-status.spec.ts:69:9 › mobile history 390 › delete → undo → redo, empty history and saved draft (1.8s)
+  ✓  5 [chromium] › tests/e2e/mobile-history-status.spec.ts:89:9 › mobile history 390 › pending save, edit during request, failure and keyboard retry (4.3s)
+  ✓  6 [chromium] › tests/e2e/mobile-history-status.spec.ts:113:9 › mobile history 390 › incomplete input, composition, safe area and reduced keyboard viewport (2.7s)
+  ✓  7 [chromium] › tests/e2e/mobile-history-status.spec.ts:69:9 › mobile history 430 › delete → undo → redo, empty history and saved draft (1.8s)
+  ✓  8 [chromium] › tests/e2e/mobile-history-status.spec.ts:89:9 › mobile history 430 › pending save, edit during request, failure and keyboard retry (4.6s)
+  ✓  9 [chromium] › tests/e2e/mobile-history-status.spec.ts:113:9 › mobile history 430 › incomplete input, composition, safe area and reduced keyboard viewport (2.5s)
+
+  9 passed (34.5s)
