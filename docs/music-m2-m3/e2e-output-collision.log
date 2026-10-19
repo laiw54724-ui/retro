@@ -1,0 +1,85 @@
+[WebServer] (node:27830) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:27843) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 36 tests using 2 workers
+
+(node:27871) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:27870) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › tests/e2e/music-m2-m3.spec.ts:39:7 › video and provider help work with normal clicks at 320px (1.8s)
+  ✓   2 [chromium] › tests/e2e/music-sources.spec.ts:110:7 › author: paste a link, Retro works out what it is › a Spotify page stored as audio by older data is explained and fixed without losing the link (2.1s)
+  ✓   3 [chromium] › tests/e2e/music-m2-m3.spec.ts:39:7 › video and provider help work with normal clicks at 390px (1.1s)
+  ✓   5 [chromium] › tests/e2e/music-m2-m3.spec.ts:39:7 › video and provider help work with normal clicks at 430px (1.1s)
+  ✓   6 [chromium] › tests/e2e/music-m2-m3.spec.ts:83:5 › loaded iframe offers manual help without claiming playback success; close clears it (547ms)
+  ✓   4 [chromium] › tests/e2e/music-sources.spec.ts:124:7 › author: paste a link, Retro works out what it is › pasting a supported platform link builds the in-page player automatically and stores only validated ids (3.2s)
+  ✓   7 [chromium] › tests/e2e/music-m2-m3.spec.ts:96:5 › video stops on minimize, close, same-host resize and viewport-host replacement (943ms)
+  ✓   9 [chromium] › tests/e2e/music-m2-m3.spec.ts:116:5 › real browser decodes the generated video after click; native controls pause and resume (767ms)
+  ✓  10 [chromium] › tests/e2e/music-m2-m3.spec.ts:130:5 › wrong MIME or unsupported video offers an honest failure, original link and retry (684ms)
+  ✓   8 [chromium] › tests/e2e/music-sources.spec.ts:151:7 › author: paste a link, Retro works out what it is › direct audio and video file URLs use native players; web pages stay external (3.3s)
+  ✓  11 [chromium] › tests/e2e/music-m2-m3.spec.ts:143:5 › old external video stays external until explicitly converted; save/reload and undo retain the source (3.6s)
+  ✓  13 [chromium] › tests/e2e/music-m2-m3.spec.ts:177:7 › M2/M3 localized controls and help in zh-Hant (577ms)
+  ✓  14 [chromium] › tests/e2e/music-m2-m3.spec.ts:177:7 › M2/M3 localized controls and help in en (574ms)
+  ✓  12 [chromium] › tests/e2e/music-sources.spec.ts:171:7 › author: paste a link, Retro works out what it is › choosing the external link for a supported URL is respected until a different link is pasted (3.3s)
+  ✓  16 [chromium] › tests/e2e/music-sources.spec.ts:191:7 › author: the field always reflects the real source › typed-but-unsaved text and its error disappear when an upload replaces the source (1.4s)
+  ✓  15 [chromium] › tests/e2e/music.spec.ts:77:5 › author uploads private audio, records rights, saves and reloads the stable reference (2.9s)
+  ✓  17 [chromium] › tests/e2e/music-sources.spec.ts:212:7 › author: the field always reflects the real source › undo drops a half-typed URL and shows the restored source, not the stale text (1.5s)
+  ✓  19 [chromium] › tests/e2e/music-sources.spec.ts:234:7 › visitor: official platform players › nothing loads until the visitor asks; the iframe is exactly the official, sandboxed URL (545ms)
+  ✓  20 [chromium] › tests/e2e/music-sources.spec.ts:255:7 › visitor: official platform players › only one platform or native source can run: switching stops and unmounts the previous one (747ms)
+  ✓  21 [chromium] › tests/e2e/music-sources.spec.ts:283:7 › visitor: official platform players › minimizing or closing the window removes the iframe and nothing reloads by itself (742ms)
+  ✓  18 [chromium] › tests/e2e/music.spec.ts:100:5 › author adds, reorders, deletes and reloads a music playlist (3.1s)
+  ✓  22 [chromium] › tests/e2e/music-sources.spec.ts:301:7 › visitor: official platform players › when the platform never answers, the visitor is told what to do and the original link stays available (1.4s)
+  ✓  23 [chromium] › tests/e2e/music.spec.ts:130:5 › editing an active preview source stops the old audio (1.9s)
+  ✓  25 [chromium] › tests/e2e/music.spec.ts:145:5 › one explicit audio source stops on minimize, switches globally and stops on close (1.7s)
+  ✓  24 [chromium] › tests/e2e/music-sources.spec.ts:314:7 › visitor: official platform players › a blocked or failing platform leaves the original link working and never leaves a frame running (3.3s)
+  ✓  26 [chromium] › tests/e2e/music.spec.ts:173:5 › failed audio stays stopped with a useful error (699ms)
+  ✘  28 [chromium] › tests/e2e/music.spec.ts:184:5 › mobile music controls remain reachable at 320px (571ms)
+  ✘  27 [chromium] › tests/e2e/music-sources.spec.ts:335:7 › visitor: official platform players › no hidden player keeps sound going after switching source, minimizing or closing (1.0s)
+(node:28258) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  29 [chromium] › tests/e2e/music-sources.spec.ts:377:7 › visitor: official platform players › native audio does not keep playing in a hidden tree when the viewport switches between desktop and phone (625ms)
+  ✓  30 [chromium] › tests/e2e/music-sources.spec.ts:401:7 › visitor: official platform players › a platform link saved as a direct audio file shows why it cannot play and offers the original (473ms)
+  ✓  31 [chromium] › tests/e2e/music-sources.spec.ts:408:7 › visitor: official platform players › player controls fit a 320px phone (659ms)
+  ✓  32 [chromium] › tests/e2e/music-sources.spec.ts:424:5 › track list labels a platform page saved as audio as a web link, not as in-site audio (500ms)
+  ✓  33 [chromium] › tests/e2e/music-sources.spec.ts:431:7 › only the visible public player tree exists and closes on viewport change at 320px (816ms)
+  ✓  34 [chromium] › tests/e2e/music-sources.spec.ts:431:7 › only the visible public player tree exists and closes on viewport change at 390px (896ms)
+  ✓  35 [chromium] › tests/e2e/music-sources.spec.ts:431:7 › only the visible public player tree exists and closes on viewport change at 430px (701ms)
+  ✓  36 [chromium] › tests/e2e/music-sources.spec.ts:451:7 › the source field explains what it recognised in en (592ms)
+
+
+  1) [chromium] › tests/e2e/music-sources.spec.ts:335:7 › visitor: official platform players › no hidden player keeps sound going after switching source, minimizing or closing
+
+    Error: browserContext.close: ENOENT: no such file or directory, open '/Users/wen/Documents/Codex/2026-10-19/task-5/retro-music/test-results/.playwright-artifacts-1/traces/resources/73972a580310a3ebd98aadf599eafc4a.jsonl'
+
+    Error: ENOENT: no such file or directory, open '/Users/wen/Documents/Codex/2026-10-19/task-5/retro-music/test-results/.playwright-artifacts-1/22be54d264ef5cae1f4471a5e24ade7b.zip'
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/music-sources-visitor-offi-d2090-ource-minimizing-or-closing-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/music-sources-visitor-offi-d2090-ource-minimizing-or-closing-chromium/error-context.md
+
+  2) [chromium] › tests/e2e/music.spec.ts:184:5 › mobile music controls remain reachable at 320px ──
+
+    Error: browserContext.close: ENOENT: no such file or directory, open '/Users/wen/Documents/Codex/2026-10-19/task-5/retro-music/test-results/.playwright-artifacts-0/traces/resources/8bdd563a443cc4541407d9c3263eb25b.jsonl'
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/music-mobile-music-controls-remain-reachable-at-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/music-mobile-music-controls-remain-reachable-at-320px-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/music-mobile-music-controls-remain-reachable-at-320px-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/music-mobile-music-controls-remain-reachable-at-320px-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › tests/e2e/music-sources.spec.ts:335:7 › visitor: official platform players › no hidden player keeps sound going after switching source, minimizing or closing
+    [chromium] › tests/e2e/music.spec.ts:184:5 › mobile music controls remain reachable at 320px ───
+  34 passed (30.1s)

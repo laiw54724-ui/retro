@@ -1,0 +1,3 @@
+
+> @retrodesk/web@0.0.1 typecheck /Users/wen/Documents/Codex/2026-10-19/task-5/retro-music/apps/web
+> tsc -b --pretty false

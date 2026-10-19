@@ -1,0 +1,5 @@
+.music-video { display: grid; gap: 8px; min-width: 0; }
+.music-video video { display: block; width: 100%; min-width: 200px; min-height: 112px; aspect-ratio: 16 / 9; background: #000; }
+.music-video .w98-btn, .music-playback-help .w98-btn { min-height: 44px; white-space: normal; overflow-wrap: anywhere; }
+.music-playback-help { font-size: inherit; overflow-wrap: anywhere; }
+.music-playback-help .music-embed-actions { margin-top: 4px; }

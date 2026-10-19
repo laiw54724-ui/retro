@@ -24,8 +24,8 @@ type Props = {
 
 /**
  * One place to put a track's source. The author pastes a link (or uploads a file) and Retro works out what it is:
- * a supported platform link becomes the official player (shown as a preview with its source), a direct audio file plays
- * natively, anything else — web pages, video files, unsupported platforms — is kept as an external link with the reason.
+ * a supported platform link becomes the official player (shown as a preview with its source), direct audio and video files play
+ * natively; web pages and unsupported platforms stay external with the reason.
  * The author can always choose the external link instead of the player. Nothing here loads a third party; the player
  * preview is the same click-to-load card visitors get.
  */
@@ -57,22 +57,22 @@ export function TrackSourceField({ track, windowId, patchSource, uploadAudio, on
     if (result.type === "invalid") { setPending(raw); return; }
     setPending(null);
     if (result.type === "empty") { patchSource({ kind: "audioUrl", url: "https://" }, key); return; }
-    if (result.type === "embed") {
-      if (externalFor !== null && externalFor === raw.trim()) patchSource({ kind: "externalLink", url: raw.trim() }, key);
-      else { setExternalFor(null); patchSource(result.source, key); }
+    if (result.type === "embed" || result.type === "audio-file" || result.type === "video-file") {
+      if (track.source.kind === "externalLink" && raw.trim() === stored || externalFor !== null && externalFor === raw.trim()) patchSource({ kind: "externalLink", url: raw.trim() }, key);
+      else { setExternalFor(null); patchSource(result.type === "embed" ? result.source : { kind: "audioUrl", url: result.url }, key); }
       return;
     }
     setExternalFor(null);
-    patchSource(result.type === "audio-file" ? { kind: "audioUrl", url: result.url } : { kind: "externalLink", url: result.url }, key);
+    patchSource({ kind: "externalLink", url: result.url }, key);
   };
 
   const useExternal = () => { setExternalFor(stored); patchSource({ kind: "externalLink", url: stored }, `music-source-${track.id}`); };
-  const usePlayer = () => { const embed = classifyPastedUrl(stored); if (embed.type === "embed") { setExternalFor(null); patchSource(embed.source, `music-source-${track.id}`); } };
+  const usePlayer = () => { const result = classifyPastedUrl(stored); if (result.type === "embed" || result.type === "audio-file" || result.type === "video-file") { setExternalFor(null); patchSource(result.type === "embed" ? result.source : { kind: "audioUrl", url: result.url }, `music-source-${track.id}`); } };
 
   const embedSource = track.source.kind === "providerEmbed" ? track.source : null;
-  const offerPlayer = (track.source.kind === "externalLink" || track.source.kind === "audioUrl") && decision.type === "embed";
-  // Data saved before this field existed can hold a web page or video file as an "audio file": offer the honest fix.
-  const offerExternal = track.source.kind === "audioUrl" && (decision.type === "embed" || decision.type === "web-page" || decision.type === "video-file");
+  const offerPlayer = (track.source.kind === "externalLink" || track.source.kind === "audioUrl") && (decision.type === "embed" || track.source.kind === "externalLink" && (decision.type === "audio-file" || decision.type === "video-file"));
+  // Keep an explicit external-link choice available for native files as well as provider embeds.
+  const offerExternal = track.source.kind === "audioUrl" && (decision.type === "embed" || decision.type === "web-page" || decision.type === "video-file" || decision.type === "audio-file");
 
   const explanation = (() => {
     if (pending !== null || decision.type === "invalid") {
@@ -84,8 +84,8 @@ export function TrackSourceField({ track, windowId, patchSource, uploadAudio, on
       case "embed":
         if (embedSource) return tr("music.source.recognizedEmbed", { platform: decision.platformLabel, resource: resourceName(decision.source.resourceType) });
         return track.source.kind === "audioUrl" ? tr("music.source.wasAudioPlatform", { platform: decision.platformLabel }) : tr("music.source.canEmbed", { platform: decision.platformLabel });
-      case "audio-file": return tr("music.source.recognizedAudio");
-      case "video-file": return track.source.kind === "audioUrl" ? tr("music.source.savedAudioNotAudio") : tr("music.source.recognizedVideoFile");
+      case "audio-file": return track.source.kind === "externalLink" ? tr("m3.externalFile") : tr("music.source.recognizedAudio");
+      case "video-file": return track.source.kind === "externalLink" ? tr("m3.externalFile") : tr("m3.recognizedVideo");
       case "web-page": {
         if (track.source.kind === "audioUrl") return tr("music.source.savedAudioNotAudio");
         const platform = decision.platformLabel ?? "";
