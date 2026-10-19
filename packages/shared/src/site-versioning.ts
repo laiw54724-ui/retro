@@ -8,6 +8,7 @@ import {
   IgHighlightSchema,
   IgPostSchema,
   ImageCropSchema,
+  ImageContentSchema,
   InstagramProfileSchema,
   LinkItemSchema,
   MoodboardContentSchema,
@@ -153,6 +154,7 @@ const BaseV2Window = z.object({
   defaultOpen: z.boolean(), appearance: StrictAppearanceSchema.optional(), chrome: WindowChromeSchema.optional()
 }).strict();
 const NonInstagramWindowV2Schema = z.discriminatedUnion("type", [
+  BaseV2Window.extend({ type: z.literal("image"), content: ImageContentSchema }),
   BaseV2Window.extend({ type: z.literal("document"), content: z.object({ blocks: z.array(StrictDocumentBlockSchema).max(100) }).strict() }),
   BaseV2Window.extend({ type: z.literal("gallery"), content: z.object({ columns: z.number().int().min(1).max(5), images: z.array(StrictGalleryImageSchema).max(200) }).strict() }),
   BaseV2Window.extend({ type: z.literal("links"), content: z.object({ links: z.array(StrictLinkItemSchema).max(100) }).strict() }),
