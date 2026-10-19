@@ -1,6 +1,8 @@
 import { useImageWriter } from "../editor/ImageWriteContext";
 import type { InternalDestination, NavigationRequest, NavigationResult } from "../navigation/linkDestination";
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
+import { dispatchWindowLink } from "../navigation/dispatchWindowLink";
 import type { PreviewNavigation } from "./previewNavigation";
 import type { CollectionEntityV2, DesktopWindow, PostEntityV2, ProfileEntityV2, RetroTheme, SiteDocumentV2Input } from "@retrodesk/shared";
 import { resolveContentAppearance } from "../../lib/windowAppearance";
@@ -59,11 +61,18 @@ function openExternal(url: string) {
 
 export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, onNavigate, navigationRequest, navigationSiteId, mobile = false, editing = false, imageControls = false, siteId, upload, onUpdate, profiles, posts, collections, profileId, initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
   const imageWriter = useImageWriter();
+  const { t } = useTranslation("modules");
+  const [linkUnavailable, setLinkUnavailable] = useState(false);
   const tv = useThemeView(theme);
   const content = resolveContentAppearance(theme, win);
   const onLink = (action: LinkAction) => {
     if (editing) return; // links are inert while editing
-    if (action.target === "window") { if (action.windowId) onOpenWindow?.(action.windowId); return; }
+    if (action.target === "window") {
+      const result = dispatchWindowLink(action.windowId, { editing, sourceId: win.id, siteId: navigationSiteId, windows: allWindows, navigate: onNavigate, openWindow: onOpenWindow });
+      setLinkUnavailable(!result.ok);
+      return;
+    }
+    setLinkUnavailable(false);
     if (action.url) openExternal(action.url);
   };
   const resolvedProfileId = profileIdsByWindow?.[win.id] ?? profileId;
@@ -84,6 +93,7 @@ export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, o
   return (
     <div className={`module-host module-${win.type}`} style={{ "--window-content-background": content.background, "--window-content-text": content.color, fontFamily: tv.fontFamily, color: "var(--window-content-text)", background: win.type === "image" ? "transparent" : "var(--window-content-background)", height: win.type === "image" ? "100%" : undefined, minHeight: win.type === "image" ? 0 : undefined } as CSSProperties}>
       {renderModule({ window: win, ctx, editing: ctx.editing, update })}
+      {linkUnavailable ? <p role="status" className="w98-hint">{t("navigationTargets.unavailable")}</p> : null}
     </div>
   );
 }
