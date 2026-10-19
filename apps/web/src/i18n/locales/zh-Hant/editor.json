@@ -1,4 +1,11 @@
 {
+  "saveSession": {
+    "leaveTitle": "離開編輯器？",
+    "stay": "保留並繼續編輯",
+    "leave": "仍要離開",
+    "unsavedBody": "最近的修改或主題預覽尚未確認儲存，離開可能會遺失。已送出的儲存仍可能完成。請留下完成編輯或重試儲存。",
+    "savedBody": "修改已儲存，可以離開或繼續編輯。"
+  },
   "imageHost": { "move": "移動圖片 {{title}}" },
   "shell": {
     "backToDesktops": "回到我的桌面",

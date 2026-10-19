@@ -34,6 +34,7 @@ import { IntegrityDialog } from "../features/editor/IntegrityDialog";
 import { stopAllMedia } from "../features/modules/music/mediaSession";
 import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { useLocaleFormatting } from "../i18n/format";
+import { useEditorLeaveGuard, useEditorSaveSession } from "../features/editor/editorSession";
 
 
 
@@ -87,6 +88,8 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const store = useEditorStore();
+  const captureSaveSession = useEditorSaveSession(siteId);
+  const leaveGuard = useEditorLeaveGuard(siteId);
   const saveInFlight = useRef(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -271,10 +274,11 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   useEffect(() => { void refreshAssetInventory().catch(() => undefined); }, [siteId]);
 
   useEffect(() => {
-    if (upgradePaused.current || !store.document || store.saveStatus !== "dirty" || !store.siteId || saveInFlight.current || conflict || composing) return;
+    if (upgradePaused.current || !store.document || store.saveStatus !== "dirty" || store.siteId !== siteId || saveInFlight.current || conflict || composing) return;
+    const isCurrentSession = captureSaveSession();
 
     const timer = window.setTimeout(async () => {
-      if (upgradePaused.current) return;
+      if (upgradePaused.current || !isCurrentSession()) return;
       const legacyDocumentToSave = store.document!;
       const documentToSave = store.versionedDocument ?? versionedDraft ?? store.document!;
       const versionToSave = store.version;
@@ -294,13 +298,18 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         // dirty and the resulting render must be allowed to schedule the next
         // autosave immediately.
         saveInFlight.current = false;
-        if (!upgradePaused.current) store.markSaved(result.version, legacyDocumentToSave);
+        if (!isCurrentSession()) return;
+        if (!upgradePaused.current) {
+          store.markSaved(result.version, legacyDocumentToSave);
+          setMessage(current => typeof current === "object" && current.fallback === "editor.saveFailed" ? "" : current);
+        }
       } catch (error) {
         saveInFlight.current = false;
+        if (!isCurrentSession()) return;
         store.setSaveStatus("error");
         if (stopForUpgrade(error)) return;
         if (error instanceof ApiError && (error.status === 403 || error.status === 404)) {
-          navigate(`/auth?notice=${encodeURIComponent(t("page.lostEditAccess"))}`, { replace: true });
+          void leaveGuard.leaveAfterAccessLoss(() => navigate(`/auth?notice=${encodeURIComponent(t("page.lostEditAccess"))}`, { replace: true }));
         } else if (error instanceof ApiError && error.code === "version_conflict") {
           setConflict(true);
           setMessage({ fallback: "editor.anUpdateFromAnotherTab" });
@@ -311,7 +320,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     }, 650);
 
     return () => window.clearTimeout(timer);
-  }, [store.document, store.versionedDocument, versionedDraft, store.saveStatus, store.siteId, store.version, conflict, composing, upgradeRequired]);
+  }, [store.document, store.versionedDocument, versionedDraft, store.saveStatus, store.siteId, store.version, conflict, composing, upgradeRequired, siteId, captureSaveSession]);
 
   useEffect(() => {
     function keydown(event: KeyboardEvent) {
@@ -496,6 +505,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   async function migrateLegacyAssets() {
     if (upgradePaused.current) { setUpgradeRecoveryOpen(true); return; }
     if (!store.document || migratingAssets) return;
+    const isCurrentSession = captureSaveSession();
     setMigratingAssets(true);
     try {
       let version = store.version;
@@ -503,14 +513,14 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         const documentToSave = store.versionedDocument ?? versionedDraftRef.current ?? store.document;
         const saved = await api.saveDraft(siteId, version, documentToSave);
         // Another request may have paused this editor while the save was pending.
-        if (upgradePaused.current) return;
+        if (upgradePaused.current || !isCurrentSession()) return;
         store.markSaved(saved.version, store.document);
         version = saved.version;
       }
-      if (upgradePaused.current) return;
+      if (upgradePaused.current || !isCurrentSession()) return;
       const result = await api.migrateLegacyAssets(siteId, version);
       // A late migration response must never replace the retained local draft.
-      if (upgradePaused.current) return;
+      if (upgradePaused.current || !isCurrentSession()) return;
       const loaded = loadVersionedSiteDocument(result.document, { siteId, migrateV1: true });
       if (!loaded.ok) throw new Error(loaded.diagnostics[0]?.message ?? t("editor.theMigratedDraftsFormatIs"));
       const legacy = loadedLegacyDocument(loaded);
@@ -520,7 +530,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       setVersionedDraft(canonical);
       store.setVersionedDocument(canonical);
       const refreshed = await refreshAssetInventory();
-      if (upgradePaused.current) return;
+      if (upgradePaused.current || !isCurrentSession()) return;
       const stillLegacy = refreshed.filter((asset) => asset.storageScope === "legacy_public");
       setMessage(stillLegacy.length
         ? t("editor.migratedButLegacyAssetsAre", { migratedCount: result.migratedCount, length: stillLegacy.length })
@@ -529,7 +539,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
           : t("editor.convertedLegacyAssetsToPrivate", { migratedCount: result.migratedCount }));
       if (stillLegacy.length || result.cleanupWarnings.length) setAssetInventoryOpen(true);
     } catch (error) {
-      if (stopForUpgrade(error) || upgradePaused.current) return;
+      if (!isCurrentSession() || stopForUpgrade(error) || upgradePaused.current) return;
       const assetId = error instanceof ApiError && error.details && typeof error.details === "object" && "assetId" in error.details ? String((error.details as { assetId: unknown }).assetId) : "";
       const asset = assetInventory.find((item) => item.id === assetId);
       setMessage({ code: error instanceof ApiError ? error.code : undefined, fallback: "page.assetMigrationFailed", assetName: asset ? asset.name || asset.id : undefined });
@@ -601,6 +611,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         <RetroButton className="mobile-hide" disabled={store.past.length === 0} onClick={store.undo} aria-label={t("shell.undo")} title={t("shell.undoTitle")}>↶ {t("shell.undo")}</RetroButton>
         <RetroButton className="mobile-hide" disabled={store.future.length === 0} onClick={store.redo} aria-label={t("shell.redo")} title={t("shell.redoTitle")}>↷ {t("shell.redo")}</RetroButton>
         <span className={"save-text mobile-hide " + store.saveStatus} title={draftIssue ?? undefined} role="status">{saveText}</span>
+        {store.saveStatus === "error" && !conflict && !upgradeRequired ? <RetroButton onClick={() => { setMessage(""); store.retrySave(); }}>{t("shell.retrySave")}</RetroButton> : null}
         {store.accessRole === "editor" ? <span className="collaboration-role-note" title={t("shell.roleHint")}>{t("shell.roleNote")}</span> : null}
         <div className="top-spacer" />
         <div role="group" aria-label={t("shell.device")} className="device-toggle mobile-hide">
@@ -615,13 +626,12 @@ export function EditorPage({ site }: { site: SiteRecord }) {
           {t(store.publishedDocument ? "shell.republish" : "shell.publish")}
         </RetroButton> : null}
         <Link className="retro-link mobile-hide" to="/">{t("shell.home")}</Link>
-        <RetroButton className="mobile-hide" onClick={async () => { await signOut(); navigate("/"); }}>{t("shell.signOut")}</RetroButton>
+        <RetroButton className="mobile-hide" onClick={() => leaveGuard.requestLeave(async () => { await signOut(); await navigate("/"); })}>{t("shell.signOut")}</RetroButton>
       </header>
 
       {message ? (
         <div className="editor-message" role="alert">
           <span>{typeof message === "string" ? message : <>{translateError(message, errorT, t(message.fallback))}{message.assetName ? t("page.assetSuffix", { name: message.assetName }) : null}</>}</span>
-          {store.saveStatus === "error" && !conflict && !upgradeRequired ? <button onClick={store.retrySave}>{t("shell.retrySave")}</button> : null}
           <button aria-label={t("shell.closeNotice")} onClick={() => setMessage("")}>×</button>
         </div>
       ) : null}
@@ -802,6 +812,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
           </section>
         </div>
       ) : null}
+      {leaveGuard.prompt}
     </main>
     </EditorMediaProvider>
     </AssetSourceProvider>
