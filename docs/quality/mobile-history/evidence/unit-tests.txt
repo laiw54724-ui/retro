@@ -1,0 +1,14 @@
+
+ RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-20/task-5/retro-mobile-history/apps/web
+
+ ✓ src/features/editor/editorLocalWork.test.ts (1 test) 5ms
+stderr | src/features/editor/store.test.ts
+Retro Desktop: Supabase env vars are missing. Auth will not work until configured.
+
+ ✓ src/features/editor/store.test.ts (9 tests) 88ms
+
+ Test Files  2 passed (2)
+      Tests  10 passed (10)
+   Start at  02:32:51
+   Duration  2.59s (transform 1.21s, setup 584ms, collect 2.00s, tests 93ms, environment 0ms, prepare 150ms)
+
