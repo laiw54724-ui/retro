@@ -202,6 +202,7 @@ test("author configures fictional follows, named likes and actor comments with a
   await expect.poll(() => saves.at(-1)?.document.entities.followEdges?.length).toBe(1);
   await social.getByRole("button", { name: /其他粉絲數.*舊顯示：100/ }).click();
   await social.getByRole("spinbutton", { name: "其他粉絲數" }).fill("12");
+  await social.getByRole("spinbutton", { name: "其他粉絲數" }).press("Enter");
   await expect.poll(() => saves.at(-1)?.document.entities.profiles.find((profile) => profile.id === "profile:ig")?.otherFollowerCount).toBe(12);
 
   await openEditorGroup(win, "貼文");
@@ -349,6 +350,7 @@ test("mobile OC editor exposes the same profile tools without horizontal overflo
   await switcher.getByLabel("搜尋角色").fill("Bei");
   await switcher.getByRole("button", { name: "Bei Original @bei" }).click();
   await win.getByRole("textbox", { name: "顯示名稱" }).fill("Bei Mobile");
+  await win.getByRole("textbox", { name: "顯示名稱" }).press("Enter");
   await expect.poll(() => saves.at(-1)?.document.entities.profiles.find((profile) => profile.handle === "bei")?.displayName).toBe("Bei Mobile");
 
   await expandDetails(switcher, "尋找與管理角色");

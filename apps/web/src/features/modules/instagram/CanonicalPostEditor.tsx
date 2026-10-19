@@ -28,6 +28,9 @@ import { AvatarImage, DEFAULT_CROP } from "../../../components/AvatarImage";
 import { igEditorScope, useIgEditorState } from "./useIgEditorState";
 import { DEFAULT_POST_EDITOR_FILTERS, hasPostEditorFilters, selectPostEditorRows, type PostEditorFilters } from "./postEditorFilters";
 
+import { IgDraftInput } from "./IgDraftInput";
+import { validateCountDraft } from "./igDraftValidation";
+
 type Props = { props: ModuleProps<"instagram"> };
 type Uploaded = { src: string; name: string };
 
@@ -185,7 +188,7 @@ export function CanonicalPostEditor({ props }: Props) {
             <div className="ig-social-checks compact">
               {(ctx.profiles ?? []).map((candidate) => <label key={`${post.id}-liker-${candidate.id}`} className="check-row"><input type="checkbox" checked={post.namedLikerIds.includes(candidate.id)} onChange={(event) => social((document) => setPostNamedLikers(document, post.id, event.target.checked ? [...post.namedLikerIds, candidate.id] : post.namedLikerIds.filter((id) => id !== candidate.id), { siteId }))} /><span>{candidate.displayName ?? candidate.name} <small>@{candidate.handle ?? candidate.username}</small></span></label>)}
             </div>
-            <label className="w98-field"><span>{tr("canonicalPostEditor.otherFictionalLikeCount")}</span><input type="number" min={0} max={1_000_000_000} className="w98-input compact" aria-label={tr("canonicalPostEditor.otherFictionalLikeCount")} value={post.otherLikeCount} onChange={(event) => social((document) => setPostOtherLikeCount(document, post.id, Math.max(0, Number(event.target.value) || 0), { siteId }), `post-other-likes-${post.id}`)} /></label>
+            <label className="w98-field"><span>{tr("canonicalPostEditor.otherFictionalLikeCount")}</span><IgDraftInput draftKey={`${scope}:${post.id}:other-likes`} type="number" min={0} max={1_000_000_000} label={tr("canonicalPostEditor.otherFictionalLikeCount")} value={String(post.otherLikeCount)} validate={validateCountDraft} onCommit={(value) => social((document) => setPostOtherLikeCount(document, post.id, Number(value), { siteId }), `post-other-likes-${post.id}`)} /></label>
             <strong>{tr("ig.actorComments", { count: post.actorComments.length })}</strong>
             {post.actorComments.map((comment, commentIndex) => <div key={comment.id} className="ig-actor-comment-row">
               <select className="w98-input compact" aria-label={tr("canonicalPostEditor.authorOfComment", { v1: commentIndex + 1 })} value={comment.authorKind === "profile" ? comment.authorProfileId : "__legacy"} onChange={(event) => changeComment(post.id, event.target.value === "__legacy" ? { id: comment.id, authorKind: "legacy", legacyAuthorText: comment.authorKind === "legacy" ? comment.legacyAuthorText : "friend", text: comment.text } : { id: comment.id, authorKind: "profile", authorProfileId: event.target.value, text: comment.text })}>

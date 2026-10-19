@@ -400,5 +400,18 @@
     "legacyDisplay": "舊顯示：{{label}}",
     "findManage": "尋找與管理角色（{{count}}）",
     "foundCharacters": "找到 {{shown}} / {{total}} 位角色"
+  },
+  "inputDraft": {
+    "required": "此欄位不可空白。已儲存的內容保持不變。",
+    "handle": "請使用 1–64 個英文字母、數字或連字號，開頭與結尾須為字母或數字。",
+    "duplicate": "此 Handle 已被使用，請換一個。",
+    "nameLength": "請勿超過 160 個字元。",
+    "fieldLength": "請勿超過 80 個字元。",
+    "tags": "最多 30 個標籤，每個最多 64 個字元。",
+    "count": "請輸入 0 到 1,000,000,000 的整數。",
+    "url": "請輸入完整的 HTTP、HTTPS 或 mailto 連結，或留白。",
+    "pending": "尚未套用。按 Enter 或離開欄位套用；Esc 取消。",
+    "cancel": "取消",
+    "cancelField": "取消編輯{{field}}"
   }
 }
