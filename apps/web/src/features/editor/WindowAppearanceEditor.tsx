@@ -1,3 +1,5 @@
+import { APPEARANCE_P2_WRITER_ENABLED } from "../../lib/appearanceP2Writer";
+import { WindowColorAppearanceEditor } from "./WindowColorAppearanceEditor";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { DesktopWindow, RetroTheme } from "@retrodesk/shared";
@@ -10,7 +12,11 @@ type Props = {
   onChange: (appearance: DesktopWindow["appearance"], historyKey?: string) => void;
 };
 
-export function WindowAppearanceEditor({ theme, window, onChange }: Props) {
+export function WindowAppearanceEditor(props: Props) {
+  return APPEARANCE_P2_WRITER_ENABLED ? <WindowColorAppearanceEditor {...props} /> : <LegacyWindowAppearanceEditor {...props} />;
+}
+
+function LegacyWindowAppearanceEditor({ theme, window, onChange }: Props) {
   const { t: tr } = useTranslation("editor");
   const [active, setActive] = useState(true);
   const appearance = window.appearance;
