@@ -37,6 +37,9 @@ export function ProviderPlayer({ source, title, windowId, trackId, onOpenOrigina
   const instanceId = useId();
   const isActive = active.windowId === windowId && active.trackId === trackId && active.instanceId === instanceId;
   const src = embedUrlFor(source.provider, source.resourceType, source.resourceId);
+  // The iframe only exists after the visitor's explicit click, so asking YouTube to start playing is a user-initiated
+  // play, not an unexpected sound on page load. Spotify's embed has no autoplay switch: its own play button starts it.
+  const frameSrc = src && isActive && source.provider === "youtube" ? `${src}${src.includes("?") ? "&" : "?"}autoplay=1` : src;
   const [loaded, setLoaded] = useState(false);
   const [slow, setSlow] = useState(false);
 
@@ -58,12 +61,12 @@ export function ProviderPlayer({ source, title, windowId, trackId, onOpenOrigina
 
   return (
     <section className="music-embed" aria-label={tr("providerPlayer.player", { label })} data-provider={source.provider}>
-      {isActive && src ? (
+      {isActive && frameSrc ? (
         <div className="music-embed-frame" style={{ minWidth: 200 }}>
           <iframe
             key={src}
             title={tr("music.playerTitle", { label, title: title || tr("music.untitledTrackLabel") })}
-            src={src}
+            src={frameSrc ?? undefined}
             sandbox={SANDBOX}
             allow={ALLOW[source.provider]}
             allowFullScreen

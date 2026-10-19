@@ -1,3 +1,4 @@
+import type { PreviewNavigation } from "./previewNavigation";
 import type { CollectionEntityV2, DesktopWindow, PostEntityV2, ProfileEntityV2, RetroTheme, SiteDocumentV2Input } from "@retrodesk/shared";
 import { useThemeView } from "../../lib/themeView";
 import { renderModule } from "../modules/registry";
@@ -20,6 +21,9 @@ type Props = {
   collections?: CollectionEntityV2[];
   profileId?: string;
   initialPostId?: string;
+  navigation?: PreviewNavigation;
+  canShareEntity?: (kind: "oc" | "post", id: string) => boolean;
+  viewDrafts?: boolean;
   publicShareBaseUrl?: string;
   siteHandle?: string;
   profileIdsByWindow?: Record<string, string>;
@@ -45,7 +49,7 @@ function openExternal(url: string) {
   }
 }
 
-export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, mobile = false, editing = false, siteId, upload, onUpdate, profiles, posts, collections, profileId, initialPostId, publicShareBaseUrl, siteHandle, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
+export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, mobile = false, editing = false, siteId, upload, onUpdate, profiles, posts, collections, profileId, initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
   const tv = useThemeView(theme);
   const onLink = (action: LinkAction) => {
     if (editing) return; // links are inert while editing
@@ -56,7 +60,7 @@ export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, m
   const profileThemeOverride = profiles?.find((profile) => profile.id === resolvedProfileId)?.themeOverride;
   const ctx: ModuleCtx = {
     theme, tv, editing: editing && !!onUpdate, mobile, siteId,
-    windows: (allWindows ?? []).map((candidate) => ({ id: candidate.id, title: candidate.title })), initialPostId, publicShareBaseUrl, siteHandle,
+    windows: (allWindows ?? []).map((candidate) => ({ id: candidate.id, title: candidate.title })), initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle,
     onLink, upload, profiles, posts, collections, profileId: resolvedProfileId, profileThemeOverride,
     onProfileSelect: (id) => onProfileSelect?.(id, win.id),
     onProfileAdd: () => onProfileAdd?.(win.id),

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import type { DesktopWindow, ProfileEntityV2, SiteDocument } from "@retrodesk/shared";
+import type { PreviewNavigation } from "./previewNavigation";
 import type { ProfileDirectoryEntry } from "../modules/types";
 import { Icon } from "../../components/Icon";
 import { RetroWindow } from "../../components/RetroWindow";
@@ -43,9 +44,9 @@ function initialRuntime(document: SiteDocument, initialOpenId?: string): Runtime
   ]));
 }
 
-export function VisitorDesktop({ document, profiles, profileIdsByWindow, profileDirectory, initialOpenId, initialPostId, publicShareBaseUrl, siteHandle }: { document: SiteDocument; profiles?: ProfileEntityV2[]; profileIdsByWindow?: Record<string, string>; profileDirectory?: ProfileDirectoryEntry[]; initialOpenId?: string; initialPostId?: string; publicShareBaseUrl?: string; siteHandle?: string }) {
+export function VisitorDesktop({ document, profiles, profileIdsByWindow, profileDirectory, initialOpenId, initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle }: { navigation?: PreviewNavigation; viewDrafts?: boolean; canShareEntity?: (kind: "oc" | "post", id: string) => boolean; document: SiteDocument; profiles?: ProfileEntityV2[]; profileIdsByWindow?: Record<string, string>; profileDirectory?: ProfileDirectoryEntry[]; initialOpenId?: string; initialPostId?: string; publicShareBaseUrl?: string; siteHandle?: string }) {
   const { t: tr } = useTranslation("editor");
-  const [runtime, setRuntime] = useState<RuntimeMap>(() => initialRuntime(document, initialOpenId));
+  const [runtime, setRuntime] = useState<RuntimeMap>(() => initialRuntime(document, initialOpenId ?? (navigation?.openId && document.windows.some((window) => window.id === navigation.openId) ? navigation.openId : undefined)));
   const desktopRef = useRef<HTMLDivElement | null>(null);
   const gesture = useRef<Gesture | null>(null);
   const tv = useThemeView(document.theme);
@@ -66,6 +67,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
   }
 
   function focus(id: string) {
+    if (navigation) navigation.openId = id;
     setRuntime((current) => {
       const target = current[id];
       if (!target) return current;
@@ -80,11 +82,13 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
   }
 
   function minimize(id: string) {
+    if (navigation?.openId === id) navigation.openId = null;
     stopWindowMedia(id);
     setRuntime((current) => current[id] ? { ...current, [id]: { ...current[id], status: "minimized" } } : current);
   }
 
   function close(id: string) {
+    if (navigation?.openId === id) navigation.openId = null;
     stopWindowMedia(id);
     setRuntime((current) => current[id] ? { ...current, [id]: { ...current[id], status: "closed", maximized: false } } : current);
   }
@@ -244,7 +248,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
               titleBarProps={{ onDoubleClick: () => toggleMaximize(window.id), style: { touchAction: "none" } }}
               style={{ height: "100%" }}
             >
-              <WindowRenderer window={window} theme={document.theme} allWindows={document.windows} onOpenWindow={openWindow} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialPostId={window.id === initialOpenId ? initialPostId : undefined} publicShareBaseUrl={publicShareBaseUrl} siteHandle={siteHandle} />
+              <WindowRenderer window={window} theme={document.theme} allWindows={document.windows} onOpenWindow={openWindow} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialPostId={window.id === initialOpenId ? initialPostId : undefined} navigation={navigation} canShareEntity={canShareEntity} viewDrafts={viewDrafts} publicShareBaseUrl={publicShareBaseUrl} siteHandle={siteHandle} />
             </RetroWindow>
             {!state.maximized ? <span className="window-resize-handle" aria-hidden="true" /> : null}
           </div>

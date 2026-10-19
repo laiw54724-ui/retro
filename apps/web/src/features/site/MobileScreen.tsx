@@ -1,3 +1,4 @@
+import type { PreviewNavigation } from "./previewNavigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { makeWindow, THEME_PRESETS, type CollectionEntityV2, type DesktopWindow, type PostEntityV2, type ProfileEntityV2, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
@@ -44,12 +45,16 @@ type Props = {
   socialDocument?: SiteDocumentV2Input;
   initialOpenId?: string;
   initialPostId?: string;
+  /** Visitor previews: shared with the other layouts so rotation keeps the open app and character. */
+  navigation?: PreviewNavigation;
+  canShareEntity?: (kind: "oc" | "post", id: string) => boolean;
+  viewDrafts?: boolean;
   publicShareBaseUrl?: string;
   siteHandle?: string;
 };
 
 /** The single-window phone experience. Used for visitors, the editor preview and the mobile editor. */
-export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview, profiles, posts, collections, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument, initialOpenId, initialPostId, publicShareBaseUrl, siteHandle }: Props) {
+export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview, profiles, posts, collections, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument, initialOpenId, initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle }: Props) {
   const { t } = useTranslation("editor");
   const { t: common } = useTranslation("common");
   const { t: musicText } = useTranslation("music");
@@ -59,7 +64,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const editor = mode === "editor";
   const store = useEditorStore();
   const tv = useThemeView(document.theme);
-  const [openId, setOpenId] = useState<string | null>(() => initialOpenId ?? (mode === "visitor" ? document.windows.find((window) => window.type === "character-dialog" && window.content.autoShow)?.id ?? null : null));
+  const [openId, setOpenId] = useState<string | null>(() => initialOpenId ?? (navigation?.openId && document.windows.some((window) => window.id === navigation.openId) ? navigation.openId : null) ?? (mode === "visitor" ? document.windows.find((window) => window.type === "character-dialog" && window.content.autoShow)?.id ?? null : null));
   const [sheet, setSheet] = useState<Sheet>(null);
   const [inlineEdit, setInlineEdit] = useState(false);
   const iconRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -69,11 +74,12 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const selected = document.windows.find((window) => window.id === store.selectedId) ?? null;
 
   useEffect(() => () => stopAllMedia(), []);
-  const open = (id: string) => { if (openId && openId !== id) stopWindowMedia(openId); setOpenId(id); setInlineEdit(false); if (editor) store.select(id); };
-  const back = () => { const closingId = openId; if (closingId) stopWindowMedia(closingId); setOpenId(null); setInlineEdit(false); if (closingId) requestAnimationFrame(() => iconRefs.current.get(closingId)?.focus()); };
+  const open = (id: string) => { if (openId && openId !== id) stopWindowMedia(openId); if (navigation) navigation.openId = id; setOpenId(id); setInlineEdit(false); if (editor) store.select(id); };
+  const back = () => { const closingId = openId; if (closingId) stopWindowMedia(closingId); if (navigation) navigation.openId = null; setOpenId(null); setInlineEdit(false); if (closingId) requestAnimationFrame(() => iconRefs.current.get(closingId)?.focus()); };
   useEffect(() => {
     if (!openId) return;
-    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") back(); };
+    // preventDefault marks the key as handled, so a surrounding preview does not also close on the same Escape
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape" && !event.defaultPrevented) { event.preventDefault(); back(); } };
     globalThis.document.addEventListener("keydown", escape);
     return () => globalThis.document.removeEventListener("keydown", escape);
   }, [openId]);
@@ -82,11 +88,14 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const body = (
     <div className="m-screen" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: "center", fontFamily: tv.fontFamily, color: tv.text }}>
       {framed ? <div className="m-status" style={{ background: tv.face, color: tv.text, fontFamily }}><time dateTime={now.toISOString()} title={formatDate(now, { dateStyle: "full" })} aria-label={common("desktop.clockLabel", { time: clock })}>{clock}</time><span>5G ▮▮▮</span></div> : null}
-      <div className="m-titlebar" style={{ background: tv.titleBg, color: tv.titleText, fontFamily }}>
-        <Icon name="computer" size={20} />
-        <span className="m-site">{document.siteName}</span>
-        {editor ? <span className="m-badge">{t("mobile.editing")}</span> : <LanguageSwitcher compact />}
-      </div>
+      {/* One return path: while an app is open its own title bar is the only header (site options live in its menu). */}
+      {!openWindow ? (
+        <div className="m-titlebar" style={{ background: tv.titleBg, color: tv.titleText, fontFamily }}>
+          <Icon name="computer" size={20} />
+          <span className="m-site">{document.siteName}</span>
+          {editor ? <span className="m-badge">{t("mobile.editing")}</span> : <LanguageSwitcher compact />}
+        </div>
+      ) : null}
 
       <div className="m-stage">
         <div className="m-scroll">
@@ -116,6 +125,9 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
               controlLabels={{ close: common("actions.close") }}
               onClose={back}
               titleBarLeading={<WindowChromeButton className="m-btn m-back" onClick={back}>‹ {t("mobile.desktop")}</WindowChromeButton>}
+              titleBarTrailing={editor
+                ? <WindowChromeButton className="m-btn m-edit-toggle" aria-pressed={inlineEdit} onClick={() => setInlineEdit(!inlineEdit)}>{t(inlineEdit ? "mobile.finishEditing" : "mobile.editWindow")}</WindowChromeButton>
+                : <MobileSiteMenu label={t("mobile.siteMenu")} playing={music.windowId === openWindow.id && music.status === "playing"} playingLabel={musicText("playback.playing")} />}
             >
               <WindowRenderer
                 window={openWindow}
@@ -142,21 +154,18 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
                 updateContent={updateContent}
                 socialDocument={socialDocument}
                 initialPostId={openWindow.id === initialOpenId ? initialPostId : undefined}
+                navigation={navigation}
+                canShareEntity={canShareEntity}
+                viewDrafts={viewDrafts}
                 publicShareBaseUrl={publicShareBaseUrl}
                 siteHandle={siteHandle}
               />
             </RetroWindow>
-            {editor ? <button type="button" className="m-fab" onClick={() => setInlineEdit(!inlineEdit)}>{t(inlineEdit ? "mobile.finishEditing" : "mobile.editWindow")}</button> : null}
           </div>
         ) : null}
       </div>
 
-      {!editor ? (
-        <div className="m-taskbar" style={{ background: tv.taskbar, boxShadow: `inset 0 1px ${tv.light}, inset 0 2px #fff`, fontFamily }}>
-          <button type="button" className="m-btn" style={btn} onClick={back}><Icon name="computer" size={18} />{t("mobile.desktop")}</button>
-          {openWindow ? <span className="m-current" style={{ background: tv.light, color: tv.text, boxShadow: tv.pressed }}><Icon name={openWindow.icon} size={16} />{openWindow.title}{music.windowId === openWindow.id && music.status === "playing" ? ` · ${musicText("playback.playing")}` : ""}</span> : null}
-        </div>
-      ) : (
+      {!editor ? null : (
         <div className="m-toolbar" role="toolbar" aria-label={t("mobile.toolbar")} style={{ fontFamily }}>
           {([
             ["add", "folder"], ["edit", "doc"], ["theme", "palette"], ["preview", "star"]
@@ -215,7 +224,7 @@ function MobileEdit({ theme, window, count, siteId, upload }: { theme: SiteDocum
       <WindowAppearanceEditor theme={theme} window={window} onChange={(appearance, historyKey) => patch({ appearance }, historyKey)} />
       <span className="w98-hint">{tr("rightPanel.icon")}</span>
       <IconPicker key={window.id} siteId={siteId} value={window.icon} upload={upload} mediaTarget={{ windowId: window.id, windowType: window.type }} size={28} label={window.title} defaultValue={makeWindow(window.type).icon} onChange={(icon) => patch({ icon })} />
-      <label className="check-row m-check"><input type="checkbox" checked={window.defaultOpen} onChange={(event) => patch({ defaultOpen: event.target.checked })} />{tr("mobileScreen.openAutomaticallyWhenVisitorsArrive")}</label>
+      <label className="check-row m-check"><input type="checkbox" checked={window.defaultOpen} onChange={(event) => patch({ defaultOpen: event.target.checked })} />{tr("mobileEditor.openByDefaultWhenVisitors")}</label>
       <div className="m-actions">
         <button type="button" className="w98-btn" disabled={window.layout.mobile.order === 0} onClick={() => store.reorderMobile(window.id, -1)}>{tr("mobileScreen.moveIconEarlier")}</button>
         <button type="button" className="w98-btn" disabled={window.layout.mobile.order >= count - 1} onClick={() => store.reorderMobile(window.id, 1)}>{tr("mobileScreen.moveIconLater")}</button>
@@ -225,5 +234,37 @@ function MobileEdit({ theme, window, count, siteId, upload }: { theme: SiteDocum
       <div className="w98-sep" />
       <span className="w98-hint">{tr("mobileScreen.contentCloseThisPanelOpen")}</span>
     </>
+  );
+}
+
+/** Site-level options (language) tucked into the open app's title bar, plus a playing indicator now that the bottom taskbar is gone. */
+function MobileSiteMenu({ label, playing, playingLabel }: { label: string; playing: boolean; playingLabel: string }) {
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLSpanElement | null>(null);
+  const trigger = useRef<HTMLButtonElement | null>(null);
+  useEffect(() => {
+    if (!open) return;
+    // Capture phase on window: the menu is the top layer, so Escape closes only it (not the app, not a surrounding preview).
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      event.stopPropagation();
+      setOpen(false);
+      trigger.current?.focus();
+    };
+    const onPointer = (event: PointerEvent) => { if (!root.current?.contains(event.target as Node)) setOpen(false); };
+    globalThis.addEventListener("keydown", onKey, true);
+    globalThis.document.addEventListener("pointerdown", onPointer);
+    return () => {
+      globalThis.removeEventListener("keydown", onKey, true);
+      globalThis.document.removeEventListener("pointerdown", onPointer);
+    };
+  }, [open]);
+  return (
+    <span ref={root} className="m-site-menu">
+      {playing ? <span className="m-playing" role="status" title={playingLabel}>♫<span className="visually-hidden">{playingLabel}</span></span> : null}
+      <WindowChromeButton ref={trigger} className="m-btn sq" aria-label={label} aria-haspopup="true" aria-expanded={open} onClick={() => setOpen((value) => !value)}>⋯</WindowChromeButton>
+      {open ? <div className="m-site-panel w98-window" role="group" aria-label={label}><LanguageSwitcher /></div> : null}
+    </span>
   );
 }

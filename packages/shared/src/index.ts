@@ -7,6 +7,7 @@ export * from "./public-metadata";
 export * from "./site-transfer";
 export * from "./demo";
 export * from "./site-versioning";
+export * from "./publish-state";
 export * from "./asset-reference";
 export * from "./post-operations";
 export * from "./highlight-operations";

@@ -9,6 +9,10 @@ on:
       - claude/retro-i18n-foundation
       - claude/retro-oc-ig-editor
       - claude/retro-i18n-expansion
+      - integration/retro-preview-r1-r2
+      - integration/retro-preview-r1-r3
+      - integration/retro-preview-media
+      - integration/retro-night-quality-01
   workflow_dispatch:
 
 permissions:

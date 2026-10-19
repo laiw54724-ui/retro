@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { trustedPublicAssetBaseUrls } from "../lib/publicAssets";
 import { translateSystemMessage } from "../i18n/systemMessages";
 import { i18n } from "../i18n";
-import { buildPublishChecks, CollectionEntityV2Schema, createProfile, deleteOrRetargetProfile, duplicateProfile, hasBlockingCheck, loadVersionedSiteDocument, normalizeDocument, parseSiteDocument, PostEntityV2Schema, ProfileEntityV2Schema, projectV2ToLegacyDocument, updateProfile, type DesktopWindow, type SiteDocumentV2Input } from "@retrodesk/shared";
+import { buildPublishChecks, CollectionEntityV2Schema, createProfile, deleteOrRetargetProfile, duplicateProfile, hasBlockingCheck, hasUnpublishedChanges as hasUnpublishedDraftChanges, loadVersionedSiteDocument, normalizeDocument, parseSiteDocument, PostEntityV2Schema, ProfileEntityV2Schema, projectV2ToLegacyDocument, updateProfile, type DesktopWindow, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { api, ApiError, type AssetRecord, type SiteRecord } from "../lib/api";
@@ -10,7 +11,9 @@ import { DesktopCanvas } from "../features/editor/DesktopCanvas";
 import { MobileScreen } from "../features/site/MobileScreen";
 import { LeftPanel } from "../features/editor/LeftPanel";
 import { RightPanel } from "../features/editor/RightPanel";
+import { buildPreviewModel, shareableEntities } from "../features/editor/previewModel";
 import { VisitorPreview } from "../features/editor/VisitorPreview";
+import { publicSiteLabel, publicSiteUrl } from "../lib/publicSiteUrl";
 import { Icon } from "../components/Icon";
 import { RetroButton } from "../components/RetroButton";
 import { useAuth } from "../app/AuthProvider";
@@ -133,6 +136,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     // adapter, so an autosave can never observe a stale v2 document after reload.
     setVersionedDraft(loadedDraft.version === 2 ? loadedDraft.document : null);
     store.setVersionedDocument(loadedDraft.version === 2 ? loadedDraft.document : null);
+    store.setPublishedRaw(site.published_document ?? null);
     if (loadedDraft.migrated) store.setSaveStatus("dirty");
   }
 
@@ -331,9 +335,19 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
   const hasUnpublishedChanges = useMemo(() => {
     if (!store.document) return false;
-    if (!store.publishedDocument) return true;
-    return !sameDocument(store.document, store.publishedDocument);
-  }, [store.document, store.publishedDocument]);
+    return hasUnpublishedDraftChanges({ siteId, assets: { username: store.username, trustedAssetBaseUrls: trustedPublicAssetBaseUrls() }, draftLegacy: store.document, publishedLegacy: store.publishedDocument, draftCanonical: store.versionedDocument, publishedRaw: store.publishedRaw });
+  }, [siteId, store.username, store.document, store.publishedDocument, store.versionedDocument, store.publishedRaw]);
+
+  // Preview data. Built only while a preview is open, from the same canonical snapshot the editor holds; read-only.
+  const previewModels = useMemo(() => {
+    if (!preview || !store.document) return null;
+    const raw = store.versionedDocument ?? store.document;
+    return {
+      draft: buildPreviewModel("draft", raw, siteId),
+      publishable: buildPreviewModel("publishable", raw, siteId),
+      shareable: shareableEntities(store.publishedRaw, siteId)
+    };
+  }, [preview]);
 
   const legacyAssets = assetInventory.filter((asset) => asset.storageScope === "legacy_public");
   const pendingPublicCopyAssets = assetInventory.filter((asset) => asset.publicCopyRemaining);
@@ -538,7 +552,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         <LanguageSwitcher compact />
         <span className="w98-vsep mobile-hide" />
         <div className="topbar-meta">
-          <span className="site-url">retrodesk.me/{store.username}</span>
+          <span className="site-url">{publicSiteLabel(store.username)}</span>
           <span className="status-badge" title={badge.text} style={{ background: badge.bg, color: badge.color, borderColor: badge.color }}>{badge.text}</span>
         </div>
         <span className="w98-vsep mobile-hide" />
@@ -554,7 +568,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         <RetroButton onClick={() => { stopAllMedia(); setPreview(true); }}>▶ {t("shell.preview")}</RetroButton>
         {actions.manageMembers ? <RetroButton ref={collaborationButtonRef} onClick={() => setCollaborationOpen(true)}>{t("shell.collaborators")}</RetroButton> : null}
         {actions.manageMembers ? <RetroButton onClick={() => setTransferOpen(true)}>{t("shell.transfer")}</RetroButton> : null}
-        {store.publishedDocument ? <a className="w98-btn mobile-hide" href={"/@" + store.username} target="_blank" rel="noreferrer">{t("shell.openPublished")}</a> : null}
+        {store.publishedDocument ? <a className="w98-btn mobile-hide" href={publicSiteUrl(store.username)} target="_blank" rel="noreferrer">{t("shell.openPublished")}</a> : null}
         {actions.publish ? <RetroButton className="primary" onClick={requestPublish} disabled={publishing || (!!store.publishedDocument && !hasUnpublishedChanges)}>
           {t(store.publishedDocument ? "shell.republish" : "shell.publish")}
         </RetroButton> : null}
@@ -677,7 +691,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         <span>{t("shell.windowsCount", { count: store.document.windows.length, formattedCount: formatNumber(store.document.windows.length) })} · {badge.text}</span>
       </footer>
 
-      {preview ? <VisitorPreview document={store.document} username={store.username} published={!!store.publishedDocument && !hasUnpublishedChanges} onClose={() => setPreview(false)} /> : null}
+      {preview && previewModels ? <VisitorPreview publishable={previewModels.publishable} draft={previewModels.draft} username={store.username} siteUrl={store.publishedDocument ? publicSiteUrl(store.username) : null} publishState={!store.publishedDocument ? "never" : hasUnpublishedChanges ? "changed" : "in-sync"} shareable={previewModels.shareable} onClose={() => setPreview(false)} /> : null}
       <IntegrityDialog />
       {collaborationOpen ? <CollaborationDialog siteId={siteId} onClose={closeCollaboration} /> : null}
       {transferOpen ? <TransferDialog siteId={siteId} username={store.username} published={!!store.publishedDocument} onClose={() => setTransferOpen(false)} onImported={(newSiteId) => navigate(`/editor/${newSiteId}`)} /> : null}
@@ -704,7 +718,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
             <header className="landing-titlebar" id="publish-title">{t("editor.publishRetroDesktop")}</header>
             <div className="dialog-body">
               <h2>{t("editor.prePublishCheck")}</h2>
-              <p>{t("editor.publicUrl")}<strong>retrodesk.me/{store.username}</strong></p>
+              <p>{t("editor.publicUrl")}<strong>{publicSiteLabel(store.username)}</strong></p>
               <ul className="publish-checks" aria-label={t("editor.prePublishCheckResults")}>
                 {publishChecks.map((check, index) => <li key={index} className={check.level}><span aria-hidden="true">{check.level === "ok" ? "✓" : check.level === "warn" ? "!" : "×"}</span>{translateSystemMessage(check.text)}</li>)}
               </ul>

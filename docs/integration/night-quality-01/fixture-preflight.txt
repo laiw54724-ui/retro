@@ -1,0 +1,58 @@
+[WebServer] (node:43556) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:43580) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 15 tests using 1 worker
+
+(node:43607) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › tests/e2e/moodboard-properties.spec.ts:141:11 › numeric draft 1440px › Moodboard geometry commits on object selection without Enter (1.8s)
+  ✓   2 [chromium] › tests/e2e/moodboard-properties.spec.ts:141:11 › numeric draft 1440px › Moodboard geometry commits on blank selection without Enter (763ms)
+  ✓   3 [chromium] › tests/e2e/moodboard-properties.spec.ts:141:11 › numeric draft 1440px › Moodboard geometry commits on layer selection without Enter (758ms)
+  ✓   4 [chromium] › tests/e2e/moodboard-properties.spec.ts:141:11 › numeric draft 320px › Moodboard geometry commits on object selection without Enter (743ms)
+  ✓   5 [chromium] › tests/e2e/moodboard-properties.spec.ts:141:11 › numeric draft 320px › Moodboard geometry commits on blank selection without Enter (708ms)
+  ✓   6 [chromium] › tests/e2e/moodboard-properties.spec.ts:141:11 › numeric draft 320px › Moodboard geometry commits on layer selection without Enter (768ms)
+  ✓   7 [chromium] › tests/e2e/music-sources.spec.ts:191:7 › author: the field always reflects the real source › typed-but-unsaved text and its error disappear when an upload replaces the source (1.4s)
+  ✓   8 [chromium] › tests/e2e/music-sources.spec.ts:212:7 › author: the field always reflects the real source › undo drops a half-typed URL and shows the restored source, not the stale text (1.5s)
+  ✘   9 [chromium] › tests/e2e/night-integration.spec.ts:18:7 › night integration: owner private details on 320px stay out of public (30.1s)
+Testing stopped early after 1 maximum allowed failures.
+
+
+  1) [chromium] › tests/e2e/night-integration.spec.ts:18:7 › night integration: owner private details on 320px stay out of public 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.evaluate: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('.visitor-page').getByRole('dialog', { name: 'Instagram.exe', exact: true }).getByRole('button', { name: '所有角色', exact: true })
+
+
+      39 |     await page.locator('.visitor-page').getByRole('button', { name: 'Instagram.exe', exact: true }).click();
+      40 |     const publicIg = page.locator('.visitor-page').getByRole('dialog', { name: 'Instagram.exe', exact: true });
+    > 41 |     await publicIg.getByRole('button', { name: '所有角色', exact: true }).evaluate(button => (button as HTMLButtonElement).click());
+         |                                                                       ^
+      42 |     expect(await page.locator('body').innerText()).not.toMatch(/NIGHT_PRIVATE_|Night Private|nightprivate/);
+      43 |   });
+      44 | }
+        at /Users/wen/Documents/Codex/2026-10-19/task-2/retro-night-quality/tests/e2e/night-integration.spec.ts:41:71
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/night-integration-night-in-0ab15-on-320px-stay-out-of-public-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/night-integration-night-in-0ab15-on-320px-stay-out-of-public-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/night-integration-night-in-0ab15-on-320px-stay-out-of-public-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/night-integration-night-in-0ab15-on-320px-stay-out-of-public-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/e2e/night-integration.spec.ts:18:7 › night integration: owner private details on 320px stay out of public 
+  6 did not run
+  8 passed (41.9s)
+  1 error was not a part of any test, see above for details

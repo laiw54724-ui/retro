@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../app/AuthProvider";
 import { RetroButton } from "../components/RetroButton";
 import { LanguageSwitcher } from "../components/LanguageSwitcher";
+import { buildSampleModel } from "../features/editor/previewModel";
 import { VisitorPreview } from "../features/editor/VisitorPreview";
 import { useLocaleFormatting } from "../i18n/format";
 import { localizeDefaults } from "../i18n/localizedDefaults";
@@ -69,7 +70,7 @@ export function LandingPage() {
           ))}
         </div>
       </section>
-      {demoDocument ? <VisitorPreview document={demoDocument} username={`demo-${demo}`} published onClose={() => setDemo(null)} /> : null}
+      {demoDocument ? <VisitorPreview sample={buildSampleModel(demoDocument)} onClose={() => setDemo(null)} /> : null}
     </main>
   );
 }

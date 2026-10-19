@@ -111,7 +111,8 @@
     "theme": "테마",
     "preview": "미리보기",
     "addWindow": "창 추가",
-    "editWindowTitle": "창 편집"
+    "editWindowTitle": "창 편집",
+    "siteMenu": "사이트 옵션"
   },
   "integrity": {
     "targetWindow": "창: {{name}}",
@@ -158,7 +159,7 @@
     "windowsArentDraggedOnMobile": "모바일에서는 창을 끌지 않습니다. 추가한 뒤 바로 내용을 편집하고, 데스크톱 위치는 나중에 데스크톱 보기에서 조정하세요.",
     "windowTitle": "창 제목",
     "desktopIcon": "데스크톱 아이콘",
-    "openByDefaultWhenVisitors": "방문자가 들어오면 기본으로 열기",
+    "openByDefaultWhenVisitors": "방문자가 들어오면 기본으로 열기(데스크톱 전용)",
     "mobileIconOrder": "모바일 아이콘 순서",
     "moveUp": "앞으로",
     "moveDown": "뒤로",
@@ -452,7 +453,7 @@
     "general": "일반",
     "icon": "아이콘",
     "layout": "배치",
-    "openByDefaultWhenVisitors": "방문자가 사이트를 열면 기본으로 열기",
+    "openByDefaultWhenVisitors": "방문자가 사이트를 열면 기본으로 열기(데스크톱 전용)",
     "bringToFront": "맨 앞으로 가져오기",
     "duplicateWindow": "창 복제",
     "theIconShownOnThe": "데스크톱과 작업 표시줄에 표시되는 아이콘입니다.",
@@ -474,12 +475,19 @@
   },
   "visitorPreview": {
     "visitorMode": "방문자 모드",
-    "previewingThePublishedVersionRetrodesk": "게시된 버전 미리보기 · retrodesk.me/{{username}}",
-    "previewingTheCurrentDraftVisitors": "현재 초안 미리보기 · 게시되지 않은 내용은 방문자에게 보이지 않습니다",
     "device": "기기",
     "desktop": "데스크톱",
     "mobile": "모바일",
-    "backToEditor": "‹ 편집기로 돌아가기"
+    "backToEditor": "‹ 편집기로 돌아가기",
+    "source": "미리보기 내용",
+    "showPublishable": "게시 후 모습",
+    "showDraft": "현재 초안",
+    "sampleReadOnly": "샘플 · 읽기 전용이며 아무것도 저장되지 않습니다",
+    "draftLabel": "현재 초안 · 게시되지 않은 내용은 방문자에게 보이지 않습니다",
+    "notPublishedYet": "아직 게시되지 않음 · 게시 후의 모습입니다(아직 온라인이 아닙니다)",
+    "hasUnpublishedChanges": "게시되지 않은 변경 사항이 있음 · 게시 후의 모습입니다(아직 온라인이 아닙니다)",
+    "sameAsPublished": "게시된 버전과 같습니다",
+    "backToSamples": "‹ 샘플로 돌아가기"
   },
   "sidebarToggle": {
     "leftToolbar": "왼쪽 도구 모음",

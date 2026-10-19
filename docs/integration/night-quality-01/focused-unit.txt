@@ -1,0 +1,13 @@
+
+ RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-2/retro-night-quality/apps/web
+
+ ✓ src/lib/pagesWorker.test.js (5 tests) 10ms
+ ✓ src/features/modules/music/sourceClassifier.test.ts (7 tests) 4ms
+ ✓ src/features/modules/moodboard/editing.test.ts (6 tests) 6ms
+ ✓ src/features/editor/previewModel.test.ts (10 tests) 36ms
+
+ Test Files  4 passed (4)
+      Tests  28 passed (28)
+   Start at  01:25:12
+   Duration  611ms (transform 220ms, setup 585ms, collect 631ms, tests 57ms, environment 0ms, prepare 232ms)
+

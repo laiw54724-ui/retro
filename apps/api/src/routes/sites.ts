@@ -4,7 +4,7 @@ import type { Env } from "../env";
 import { jsonError } from "../lib/http";
 import { requireUser, serviceClient } from "../lib/supabase";
 import { CreateSiteSchema, PublishSchema, SaveDraftSchema } from "../lib/site";
-import { copyReferencedAssets, publishedArtifactKey, recordArtifactStatus, writePublishedArtifact } from "../lib/publish";
+import { copyReferencedAssets, promotePublishedAssets, publishedArtifactKey, recordArtifactStatus, writePublishedArtifact, type PublishArtifactResult } from "../lib/publish";
 import { requireSiteRole, SiteAccessError, type SiteAction, type SiteAccess } from "../lib/access";
 
 export const sites = new Hono<{ Bindings: Env }>();
@@ -224,16 +224,17 @@ sites.post("/sites/:siteId/publish", async (c) => {
   }
   const row = Array.isArray(committed) ? committed[0] : committed;
   if (!row?.published_version || !row.published_at) return jsonError(c, 500, "db_error", "Publish did not return a committed version");
-  const artifact = await writePublishedArtifact(c.env, {
+  const artifact = await syncCommittedPublication(c.env, {
+    siteId: site.id,
     username: site.username,
     version: row.published_version,
     document: rewrittenProjection.document,
-    publishedAt: row.published_at,
-    artifactKey: row.artifact_key ?? publishedArtifactKey(site.username, row.published_version)
+    publishedAt: row.published_at
   });
   const statusResult = await recordArtifactStatus(supabase, site.id, access.ownerId, row.published_version, artifact.artifactStatus, artifact.error);
-  const cleanupWarnings = await cleanupPendingLegacyAssets(c.env, supabase, site.id, access.ownerId, rewrittenProjection.document);
-  if (statusResult.error || !statusResult.updated) return c.json({ publishedVersion: row.published_version, publishedAt: row.published_at, url: `/@${site.username}`, ...artifact, artifactStatus: "failed", retryable: true, cleanupWarnings, warning: statusResult.error ? "Published database version is live; artifact status could not be recorded." : "This publication is stale; the artifact was written but its status was not recorded for the current version." });
+  const cleanupWarnings = artifact.artifactStatus === "synced" && statusResult.updated && !statusResult.error
+    ? await cleanupPendingLegacyAssets(c.env, supabase, site.id, access.ownerId, rewrittenProjection.document) : ["publication-sync-pending"];
+  if (statusResult.error || !statusResult.updated) return c.json({ publishedVersion: row.published_version, publishedAt: row.published_at, url: `/@${site.username}`, ...artifact, artifactStatus: "failed", retryable: true, cleanupWarnings, warning: statusResult.error ? "Published database version is live; artifact status could not be recorded." : "This publication is stale; its synchronization status was not recorded for the current version." });
   return c.json({ publishedVersion: row.published_version, publishedAt: row.published_at, url: `/@${site.username}`, ...artifact, cleanupWarnings });
 });
 
@@ -245,24 +246,37 @@ sites.post("/sites/:siteId/publish/retry", async (c) => {
   if (access instanceof Response) return access;
   const { data: site, error } = await supabase
     .from("sites")
-    .select("id,owner_id,username,published_document,published_version,published_at,published_artifact_key")
+    .select("id,owner_id,username,published_document,published_version,published_at")
     .eq("id", access.siteId)
     .maybeSingle();
   if (error) return jsonError(c, 500, "db_error", "Could not load published site");
   if (!site) return jsonError(c, 404, "not_found", "Site not found");
   if (!site?.published_document || !site.published_version || !site.published_at) return jsonError(c, 409, "not_published", "Publish a version before retrying its artifact");
-  const artifact = await writePublishedArtifact(c.env, {
+  const artifact = await syncCommittedPublication(c.env, {
+    siteId: site.id,
     username: site.username,
     version: site.published_version,
     document: site.published_document,
-    publishedAt: site.published_at,
-    artifactKey: site.published_artifact_key ?? publishedArtifactKey(site.username, site.published_version)
+    publishedAt: site.published_at
   });
   const statusResult = await recordArtifactStatus(supabase, site.id, access.ownerId, site.published_version, artifact.artifactStatus, artifact.error);
-  const cleanupWarnings = await cleanupPendingLegacyAssets(c.env, supabase, site.id, access.ownerId, site.published_document);
-  if (statusResult.error || !statusResult.updated) return c.json({ publishedVersion: site.published_version, publishedAt: site.published_at, url: `/@${site.username}`, ...artifact, artifactStatus: "failed", retryable: true, cleanupWarnings, warning: statusResult.error ? "Artifact was written but status could not be recorded." : "This artifact status is stale; retry from the current published version." });
+  const cleanupWarnings = artifact.artifactStatus === "synced" && statusResult.updated && !statusResult.error
+    ? await cleanupPendingLegacyAssets(c.env, supabase, site.id, access.ownerId, site.published_document) : ["publication-sync-pending"];
+  if (statusResult.error || !statusResult.updated) return c.json({ publishedVersion: site.published_version, publishedAt: site.published_at, url: `/@${site.username}`, ...artifact, artifactStatus: "failed", retryable: true, cleanupWarnings, warning: statusResult.error ? "Publication synchronization status could not be recorded." : "This artifact status is stale; retry from the current published version." });
   return c.json({ publishedVersion: site.published_version, publishedAt: site.published_at, url: `/@${site.username}`, ...artifact, cleanupWarnings });
 });
+
+async function syncCommittedPublication(
+  env: Env,
+  input: { siteId: string; username: string; version: number; document: unknown; publishedAt: string }
+): Promise<PublishArtifactResult> {
+  let artifactKey: string;
+  try { artifactKey = publishedArtifactKey(input.username, input.version); }
+  catch { return { artifactStatus: "failed", retryable: true, artifactKey: "", error: "Invalid publication storage identity" }; }
+  const promoted = await promotePublishedAssets(env, input);
+  if (!promoted.ok) return { artifactStatus: "failed", retryable: true, artifactKey, error: promoted.message };
+  return writePublishedArtifact(env, input);
+}
 
 sites.get("/public/sites/:username", async (c) => {
   const parsed = UsernameSchema.safeParse(c.req.param("username"));
@@ -270,14 +284,15 @@ sites.get("/public/sites/:username", async (c) => {
   const supabase = serviceClient(c.env);
   const { data, error } = await supabase
     .from("sites")
-    .select("username,site_name,published_document,published_version,published_at")
+    .select("username,published_document,published_version,published_at")
     .eq("username", parsed.data)
     .not("published_document", "is", null)
     .maybeSingle();
   if (error) return jsonError(c, 500, "db_error", "Could not load published site");
   if (!data?.published_document) return jsonError(c, 404, "not_found", "Site not found");
   c.header("Cache-Control", "no-store");
-  return c.json({ site: data });
+  // site_name follows autosave; public names belong to the stored publication.
+  return c.json({ site: { ...data, site_name: data.published_document.siteName } });
 });
 
 sites.get("/public/sites/:username/metadata", async (c) => {
@@ -289,7 +304,7 @@ sites.get("/public/sites/:username/metadata", async (c) => {
   const supabase = serviceClient(c.env);
   const { data, error } = await supabase
     .from("sites")
-    .select("id,username,site_name,published_document,published_version")
+    .select("id,username,published_document,published_version")
     .eq("username", parsed.data)
     .not("published_document", "is", null)
     .maybeSingle();
@@ -298,7 +313,7 @@ sites.get("/public/sites/:username/metadata", async (c) => {
   const result = buildPublicMetadata({
     siteId: data.id,
     username: data.username,
-    siteName: data.site_name,
+    siteName: data.published_document.siteName,
     publishedVersion: data.published_version,
     document: data.published_document,
     target: kind && id ? { kind: kind as "oc" | "post", id } : undefined,

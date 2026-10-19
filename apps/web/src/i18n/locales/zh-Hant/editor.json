@@ -111,7 +111,8 @@
     "theme": "主題",
     "preview": "預覽",
     "addWindow": "新增視窗",
-    "editWindowTitle": "編輯視窗"
+    "editWindowTitle": "編輯視窗",
+    "siteMenu": "網站選項"
   },
   "integrity": {
     "targetWindow": "視窗：{{name}}",
@@ -158,7 +159,7 @@
     "windowsArentDraggedOnMobile": "手機上不拖曳視窗。新增後直接編輯內容，桌面位置之後可在桌面版調整。",
     "windowTitle": "視窗標題",
     "desktopIcon": "桌面圖示",
-    "openByDefaultWhenVisitors": "訪客進入時預設開啟",
+    "openByDefaultWhenVisitors": "訪客進入時預設開啟（僅桌面版）",
     "mobileIconOrder": "手機圖示順序",
     "moveUp": "往前",
     "moveDown": "往後",
@@ -452,7 +453,7 @@
     "general": "通用",
     "icon": "圖示",
     "layout": "版面",
-    "openByDefaultWhenVisitors": "訪客打開網站時預設開啟",
+    "openByDefaultWhenVisitors": "訪客打開網站時預設開啟（僅桌面版）",
     "bringToFront": "移到最前",
     "duplicateWindow": "複製視窗",
     "theIconShownOnThe": "桌面與工作列上的圖示。",
@@ -474,12 +475,19 @@
   },
   "visitorPreview": {
     "visitorMode": "訪客模式",
-    "previewingThePublishedVersionRetrodesk": "預覽已發布版本 · retrodesk.me/{{username}}",
-    "previewingTheCurrentDraftVisitors": "預覽目前草稿 · 尚未發布的內容訪客看不到",
     "device": "裝置",
     "desktop": "桌面版",
     "mobile": "手機版",
-    "backToEditor": "‹ 回到編輯器"
+    "backToEditor": "‹ 回到編輯器",
+    "source": "預覽內容",
+    "showPublishable": "發布後的樣子",
+    "showDraft": "目前草稿",
+    "sampleReadOnly": "範例 · 唯讀，不會儲存任何內容",
+    "draftLabel": "目前草稿 · 訪客看不到尚未發布的內容",
+    "notPublishedYet": "尚未發布 · 這是發布後的樣子，目前還沒有上線",
+    "hasUnpublishedChanges": "有未發布的變更 · 這是發布後的樣子，尚未上線",
+    "sameAsPublished": "與已發布版本相同",
+    "backToSamples": "‹ 返回範例"
   },
   "sidebarToggle": {
     "leftToolbar": "左側工具欄",

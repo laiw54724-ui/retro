@@ -1,0 +1,18 @@
+[WebServer] (node:44347) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:44361) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 7 tests using 1 worker
+
+(node:44384) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › tests/e2e/night-integration.spec.ts:22:7 › night integration: owner private details on 320px stay out of public (1.5s)
+  ✓  2 [chromium] › tests/e2e/night-integration.spec.ts:22:7 › night integration: viewer private details on 320px stay out of public (885ms)
+  ✓  3 [chromium] › tests/e2e/night-integration.spec.ts:22:7 › night integration: owner private details on 390px stay out of public (1.0s)
+  ✓  4 [chromium] › tests/e2e/night-integration.spec.ts:22:7 › night integration: viewer private details on 390px stay out of public (864ms)
+  ✓  5 [chromium] › tests/e2e/preview-sources.spec.ts:316:5 › an authorised draft preview shows a private character's details (pronouns, world tags, custom fields) — the published views never do (1.8s)
+  ✓  6 [chromium] › tests/e2e/preview-sources.spec.ts:333:5 › the collaborator draft viewer shows a private character's details too (568ms)
+  ✓  7 [chromium] › tests/e2e/preview-sources.spec.ts:348:5 › the real public page never shows a draft character's details (412ms)
+
+  7 passed (8.8s)

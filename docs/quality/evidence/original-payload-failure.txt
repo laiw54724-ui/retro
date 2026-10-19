@@ -1,0 +1,38 @@
+[WebServer] (node:23290) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:23295) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 tests/quality/icon-loading.spec.ts:17:5 › entry payload excludes the optional Windows manifest (380ms)
+Testing stopped early after 1 maximum allowed failures.
+
+
+  1) tests/quality/icon-loading.spec.ts:17:5 › entry payload excludes the optional Windows manifest 
+
+    Error: optional manifest leaked into the initial shared bundle
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      22 |   await openEditor(page);
+      23 |   await expect.poll(() => entry.length).toBeGreaterThan(1000);
+    > 24 |   expect(entry.includes('/windows-icons/icons-w2k-computer.ico'), 'optional manifest leaked into the initial shared bundle').toBe(false);
+         |                                                                                                                              ^
+      25 | });
+      26 |
+      27 | test('only the installed Windows tab loads its manifest, then search and apply still work', async ({ page }) => {
+        at /Users/wen/Documents/Codex/2026-10-19/task-2/retro-quality/tests/quality/icon-loading.spec.ts:24:126
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/quality/icon-loading-entry-payload-adffd-e-optional-Windows-manifest/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/quality/icon-loading-entry-payload-adffd-e-optional-Windows-manifest/error-context.md
+
+  1 failed
+    tests/quality/icon-loading.spec.ts:17:5 › entry payload excludes the optional Windows manifest ─
+  1 error was not a part of any test, see above for details

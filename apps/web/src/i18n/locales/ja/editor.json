@@ -111,7 +111,8 @@
     "theme": "テーマ",
     "preview": "プレビュー",
     "addWindow": "ウィンドウを追加",
-    "editWindowTitle": "ウィンドウを編集"
+    "editWindowTitle": "ウィンドウを編集",
+    "siteMenu": "サイトのオプション"
   },
   "integrity": {
     "targetWindow": "ウィンドウ：{{name}}",
@@ -158,7 +159,7 @@
     "windowsArentDraggedOnMobile": "モバイルではウィンドウをドラッグしません。追加してそのまま内容を編集し、デスクトップ上の位置はあとでパソコン表示で調整できます。",
     "windowTitle": "ウィンドウのタイトル",
     "desktopIcon": "デスクトップアイコン",
-    "openByDefaultWhenVisitors": "訪問者が来たときに既定で開く",
+    "openByDefaultWhenVisitors": "訪問者が来たときに既定で開く（デスクトップ版のみ）",
     "mobileIconOrder": "モバイルでのアイコンの順序",
     "moveUp": "前へ移動",
     "moveDown": "後ろへ移動",
@@ -452,7 +453,7 @@
     "general": "一般",
     "icon": "アイコン",
     "layout": "レイアウト",
-    "openByDefaultWhenVisitors": "訪問者がサイトを開いたときに既定で開く",
+    "openByDefaultWhenVisitors": "訪問者がサイトを開いたときに既定で開く（デスクトップ版のみ）",
     "bringToFront": "最前面へ移動",
     "duplicateWindow": "ウィンドウを複製",
     "theIconShownOnThe": "デスクトップとタスクバーに表示されるアイコンです。",
@@ -474,12 +475,19 @@
   },
   "visitorPreview": {
     "visitorMode": "訪問者モード",
-    "previewingThePublishedVersionRetrodesk": "公開バージョンをプレビュー中 · retrodesk.me/{{username}}",
-    "previewingTheCurrentDraftVisitors": "現在の下書きをプレビュー中 · 未公開の内容は訪問者には見えません",
     "device": "デバイス",
     "desktop": "パソコン",
     "mobile": "モバイル",
-    "backToEditor": "‹ エディターに戻る"
+    "backToEditor": "‹ エディターに戻る",
+    "source": "プレビューの内容",
+    "showPublishable": "公開後の見え方",
+    "showDraft": "現在の下書き",
+    "sampleReadOnly": "サンプル · 閲覧専用で何も保存されません",
+    "draftLabel": "現在の下書き · 未公開の内容は訪問者には見えません",
+    "notPublishedYet": "未公開 · 公開後の見え方です（まだオンラインではありません）",
+    "hasUnpublishedChanges": "未公開の変更があります · 公開後の見え方です（まだオンラインではありません）",
+    "sameAsPublished": "公開中のバージョンと同じです",
+    "backToSamples": "‹ サンプルに戻る"
   },
   "sidebarToggle": {
     "leftToolbar": "左側のツールバー",

@@ -1,0 +1,21 @@
+
+ RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-2/retro-quality/apps/web
+
+ ✓ src/lib/optionalIconPack.test.ts (2 tests) 5ms
+ ✓ src/features/modules/music/audioCoordinator.test.ts (14 tests) 9ms
+ ✓ src/features/modules/music/mediaSession.test.ts (4 tests) 3ms
+stderr | src/lib/assetSource.test.ts
+Retro Desktop: Supabase env vars are missing. Auth will not work until configured.
+
+ ✓ src/lib/assetSource.test.ts (6 tests) 5ms
+stderr | src/features/media/iconSelectionSession.test.ts
+Retro Desktop: Supabase env vars are missing. Auth will not work until configured.
+
+ ✓ src/features/media/iconSelectionSession.test.ts (10 tests) 17ms
+ ✓ src/lib/iconLibrary/library.test.ts (8 tests) 46ms
+
+ Test Files  6 passed (6)
+      Tests  44 passed (44)
+   Start at  01:05:58
+   Duration  4.48s (transform 2.98s, setup 2.86s, collect 5.95s, tests 85ms, environment 1ms, prepare 2.05s)
+

@@ -96,7 +96,31 @@
     "playerHeading": "{{label}} 播放器",
     "loadPlayer": "載入 {{label}} 播放器",
     "openOn": "在 {{label}} 開啟 ↗",
-    "slowNotice": "{{label}} 播放器還沒有回應。若一直沒有顯示，請使用「在 {{label}} 開啟」。"
+    "slowNotice": "{{label}} 播放器還沒有回應。若一直沒有顯示，請使用「在 {{label}} 開啟」。",
+    "source": {
+      "label": "貼上連結或上傳檔案",
+      "placeholder": "貼上 YouTube、Spotify 或音訊檔網址",
+      "auto": "貼上後會自動辨識來源，不需要先選擇類型。",
+      "recognizedEmbed": "已辨識為 {{platform}} {{resource}}：訪客按下播放，就能直接在這個頁面使用 {{platform}} 的官方播放器。",
+      "recognizedAudio": "已辨識為音訊檔網址：訪客可以直接在這個頁面播放。",
+      "recognizedVideoFile": "這是影片檔網址。目前還不能在頁面內播放影片檔，所以先存成外部連結，訪客會在新分頁開啟。",
+      "recognizedPage": "這是一般網頁連結。網頁不能當成音訊播放，所以存成外部連結，訪客會在新分頁開啟原頁。",
+      "reasonShortLink": "這是 {{platform}} 的短網址。請貼上完整網址（例如 open.spotify.com 或 youtube.com 的連結），才能在頁面內播放；目前先存成外部連結。",
+      "reasonUnsupportedResource": "這個 {{platform}} 連結不是單曲、專輯、播放清單或影片，無法嵌入播放器；目前存成外部連結，訪客可前往原站。",
+      "reasonUnsupportedPlatform": "{{platform}} 目前還不能在頁面內播放；已存成外部連結，訪客可前往原站。",
+      "invalid": "請貼上以 https:// 開頭的完整網址。",
+      "invalidCredentials": "網址不能包含帳號或密碼。",
+      "invalidPort": "網址不能指定連接埠。",
+      "invalidTooLong": "網址太長（上限 2048 字元）。",
+      "useExternal": "改用外部連結（只開原站）",
+      "usePlayer": "改用站內播放器",
+      "uploaded": "目前使用已上傳的音訊檔，訪客可直接在這個頁面播放。貼上連結會取代它。",
+      "sourceLine": "來源：{{platform}}（官方嵌入）",
+      "playerNote": "播放器不會在訪客按下播放前載入。",
+      "wasAudioPlatform": "這是 {{platform}} 的網頁連結，原本被存成音訊檔，無法播放。請改用站內播放器。",
+      "canEmbed": "這個連結可以用 {{platform}} 的官方播放器在頁面內播放。",
+      "savedAudioNotAudio": "這個網址不是音訊檔，無法當成音訊播放。請改存成外部連結。"
+    }
   },
   "providerPlayer": {
     "player": "{{label}} 播放器",
