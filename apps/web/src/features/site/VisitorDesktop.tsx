@@ -1,3 +1,4 @@
+import { desktopPointerDelta } from "../preview/desktopPreviewGeometry";
 import { resolveDesktopLabelAppearance } from "../../lib/windowAppearance";
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
@@ -27,8 +28,8 @@ type RuntimeWindow = {
 type RuntimeMap = Record<string, RuntimeWindow>;
 
 type Gesture =
-  | { kind: "move"; id: string; startX: number; startY: number; x: number; y: number; w: number; h: number }
-  | { kind: "resize"; id: string; startX: number; startY: number; x: number; y: number; w: number; h: number };
+  | { kind: "move"; id: string; startX: number; startY: number; x: number; y: number; w: number; h: number; scale: number }
+  | { kind: "resize"; id: string; startX: number; startY: number; x: number; y: number; w: number; h: number; scale: number };
 
 function initialRuntime(document: SiteDocument, initialOpenId?: string): RuntimeMap {
   return Object.fromEntries(document.windows.map((window) => [
@@ -45,7 +46,7 @@ function initialRuntime(document: SiteDocument, initialOpenId?: string): Runtime
   ]));
 }
 
-export function VisitorDesktop({ document, profiles, profileIdsByWindow, profileDirectory, initialOpenId, initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle }: { navigation?: PreviewNavigation; viewDrafts?: boolean; canShareEntity?: (kind: "oc" | "post", id: string) => boolean; document: SiteDocument; profiles?: ProfileEntityV2[]; profileIdsByWindow?: Record<string, string>; profileDirectory?: ProfileDirectoryEntry[]; initialOpenId?: string; initialPostId?: string; publicShareBaseUrl?: string; siteHandle?: string }) {
+export function VisitorDesktop({ document, profiles, profileIdsByWindow, profileDirectory, initialOpenId, initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle, interactionScale = 1 }: { navigation?: PreviewNavigation; viewDrafts?: boolean; canShareEntity?: (kind: "oc" | "post", id: string) => boolean; document: SiteDocument; profiles?: ProfileEntityV2[]; profileIdsByWindow?: Record<string, string>; profileDirectory?: ProfileDirectoryEntry[]; initialOpenId?: string; initialPostId?: string; publicShareBaseUrl?: string; siteHandle?: string; interactionScale?: number }) {
   const { t: tr } = useTranslation("editor");
   const [runtime, setRuntime] = useState<RuntimeMap>(() => initialRuntime(document, initialOpenId ?? (navigation?.openId && document.windows.some((window) => window.id === navigation.openId) ? navigation.openId : undefined)));
   const desktopRef = useRef<HTMLDivElement | null>(null);
@@ -128,7 +129,8 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
         x: state.x,
         y: state.y,
         w: state.w,
-        h: state.h
+        h: state.h,
+        scale: interactionScale
       };
     } else if (target.closest(".retro-titlebar")) {
       gesture.current = {
@@ -139,7 +141,8 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
         x: state.x,
         y: state.y,
         w: state.w,
-        h: state.h
+        h: state.h,
+        scale: interactionScale
       };
     } else {
       focus(window.id);
@@ -155,8 +158,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
     const active = gesture.current;
     if (!active) return;
     const area = bounds();
-    const dx = event.clientX - active.startX;
-    const dy = event.clientY - active.startY;
+    const { dx, dy } = desktopPointerDelta(event.clientX - active.startX, event.clientY - active.startY, active.scale);
 
     if (active.kind === "move") {
       const x = Math.min(Math.max(0, active.x + dx), Math.max(0, area.width - active.w));
@@ -176,8 +178,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
     const active = gesture.current;
     if (!active) return;
     const area = bounds();
-    const dx = event.clientX - active.startX;
-    const dy = event.clientY - active.startY;
+    const { dx, dy } = desktopPointerDelta(event.clientX - active.startX, event.clientY - active.startY, active.scale);
 
     setRuntime((current) => {
       const target = current[active.id];
