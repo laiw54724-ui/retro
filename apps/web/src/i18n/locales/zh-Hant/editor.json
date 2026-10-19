@@ -540,6 +540,8 @@
     "theAvatarCouldntBeLoaded": "頭像無法載入"
   },
   "editorMedia": {
+    "cancelFile": "取消 {{name}}",
+    "cancelUpload": "取消上傳",
     "youLeftTheEditorThe": "已離開編輯器，未套用尚未完成的上傳。",
     "queued": "排隊中",
     "uploading": "上傳中",

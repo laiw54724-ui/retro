@@ -540,6 +540,8 @@
     "theAvatarCouldntBeLoaded": "아바타를 불러올 수 없습니다"
   },
   "editorMedia": {
+    "cancelFile": "{{name}} 취소",
+    "cancelUpload": "업로드 취소",
     "youLeftTheEditorThe": "편집기를 떠나 완료되지 않은 업로드는 적용되지 않았습니다.",
     "queued": "대기 중",
     "uploading": "업로드 중",

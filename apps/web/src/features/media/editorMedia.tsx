@@ -48,7 +48,7 @@ export function useWindowMedia<T extends DesktopWindow["type"]>(window: WindowOf
 
 const statusLabels = () => ({ queued: i18n.t("editor:editorMedia.queued"), uploading: i18n.t("editor:editorMedia.uploading"), completed: i18n.t("editor:editor.done"), failed: i18n.t("editor:editorMedia.failed") } as const);
 
-export function UploadTaskList({ tasks, onRetry, onDismiss }: { tasks: readonly UploadTask[]; onRetry: (id: string) => void; onDismiss: (id: string) => void }) {
+export function UploadTaskList({ tasks, onRetry, onDismiss, onCancel }: { tasks: readonly UploadTask[]; onRetry: (id: string) => void; onDismiss: (id: string) => void; onCancel?: (id: string) => void }) {
   const { t: tr } = useTranslation("editor");
   if (!tasks.length) return null;
   const count = (status: UploadTask["status"]) => tasks.filter((task) => task.status === status).length;
@@ -64,6 +64,7 @@ export function UploadTaskList({ tasks, onRetry, onDismiss }: { tasks: readonly 
               <span className="media-upload-name">{task.name}</span>
               <strong>{statusLabels()[task.status]}</strong>
               {task.status === "failed" && task.retryable ? <button type="button" className="mini-btn wide" aria-label={tr("editorMedia.retry", { name: task.name })} onClick={() => onRetry(task.id)}>{tr("editorMedia.retry2")}</button> : null}
+              {onCancel && (task.status === "queued" || task.status === "uploading" || task.retryable) ? <button type="button" className="mini-btn wide" aria-label={tr("editorMedia.cancelFile", { name: task.name })} onClick={() => onCancel(task.id)}>{tr("editorMedia.cancelUpload")}</button> : null}
               {task.status === "completed" || task.status === "failed" ? <button type="button" className="mini-btn" aria-label={tr("editorMedia.clearTheRecordFor", { name: task.name })} title={tr("editorMedia.clearTheRecordUploadedFiles")} onClick={() => onDismiss(task.id)}>×</button> : null}
             </div>
             {task.error ? <p className="media-upload-error">{task.error}</p> : null}
