@@ -7,7 +7,7 @@ import type { DesktopWindow, ProfileEntityV2, SiteDocument } from "@retrodesk/sh
 import type { PreviewNavigation } from "./previewNavigation";
 import type { ProfileDirectoryEntry } from "../modules/types";
 import { Icon } from "../../components/Icon";
-import { RetroWindow } from "../../components/RetroWindow";
+import { ImageWindowShell, isDecorativeImage } from "./ImageWindowShell";
 import { useThemeView } from "../../lib/themeView";
 import { DesktopTaskbar } from "./DesktopTaskbar";
 import { WindowRenderer } from "./WindowRenderer";
@@ -233,17 +233,19 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
         return (
           <div
             key={window.id}
-            tabIndex={-1}
+            tabIndex={isDecorativeImage(window) ? undefined : -1}
+            inert={isDecorativeImage(window) || undefined}
+            aria-hidden={isDecorativeImage(window) || undefined}
             data-visitor-window={window.id}
             className={"visitor-window " + (state.maximized ? "maximized" : "")}
-            style={style}
+            style={{ ...style, pointerEvents: isDecorativeImage(window) ? "none" : undefined }}
             onPointerDown={(event) => pointerDown(event, window)}
             onPointerMove={pointerMove}
             onPointerUp={pointerUp}
             onPointerCancel={() => { gesture.current = null; }}
             onFocusCapture={() => focus(window.id)}
           >
-            <RetroWindow
+            <ImageWindowShell window={window}
               title={window.title}
               icon={window.icon}
               theme={document.theme}
@@ -259,8 +261,8 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
               style={{ height: "100%" }}
             >
               <WindowRenderer window={window} theme={document.theme} allWindows={visitor.windows} onOpenWindow={openWindow} onNavigate={visitor.navigate} navigationSiteId={navigationSiteId} navigationRequest={visitor.requests[window.id]} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialPostId={window.id === initialOpenId ? initialPostId : undefined} navigation={navigation} canShareEntity={canShareEntity} viewDrafts={viewDrafts} publicShareBaseUrl={publicShareBaseUrl} siteHandle={siteHandle} />
-            </RetroWindow>
-            {!state.maximized ? <span className="window-resize-handle" aria-hidden="true" /> : null}
+            </ImageWindowShell>
+            {!state.maximized && !isDecorativeImage(window) ? <span className="window-resize-handle" aria-hidden="true" /> : null}
           </div>
         );
       })}

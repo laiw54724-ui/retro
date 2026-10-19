@@ -55,7 +55,9 @@ test("fit, crop, background, pixel rendering, and undo are real leaf edits", asy
   await expect(state).toContainText('"background":{"color":"#aabbcc"}');
   await editor.getByRole("button", { name: "Reset crop" }).click();
   await expect(state).not.toContainText('"crop"');
-  await expect(editor.getByLabel("Frame")).toHaveCount(0);
+  await editor.getByRole("combobox", { name: "Frame", exact: true }).selectOption("none");
+  await expect(visitor.locator("figure")).toHaveAttribute("data-frame", "none");
+  await expect(state).toContainText('"src":"/wide.png"');
 });
 
 test("source URL commits and removes in disposable host", async ({ page }) => {

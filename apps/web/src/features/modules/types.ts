@@ -14,6 +14,8 @@ export type ModuleCtx = {
   /** True only in the desktop/mobile editor when inline editing is allowed. */
   editing: boolean;
   mobile: boolean;
+  /** Local, site-scoped image authoring surface; omitted by readers and the visual canvas. */
+  imageAuthoring?: boolean;
   siteId?: string;
   windows: Array<{ id: string; title: string }>;
   onLink: (action: LinkAction) => void;

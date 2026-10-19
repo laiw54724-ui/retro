@@ -1,4 +1,5 @@
 {
+  "imageHost": { "move": "이미지 {{title}} 이동" },
   "shell": {
     "backToDesktops": "내 데스크톱으로 돌아가기",
     "undo": "실행 취소",
@@ -54,7 +55,7 @@
   "modules": {
     "image": {
       "label": "이미지",
-      "description": "단일 이미지(읽기 전용)"
+      "description": "이미지 업로드 또는 이미지 링크 사용"
     },
     "document": {
       "label": "문서",

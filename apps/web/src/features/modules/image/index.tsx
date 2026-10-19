@@ -99,6 +99,12 @@ export function ImageInlineEditor({ window, ctx, update }: ModuleProps<"image">)
 
         <fieldset className={styles.group}>
           <legend>{t("image.appearance")}</legend>
+          <label className={styles.field}>{t("image.frame")}
+            <select className="ie small" value={content.frameMode} onChange={(event) => patch({ frameMode: event.target.value as ImageContent["frameMode"] })}>
+              <option value="none">{t("image.frameless")}</option>
+              <option value="simple">{t("image.simpleFrame")}</option>
+            </select>
+          </label>
           <label className={styles.field}>{t("image.background")}
             <select className="ie small" value={typeof content.background === "object" ? "color" : content.background} onChange={(event) => patch({ background: event.target.value === "color" ? { color: colorOf(content.background) } : event.target.value as "transparent" | "checker" })}>
               <option value="transparent">{t("image.transparent")}</option>

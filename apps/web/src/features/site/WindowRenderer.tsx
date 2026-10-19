@@ -1,3 +1,4 @@
+import { useImageWriter } from "../editor/ImageWriteContext";
 import type { InternalDestination, NavigationRequest, NavigationResult } from "../navigation/linkDestination";
 import type { CSSProperties } from "react";
 import type { PreviewNavigation } from "./previewNavigation";
@@ -19,6 +20,7 @@ type Props = {
   mobile?: boolean;
   /** Editor-only: render inline editors and persist edits. */
   editing?: boolean;
+  imageControls?: boolean;
   siteId?: string;
   upload?: ModuleCtx["upload"];
   onUpdate?: (id: string, recipe: (window: DesktopWindow) => DesktopWindow, historyKey?: string) => void;
@@ -55,7 +57,8 @@ function openExternal(url: string) {
   }
 }
 
-export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, onNavigate, navigationRequest, navigationSiteId, mobile = false, editing = false, siteId, upload, onUpdate, profiles, posts, collections, profileId, initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
+export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, onNavigate, navigationRequest, navigationSiteId, mobile = false, editing = false, imageControls = false, siteId, upload, onUpdate, profiles, posts, collections, profileId, initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
+  const imageWriter = useImageWriter();
   const tv = useThemeView(theme);
   const content = resolveContentAppearance(theme, win);
   const onLink = (action: LinkAction) => {
@@ -66,7 +69,7 @@ export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, o
   const resolvedProfileId = profileIdsByWindow?.[win.id] ?? profileId;
   const profileThemeOverride = profiles?.find((profile) => profile.id === resolvedProfileId)?.themeOverride;
   const ctx: ModuleCtx = {
-    theme, tv, editing: editing && !!onUpdate, mobile, siteId,
+    theme, tv, editing: editing && !!onUpdate, mobile, siteId, imageAuthoring: imageWriter && (imageControls || mobile),
     windows: (allWindows ?? []).map((candidate) => ({ id: candidate.id, title: candidate.title })), initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle,
     onLink, onNavigate: onNavigate ? (target) => editing ? { ok: false, reason: "unavailable" } : onNavigate(target, win.id) : undefined, navigationRequest, navigationSiteId, upload, profiles, posts, collections, profileId: resolvedProfileId, profileThemeOverride,
     onProfileSelect: (id) => onProfileSelect?.(id, win.id),
@@ -79,7 +82,7 @@ export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, o
   const update = (recipe: (current: DesktopWindow) => DesktopWindow, key?: string) => onUpdate?.(win.id, recipe, key);
 
   return (
-    <div className={`module-host module-${win.type}`} style={{ "--window-content-background": content.background, "--window-content-text": content.color, fontFamily: tv.fontFamily, color: "var(--window-content-text)", background: "var(--window-content-background)" } as CSSProperties}>
+    <div className={`module-host module-${win.type}`} style={{ "--window-content-background": content.background, "--window-content-text": content.color, fontFamily: tv.fontFamily, color: "var(--window-content-text)", background: win.type === "image" ? "transparent" : "var(--window-content-background)", height: win.type === "image" ? "100%" : undefined, minHeight: win.type === "image" ? 0 : undefined } as CSSProperties}>
       {renderModule({ window: win, ctx, editing: ctx.editing, update })}
     </div>
   );

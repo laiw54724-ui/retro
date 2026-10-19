@@ -6,6 +6,9 @@ import { enqueueWindowUpload, observeEditorMedia } from "../../media/windowMedia
 import type { WindowOf } from "../types";
 import { createImageContent, imageUploadOptions, patchImageContent } from "./model";
 
+// This isolated leaf suite exercises the explicitly opted-in authoring path.
+vi.mock("../../../lib/imageWindowCreation", () => ({ IMAGE_WINDOW_CREATION_ENABLED: true, canCreateWindowType: () => true }));
+
 const SITE = "image-leaf-disposable-site";
 const OLD = "https://example.com/old.png";
 const ASSET = "retro-asset:11111111-1111-4111-8111-111111111111";

@@ -8,6 +8,7 @@ import { i18n } from "./index";
  */
 const DEFAULTS: Readonly<Record<string, string>> = {
   "歡迎留下訊息。新留言會先交由站長審核。": "defaults.leaveAMessageNew",
+  "圖片": "modules.image.label",
   "相簿": "defaults.gallery",
   "連結": "defaults.links",
   "關於我": "defaults.aboutMe",

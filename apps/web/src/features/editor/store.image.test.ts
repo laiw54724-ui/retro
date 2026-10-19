@@ -17,6 +17,7 @@ describe("reader-first image creation stays disabled", () => {
     const store = useEditorStore.getState(); store.setSite("a", "reader", legacy, 1, null, null, "owner"); store.setVersionedDocument(migrated.document);
     const before = useEditorStore.getState();
     store.addWindow("image"); store.duplicateWindow(image.id);
+    store.updateWindow(image.id, (window) => window.type === "image" ? { ...window, content: { ...window.content, alt: "Blocked authoring" } } : window);
     const after = useEditorStore.getState();
     expect(after.document).toEqual(before.document); expect(after.versionedDocument).toEqual(before.versionedDocument);
     expect(after.past).toEqual(before.past); expect(after.saveStatus).toBe(before.saveStatus);
