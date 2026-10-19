@@ -4,8 +4,7 @@ const port = 5212;
 const baseURL = `http://127.0.0.1:${port}`;
 
 export default defineConfig({
-  testDir: "./tests/e2e",
-  testMatch: "image-w3a.spec.ts",
+  testDir: "./tests/image-w3a",
   timeout: 30_000,
   workers: 1,
   reporter: "list",
