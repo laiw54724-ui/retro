@@ -18,4 +18,3 @@ Retro Desktop: Supabase env vars are missing. Auth will not work until configure
       Tests  21 passed (21)
    Start at  01:35:10
    Duration  1.30s (transform 689ms, setup 847ms, collect 998ms, tests 986ms, environment 0ms, prepare 325ms)
-
