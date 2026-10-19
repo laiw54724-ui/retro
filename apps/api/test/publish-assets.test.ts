@@ -9,7 +9,7 @@ function withRef() { return { ...document, windows: [{ id: "w", title: "w", icon
 function withAudioRef() { return { ...document, windows: [{ id: "music", title: "Music", icon: "music", layout: { desktop: { x: 0, y: 0, w: 390, h: 430, z: 1 }, mobile: { order: 0 } }, defaultOpen: true, type: "music", content: { tracks: [{ id: "track", title: "Theme", artist: "OC", cover: null, coverUrl: "", source: { kind: "uploadedAudio", asset: `retro-asset:${id}` }, lyrics: "", rightsNote: "Original" }], playlist: { id: "playlist", title: "Themes", trackIds: ["track"] } } }] }; }
 
 describe("publish asset preparation", () => {
-  it.each([["png", "image/png"], ["webp", "image/webp"], ["gif", "image/gif"]])("uses the existing private image pipeline for %s without re-encoding or mutating the source", async (extension, mimeType) => {
+  it.each([["jpg", "image/jpeg"], ["png", "image/png"], ["webp", "image/webp"], ["gif", "image/gif"]])("uses the existing private image pipeline for %s without re-encoding or mutating the source", async (extension, mimeType) => {
     const image = makeWindow("image"); if (image.type !== "image") throw new Error("image");
     image.content.src = `retro-asset:${id}`;
     const source = { ...document, windows: [image] };
