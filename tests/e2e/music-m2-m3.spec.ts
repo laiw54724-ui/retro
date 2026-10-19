@@ -36,7 +36,7 @@ async function fakeMedia(page: Page) {
 const state = (page: Page) => page.evaluate(() => ({ native: (window as unknown as { activeMedia: Set<HTMLMediaElement> }).activeMedia.size, frames: window.document.querySelectorAll("iframe").length }));
 
 for (const width of [320, 390, 430]) {
-  test(`video and provider help work with normal clicks at ${width}px`, async ({ page, context }) => {
+  test(`video and provider help work with normal clicks at ${width}px`, async ({ page, context }, testInfo) => {
     await fakeMedia(page);
     const requests: string[] = [];
     page.on("request", (request) => { if (/media\.example|youtube/.test(request.url())) requests.push(request.url()); });
@@ -50,7 +50,7 @@ for (const width of [320, 390, 430]) {
     const size = await player.locator("video").boundingBox();
     expect(size!.width).toBeGreaterThanOrEqual(200);
     expect(size!.height).toBeGreaterThanOrEqual(112);
-    await page.screenshot({ path: `docs/music-m2-m3/video-${width}.png` });
+    await page.screenshot({ path: testInfo.outputPath(`video-${width}.png`) });
     await player.getByRole("button", { name: "Select Audio", exact: true }).click();
     await expect.poll(() => state(page)).toEqual({ native: 0, frames: 0 });
     await player.getByRole("button", { name: "Play", exact: true }).click();
@@ -66,7 +66,7 @@ for (const width of [320, 390, 430]) {
     expect(await oldFrame!.evaluate((frame) => frame.isConnected)).toBe(false);
     await expect(player.locator("iframe")).toHaveCount(1);
     await player.getByRole("button", { name: "Can’t play?", exact: true }).click();
-    await page.screenshot({ path: `docs/music-m2-m3/help-${width}.png` });
+    await page.screenshot({ path: testInfo.outputPath(`help-${width}.png`) });
     expect(await page.evaluate(() => window.document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
     for (const button of await help.getByRole("button").all()) expect((await button.boundingBox())!.height).toBeGreaterThanOrEqual(44);
     await context.route(YOUTUBE, (route) => route.fulfill({ contentType: "text/html", body: "Original site fixture" }));
