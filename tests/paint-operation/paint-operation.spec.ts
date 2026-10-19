@@ -124,6 +124,68 @@ test("keyboard cursor draws, cancels, and leaves editable controls alone", async
   await expect(page.locator("canvas")).toHaveAttribute("aria-describedby", /.+/);
 });
 
+for (const activation of ["Space", "Enter"] as const) {
+  test(`held ${activation} activates one keyboard gesture until a fresh press commits it`, async ({ page }) => {
+    const canvas = page.locator("canvas");
+    await canvas.focus();
+    await canvas.press("Home");
+    await page.keyboard.down(activation);
+    await page.keyboard.down(activation);
+    await page.keyboard.down(activation);
+    await page.keyboard.press("Shift+ArrowRight");
+    expect(await page.evaluate(() => {
+      const engine = (window as any).paintOperation.engine;
+      return { active: engine.active, canUndo: engine.canUndo, historyBytes: engine.historyBytes };
+    })).toEqual({ active: true, canUndo: false, historyBytes: 0 });
+    await page.keyboard.up(activation);
+    await page.keyboard.press(activation);
+    expect(await page.evaluate(() => {
+      const engine = (window as any).paintOperation.engine;
+      return { active: engine.active, canUndo: engine.canUndo, historyBytes: engine.historyBytes };
+    })).toEqual({ active: false, canUndo: true, historyBytes: 640 * 480 * 4 });
+    expect((await pixel(page, 10, 0))[3]).toBe(255);
+    await page.getByRole("button", { name: "Undo" }).click();
+    expect((await pixel(page, 0, 0))[3]).toBe(0);
+    expect((await pixel(page, 10, 0))[3]).toBe(0);
+    await expect(page.getByRole("button", { name: "Undo" })).toBeDisabled();
+  });
+}
+
+test("pointer and keyboard cannot take over each other's active gesture", async ({ page }) => {
+  const canvas = page.locator("canvas");
+  await canvas.focus();
+  const box = (await canvas.boundingBox())!;
+  await page.mouse.move(box.x + 20.5, box.y + 20.5);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 30.5, box.y + 20.5);
+  await page.keyboard.press("Space");
+  await page.keyboard.press("Shift+ArrowRight");
+  await page.keyboard.press("Escape");
+  expect(await page.evaluate(() => {
+    const engine = (window as any).paintOperation.engine;
+    return { active: engine.active, historyBytes: engine.historyBytes };
+  })).toEqual({ active: true, historyBytes: 0 });
+  await page.mouse.up();
+  expect((await pixel(page, 25, 20))[3]).toBe(255);
+  expect((await pixel(page, 321, 240))[3]).toBe(0);
+  expect(await page.evaluate(() => (window as any).paintOperation.engine.historyBytes)).toBe(640 * 480 * 4);
+
+  await canvas.press("Home");
+  await canvas.press("Space");
+  expect((await pixel(page, 0, 0))[3]).toBe(255);
+  await canvas.evaluate((element) => {
+    element.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerId: 77, pointerType: "touch", isPrimary: false }));
+    element.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerId: 78, pointerType: "mouse", isPrimary: true, button: 2 }));
+  });
+  await expect(page.getByRole("status")).toContainText("Drawing");
+  await page.mouse.move(box.x + 50.5, box.y + 50.5);
+  await page.mouse.down();
+  await page.mouse.up();
+  expect((await pixel(page, 0, 0))[3]).toBe(0);
+  expect((await pixel(page, 50, 50))[3]).toBe(255);
+  expect(await page.evaluate(() => (window as any).paintOperation.engine.historyBytes)).toBe(2 * 640 * 480 * 4);
+});
+
 test("320, 390, and 430px controls stay reachable; touch paints only inside canvas", async ({ page, browser }) => {
   for (const width of [320, 390, 430]) {
     await page.setViewportSize({ width, height: 700 });

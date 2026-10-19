@@ -143,6 +143,12 @@ export function PaintWorkspace({ labels = englishPaintLabels, initialSize = DEFA
     if (target !== canvasRef.current || command || event.altKey) return;
     const engine = engineRef.current;
     if (!engine) return;
+    // A captured pointer owns its gesture until pointerup/cancel. Keyboard
+    // input must never finish or move that gesture through the same engine.
+    if (engine.active && !keyboardDrawing.current) {
+      if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End", "Escape", " ", "Enter"].includes(event.key)) event.preventDefault();
+      return;
+    }
     const current = cursorRef.current;
     const next = nextKeyboardCursor(current, event.key, event.shiftKey, engine.width, engine.height);
     if (next) {
@@ -155,6 +161,7 @@ export function PaintWorkspace({ labels = englishPaintLabels, initialSize = DEFA
     if (event.key === "Escape") { event.preventDefault(); finishKeyboardStroke(true); return; }
     if (event.key !== " " && event.key !== "Enter") return;
     event.preventDefault();
+    if (event.repeat) return;
     setKeyboardCursor(current);
     if (tool === "picker") {
       const picked = engine.pick(current);
@@ -163,7 +170,7 @@ export function PaintWorkspace({ labels = englishPaintLabels, initialSize = DEFA
       finishKeyboardStroke(false);
     } else {
       engine.begin(current, optionsRef.current);
-      keyboardDrawing.current = true;
+      keyboardDrawing.current = engine.active;
     }
     sync();
   };
@@ -216,7 +223,11 @@ export function PaintWorkspace({ labels = englishPaintLabels, initialSize = DEFA
           <div className={styles.canvasStage} style={{ width: status.width * zoom, height: status.height * zoom }}>
             <canvas ref={canvasRef} tabIndex={0} aria-label={labels.title} aria-describedby={`${helpId} ${statusId}`}
               onBlur={() => { finishKeyboardStroke(true); setKeyboardCursor(null); }}
-              onPointerDownCapture={() => { finishKeyboardStroke(true); setKeyboardCursor(null); }} />
+              onPointerDownCapture={(event) => {
+                if (!event.isPrimary || event.pointerType === "mouse" && event.button !== 0) return;
+                finishKeyboardStroke(true);
+                setKeyboardCursor(null);
+              }} />
             {keyboardCursor ? <span className={styles.keyboardCursor} style={{ left: (keyboardCursor.x + .5) * zoom, top: (keyboardCursor.y + .5) * zoom }} aria-hidden="true" /> : null}
           </div>
         </div>
