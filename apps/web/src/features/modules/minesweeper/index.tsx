@@ -3,6 +3,12 @@ import { useTranslation } from "react-i18next";
 import type { ModuleProps } from "../types";
 import { freshGame, reveal, toggleFlag } from "./game";
 
+const difficulties = [
+  { id: "beginner", rows: 5, columns: 5, mines: 3 },
+  { id: "intermediate", rows: 8, columns: 8, mines: 10 },
+  { id: "advanced", rows: 12, columns: 12, mines: 25 }
+] as const;
+
 function Minesweeper({ window, editing, update }: ModuleProps<"minesweeper"> & { editing: boolean }) {
   const { t: tr } = useTranslation("modules");
   const config = window.content;
@@ -39,14 +45,16 @@ function Minesweeper({ window, editing, update }: ModuleProps<"minesweeper"> & {
     }
     return { ...current, content: next };
   });
+  const chooseDifficulty = (choice: typeof difficulties[number]) => update((current) => ({ ...current, content: { rows: choice.rows, columns: choice.columns, mines: choice.mines } }));
   return <div className="minesweeper-app">
     <div className="minesweeper-status"><strong>{game.phase === "won" ? tr("minesweeper.cleared") : game.phase === "lost" ? tr("minesweeper.boom") : tr("minesweeper.minesweeper")}</strong><span>{String(elapsed).padStart(3, "0")}</span><button type="button" className="w98-btn" onClick={restart}>{tr("minesweeper.restart")}</button></div>
+    <p className="visually-hidden" role="status" aria-live="polite" aria-atomic="true">{game.phase === "won" ? tr("minesweeper.wonAnnouncement") : game.phase === "lost" ? tr("minesweeper.lostAnnouncement") : ""}</p>
     <button type="button" className="w98-btn minesweeper-flag-mode" aria-pressed={flagMode} onClick={() => setFlagMode(!flagMode)}>{tr("minesweeper.mobileFlagMode")}</button>
     <div className="minesweeper-board-scroll" aria-label={tr("minesweeper.minesweeperBoardScrollArea")}>
       <div className="minesweeper-grid" role="grid" aria-label={tr("minesweeper.minesweeperBoard")} style={{ gridTemplateColumns: `repeat(${config.columns}, minmax(30px, 1fr))` }}>{game.cells.map((cell, index) => <button id={`${window.id}-mine-${index}`} role="gridcell" key={index} type="button" className={`mine-cell${cell.revealed ? " revealed" : ""}`} aria-label={tr("minesweeper.cellPosition", { row: Math.floor(index / config.columns) + 1, column: index % config.columns + 1, state: cell.flagged ? tr("minesweeper.stateFlagged") : cell.revealed ? cell.mine ? tr("minesweeper.stateMine") : tr("minesweeper.stateAdjacent", { count: cell.adjacent }) : tr("minesweeper.stateUnopened") })} onClick={() => activate(index)} onContextMenu={(event) => { event.preventDefault(); activate(index, true); }} onKeyDown={(event) => key(event, index)}>{cell.revealed ? cell.mine ? "💣" : cell.adjacent || "" : cell.flagged ? "🚩" : ""}</button>)}</div>
     </div>
     {config.columns >= 10 ? <small className="minesweeper-scroll-hint">{tr("minesweeper.swipeTheBoardSidewaysTo")}</small> : null}
-    {editing ? <fieldset className="minesweeper-settings"><legend>{tr("minesweeper.gameSettings")}</legend>{(["rows", "columns", "mines"] as const).map((field) => <label key={field}>{field === "rows" ? tr("minesweeper.row") : field === "columns" ? tr("minesweeper.column") : tr("minesweeper.mines")}<input type="number" min={field === "mines" ? 1 : 5} max={field === "mines" ? Math.min(40, config.rows * config.columns - 1) : 12} value={config[field]} onChange={(event) => configure(field, Number(event.target.value))} /></label>)}</fieldset> : null}
+    {editing ? <fieldset className="minesweeper-settings"><legend>{tr("minesweeper.gameSettings")}</legend><div className="button-row" style={{ gridColumn: "1 / -1" }} role="group" aria-label={tr("minesweeper.difficulties")}>{difficulties.map((choice) => <button key={choice.id} type="button" className="w98-btn small" aria-pressed={config.rows === choice.rows && config.columns === choice.columns && config.mines === choice.mines} onClick={() => chooseDifficulty(choice)}>{tr(`minesweeper.${choice.id}`)}</button>)}</div>{(["rows", "columns", "mines"] as const).map((field) => <label key={field}>{field === "rows" ? tr("minesweeper.row") : field === "columns" ? tr("minesweeper.column") : tr("minesweeper.mines")}<input type="number" min={field === "mines" ? 1 : 5} max={field === "mines" ? Math.min(40, config.rows * config.columns - 1) : 12} value={config[field]} onChange={(event) => configure(field, Number(event.target.value))} /></label>)}</fieldset> : null}
   </div>;
 }
 

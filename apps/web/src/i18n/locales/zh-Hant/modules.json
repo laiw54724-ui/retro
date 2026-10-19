@@ -444,6 +444,12 @@
     "rejected": "已拒絕"
   },
   "minesweeper": {
+    "difficulties": "常用難度",
+    "beginner": "初級難度",
+    "intermediate": "中級難度",
+    "advanced": "進階難度",
+    "wonAnnouncement": "已清除所有安全格，掃雷成功。",
+    "lostAnnouncement": "踩到地雷，遊戲結束。",
     "restartThisMinesweeperGame": "重新開始這局掃雷？",
     "cleared": "🎉 完成",
     "boom": "💥 踩雷",
@@ -464,6 +470,7 @@
     "stateUnopened": "，未開啟"
   },
   "characterDialog": {
+    "removeCharacterImage": "移除角色圖片",
     "character": "角色",
     "characterPopUp": "角色彈窗",
     "characterName": "角色名稱",
