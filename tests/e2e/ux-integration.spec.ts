@@ -61,6 +61,11 @@ for (const width of [320, 390, 430]) {
       await publish.tap();
       const preflight = page.getByRole("dialog", { name: "發布 Retro Desktop", exact: true });
       await expect(preflight.getByRole("button", { name: "取消", exact: true })).toBeFocused();
+      // Inert blocks pointer/focus access; document-level history must also stay paused.
+      await page.keyboard.press("Control+z");
+      await expect(page.locator(".minesweeper-settings input").first()).toHaveValue("10");
+      await page.keyboard.press("Meta+z");
+      await expect(page.locator(".minesweeper-settings input").first()).toHaveValue("10");
       await page.keyboard.press("Escape");
       await expect(preflight).toBeHidden();
       await expect(publish).toBeFocused();

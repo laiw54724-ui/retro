@@ -331,6 +331,9 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
   useEffect(() => {
     function keydown(event: KeyboardEvent) {
+      // A modal can focus its own buttons while the editor behind it is inert.
+      // Do not let window-level shortcuts mutate that background document.
+      if (document.getElementById("root")?.hasAttribute("inert")) return;
       const target = event.target as HTMLElement | null;
       if (target?.matches("input, textarea, select, [contenteditable='true']")) return;
       const modifier = event.metaKey || event.ctrlKey;
