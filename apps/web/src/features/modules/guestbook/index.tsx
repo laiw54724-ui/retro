@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import { useLocaleFormatting } from "../../../i18n/format";
 import { api, ApiError, type GuestbookEntry, type GuestbookStatus } from "../../../lib/api";
 import type { ModuleProps } from "../types";
+import { PreviewGuestbook } from "./PreviewGuestbook";
+import { useGuestbookPreview } from "./previewContext";
 
 const statusLabel = (): Record<GuestbookStatus, string> => ({ pending: i18n.t("modules:guestbook.pending"), approved: i18n.t("modules:guestbook.public"), rejected: i18n.t("modules:guestbook.rejected") });
 
@@ -85,5 +87,11 @@ function OwnerGuestbook({ window, ctx, update }: ModuleProps<"guestbook">) {
   </div>;
 }
 
-export function GuestbookView(props: ModuleProps<"guestbook">) { return <VisitorGuestbook {...props} />; }
-export function GuestbookInlineEditor(props: ModuleProps<"guestbook">) { return <OwnerGuestbook {...props} />; }
+export function GuestbookView(props: ModuleProps<"guestbook">) {
+  const preview = useGuestbookPreview();
+  return preview ? <PreviewGuestbook window={props.window} /> : <VisitorGuestbook {...props} />;
+}
+export function GuestbookInlineEditor(props: ModuleProps<"guestbook">) {
+  const preview = useGuestbookPreview();
+  return preview ? <PreviewGuestbook window={props.window} /> : <OwnerGuestbook {...props} />;
+}

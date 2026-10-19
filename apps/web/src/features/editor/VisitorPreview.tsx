@@ -6,6 +6,7 @@ import { useThemeView } from "../../lib/themeView";
 import { useIsPhoneViewport } from "../../lib/useViewport";
 import { createPreviewNavigation } from "../site/previewNavigation";
 import { VisitorDesktop } from "../site/VisitorDesktop";
+import { GuestbookPreviewProvider } from "../modules/guestbook/previewContext";
 import { MobileScreen } from "../site/MobileScreen";
 import type { PreviewModel, ShareableEntities } from "./previewModel";
 
@@ -141,6 +142,7 @@ export function VisitorPreview({ publishable, draft, sample, username = "", site
         )}
         <button type="button" className="w98-btn primary" onClick={onClose} data-autofocus>{source === "sample" ? tr("visitorPreview.backToSamples") : tr("visitorPreview.backToEditor")}</button>
       </div>
+      <GuestbookPreviewProvider>
       <div className="preview-body">
         {view === "desktop" ? (
           <main key="desktop" className="visitor-page preview-page" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: imageWallpaper ? "center" : "0 0", backgroundRepeat: imageWallpaper ? "no-repeat" : "repeat" }}>
@@ -152,6 +154,7 @@ export function VisitorPreview({ publishable, draft, sample, username = "", site
           </div>
         )}
       </div>
+      </GuestbookPreviewProvider>
     </div>,
     globalThis.document.body
   );

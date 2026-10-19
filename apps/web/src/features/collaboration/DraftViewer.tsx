@@ -10,6 +10,7 @@ import { AssetSourceProvider } from "../../lib/assetSource";
 import type { SiteRecord } from "../../lib/api";
 import { useThemeView } from "../../lib/themeView";
 import { useIsPhoneViewport } from "../../lib/useViewport";
+import { GuestbookPreviewProvider } from "../modules/guestbook/previewContext";
 import { MobileScreen } from "../site/MobileScreen";
 import { createPreviewNavigation } from "../site/previewNavigation";
 import { VisitorDesktop } from "../site/VisitorDesktop";
@@ -55,6 +56,7 @@ function DraftViewerContent({ site, draft }: { site: SiteRecord; draft: ReturnTy
           </div>}
           <RetroButton onClick={async () => { await signOut(); navigate("/"); }}>{tr("draftViewer.signOut")}</RetroButton>
         </header>
+        <GuestbookPreviewProvider>
         <section className={"draft-viewer-body " + device} aria-label={tr("draft.preview", { device: device === "desktop" ? tr("draft.deviceDesktop") : tr("draft.deviceMobile") })}>
           {device === "desktop" ? (
             <div key="desktop" className="visitor-page draft-viewer-desktop" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: imageWallpaper ? "center" : "0 0", backgroundRepeat: imageWallpaper ? "no-repeat" : "repeat" }}>
@@ -64,6 +66,7 @@ function DraftViewerContent({ site, draft }: { site: SiteRecord; draft: ReturnTy
             <div key={phone ? "phone-plain" : "phone-simulated"} className="draft-viewer-phone"><MobileScreen document={draft.document} mode="visitor" framed={!phone} viewDrafts navigation={navigation} profiles={draft.profiles} profileIdsByWindow={draft.profileIdsByWindow} profileDirectory={draft.profileDirectory} /></div>
           )}
         </section>
+        </GuestbookPreviewProvider>
       </main>
     </AssetSourceProvider>
   );

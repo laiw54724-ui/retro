@@ -393,6 +393,13 @@
     "theImageSourceDoesntAllow": "The image source doesn't allow export"
   },
   "guestbook": {
+    "preview": {
+      "notice": "Simulated guestbook: interactions stay in this preview. No real messages are loaded and no submissions, reports or moderation actions are sent.",
+      "sampleName": "Example visitor (simulated)",
+      "sampleBody": "This is a simulated approved message.",
+      "sent": "Simulated submission for review. No message was sent or saved; pending messages do not appear in the public list.",
+      "reported": "Simulated report complete. No report was sent."
+    },
     "couldntLoadMessagesRightNow": "Couldn't load messages right now. Please try again later.",
     "theGuestbookIsntOpenYet": "The guestbook isn't open yet",
     "theSiteOwnerIsntAccepting": "The site owner isn't accepting new messages right now.",
