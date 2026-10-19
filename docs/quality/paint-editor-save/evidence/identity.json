@@ -1,0 +1,14 @@
+{
+  "base": "8e2e54241ecca4c79cb5d6190e7b4b0beb804075",
+  "runtimeCommit": "89edbe58989f0c3a058fb968f6867820f642b813",
+  "runtimeTree": "9cc7996e07d70576dda6ecacd8db8789d969cc79",
+  "branch": "codex/paint-editor-save-53",
+  "chromiumDistinctPassed": 26,
+  "unitPassed": 21,
+  "selectedSkipped": 0,
+  "independentReview": "No remaining blocker after nested leave shortcut and phone bounds fixes; reviewer ran no tests",
+  "fullIntegrationGate": "not run",
+  "webkit": "not run",
+  "native": "not run",
+  "liveAuthenticated": "not run"
+}

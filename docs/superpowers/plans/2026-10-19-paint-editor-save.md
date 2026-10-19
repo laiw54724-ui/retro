@@ -1,6 +1,6 @@
 # Paint Editor Save Implementation Plan
 
-**Goal:** Add a real editor Paint utility that saves a new PNG to an existing Gallery draft and exports locally.
+**Goal:** Add a real editor Paint utility that saves a new PNG to a new Gallery in the existing draft and exports locally.
 
 **Architecture:** Lazy Paint dialog reuses engine/workspace. Ephemeral unsaved-work registration joins the existing leave guard. Site/session validation gates upload receipts and a single existing draft transaction; no new canonical type or rollout toggle.
 
@@ -8,11 +8,11 @@
 
 ## Tasks
 
-- [ ] Add `editorLocalWork.ts` with `registerEditorLocalWork(siteId, dirty)` returning cleanup, and `hasUnsavedEditorLocalWork(siteId)`. Test site isolation, cleanup and live dirty callbacks. Query it from editorSession.hasUnsavedWork.
-- [ ] Extend PaintEngine with public revision identity and revision-aware markSaved. Extend PaintWorkspace with optional async PNG save and save labels. Capture revision before encoding, serialize requests, check mount before callbacks, and mark only the encoded revision saved. Stop handled canvas command shortcuts from reaching site history. Existing debug/local-only API stays compatible.
-- [ ] Add lazy PaintEditorEntry and PaintEditorDialog. Reuse api.uploadAsset and registry gallery factory. Validate site/role/session before/after upload, reuse receipt for identical revision, append one Gallery with one asset in one replaceDocument call, then select it. Keep canvas on error. Add close confirmation and local-work registration. Add EditorPage toolbar entry disabled by upgrade/permissions; production image flags unchanged.
-- [ ] Add scoped four-language modules.paint copy and Paint label adapter. Topmost-modal key handling must respect nested leave prompt; no generic UI redesign.
-- [ ] Run focused local-work/revision units, existing Paint operation/import interactions plus new editor save/export/session regressions. Verify320/390/desktop screenshots and one web typecheck/build as needed for production debug exclusion. Open Draft PR and obtain independent read-only review; fix concrete findings only.
+- [x] Add `editorLocalWork.ts` with `registerEditorLocalWork(siteId, dirty)` returning cleanup, and `hasUnsavedEditorLocalWork(siteId)`. Test site isolation, cleanup and live dirty callbacks. Query it from editorSession.hasUnsavedWork.
+- [x] Extend PaintEngine with public revision identity and revision-aware markSaved. Extend PaintWorkspace with optional async PNG save and save labels. Capture revision before encoding, serialize requests, check mount before callbacks, and mark only the encoded revision saved. Stop handled canvas command shortcuts from reaching site history. Existing debug/local-only API stays compatible.
+- [x] Add lazy PaintEditorEntry and PaintEditorDialog. Reuse api.uploadAsset and registry gallery factory. Validate site/role/session before/after upload, reuse receipt for identical revision, append one Gallery with one asset in one replaceDocument call, then select it. Keep canvas on error. Add close confirmation and local-work registration. Add EditorPage toolbar entry disabled by upgrade/permissions; production image flags unchanged.
+- [x] Add scoped four-language modules.paint copy and Paint label adapter. Topmost-modal key handling must respect nested leave prompt; no generic UI redesign.
+- [x] Run focused local-work/revision units, existing Paint operation/import interactions plus new editor save/export/session regressions. Verify320/390/desktop screenshots and one web typecheck/build as needed for production debug exclusion. Open Draft PR and obtain independent read-only review; fix concrete findings only.
 
 ## Open issue triage
 
