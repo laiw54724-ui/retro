@@ -1003,7 +1003,11 @@ test("published multi-page highlight pauses, supports keyboard navigation and re
 
 test("desktop visitor navigates OC directory and posts with layered back and scroll restore", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
-  await mockPublic(page, navigationDocument());
+  const document = twoWindowDocument(), writes: string[] = [];
+  document.windows.find((window) => window.id === "ig-two")!.defaultOpen = true;
+  const before = structuredClone(document);
+  page.on("request", (request) => { if (request.method() !== "GET") writes.push(request.url()); });
+  await mockPublic(page, document);
   await page.goto("/@demo");
   const win = page.getByRole("dialog", { name: "Instagram.exe" });
   const scroll = win.locator(".ig-scroll");
@@ -1049,9 +1053,17 @@ test("desktop visitor navigates OC directory and posts with layered back and scr
 
   await win.getByRole("button", { name: "所有角色" }).click();
   await win.getByRole("button", { name: "Bei Original @bei" }).click();
+  const other = page.getByRole("dialog", { name: "Other.exe", exact: true });
+  await other.getByRole("button", { name: "所有角色" }).click();
+  await other.getByRole("button", { name: "Bei Original @bei" }).click();
+  await expect(other.locator(".ig-title strong")).toHaveText("bei");
+  await other.getByRole("button", { name: "最小化", exact: true }).click();
   await win.getByRole("button", { name: "關閉" }).click();
   await page.locator(".visitor-icon").filter({ hasText: "Instagram.exe" }).click();
   await expect(page.getByRole("dialog", { name: "Instagram.exe" }).locator(".ig-title strong")).toHaveText("retro");
+  await page.locator(".visitor-taskbar .task-item").filter({ hasText: "Other.exe" }).click();
+  await expect(other.locator(".ig-title strong")).toHaveText("bei");
+  expect(writes).toEqual([]); expect(document).toEqual(before);
 });
 
 test("mobile visitor can browse the published OC directory without draft leakage or overflow", async ({ page }) => {

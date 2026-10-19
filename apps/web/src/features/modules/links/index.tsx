@@ -1,3 +1,4 @@
+import { LegacyLinkTargetButton } from "../../navigation/LegacyLinkTargetButton";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { makeLink, type LinkItem } from "@retrodesk/shared";
@@ -90,17 +91,7 @@ export function LinksInlineEditor({ window, ctx, update }: ModuleProps<"links">)
             <div id={settingsId} className="link-settings-panel" hidden={expanded !== link.id}>
               <fieldset>
                 <legend>{tr("links.destination")}</legend>
-                <div className="link-target-types">
-                  <MiniBtn label={tr("links.linkToAUrl")} className="mini-btn wide" on={link.target === "url"} aria-pressed={link.target === "url"} onClick={() => patch(link.id, { target: "url" })}>{tr("links.url")}</MiniBtn>
-                  <MiniBtn label={tr("links.linkToAnInSite")} className="mini-btn wide" on={link.target === "window"} aria-pressed={link.target === "window"} onClick={() => patch(link.id, { target: "window" })}>{tr("links.inSiteWindow")}</MiniBtn>
-                </div>
-                {link.target === "url"
-                  ? <label><span>{tr("document.linkUrl")}</span><input className="ie" value={link.url} maxLength={2048} placeholder="https://" aria-label={tr("document.linkUrl")} aria-invalid={destination.state === "invalid"} aria-describedby={feedbackId} onChange={(event) => patch(link.id, { url: event.currentTarget.value }, `url:${link.id}`)} /></label>
-                  : <label><span>{tr("links.inSiteWindow")}</span><select className="w98-select" value={link.windowId} aria-label={tr("links.inSiteWindow")} aria-invalid={destination.state === "missing"} aria-describedby={feedbackId} onChange={(event) => patch(link.id, { windowId: event.currentTarget.value })}>
-                    <option value="">{tr("links.chooseAWindow")}</option>
-                    {link.windowId && !otherWindows.some((candidate) => candidate.id === link.windowId) ? <option value={link.windowId} disabled>{link.windowId === window.id ? tr("links.currentWindow") : tr("links.deletedWindow")}</option> : null}
-                    {otherWindows.map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.title || tr("links.untitledWindow")}</option>)}
-                  </select></label>}
+                <LegacyLinkTargetButton link={link} windows={otherWindows} onApply={(change) => patch(link.id, change)} />
                 <p className="link-settings-hint">{destination.hint}</p>
               </fieldset>
               <fieldset>

@@ -63,11 +63,11 @@ function DraftViewerContent({ site, draft }: { site: SiteRecord; draft: ReturnTy
           {device === "desktop" ? (
             <DesktopPreviewViewport windows={draft.document.windows} session={desktopSession}>{(scale) => (
             <div className="visitor-page draft-viewer-desktop" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: imageWallpaper ? "center" : "0 0", backgroundRepeat: imageWallpaper ? "no-repeat" : "repeat" }}>
-              <VisitorDesktop interactionScale={scale} viewDrafts navigation={navigation} document={draft.document} profiles={draft.profiles} profileIdsByWindow={draft.profileIdsByWindow} profileDirectory={draft.profileDirectory} />
+              <VisitorDesktop navigationSiteId={site.id} interactionScale={scale} viewDrafts navigation={navigation} document={draft.document} profiles={draft.profiles} profileIdsByWindow={draft.profileIdsByWindow} profileDirectory={draft.profileDirectory} />
             </div>
             )}</DesktopPreviewViewport>
           ) : (
-            <div key={phone ? "phone-plain" : "phone-simulated"} className="draft-viewer-phone"><MobileScreen document={draft.document} mode="visitor" framed={!phone} viewDrafts navigation={navigation} profiles={draft.profiles} profileIdsByWindow={draft.profileIdsByWindow} profileDirectory={draft.profileDirectory} /></div>
+            <div key={phone ? "phone-plain" : "phone-simulated"} className="draft-viewer-phone"><MobileScreen navigationSiteId={site.id} document={draft.document} mode="visitor" framed={!phone} viewDrafts navigation={navigation} profiles={draft.profiles} profileIdsByWindow={draft.profileIdsByWindow} profileDirectory={draft.profileDirectory} /></div>
           )}
         </section>
         </GuestbookPreviewProvider>

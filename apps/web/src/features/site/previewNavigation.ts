@@ -1,3 +1,4 @@
+import type { VisitorSession } from "../navigation/useVisitorNavigation";
 /**
  * What a visitor was looking at in a preview, kept above the layout-specific renderers so a rotation (which swaps the
  * desktop, simulated-phone and plain-phone renderers) can put them back on the same app and character. In memory only:
@@ -18,6 +19,7 @@ export type PreviewIgState = { route: PreviewIgRoute; history: Array<{ route: Pr
 export type PreviewNavigation = {
   /** The app (window id) in front, or null when the visitor was on the home screen / had nothing open. */
   openId: string | null;
+  visitor?: VisitorSession;
   /** Per Instagram window: the character and screen the visitor was on. */
   ig: Record<string, PreviewIgState>;
 };

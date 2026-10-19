@@ -125,6 +125,22 @@ export const ImageCropSchema = z.object({
 });
 export type ImageCrop = z.infer<typeof ImageCropSchema>;
 
+/** Reader-first image window contract. Sources use the existing media pipeline. */
+export const ImageContentSchema = z.object({
+  src: ImageUrlSchema.nullable(),
+  srcUrl: z.string().max(2048).default(""),
+  alt: z.string().max(300).default(""),
+  caption: z.string().max(300).default(""),
+  fit: z.enum(["contain", "cover", "original"]).default("contain"),
+  crop: ImageCropSchema.strict().optional(),
+  background: z.union([z.literal("transparent"), z.literal("checker"), z.object({ color: AppearanceHexSchema }).strict()]).default("transparent"),
+  pixelated: z.boolean().default(false),
+  showCaption: z.boolean().default(true),
+  frameMode: z.enum(["none", "simple"]).default("simple"),
+  interactionMode: z.enum(["content", "decorative"]).default("content")
+}).strict();
+export type ImageContent = z.infer<typeof ImageContentSchema>;
+
 const BaseBlockSchema = z.object({ id: z.string().min(1) });
 
 export const DocumentBlockSchema = z.discriminatedUnion("kind", [
@@ -336,6 +352,7 @@ export const BaseWindowSchema = z.object({
 });
 
 export const DesktopWindowSchema = z.discriminatedUnion("type", [
+  BaseWindowSchema.extend({ type: z.literal("image"), content: ImageContentSchema }).strict(),
   BaseWindowSchema.extend({
     type: z.literal("document"),
     content: z.object({ blocks: z.array(DocumentBlockSchema).max(100) })
@@ -514,6 +531,8 @@ export function makeWindow(type: DesktopWindow["type"], index = 0): DesktopWindo
   };
 
   switch (type) {
+    case "image":
+      return { id: id(), type, title: "圖片", icon: "photo", layout, defaultOpen: true, content: ImageContentSchema.parse({ src: null }) };
     case "gallery":
       return {
         id: id(), type, title: "相簿", icon: "photo", layout: { ...layout, desktop: { ...layout.desktop, w: 420, h: 360 } }, defaultOpen: true,

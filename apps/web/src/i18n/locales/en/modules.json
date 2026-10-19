@@ -45,6 +45,39 @@
     "list": "List",
     "divider": "Divider"
   },
+  "image": {
+    "settings": "Image settings",
+    "source": "Image source",
+    "upload": "Upload image…",
+    "replace": "Replace image…",
+    "remove": "Remove image",
+    "url": "Image URL",
+    "accessibility": "Accessibility and caption",
+    "interaction": "Image role",
+    "content": "Content image",
+    "decorative": "Decorative image",
+    "alt": "Alt text",
+    "altHint": "Describe the image for screen readers.",
+    "decorativeHint": "Decorative images are skipped by screen readers. The saved alt text is kept if you switch back.",
+    "caption": "Caption",
+    "showCaption": "Show caption",
+    "placement": "Placement",
+    "fit": "Fit",
+    "contain": "Contain",
+    "cover": "Cover",
+    "original": "Original size",
+    "x": "Horizontal focus",
+    "y": "Vertical focus",
+    "zoom": "Zoom",
+    "resetCrop": "Reset crop",
+    "appearance": "Appearance",
+    "background": "Background",
+    "transparent": "Transparent",
+    "checker": "Checkerboard",
+    "solidColor": "Solid color",
+    "color": "Color",
+    "pixelated": "Pixelated rendering"
+  },
   "gallery": {
     "noImagesYet": "No images yet",
     "aGalleryCanHoldUp": "A gallery can hold up to 200 images. Remove the ones you don't need first.",
@@ -486,5 +519,12 @@
   "linkSummary": {
     "openWindow": "Opens window: {{title}}",
     "untitledWindow": "Untitled window"
+  },
+  "navigationTargets": {
+    "choose": "Choose destination…",
+    "apply": "Apply",
+    "removeTarget": "Remove destination",
+    "urlHelp": "Use a complete HTTP, HTTPS or mailto URL. Changes are saved only when you apply.",
+    "unavailable": "This destination is unavailable. Choose another target."
   }
 }

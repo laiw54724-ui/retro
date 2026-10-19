@@ -40,7 +40,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
     const history = saved.history.filter((frame) => resolves(frame.route));
     return resolves(saved.route) ? { route: saved.route, history } : { route: entryRoute, history: [] };
   })();
-  const session = useIgSession((profileId) => storyFramesFor(profileId).length, entryProfileId, `${entrySiteId}:${window.id}`, ctx.initialPostId ?? null, ctx.navigation ? { restore: restorable as never, save: (state) => { ctx.navigation!.ig[window.id] = state as never; } } : undefined);
+  const session = useIgSession((profileId) => storyFramesFor(profileId).length, entryProfileId, `${entrySiteId}:${window.id}`, ctx.initialPostId ?? null, ctx.navigation ? { restore: restorable as never, save: (state) => { ctx.navigation!.ig[window.id] = state as never; } } : undefined, ctx.navigationRequest && profileDirectory.some((entry) => entry.id === ctx.navigationRequest!.profileId && (!ctx.navigationRequest!.postId || entry.posts.some((post) => post.id === ctx.navigationRequest!.postId))) ? ctx.navigationRequest : undefined);
   const s = session;
   const [shareFallback, setShareFallback] = useState<string | null>(null);
   const shareEntity = async (kind: "oc" | "post", id: string, title: string) => {

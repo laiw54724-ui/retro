@@ -1,3 +1,4 @@
+import type { InternalDestination, NavigationRequest, NavigationResult } from "../navigation/linkDestination";
 import type { CSSProperties } from "react";
 import type { PreviewNavigation } from "./previewNavigation";
 import type { CollectionEntityV2, DesktopWindow, PostEntityV2, ProfileEntityV2, RetroTheme, SiteDocumentV2Input } from "@retrodesk/shared";
@@ -12,6 +13,9 @@ type Props = {
   /** Visitor/preview: open another window by id. */
   onOpenWindow?: (id: string) => void;
   allWindows?: DesktopWindow[];
+  onNavigate?: (target: InternalDestination, sourceId: string) => NavigationResult;
+  navigationRequest?: NavigationRequest;
+  navigationSiteId?: string | null;
   mobile?: boolean;
   /** Editor-only: render inline editors and persist edits. */
   editing?: boolean;
@@ -51,7 +55,7 @@ function openExternal(url: string) {
   }
 }
 
-export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, mobile = false, editing = false, siteId, upload, onUpdate, profiles, posts, collections, profileId, initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
+export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, onNavigate, navigationRequest, navigationSiteId, mobile = false, editing = false, siteId, upload, onUpdate, profiles, posts, collections, profileId, initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
   const tv = useThemeView(theme);
   const content = resolveContentAppearance(theme, win);
   const onLink = (action: LinkAction) => {
@@ -64,7 +68,7 @@ export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, m
   const ctx: ModuleCtx = {
     theme, tv, editing: editing && !!onUpdate, mobile, siteId,
     windows: (allWindows ?? []).map((candidate) => ({ id: candidate.id, title: candidate.title })), initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle,
-    onLink, upload, profiles, posts, collections, profileId: resolvedProfileId, profileThemeOverride,
+    onLink, onNavigate: onNavigate ? (target) => editing ? { ok: false, reason: "unavailable" } : onNavigate(target, win.id) : undefined, navigationRequest, navigationSiteId, upload, profiles, posts, collections, profileId: resolvedProfileId, profileThemeOverride,
     onProfileSelect: (id) => onProfileSelect?.(id, win.id),
     onProfileAdd: () => onProfileAdd?.(win.id),
     onProfileDuplicate: (id) => onProfileDuplicate?.(id, win.id), onProfileChange: (id, patch, key) => onProfileChange?.(id, patch, key),

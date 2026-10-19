@@ -1,0 +1,11 @@
+
+ RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01/packages/shared
+
+ ✓ test/public-projection.test.ts (5 tests) 32ms
+ ✓ test/image-window.test.ts (22 tests) 44ms
+
+ Test Files  2 passed (2)
+      Tests  27 passed (27)
+   Start at  16:24:38
+   Duration  849ms (transform 411ms, setup 0ms, collect 686ms, tests 77ms, environment 0ms, prepare 201ms)
+

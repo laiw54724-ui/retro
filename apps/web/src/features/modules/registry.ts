@@ -13,6 +13,8 @@ import { ExplorerInlineEditor, ExplorerView } from "./explorer";
 import { MinesweeperInlineEditor, MinesweeperView } from "./minesweeper";
 import { CharacterDialogInlineEditor, CharacterDialogView } from "./character-dialog";
 import { GuestbookInlineEditor, GuestbookView } from "./guestbook";
+import { ImageView, ImageInlineEditor } from "./image";
+import { canCreateWindowType } from "../../lib/imageWindowCreation";
 
 type WindowType = DesktopWindow["type"];
 type Registry = { [K in WindowType]: WindowModule<K> };
@@ -26,6 +28,7 @@ function factory<T extends WindowType>(type: T, index = 0): WindowOf<T> {
 const defaultCapabilities = { editor: true, visitor: true, mobile: true, links: true, uploads: true } as const;
 
 export const registry: Registry = {
+  image: { type: "image", schemaVersion: 1, label: "圖片", description: "單張圖片（唯讀）", icon: "photo", capabilities: { editor: false, visitor: true, mobile: true, links: false, uploads: false }, mobile: { mode: "window", icon: "photo" }, create: (index) => factory("image", index), View: ImageView, InlineEditor: ImageInlineEditor },
   document: { type: "document", schemaVersion: 1, label: "文件視窗", description: "標題、段落、圖片、按鈕、清單", icon: "doc", capabilities: defaultCapabilities, mobile: { mode: "window", icon: "doc" }, create: (index) => factory("document", index), View: DocumentView, InlineEditor: DocumentInlineEditor },
   gallery: { type: "gallery", schemaVersion: 1, label: "相簿視窗", description: "多張圖片網格，點擊放大", icon: "photo", capabilities: defaultCapabilities, mobile: { mode: "window", icon: "photo" }, create: (index) => factory("gallery", index), View: GalleryView, InlineEditor: GalleryInlineEditor },
   links: { type: "links", schemaVersion: 1, label: "連結視窗", description: "社群與外部連結按鈕", icon: "link", capabilities: defaultCapabilities, mobile: { mode: "window", icon: "link" }, create: (index) => factory("links", index), View: LinksView, InlineEditor: LinksInlineEditor },
@@ -41,6 +44,7 @@ export const registry: Registry = {
 
 // Object insertion order is the single source of truth for authoring surfaces.
 export const moduleDefinitions = Object.freeze(Object.values(registry));
+export const creatableModuleDefinitions = Object.freeze(moduleDefinitions.filter((module): module is Exclude<(typeof moduleDefinitions)[number], WindowModule<"image">> => canCreateWindowType(module.type)));
 export const WINDOW_TYPES = moduleDefinitions.map((module) => module.type) as WindowType[];
 export const COMING_SOON = ["日記", "角色檔案", "視覺小說"];
 
@@ -63,6 +67,11 @@ export type RenderModuleOptions = {
 
 export function renderModule({ window, ctx, editing, update }: RenderModuleOptions): ReactElement {
   switch (window.type) {
+    case "image": {
+      const props: ModuleProps<"image"> = { window, ctx, update: (recipe, key) => update((current) => recipe(current as WindowOf<"image">), key) };
+      // The leaf stays read-only until the writer gate; its absolute image needs a measured stage.
+      return createElement("div", { style: { height: "100%", minHeight: 180, display: "grid", gridTemplateRows: "minmax(180px, 1fr)" } }, createElement(registry.image.View, props));
+    }
     case "document": {
       const props: ModuleProps<"document"> = { window, ctx, update: (recipe, key) => update((current) => recipe(current as WindowOf<"document">), key) };
       return createElement(editing ? registry.document.InlineEditor : registry.document.View, props);

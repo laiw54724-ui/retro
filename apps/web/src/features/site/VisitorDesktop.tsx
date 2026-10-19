@@ -1,3 +1,4 @@
+import { useVisitorNavigation } from "../navigation/useVisitorNavigation";
 import { desktopPointerDelta } from "../preview/desktopPreviewGeometry";
 import { resolveDesktopLabelAppearance } from "../../lib/windowAppearance";
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
@@ -46,11 +47,15 @@ function initialRuntime(document: SiteDocument, initialOpenId?: string): Runtime
   ]));
 }
 
-export function VisitorDesktop({ document, profiles, profileIdsByWindow, profileDirectory, initialOpenId, initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle, interactionScale = 1 }: { navigation?: PreviewNavigation; viewDrafts?: boolean; canShareEntity?: (kind: "oc" | "post", id: string) => boolean; document: SiteDocument; profiles?: ProfileEntityV2[]; profileIdsByWindow?: Record<string, string>; profileDirectory?: ProfileDirectoryEntry[]; initialOpenId?: string; initialPostId?: string; publicShareBaseUrl?: string; siteHandle?: string; interactionScale?: number }) {
+export function VisitorDesktop({ document, profiles, profileIdsByWindow, profileDirectory, initialOpenId, initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle, navigationSiteId, interactionScale = 1 }: { navigation?: PreviewNavigation; viewDrafts?: boolean; canShareEntity?: (kind: "oc" | "post", id: string) => boolean; document: SiteDocument; profiles?: ProfileEntityV2[]; profileIdsByWindow?: Record<string, string>; profileDirectory?: ProfileDirectoryEntry[]; initialOpenId?: string; initialPostId?: string; publicShareBaseUrl?: string; siteHandle?: string; navigationSiteId?: string | null; interactionScale?: number }) {
   const { t: tr } = useTranslation("editor");
-  const [runtime, setRuntime] = useState<RuntimeMap>(() => initialRuntime(document, initialOpenId ?? (navigation?.openId && document.windows.some((window) => window.id === navigation.openId) ? navigation.openId : undefined)));
   const desktopRef = useRef<HTMLDivElement | null>(null);
   const gesture = useRef<Gesture | null>(null);
+  const visitor = useVisitorNavigation({ document, siteId: navigationSiteId, profileDirectory, profileIdsByWindow, navigation, onOpen: (window) => { focus(window.id, window); requestAnimationFrame(() => Array.from(globalThis.document.querySelectorAll<HTMLElement>("[data-visitor-window]")).find((node) => node.dataset.visitorWindow === window.id)?.focus()); } });
+  const [runtime, setRuntime] = useState<RuntimeMap>(() => initialRuntime(
+    { ...document, windows: visitor.windows },
+    initialOpenId ?? (navigation?.openId && visitor.windows.some((window) => window.id === navigation.openId) ? navigation.openId : undefined)
+  ));
   const tv = useThemeView(document.theme);
   const music = useMusicPlayback();
 
@@ -68,10 +73,10 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
     };
   }
 
-  function focus(id: string) {
+  function focus(id: string, opened?: DesktopWindow) {
     if (navigation) navigation.openId = id;
     setRuntime((current) => {
-      const target = current[id];
+      const target = current[id] ?? (opened ? initialRuntime({ ...document, windows: [opened] })[id] : undefined);
       if (!target) return current;
       const max = Math.max(0, ...Object.values(current).map((item) => item.z));
       if (target.z === max && target.status === "open") return current;
@@ -90,7 +95,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
   }
 
   function close(id: string) {
-    if (navigation?.openId === id) navigation.openId = null;
+    visitor.resetWindow(id);
     stopWindowMedia(id);
     setRuntime((current) => current[id] ? { ...current, [id]: { ...current[id], status: "closed", maximized: false } } : current);
   }
@@ -217,7 +222,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
         );
       })}
 
-      {document.windows.map((window) => {
+      {visitor.windows.map((window) => {
         const state = runtime[window.id];
         if (!state || state.status !== "open") return null;
 
@@ -228,6 +233,8 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
         return (
           <div
             key={window.id}
+            tabIndex={-1}
+            data-visitor-window={window.id}
             className={"visitor-window " + (state.maximized ? "maximized" : "")}
             style={style}
             onPointerDown={(event) => pointerDown(event, window)}
@@ -251,7 +258,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
               titleBarProps={{ onDoubleClick: () => toggleMaximize(window.id), style: { touchAction: "none" } }}
               style={{ height: "100%" }}
             >
-              <WindowRenderer window={window} theme={document.theme} allWindows={document.windows} onOpenWindow={openWindow} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialPostId={window.id === initialOpenId ? initialPostId : undefined} navigation={navigation} canShareEntity={canShareEntity} viewDrafts={viewDrafts} publicShareBaseUrl={publicShareBaseUrl} siteHandle={siteHandle} />
+              <WindowRenderer window={window} theme={document.theme} allWindows={visitor.windows} onOpenWindow={openWindow} onNavigate={visitor.navigate} navigationSiteId={navigationSiteId} navigationRequest={visitor.requests[window.id]} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialPostId={window.id === initialOpenId ? initialPostId : undefined} navigation={navigation} canShareEntity={canShareEntity} viewDrafts={viewDrafts} publicShareBaseUrl={publicShareBaseUrl} siteHandle={siteHandle} />
             </RetroWindow>
             {!state.maximized ? <span className="window-resize-handle" aria-hidden="true" /> : null}
           </div>
@@ -259,9 +266,9 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
       })}
 
       <DesktopTaskbar
-        document={document}
+        document={{ ...document, windows: visitor.windows }}
         visitor
-        tasks={document.windows.map((desktopWindow) => ({
+        tasks={visitor.windows.map((desktopWindow) => ({
           window: desktopWindow,
           visible: runtime[desktopWindow.id]?.status !== "closed",
           active: runtime[desktopWindow.id]?.status === "open" && runtime[desktopWindow.id]?.z === topZ,

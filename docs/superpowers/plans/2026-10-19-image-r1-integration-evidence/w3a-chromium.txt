@@ -1,0 +1,15 @@
+[WebServer] (node:30152) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 5 tests using 1 worker
+
+(node:30154) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [BABEL] Note: The code generator has deoptimised the styling of /tmp/retro-image-w3a-vite-cache/deps/react-dom_client.js?v=f1e6c355 as it exceeds the max of 500KB.
+  ✓  1 [chromium] › tests/image-w3a/image-w3a.spec.ts:38:5 › real pixels reflect contain, cover, original, crop, and transparent backing (1.5s)
+  ✓  2 [chromium] › tests/image-w3a/image-w3a.spec.ts:74:5 › GIF image element survives style-only changes and broken or empty sources show status (584ms)
+  ✓  3 [chromium] › tests/image-w3a/image-w3a.spec.ts:95:5 › visitor decoration passes input through and editor selection remains operable (479ms)
+  ✓  4 [chromium] › tests/image-w3a/image-w3a.spec.ts:109:5 › extreme images, WebP and narrow viewports stay within the host (457ms)
+  ✓  5 [chromium] › tests/image-w3a/image-w3a.spec.ts:130:5 › late protected asset result cannot replace a newer source (447ms)
+
+  5 passed (5.1s)

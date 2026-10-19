@@ -1,3 +1,4 @@
+import { LegacyLinkTargetButton } from "../navigation/LegacyLinkTargetButton";
 import { useId, useState, type ChangeEvent } from "react";
 import { translateSystemMessage } from "../../i18n/systemMessages";
 import { i18n } from "../../i18n";
@@ -151,6 +152,12 @@ function MediaUpload({ siteId, label, onUploaded, onMessage }: {
 
 export function InspectorContent({ window, allWindows, siteId, update, onMessage }: Props) {
   const { t: tr } = useTranslation("editor");
+  if (window.type === "image") {
+    return <section className="inspector-section" data-testid="image-reader-inspector">
+      <div className="section-heading"><strong>{window.title}</strong></div>
+      <p>{tr("documentCompatibility.imageReadOnly")}</p>
+    </section>;
+  }
   if (window.type === "document") {
     const blocks = window.content.blocks;
     const updateBlocks = (next: DocumentBlock[]) => update((current) => current.type === "document"
@@ -300,24 +307,7 @@ export function InspectorContent({ window, allWindows, siteId, update, onMessage
                 <input placeholder={tr("inspectorContent.iconName")} value={link.icon} onChange={(event) => updateLinks(links.map((item) => item.id === link.id ? { ...item, icon: event.target.value } : item))} />
                 <input type="color" value={link.color} onChange={(event) => updateLinks(links.map((item) => item.id === link.id ? { ...item, color: event.target.value } : item))} aria-label={tr("inspectorContent.linkColor")} />
               </div>
-              <select value={link.target} onChange={(event) => {
-                const target = event.target.value as "url" | "window";
-                updateLinks(links.map((item) => item.id === link.id ? { ...item, target, url: target === "window" ? "" : item.url, windowId: target === "url" ? "" : item.windowId } : item));
-              }}>
-                <option value="url">{tr("inspectorContent.externalUrl")}</option>
-                <option value="window">{tr("inspectorContent.inSiteWindow")}</option>
-              </select>
-              {link.target === "url" ? (
-                <>
-                  <input className={isSafeUrl(link.url) ? "" : "invalid-input"} value={link.url} onChange={(event) => updateLinks(links.map((item) => item.id === link.id ? { ...item, url: event.target.value } : item))} placeholder={tr("inspectorContent.httpsOrMailto")} />
-                  {!isSafeUrl(link.url) ? <small className="field-error">{tr("inspectorContent.onlyHttpHttpsOrMailto")}</small> : null}
-                </>
-              ) : (
-                <select value={link.windowId} onChange={(event) => updateLinks(links.map((item) => item.id === link.id ? { ...item, windowId: event.target.value } : item))}>
-                  <option value="">{tr("inspectorContent.chooseAWindow")}</option>
-                  {allWindows.filter((candidate) => candidate.id !== window.id).map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.title}</option>)}
-                </select>
-              )}
+              <LegacyLinkTargetButton link={link} windows={allWindows.filter((candidate) => candidate.id !== window.id)} onApply={(change) => updateLinks(links.map((item) => item.id === link.id ? { ...item, ...change } : item))} />
             </div>
           ))}
         </div>

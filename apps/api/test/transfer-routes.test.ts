@@ -34,7 +34,7 @@ vi.mock("../src/lib/access", () => ({
 
 const { transfer } = await import("../src/routes/transfer");
 const env = {} as never;
-const jsonRequest = (path: string, body: unknown) => transfer.request(path + (path.includes("?") ? "&" : "?") + "clientAppearanceContract=1", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }, env);
+const jsonRequest = (path: string, body: unknown) => transfer.request(path + (path.includes("?") ? "&" : "?") + "clientAppearanceContract=1&clientImageWindowContract=1", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }, env);
 
 describe("export and controlled import routes", () => {
   beforeEach(() => {
@@ -61,6 +61,35 @@ describe("export and controlled import routes", () => {
     expect(privateResponse.status).toBe(200);
     expect(privateResponse.headers.get("content-disposition")).toContain("private-backup");
     expect(await privateResponse.json()).toMatchObject({ scope: "owner-backup" });
+  });
+
+  it.each(["preview", "confirm"])("requires the independent image contract before parsing import %s, even after images were stripped", async (endpoint) => {
+    for (const marker of ["", "&clientImageWindowContract=2", "&clientImageWindowContract=01"]) {
+      const response = await transfer.request(`/imports/${endpoint}?clientAppearanceContract=1${marker}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "invalid JSON" }, env);
+      expect(response.status).toBe(426);
+      expect(await response.json()).toMatchObject({ error: { code: "client_upgrade_required" } });
+      expect(inserted).toBeNull();
+    }
+  });
+
+  it("preserves image content and private-reference warnings through preview and confirmed import", async () => {
+    const document = structuredClone(migrated.document);
+    const image = makeWindow("image"); if (image.type !== "image") throw new Error("image fixture");
+    image.content.src = "retro-asset:11111111-1111-4111-8111-111111111111";
+    image.content.srcUrl = "https://raw.example/private.png?signature=private";
+    image.content.alt = "Portrait"; document.windows.push(image);
+    const pkg = createRetroExport({ scope: "owner-backup", siteId: "site-a", username: "demo", siteName: "Image", document });
+    if (!pkg.ok) throw new Error("image export");
+    const response = await jsonRequest("/imports/preview", pkg.value);
+    expect(response.status).toBe(200);
+    const preview = await response.json() as { digest: string; preview: { missingMedia: unknown[] } };
+    expect(preview.preview.missingMedia).toHaveLength(1);
+    const url = `/imports/confirm?digest=${preview.digest}&username=image-copy&siteName=Image`;
+    expect((await jsonRequest(url, pkg.value)).status).toBe(409); expect(inserted).toBeNull();
+    expect((await jsonRequest(`${url}&allowMissingMedia=true`, pkg.value)).status).toBe(201);
+    expect(inserted?.draft_document.windows.at(-1)).toMatchObject({ type: "image", content: { src: image.content.src, srcUrl: "", alt: "Portrait", frameMode: "simple" } });
+    expect(inserted?.published_document).toBeUndefined();
+    expect(inserted).not.toHaveProperty("clientImageWindowContract");
   });
 
   it("requires an unchanged preview and creates a new remapped desktop", async () => {
@@ -121,9 +150,9 @@ describe("export and controlled import routes", () => {
   });
 
   it("rejects archives and declared oversized bodies before parsing", async () => {
-    const archive = await transfer.request("/imports/preview?clientAppearanceContract=1", { method: "POST", headers: { "Content-Type": "application/zip" }, body: "PK" }, env);
+    const archive = await transfer.request("/imports/preview?clientAppearanceContract=1&clientImageWindowContract=1", { method: "POST", headers: { "Content-Type": "application/zip" }, body: "PK" }, env);
     expect(archive.status).toBe(415);
-    const oversized = await transfer.request("/imports/preview?clientAppearanceContract=1", { method: "POST", headers: { "Content-Type": "application/json", "Content-Length": String(2 * 1024 * 1024 + 1) }, body: "{}" }, env);
+    const oversized = await transfer.request("/imports/preview?clientAppearanceContract=1&clientImageWindowContract=1", { method: "POST", headers: { "Content-Type": "application/json", "Content-Length": String(2 * 1024 * 1024 + 1) }, body: "{}" }, env);
     expect(oversized.status).toBe(413);
   });
 });

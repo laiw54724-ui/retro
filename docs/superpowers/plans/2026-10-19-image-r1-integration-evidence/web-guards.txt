@@ -1,0 +1,14 @@
+
+ RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01/apps/web
+
+ ✓ src/lib/imageCompatibility.test.ts (9 tests) 3ms
+stderr | src/features/editor/store.image.test.ts
+Retro Desktop: Supabase env vars are missing. Auth will not work until configured.
+
+ ✓ src/features/editor/store.image.test.ts (2 tests) 14ms
+
+ Test Files  2 passed (2)
+      Tests  11 passed (11)
+   Start at  16:25:22
+   Duration  1.17s (transform 575ms, setup 299ms, collect 815ms, tests 17ms, environment 0ms, prepare 105ms)
+

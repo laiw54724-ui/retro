@@ -1,4 +1,5 @@
 import { APPEARANCE_UPGRADE_MESSAGE, appearanceWriteBlocked } from "../lib/appearanceCompatibility";
+import { IMAGE_UPGRADE_MESSAGE, IMAGE_WINDOW_WRITE_CONTRACT, imageWriteBlocked } from "../lib/imageCompatibility";
 import { Hono, type Context } from "hono";
 import { buildPublicMetadata, projectPublicSiteDocument, UsernameSchema, validateSiteDocumentScope } from "@retrodesk/shared";
 import type { Env } from "../env";
@@ -99,6 +100,7 @@ sites.post("/sites", async (c) => {
   if (user instanceof Response) return user;
   const raw = await c.req.json().catch(() => null);
   if (appearanceWriteBlocked(raw?.document, undefined, raw?.clientAppearanceContract)) return jsonError(c, 426, "client_upgrade_required", APPEARANCE_UPGRADE_MESSAGE);
+  if (imageWriteBlocked(raw?.document, undefined, raw?.clientImageWindowContract)) return jsonError(c, 426, "client_upgrade_required", IMAGE_UPGRADE_MESSAGE);
   const body = CreateSiteSchema.safeParse(raw);
   if (!body.success) return jsonError(c, 400, "invalid_site", "Invalid site payload", body.error.flatten());
 
@@ -137,7 +139,7 @@ sites.get("/sites/:siteId", async (c) => {
   if (error) return jsonError(c, 500, "db_error", "Could not load site");
   if (!data) return jsonError(c, 404, "not_found", "Site not found");
   c.header("Cache-Control", "private, no-store");
-  return c.json({ site: { ...data, access_role: access.role, writeCompatibility: { appearanceP2: 1 } } });
+  return c.json({ site: { ...data, access_role: access.role, writeCompatibility: { appearanceP2: 1, imageWindow: IMAGE_WINDOW_WRITE_CONTRACT } } });
 });
 
 sites.put("/sites/:siteId/draft", async (c) => {
@@ -157,6 +159,7 @@ sites.put("/sites/:siteId/draft", async (c) => {
   // This is the same snapshot whose version is retained in the conditional update.
   // Incoming-only detection would allow an old current-version client to strip fields.
   if (appearanceWriteBlocked(raw?.document, current.draft_document, raw?.clientAppearanceContract)) return jsonError(c, 426, "client_upgrade_required", APPEARANCE_UPGRADE_MESSAGE);
+  if (imageWriteBlocked(raw?.document, current.draft_document, raw?.clientImageWindowContract)) return jsonError(c, 426, "client_upgrade_required", IMAGE_UPGRADE_MESSAGE);
   const payload = SaveDraftSchema.safeParse(raw);
   if (!payload.success) return jsonError(c, 400, "invalid_draft", "Invalid draft payload", payload.error.flatten());
   const scopeDiagnostics = validateSiteDocumentScope(payload.data.document, current.id);
@@ -280,9 +283,12 @@ async function syncCommittedPublication(
   let artifactKey: string;
   try { artifactKey = publishedArtifactKey(input.username, input.version); }
   catch { return { artifactStatus: "failed", retryable: true, artifactKey: "", error: "Invalid publication storage identity" }; }
-  const promoted = await promotePublishedAssets(env, input);
+  const projection = projectPublicSiteDocument(input.document, input.siteId);
+  if (!projection.ok) return { artifactStatus: "failed", retryable: true, artifactKey, error: "Invalid public document" };
+  const publicInput = { ...input, document: projection.document };
+  const promoted = await promotePublishedAssets(env, publicInput);
   if (!promoted.ok) return { artifactStatus: "failed", retryable: true, artifactKey, error: promoted.message };
-  return writePublishedArtifact(env, input);
+  return writePublishedArtifact(env, publicInput);
 }
 
 sites.get("/public/sites/:username", async (c) => {
@@ -291,15 +297,17 @@ sites.get("/public/sites/:username", async (c) => {
   const supabase = serviceClient(c.env);
   const { data, error } = await supabase
     .from("sites")
-    .select("username,published_document,published_version,published_at")
+    .select("id,username,published_document,published_version,published_at")
     .eq("username", parsed.data)
     .not("published_document", "is", null)
     .maybeSingle();
   if (error) return jsonError(c, 500, "db_error", "Could not load published site");
   if (!data?.published_document) return jsonError(c, 404, "not_found", "Site not found");
   c.header("Cache-Control", "no-store");
-  // site_name follows autosave; public names belong to the stored publication.
-  return c.json({ site: { ...data, site_name: data.published_document.siteName } });
+  const projection = projectPublicSiteDocument(data.published_document, data.id);
+  if (!projection.ok) return jsonError(c, 500, "invalid_public_document", "Published document is invalid");
+  // Re-project stored publications as well as new writes; raw authoring text is private.
+  return c.json({ site: { username: data.username, published_document: projection.document, published_version: data.published_version, published_at: data.published_at, site_name: projection.document.siteName } });
 });
 
 sites.get("/public/sites/:username/metadata", async (c) => {

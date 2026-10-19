@@ -45,6 +45,39 @@
     "list": "목록",
     "divider": "구분선"
   },
+  "image": {
+    "settings": "이미지 설정",
+    "source": "이미지 소스",
+    "upload": "이미지 업로드…",
+    "replace": "이미지 바꾸기…",
+    "remove": "이미지 제거",
+    "url": "이미지 URL",
+    "accessibility": "접근성과 설명",
+    "interaction": "이미지 역할",
+    "content": "콘텐츠 이미지",
+    "decorative": "장식 이미지",
+    "alt": "대체 텍스트",
+    "altHint": "화면 낭독기를 위해 이미지를 설명하세요.",
+    "decorativeHint": "장식 이미지는 화면 낭독기에서 건너뜁니다. 콘텐츠 이미지로 되돌리면 대체 텍스트가 유지됩니다.",
+    "caption": "설명",
+    "showCaption": "설명 표시",
+    "placement": "배치",
+    "fit": "맞춤",
+    "contain": "전체 표시",
+    "cover": "채우기",
+    "original": "원본 크기",
+    "x": "가로 초점",
+    "y": "세로 초점",
+    "zoom": "확대",
+    "resetCrop": "자르기 초기화",
+    "appearance": "모양",
+    "background": "배경",
+    "transparent": "투명",
+    "checker": "체커보드",
+    "solidColor": "단색",
+    "color": "색상",
+    "pixelated": "픽셀 렌더링"
+  },
   "gallery": {
     "noImagesYet": "아직 이미지가 없습니다",
     "aGalleryCanHoldUp": "갤러리에는 이미지를 최대 200장까지 넣을 수 있습니다. 필요 없는 이미지를 먼저 삭제하세요.",
@@ -486,5 +519,12 @@
   "linkSummary": {
     "openWindow": "창 열기: {{title}}",
     "untitledWindow": "제목 없는 창"
+  },
+  "navigationTargets": {
+    "choose": "이동 대상 선택…",
+    "apply": "적용",
+    "removeTarget": "이동 대상 제거",
+    "urlHelp": "전체 HTTP, HTTPS 또는 mailto URL을 입력하세요. 적용할 때만 변경 사항이 저장됩니다.",
+    "unavailable": "이동 대상을 사용할 수 없습니다. 다른 대상을 선택하세요."
   }
 }

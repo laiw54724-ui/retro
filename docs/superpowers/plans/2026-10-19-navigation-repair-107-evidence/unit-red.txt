@@ -1,0 +1,58 @@
+
+ RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01/apps/web
+
+ ❯ src/features/navigation/useVisitorNavigation.test.ts (3 tests | 3 failed) 5ms
+   × explicit visitor window close > resets only the closed window's restoration/request/return state without changing source or other sessions 4ms
+     → (0 , resetVisitorWindow) is not a function
+   × explicit visitor window close > keeps another active window and tolerates repeated closes 0ms
+     → (0 , resetVisitorWindow) is not a function
+   × explicit visitor window close > also clears a local shell request without requiring shared layout state 0ms
+     → (0 , resetVisitorWindow) is not a function
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/navigation/useVisitorNavigation.test.ts > explicit visitor window close > resets only the closed window's restoration/request/return state without changing source or other sessions
+TypeError: (0 , resetVisitorWindow) is not a function
+ ❯ src/features/navigation/useVisitorNavigation.test.ts:32:5
+     30|     const otherRoute = navigation.ig.other, otherRequest = session.req…
+     31|     const retainedReturn = session.returns[2];
+     32|     resetVisitorWindow(session, "closing", navigation);
+       |     ^
+     33|     expect(navigation.openId).toBeNull();
+     34|     expect(navigation.ig).not.toHaveProperty("closing");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/features/navigation/useVisitorNavigation.test.ts > explicit visitor window close > keeps another active window and tolerates repeated closes
+TypeError: (0 , resetVisitorWindow) is not a function
+ ❯ src/features/navigation/useVisitorNavigation.test.ts:47:5
+     45|     const { session, navigation } = fixture(); navigation.openId = "ot…
+     46|     const otherRoute = navigation.ig.other;
+     47|     resetVisitorWindow(session, "closing", navigation);
+       |     ^
+     48|     resetVisitorWindow(session, "closing", navigation);
+     49|     expect(navigation.openId).toBe("other"); expect(navigation.ig.othe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/features/navigation/useVisitorNavigation.test.ts > explicit visitor window close > also clears a local shell request without requiring shared layout state
+TypeError: (0 , resetVisitorWindow) is not a function
+ ❯ src/features/navigation/useVisitorNavigation.test.ts:54:5
+     52|   it("also clears a local shell request without requiring shared layou…
+     53|     const { source, session } = fixture();
+     54|     resetVisitorWindow(session, "closing");
+       |     ^
+     55|     expect(session.requests).not.toHaveProperty("closing");
+     56|     expect(session.requests.other.profileId).toBe("other-profile");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  17:02:47
+   Duration  661ms (transform 242ms, setup 193ms, collect 231ms, tests 5ms, environment 0ms, prepare 55ms)
+
+undefined
+/Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01/apps/web:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run src/features/navigation/useVisitorNavigation.test.ts

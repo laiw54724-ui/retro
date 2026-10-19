@@ -1,0 +1,13 @@
+[WebServer] (node:30443) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:30445) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [BABEL] Note: The code generator has deoptimised the styling of /tmp/retro-image-w3b-vite-cache/deps/react-dom_client.js?v=75f279b7 as it exceeds the max of 500KB.
+  ✓  1 [chromium] › tests/image-w3b/image-w3b.spec.ts:17:5 › image controls update the reader and preserve alt while decorative (1.6s)
+  ✓  2 [chromium] › tests/image-w3b/image-w3b.spec.ts:36:5 › fit, crop, background, pixel rendering, and undo are real leaf edits (725ms)
+  ✓  3 [chromium] › tests/image-w3b/image-w3b.spec.ts:61:5 › source URL commits and removes in disposable host (507ms)
+
+  3 passed (3.9s)

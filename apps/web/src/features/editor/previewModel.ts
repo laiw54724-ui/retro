@@ -24,6 +24,7 @@ export type PreviewSource = "sample" | "draft" | "publishable" | "published";
 
 export type PreviewModel = {
   source: PreviewSource;
+  siteId: string | null;
   /** Legacy render document the layout renderers consume. */
   document: SiteDocument;
   profiles: ProfileEntityV2[];
@@ -41,7 +42,7 @@ const profileIdsByWindow = (document: SiteDocumentV2): Record<string, string> =>
 );
 
 export function buildSampleModel(document: SiteDocument): PreviewModel {
-  return { source: "sample", document, profiles: [], profileIdsByWindow: {}, profileDirectory: [] };
+  return { source: "sample", siteId: null, document, profiles: [], profileIdsByWindow: {}, profileDirectory: [] };
 }
 
 /** Returns null when the document cannot be read or projected (the caller shows nothing rather than guessing). */
@@ -49,7 +50,7 @@ export function buildPreviewModel(source: Exclude<PreviewSource, "sample">, raw:
   const publicView = source !== "draft";
   const loaded = loadVersionedSiteDocument(raw, { siteId, migrateV1: !publicView });
   if (!loaded.ok) return null;
-  if (loaded.version === 1) return { source, document: normalizeDocument(loaded.document), profiles: [], profileIdsByWindow: {}, profileDirectory: [] };
+  if (loaded.version === 1) return { source, siteId, document: normalizeDocument(loaded.document), profiles: [], profileIdsByWindow: {}, profileDirectory: [] };
 
   let v2: SiteDocumentV2 = loaded.document as SiteDocumentV2;
   if (publicView) {
@@ -61,6 +62,7 @@ export function buildPreviewModel(source: Exclude<PreviewSource, "sample">, raw:
   if (!legacy.ok) return null;
   return {
     source,
+    siteId,
     document: legacy.document,
     profiles: parsedProfiles(v2),
     profileIdsByWindow: profileIdsByWindow(v2),

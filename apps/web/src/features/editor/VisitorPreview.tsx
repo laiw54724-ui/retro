@@ -148,12 +148,12 @@ export function VisitorPreview({ publishable, draft, sample, username = "", site
         {view === "desktop" ? (
           <DesktopPreviewViewport key={source} windows={model.document.windows} session={desktopSessions[source]}>{(scale) => (
           <main className="visitor-page preview-page" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: imageWallpaper ? "center" : "0 0", backgroundRepeat: imageWallpaper ? "no-repeat" : "repeat" }}>
-            <VisitorDesktop key={source} interactionScale={scale} document={model.document} profiles={model.profiles} profileIdsByWindow={model.profileIdsByWindow} profileDirectory={model.profileDirectory} navigation={navigation} {...sharing} />
+            <VisitorDesktop navigationSiteId={model.siteId} key={source} interactionScale={scale} document={model.document} profiles={model.profiles} profileIdsByWindow={model.profileIdsByWindow} profileDirectory={model.profileDirectory} navigation={navigation} {...sharing} />
           </main>
           )}</DesktopPreviewViewport>
         ) : (
           <div key={phone ? "phone-plain" : "phone-simulated"} className={phone ? "preview-phone-real" : "preview-phone"}>
-            <MobileScreen key={source} document={model.document} mode="visitor" framed={!phone} profiles={model.profiles} profileIdsByWindow={model.profileIdsByWindow} profileDirectory={model.profileDirectory} navigation={navigation} {...sharing} />
+            <MobileScreen navigationSiteId={model.siteId} key={source} document={model.document} mode="visitor" framed={!phone} profiles={model.profiles} profileIdsByWindow={model.profileIdsByWindow} profileDirectory={model.profileDirectory} navigation={navigation} {...sharing} />
           </div>
         )}
       </div>
