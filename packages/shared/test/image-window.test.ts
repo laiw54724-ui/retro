@@ -61,6 +61,15 @@ describe("strict image window reader contract", () => {
     expect(result.document.entities.profiles).toEqual([]);
     expect(document).toEqual(before);
   });
+  it.each([1, 2])("clears raw image authoring text from v%s public documents without changing the owner draft", (version) => {
+    const document = version === 1 ? imageDocument() : canonical();
+    const before = structuredClone(document);
+    const result = projectPublicSiteDocument(document, "site-a");
+    if (!result.ok) throw new Error("public projection");
+    expect(result.document.windows.at(-1)).toMatchObject({ type: "image", content: { src: asset, srcUrl: "", alt: "Character portrait", caption: "Original artwork" } });
+    expect(JSON.stringify(result.document)).not.toContain("signature=private");
+    expect(document).toEqual(before);
+  });
   it("warns for content images without alt but accepts explicitly decorative empty alt", () => {
     const document = imageDocument(), image = document.windows.at(-1)!;
     if (image.type !== "image") throw new Error("image");

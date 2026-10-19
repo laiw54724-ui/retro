@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Hono } from "hono";
-import { createStarterDocument } from "@retrodesk/shared";
+import { createStarterDocument, makeWindow, migrateSiteDocumentV2 } from "@retrodesk/shared";
 import { publicationAssetStageKey } from "../src/lib/publish";
 
 type Row = Record<string, any>;
@@ -19,6 +19,7 @@ vi.mock("../src/lib/supabase", () => ({
       const query: any = {
         select: () => query,
         eq: (key: string, value: unknown) => { filters.push([key, value]); return query; },
+        not: () => query,
         in: (_key: string, ids: string[]) => Promise.resolve({ data: state.assets.filter((row) => ids.includes(row.id)), error: null }),
         update: (value: Row) => { changes = value; return query; },
         maybeSingle: async () => {
@@ -110,6 +111,58 @@ beforeEach(() => {
 });
 
 describe("publication commit and asset visibility", () => {
+  it.each([1, 2])("publishes and serves v%s images without leaking raw srcUrl while preserving the owner draft", async (version) => {
+    const draft = fixture(0), image = makeWindow("image");
+    if (image.type !== "image") throw new Error("image fixture");
+    image.content.src = `retro-asset:${ids[0]}`;
+    image.content.srcUrl = "https://private.example/portrait?signature=author-secret";
+    image.content.alt = "Published portrait";
+    draft.windows.push(image);
+    const migrated = migrateSiteDocumentV2(draft, { siteId: "site-a" });
+    if (!migrated.ok) throw new Error("migration fixture");
+    state.site.draft_document = version === 1 ? draft : migrated.document;
+    const before = structuredClone(state.site.draft_document);
+    const response = await publish();
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ artifactStatus: "synced" });
+    const expected = { type: "image", content: { src: `${base}/${publicKey(0)}`, srcUrl: "", alt: "Published portrait" } };
+    expect(state.versions[0].document.windows.at(-1)).toMatchObject(expected);
+    const artifact = new TextDecoder().decode(objects.get("published/demo/versions/1/site.json")!.bytes);
+    expect(artifact).not.toContain("author-secret");
+    expect(JSON.parse(artifact).document.windows.at(-1)).toMatchObject(expected);
+    const publicResponse = await app.request("/api/public/sites/demo", {}, env);
+    expect(publicResponse.status).toBe(200);
+    const publicBody = await publicResponse.text();
+    expect(publicBody).not.toContain("author-secret");
+    expect(JSON.parse(publicBody).site.published_document.windows.at(-1)).toMatchObject(expected);
+    expect(state.site.draft_document).toEqual(before);
+    const owner = await app.request("/api/sites/site-a", {}, env);
+    expect(owner.status).toBe(200);
+    expect((await owner.json() as any).site.draft_document.windows.at(-1).content.srcUrl).toBe(image.content.srcUrl);
+  });
+
+  it.each([1, 2])("sanitizes legacy stored v%s image JSON on public reads and artifact retries", async (version) => {
+    const draft = fixture(0), image = makeWindow("image");
+    if (image.type !== "image") throw new Error("image fixture");
+    image.content.src = "https://public.example/portrait.png";
+    image.content.srcUrl = "arbitrary private authoring text";
+    draft.windows.push(image);
+    const migrated = migrateSiteDocumentV2(draft, { siteId: "site-a" });
+    if (!migrated.ok) throw new Error("migration fixture");
+    state.site.published_document = version === 1 ? draft : migrated.document;
+    state.site.published_version = 1;
+    state.site.published_at = "2026-10-19T00:00:00.000Z";
+    const before = structuredClone(state.site.published_document);
+    const response = await app.request("/api/public/sites/demo", {}, env);
+    expect(response.status).toBe(200);
+    expect(await response.text()).not.toContain(image.content.srcUrl);
+    expect((await retry()).status).toBe(200);
+    const artifact = new TextDecoder().decode(objects.get("published/demo/versions/1/site.json")!.bytes);
+    expect(artifact).not.toContain(image.content.srcUrl);
+    expect(JSON.parse(artifact).document.windows.at(-1).content.src).toBe(image.content.src);
+    expect(state.site.published_document).toEqual(before);
+  });
+
   it("keeps partial staging private when the second storage write fails", async () => {
     beforePut = (key) => { if (key === stageKey(1)) throw new Error("synthetic storage failure"); };
     expect((await publish()).status).toBe(502);

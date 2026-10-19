@@ -283,9 +283,12 @@ async function syncCommittedPublication(
   let artifactKey: string;
   try { artifactKey = publishedArtifactKey(input.username, input.version); }
   catch { return { artifactStatus: "failed", retryable: true, artifactKey: "", error: "Invalid publication storage identity" }; }
-  const promoted = await promotePublishedAssets(env, input);
+  const projection = projectPublicSiteDocument(input.document, input.siteId);
+  if (!projection.ok) return { artifactStatus: "failed", retryable: true, artifactKey, error: "Invalid public document" };
+  const publicInput = { ...input, document: projection.document };
+  const promoted = await promotePublishedAssets(env, publicInput);
   if (!promoted.ok) return { artifactStatus: "failed", retryable: true, artifactKey, error: promoted.message };
-  return writePublishedArtifact(env, input);
+  return writePublishedArtifact(env, publicInput);
 }
 
 sites.get("/public/sites/:username", async (c) => {
@@ -294,15 +297,17 @@ sites.get("/public/sites/:username", async (c) => {
   const supabase = serviceClient(c.env);
   const { data, error } = await supabase
     .from("sites")
-    .select("username,published_document,published_version,published_at")
+    .select("id,username,published_document,published_version,published_at")
     .eq("username", parsed.data)
     .not("published_document", "is", null)
     .maybeSingle();
   if (error) return jsonError(c, 500, "db_error", "Could not load published site");
   if (!data?.published_document) return jsonError(c, 404, "not_found", "Site not found");
   c.header("Cache-Control", "no-store");
-  // site_name follows autosave; public names belong to the stored publication.
-  return c.json({ site: { ...data, site_name: data.published_document.siteName } });
+  const projection = projectPublicSiteDocument(data.published_document, data.id);
+  if (!projection.ok) return jsonError(c, 500, "invalid_public_document", "Published document is invalid");
+  // Re-project stored publications as well as new writes; raw authoring text is private.
+  return c.json({ site: { username: data.username, published_document: projection.document, published_version: data.published_version, published_at: data.published_at, site_name: projection.document.siteName } });
 });
 
 sites.get("/public/sites/:username/metadata", async (c) => {

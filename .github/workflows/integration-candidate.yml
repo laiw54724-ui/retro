@@ -90,6 +90,11 @@ jobs:
           set -euo pipefail
           pnpm exec playwright test --config=playwright.image-w3a.config.ts 2>&1 | tee .candidate-evidence/image-w3a.log
 
+      - name: Image W3b isolated Chromium fixtures
+        run: |
+          set -euo pipefail
+          pnpm exec playwright test --config=playwright.image-w3b.config.ts 2>&1 | tee .candidate-evidence/image-w3b.log
+
       - name: Confirm unchanged source
         env:
           EXPECTED_SHA: ${{ github.sha }}

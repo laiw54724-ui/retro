@@ -1,3 +1,4 @@
+import { createStarterDocument } from "@retrodesk/shared";
 import { describe, expect, it, vi } from "vitest";
 
 function fakeQuery() {
@@ -7,9 +8,10 @@ function fakeQuery() {
     not: () => query,
     maybeSingle: async () => ({
       data: {
+        id: "site-a",
         username: "demo",
         site_name: "Demo",
-        published_document: { schemaVersion: 1 },
+        published_document: createStarterDocument("Demo", "classic98", "card"),
         published_version: 2,
         published_at: "2026-10-16T00:00:00.000Z"
       },

@@ -22,7 +22,12 @@ export function projectPublicSiteDocument(raw: unknown, currentSiteId: string): 
       ? { ok: false, code: "invalid", diagnostics: parsed.diagnostics }
       : parsed;
   }
-  if (parsed.version === 1) return { ok: true, version: 1, document: parsed.document };
+  if (parsed.version === 1) return {
+    ok: true, version: 1,
+    document: { ...parsed.document, windows: parsed.document.windows.map((window) => window.type === "image"
+      ? { ...window, content: { ...window.content, srcUrl: "" } }
+      : window) }
+  };
 
   const document = projectV2(parsed.document, currentSiteId);
   const validated = parseSiteDocument(document);
@@ -58,6 +63,8 @@ function projectV2(document: SiteDocumentV2, currentSiteId: string): SiteDocumen
   const retainedWindowIds = new Set(retainedWindows.map((window) => window.id));
   const windows = retainedWindows
     .map((window) => {
+      // Raw image URL input belongs to the owner draft, never to public JSON.
+      if (window.type === "image") return { ...window, content: { ...window.content, srcUrl: "" } };
       if (window.type === "music") return {
         ...window,
         content: {
