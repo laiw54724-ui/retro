@@ -45,6 +45,8 @@ export function GalleryInlineEditor({ window, ctx, update }: ModuleProps<"galler
   const [activeId, setActiveId] = useState<string | null>(null);
   const [url, setUrl] = useState("");
   const [urlError, setUrlError] = useState("");
+  const editor = useRef<HTMLDivElement>(null);
+  const composingUrl = useRef(false);
   const images = window.content.images;
   const selected = images.find((image) => image.id === activeId) ?? images[0];
   const selectedIndex = selected ? images.findIndex((image) => image.id === selected.id) : -1;
@@ -93,8 +95,18 @@ export function GalleryInlineEditor({ window, ctx, update }: ModuleProps<"galler
     setUrlError("");
   }
 
+  function deleteSelected() {
+    if (!selected) return;
+    const neighbor = images[selectedIndex + 1] ?? images[selectedIndex - 1];
+    setImages((list) => list.filter((item) => item.id !== selected.id));
+    setActiveId(neighbor?.id ?? null);
+    restoreFocusUnlessMoved(() =>
+      Array.from(editor.current?.querySelectorAll<HTMLButtonElement>("[data-image-id]") ?? []).find((image) => image.dataset.imageId === neighbor?.id)
+      ?? editor.current?.querySelector<HTMLInputElement>(".gal-add-url input"));
+  }
+
   return (
-    <div className="gal-wrap editing gal-editor">
+    <div ref={editor} className="gal-wrap editing gal-editor">
       <div className="ie-row gal-editor-toolbar">
         <span>{tr("gallery.countOfMax", { count: images.length })}</span>
         <span className="w98-hint">{tr("gallery.displayColumns")}</span>
@@ -102,7 +114,11 @@ export function GalleryInlineEditor({ window, ctx, update }: ModuleProps<"galler
         <FilePick multiple disabled={images.length >= 200} onFiles={addFiles}><b>{tr("gallery.uploadImagesMultipleAllowed")}</b></FilePick>
       </div>
       <div className="ie-row gal-add-url">
-        <input className="w98-input small-input" value={url} maxLength={2048} placeholder={tr("gallery.pasteAnImageUrlTo")} aria-label={tr("gallery.addImageUrl")} onChange={(event) => { setUrl(event.target.value); setUrlError(""); }} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addUrl(); } }} />
+        <input className="w98-input small-input" value={url} maxLength={2048} placeholder={tr("gallery.pasteAnImageUrlTo")} aria-label={tr("gallery.addImageUrl")} onChange={(event) => { setUrl(event.target.value); setUrlError(""); }} onCompositionStart={() => { composingUrl.current = true; }} onCompositionEnd={() => { composingUrl.current = false; }} onKeyDown={(event) => {
+          if (event.key !== "Enter" || composingUrl.current || event.nativeEvent.isComposing || event.keyCode === 229) return;
+          event.preventDefault();
+          addUrl();
+        }} />
         <MiniBtn label={tr("gallery.add")} className="mini-btn wide" disabled={images.length >= 200} onClick={addUrl}>{tr("gallery.add")}</MiniBtn>
       </div>
       <span className="w98-hint">{tr("gallery.publicGoogleDriveImageLinks")}</span>
@@ -112,7 +128,7 @@ export function GalleryInlineEditor({ window, ctx, update }: ModuleProps<"galler
         <div className="gal-editor-workspace">
           <div className="gal-editor-list" role="group" aria-label={tr("gallery.galleryThumbnails")}>
             {images.map((image, index) => (
-              <button type="button" key={image.id} className="gal-editor-thumb" aria-label={tr("gallery.selectImage", { n: index + 1, title: image.title || tr("gallery.untitledImage") })} aria-pressed={selected?.id === image.id} onClick={() => setActiveId(image.id)}>
+              <button type="button" key={image.id} data-image-id={image.id} className="gal-editor-thumb" aria-label={tr("gallery.selectImage", { n: index + 1, title: image.title || tr("gallery.untitledImage") })} aria-pressed={selected?.id === image.id} onClick={() => setActiveId(image.id)}>
                 <span className="gal-thumb" style={{ boxShadow: tv.sunken }}>
                   {image.src ? <SafeImg src={image.src} alt="" compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : <span className="ph gal-ph" />}
                 </span>
@@ -126,7 +142,7 @@ export function GalleryInlineEditor({ window, ctx, update }: ModuleProps<"galler
                 <strong>{tr("gallery.imageProperties", { n: selectedIndex + 1 })}</strong>
                 <MiniBtn label={tr("gallery.moveUp")} disabled={selectedIndex === 0} onClick={() => setImages((list) => moveById(list, selected.id, -1))}>◀</MiniBtn>
                 <MiniBtn label={tr("gallery.moveDown")} disabled={selectedIndex === images.length - 1} onClick={() => setImages((list) => moveById(list, selected.id, 1))}>▶</MiniBtn>
-                <MiniBtn label={tr("gallery.deleteImage")} danger onClick={() => setImages((list) => list.filter((item) => item.id !== selected.id))}>×</MiniBtn>
+                <MiniBtn label={tr("gallery.deleteImage")} danger onClick={deleteSelected}>×</MiniBtn>
               </div>
               <label>{tr("gallery.imageTitle")}<input className="ie small" maxLength={200} value={selected.title} placeholder={tr("gallery.imageTitle")} onChange={(event) => patch(selected.id, { title: event.target.value }, historyKey("title", selected.id))} /></label>
               <label>{tr("document.caption")}<textarea className="ie small" rows={2} maxLength={1000} value={selected.caption} aria-label={tr("document.caption")} placeholder={tr("gallery.shownBelowTheEnlargedImage")} onChange={(event) => patch(selected.id, { caption: event.target.value }, historyKey("caption", selected.id))} /></label>

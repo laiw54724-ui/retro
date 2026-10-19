@@ -5,7 +5,9 @@ import { PLATFORM_LABELS, type MusicTrack } from "@retrodesk/shared";
 import { FilePick, ImageUrlField, MiniBtn, SafeImg } from "../ui";
 import { moveById, type ModuleProps } from "../types";
 import { musicPlayback, useMusicPlayback } from "./audioCoordinator";
-import { embedSession, playNative, playResolvedNative } from "./mediaSession";
+import { embedSession, playNative, playResolvedNative, useStopMediaOnResize } from "./mediaSession";
+import { VideoPlayer } from "./VideoPlayer";
+import { isVideoFileUrl } from "./sourceClassifier";
 import { ProviderPlayer } from "./ProviderPlayer";
 import { TrackSourceField } from "./TrackSourceField";
 import { explainPlaybackFailure, insightForUrl } from "./sourceInsight";
@@ -48,6 +50,7 @@ function orderedTracks(window: ModuleProps<"music">["window"]): MusicTrack[] {
 
 export function MusicView({ window, ctx }: ModuleProps<"music">) {
   const { t: tr } = useTranslation("music");
+  useStopMediaOnResize(window.id);
   const tracks = useMemo(() => orderedTracks(window), [window]);
   const playback = useMusicPlayback();
   const activeForWindow = playback.windowId === window.id;
@@ -61,6 +64,7 @@ export function MusicView({ window, ctx }: ModuleProps<"music">) {
   const nativeBlocked = !!selectedInsight?.isPlatformPage;
   const playbackUrl = selected?.source.kind === "audioUrl" && !nativeBlocked ? selected.source.url : selected?.source.kind === "uploadedAudio" ? resolvedUploadedSource : null;
   const sourceLink = selected ? openableUrl(selected.source) : null;
+  const selectedVideo = selected?.source.kind === "audioUrl" && isVideoFileUrl(selected.source.url);
 
   useEffect(() => {
     if (activeForWindow && !tracks.some((track) => track.id === playback.trackId)) musicPlayback.stopWindow(window.id);
@@ -89,7 +93,7 @@ export function MusicView({ window, ctx }: ModuleProps<"music">) {
   const selectAndPlay = async (next: MusicTrack) => {
     stopCurrentFor(next);
     setSelectedId(next.id);
-    if (next.source.kind === "audioUrl" && !insightForUrl(next.source.url).isPlatformPage && playableUrl(next.source.url)) void playNative(window.id, next.id, next.source.url);
+    if (next.source.kind === "audioUrl" && !insightForUrl(next.source.url).isPlatformPage && !isVideoFileUrl(next.source.url) && playableUrl(next.source.url)) void playNative(window.id, next.id, next.source.url);
     else if (next.source.kind === "uploadedAudio") {
       const asset = next.source.asset;
       void playResolvedNative(window.id, next.id, async () => resolveAsset ? resolveAsset(asset) : asset);
@@ -115,9 +119,11 @@ export function MusicView({ window, ctx }: ModuleProps<"music">) {
         <ProviderPlayer source={selected.source} title={selected.title} windowId={window.id} trackId={selected.id} onOpenOriginal={openOriginal} />
       ) : null}
 
+      {selectedVideo && selected.source.kind === "audioUrl" ? <VideoPlayer key={`${selected.id}-${selected.source.url}`} url={selected.source.url} title={selected.title} windowId={window.id} trackId={selected.id} onOpenOriginal={openOriginal} /> : null}
+
       <div className="music-controls" role="group" aria-label={tr("music.playbackControls")}>
         <button type="button" className="w98-btn music-control" aria-label={tr("music.previous")} onClick={previous}>|◀</button>
-        {selected.source.kind === "providerEmbed" ? null : !canOpenSelected ? (
+        {selected.source.kind === "providerEmbed" || selectedVideo ? null : !canOpenSelected ? (
           <button
             type="button"
             className="w98-btn music-control music-play"
@@ -133,7 +139,7 @@ export function MusicView({ window, ctx }: ModuleProps<"music">) {
 
       {nativeBlocked && selectedInsight?.platformLabel ? <div role="note" className="music-notice">{tr("music.webLinkNote", { platform: selectedInsight.platformLabel })}</div> : null}
 
-      {selected.source.kind !== "providerEmbed" ? (
+      {selected.source.kind !== "providerEmbed" && !selectedVideo ? (
         <div className="music-runtime">
           {activeForWindow && playback.trackId === selected.id && playback.canSeek && playback.duration !== null ? (
             <label className="music-progress"><span className="sr-only">{tr("music.playbackProgress")}</span><input type="range" min={0} max={playback.duration} step={1} value={Math.min(playback.currentTime, playback.duration)} onChange={(event) => musicPlayback.seek(window.id, Number(event.target.value))} /><small>{formatTime(playback.currentTime)} / {formatTime(playback.duration)}</small></label>
@@ -142,7 +148,7 @@ export function MusicView({ window, ctx }: ModuleProps<"music">) {
         </div>
       ) : null}
 
-      {failedTrack ? (
+      {failedTrack && !selectedVideo ? (
         <div role="alert" className="music-error">
           <strong>{tr("music.cannotPlay", { title: failedTrack.title || tr("music.untitledTrackLabel") })}</strong>
           <span>{explainPlaybackFailure(playback.url, playback.error)}</span>
@@ -180,6 +186,7 @@ function UploadedAudioPreview({ windowId, trackId, source, previewing, loading }
 
 export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">) {
   const { t: tr } = useTranslation("music");
+  useStopMediaOnResize(window.id);
   const tracks = orderedTracks(window);
   const playback = useMusicPlayback();
   const setTracks = (recipe: (tracks: MusicTrack[]) => MusicTrack[], key?: string) => update((current) => {
@@ -258,8 +265,8 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
               resourceName={(type) => resourceLabel()[type]}
             />
 
-            {track.source.kind === "audioUrl" ? <button type="button" className="w98-btn music-preview" disabled={!playableUrl(directUrl) || platformBlocked || playback.status === "loading" && playback.trackId === track.id} onClick={() => previewing ? musicPlayback.pause(window.id) : directUrl ? void playNative(window.id, track.id, directUrl) : undefined}>{previewing ? tr("music.stopPreview") : tr("music.preview")}</button> : track.source.kind === "uploadedAudio" ? <UploadedAudioPreview windowId={window.id} trackId={track.id} source={track.source.asset} previewing={previewing} loading={playback.status === "loading" && playback.trackId === track.id} /> : track.source.kind === "externalLink" ? <span className="w98-hint">{tr("music.visitorsWillSeeOpenOriginal")}</span> : null}
-            {failed ? (
+            {track.source.kind === "audioUrl" && isVideoFileUrl(track.source.url) ? <VideoPlayer key={track.source.url} url={track.source.url} title={track.title} windowId={window.id} trackId={track.id} onOpenOriginal={() => openLink(original, track.title)} /> : track.source.kind === "audioUrl" ? <button type="button" className="w98-btn music-preview" disabled={!playableUrl(directUrl) || platformBlocked || playback.status === "loading" && playback.trackId === track.id} onClick={() => previewing ? musicPlayback.pause(window.id) : directUrl ? void playNative(window.id, track.id, directUrl) : undefined}>{previewing ? tr("music.stopPreview") : tr("music.preview")}</button> : track.source.kind === "uploadedAudio" ? <UploadedAudioPreview windowId={window.id} trackId={track.id} source={track.source.asset} previewing={previewing} loading={playback.status === "loading" && playback.trackId === track.id} /> : track.source.kind === "externalLink" ? <span className="w98-hint">{tr("music.visitorsWillSeeOpenOriginal")}</span> : null}
+            {failed && !(track.source.kind === "audioUrl" && isVideoFileUrl(track.source.url)) ? (
               <div role="alert" className="music-error">
                 <strong>{tr("music.thisTrackCantBePlayed")}</strong>
                 <span>{explainPlaybackFailure(playback.url, playback.error)}</span>

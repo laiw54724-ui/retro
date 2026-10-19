@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { classifyPastedUrl } from "./sourceClassifier";
+import { classifyPastedUrl, isVideoFileUrl } from "./sourceClassifier";
 
 const SPOTIFY_TRACK = "https://open.spotify.com/track/50q2aUjWoTn6CJIfSPRJQA";
 const YOUTUBE_VIDEO = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
@@ -31,9 +31,11 @@ describe("classifyPastedUrl", () => {
     expect(classifyPastedUrl("https://soundcloud.com/a/b")).toMatchObject({ type: "web-page", platform: "soundcloud", reason: "unsupported-platform" });
   });
 
-  it("is honest about video files: recognised, kept as an external link", () => {
+  it("recognises only bounded video file hints, including ambiguous WebM", () => {
     expect(classifyPastedUrl("https://cdn.example.com/clip.mp4")).toMatchObject({ type: "video-file" });
     expect(classifyPastedUrl("https://cdn.example.com/clip.MOV?x=1")).toMatchObject({ type: "video-file" });
+    for (const extension of ["mp4", "m4v", "mov", "ogv", "webm"]) expect(isVideoFileUrl(`https://cdn.example.com/clip.${extension}?v=1#t=1`)).toBe(true);
+    for (const url of ["http://cdn.example.com/a.mp4", "https://user:pw@cdn.example.com/a.mp4", "https://cdn.example.com:8443/a.mp4", "javascript:a.mp4", "data:video/mp4,x", "blob:https://cdn.example.com/a.mp4", "https://cdn.example.com/page?file=a.mp4", "https://cdn.example.com/a.mp4/page", "https://cdn.example.com/a.avi", "https://youtube.com/a.mp4"]) expect(isVideoFileUrl(url), url).toBe(false);
   });
 
   it("treats empty input as empty and unusable input as invalid with a reason", () => {

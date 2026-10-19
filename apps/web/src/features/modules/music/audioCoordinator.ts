@@ -26,6 +26,7 @@ export type AudioPort = {
   pause: () => void;
   load: () => void;
   addEventListener: (type: string, listener: EventListener) => void;
+  removeEventListener: (type: string, listener: EventListener) => void;
 };
 
 type CoordinatorOptions = {
@@ -49,6 +50,8 @@ function playableUrl(value: string): boolean {
 export function createAudioCoordinator(options: CoordinatorOptions) {
   let audio: AudioPort | null = null;
   let generation = 0;
+  let detachListeners = () => {};
+  let suppliedMedia = false;
   let snapshot = initialSnapshot();
   let timeoutId: number | null = null;
   const listeners = new Set<() => void>();
@@ -67,7 +70,7 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
   const mediaError = (fallback: string) => {
     generation += 1;
     cancelTimeout();
-    audio?.pause();
+    releaseAudio();
     emit({ status: "error", error: fallback });
   };
   const syncTime = () => {
@@ -75,44 +78,68 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
     const duration = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : null;
     emit({ currentTime: Number.isFinite(audio.currentTime) ? audio.currentTime : 0, duration, canSeek: !!duration && audio.seekable.length > 0 });
   };
-  const ensureAudio = () => {
-    if (audio) return audio;
-    audio = options.createAudio();
-    audio.volume = snapshot.volume;
-    audio.addEventListener("timeupdate", syncTime);
-    audio.addEventListener("durationchange", syncTime);
-    audio.addEventListener("loadedmetadata", syncTime);
-    audio.addEventListener("playing", () => {
-      if (snapshot.status === "loading" || snapshot.status === "playing") { cancelTimeout(); emit({ status: "playing", error: "" }); }
+  // Each source owns its listeners. Detached video/audio events cannot affect a newer source.
+  function releaseAudio() {
+    const previous = audio;
+    audio = null;
+    detachListeners();
+    detachListeners = () => {};
+    if (!previous) return;
+    previous.pause();
+    previous.currentTime = 0;
+    previous.src = "";
+    previous.load();
+  }
+  function bindAudio(player: AudioPort) {
+    const handlers: [string, EventListener][] = [];
+    const on = (type: string, callback: () => void) => {
+      const listener = () => { if (audio === player) callback(); };
+      handlers.push([type, listener]);
+      player.addEventListener(type, listener);
+    };
+    on("timeupdate", syncTime);
+    on("durationchange", syncTime);
+    on("loadedmetadata", syncTime);
+    on("volumechange", () => emit({ volume: player.volume }));
+    on("playing", () => {
+      if (["loading", "playing", "paused"].includes(snapshot.status)) { cancelTimeout(); emit({ status: "playing", error: "" }); }
     });
-    audio.addEventListener("pause", () => {
+    on("pause", () => {
       if (snapshot.status !== "idle" && snapshot.status !== "error") emit({ status: "paused" });
     });
-    audio.addEventListener("ended", () => { if (snapshot.windowId && snapshot.url) { cancelTimeout(); syncTime(); emit({ status: "paused" }); } });
-    audio.addEventListener("error", () => { if (snapshot.windowId && snapshot.url) mediaError(i18n.t("music:audioCoordinator.theAudioCouldntBeLoaded")); });
-    return audio;
-  };
+    on("ended", () => { if (snapshot.windowId && snapshot.url) { cancelTimeout(); syncTime(); emit({ status: "paused" }); } });
+    on("error", () => { if (snapshot.windowId && snapshot.url) mediaError(i18n.t(suppliedMedia ? "music:m3.failure" : "music:audioCoordinator.theAudioCouldntBeLoaded")); });
+    detachListeners = () => { for (const [type, listener] of handlers) player.removeEventListener(type, listener); };
+  }
 
-  async function play(windowId: string, trackId: string, url: string): Promise<boolean> {
+  async function play(windowId: string, trackId: string, url: string, element?: AudioPort): Promise<boolean> {
     const request = ++generation;
     if (!playableUrl(url)) {
       stopAll();
       emit({ status: "error", windowId, trackId, url, error: i18n.t("music:audioCoordinator.audioMustUseAValid"), currentTime: 0, duration: null, canSeek: false });
       return false;
     }
-    const player = ensureAudio();
-    const changed = snapshot.windowId !== windowId || snapshot.trackId !== trackId || snapshot.url !== url;
+    const changed = !audio || snapshot.windowId !== windowId || snapshot.trackId !== trackId || snapshot.url !== url || (element ? audio !== element : suppliedMedia);
     cancelTimeout();
     if (changed) {
-      player.pause();
-      player.currentTime = 0;
+      releaseAudio();
+      audio = element ?? options.createAudio();
+      suppliedMedia = !!element;
+      audio.volume = snapshot.volume;
+      bindAudio(audio);
+    }
+    const player = audio!;
+    // Preserve the native audio reset before loading a new source. Supplied
+    // video elements keep their own control lifecycle.
+    if (changed && !element) player.pause();
+    emit({ status: "loading", windowId, trackId, url, currentTime: changed ? 0 : snapshot.currentTime, duration: changed ? null : snapshot.duration, canSeek: changed ? false : snapshot.canSeek, error: "" });
+    if (changed) {
       player.src = url;
       player.load();
     }
-    emit({ status: "loading", windowId, trackId, url, currentTime: changed ? 0 : snapshot.currentTime, duration: changed ? null : snapshot.duration, canSeek: changed ? false : snapshot.canSeek, error: "" });
     timeoutId = setTimer(() => {
       timeoutId = null;
-      if (snapshot.status === "loading" && snapshot.windowId === windowId && snapshot.trackId === trackId) mediaError(i18n.t("music:audioCoordinator.audioLoadingTimedOutOpen"));
+      if (generation === request && snapshot.status === "loading" && snapshot.windowId === windowId && snapshot.trackId === trackId) mediaError(i18n.t(suppliedMedia ? "music:m3.failure" : "music:audioCoordinator.audioLoadingTimedOutOpen"));
     }, loadTimeoutMs);
     try {
       await player.play();
@@ -121,7 +148,7 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
       emit({ status: "playing", error: "" });
       return true;
     } catch {
-      if (generation === request) mediaError(i18n.t("music:audioCoordinator.theBrowserCouldntPlayThis"));
+      if (generation === request) mediaError(i18n.t(suppliedMedia ? "music:m3.failure" : "music:audioCoordinator.theBrowserCouldntPlayThis"));
       return false;
     }
   }
@@ -160,13 +187,7 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
   function stopAll() {
     generation += 1;
     cancelTimeout();
-    if (audio) {
-      audio.pause();
-      audio.currentTime = 0;
-      audio.src = "";
-      audio.load();
-      audio.volume = snapshot.volume;
-    }
+    releaseAudio();
     snapshot = { ...initialSnapshot(), volume: snapshot.volume };
     for (const listener of listeners) listener();
   }
@@ -187,6 +208,7 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
 
   return {
     play, playResolved, pause, stopWindow, stopAll, seek, setVolume,
+    stopElement(element: AudioPort) { if (audio === element) stopAll(); },
     getSnapshot: () => snapshot,
     subscribe(listener: () => void) { listeners.add(listener); return () => listeners.delete(listener); }
   };

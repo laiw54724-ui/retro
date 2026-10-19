@@ -1,10 +1,11 @@
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { i18n } from "../../../i18n";
 import { useTranslation } from "react-i18next";
 import { makeBlock, type DocumentBlock, type DocumentBlockKind } from "@retrodesk/shared";
 import { UploadTaskList, useWindowMedia } from "../../media/editorMedia";
 import { FilePick, ImageUrlField, MiniBtn, SafeImg } from "../ui";
 import { moveById, opensNewTab, patchById, safeHref, type ModuleProps } from "../types";
+import { restoreFocusUnlessMoved } from "../../../lib/restoreFocus";
 import "./editor.css";
 
 const LABEL = (): Record<DocumentBlockKind, string> => ({ heading: i18n.t("modules:document.heading"), text: i18n.t("modules:document.paragraph"), image: i18n.t("modules:document.image"), button: i18n.t("modules:document.button"), link: i18n.t("modules:document.hyperlink"), list: i18n.t("modules:document.list"), divider: i18n.t("modules:document.divider") });
@@ -45,6 +46,7 @@ export function DocumentInlineEditor({ window, ctx, update }: ModuleProps<"docum
   const { t: tr } = useTranslation("modules");
   const { tv } = ctx;
   const fieldPrefix = useId();
+  const editor = useRef<HTMLDivElement>(null);
   const [selection, setSelection] = useState<{ windowId: string; blockId: string } | null>(null);
   const active = selection?.windowId === window.id ? selection.blockId : null;
   const blocks = window.content.blocks;
@@ -78,8 +80,17 @@ export function DocumentInlineEditor({ window, ctx, update }: ModuleProps<"docum
       : block), `document:${window.id}:${id}:alt`);
   }
 
+  function deleteBlock(id: string, index: number) {
+    const neighbor = blocks[index + 1] ?? blocks[index - 1];
+    setBlocks((list) => list.filter((item) => item.id !== id));
+    setSelection(neighbor ? { windowId: window.id, blockId: neighbor.id } : null);
+    restoreFocusUnlessMoved(() =>
+      Array.from(editor.current?.querySelectorAll<HTMLElement>("[data-block-id]") ?? []).find((block) => block.dataset.blockId === neighbor?.id)
+      ?? editor.current?.querySelector<HTMLButtonElement>(".add-bar button:not(:disabled)"));
+  }
+
   return (
-    <div className="doc-body editing document-editor">
+    <div ref={editor} className="doc-body editing document-editor">
       <p className="document-editor-hint">{tr("document.editTheTextDirectlySelect")}</p>
       <UploadTaskList tasks={media.tasks} onRetry={media.retry} onDismiss={media.dismiss} />
       {blocks.map((block, index) => {
@@ -111,7 +122,7 @@ export function DocumentInlineEditor({ window, ctx, update }: ModuleProps<"docum
                 <div className="doc-block-actions">
                   <MiniBtn label={tr("document.moveUp")} disabled={index === 0} onClick={() => setBlocks((list) => moveById(list, block.id, -1))}>▲</MiniBtn>
                   <MiniBtn label={tr("document.moveDown")} disabled={index === blocks.length - 1} onClick={() => setBlocks((list) => moveById(list, block.id, 1))}>▼</MiniBtn>
-                  <MiniBtn label={tr("document.deleteBlock")} danger onClick={() => { setBlocks((list) => list.filter((item) => item.id !== block.id)); setSelection(null); }}>×</MiniBtn>
+                  <MiniBtn label={tr("document.deleteBlock")} danger onClick={() => deleteBlock(block.id, index)}>×</MiniBtn>
                 </div>
               </div>
             ) : null}

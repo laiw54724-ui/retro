@@ -393,6 +393,13 @@
     "theImageSourceDoesntAllow": "이 이미지 출처는 내보내기를 허용하지 않습니다"
   },
   "guestbook": {
+    "preview": {
+      "notice": "방명록 시뮬레이션입니다. 상호작용은 이 미리보기에만 적용되며 실제 메시지를 불러오거나 메시지, 신고, 검토 작업을 전송하지 않습니다.",
+      "sampleName": "예시 방문자 (시뮬레이션)",
+      "sampleBody": "승인된 메시지의 시뮬레이션 예시입니다.",
+      "sent": "검토 요청을 시뮬레이션했습니다. 메시지는 전송되거나 저장되지 않으며 승인 전에는 공개 목록에 표시되지 않습니다.",
+      "reported": "신고를 시뮬레이션했습니다. 신고는 전송되지 않았습니다."
+    },
     "couldntLoadMessagesRightNow": "지금은 메시지를 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.",
     "theGuestbookIsntOpenYet": "방명록이 아직 열리지 않았습니다",
     "theSiteOwnerIsntAccepting": "지금은 사이트 운영자가 새 메시지를 받지 않습니다.",

@@ -17,10 +17,10 @@ const ERROR_KEYS = {
 } as const satisfies Record<ErrorCode, `codes.${ErrorCode}`>;
 
 /** Whitelist codes at the view boundary; never surface an API's raw message/details. */
-export function translateError(error: unknown, t: TFunction<"errors">): string {
+export function translateError(error: unknown, t: TFunction<"errors">, fallback?: string): string {
   const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
   if (typeof code === "string" && Object.hasOwn(ERROR_KEYS, code)) {
     return t(ERROR_KEYS[code as ErrorCode]);
   }
-  return t("generic");
+  return fallback ?? t("generic");
 }

@@ -1,0 +1,18 @@
+[WebServer] (node:28259) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:28273) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 5 tests using 2 workers
+
+(node:28287) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:28286) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [chromium] › tests/e2e/music-m2-m3.spec.ts:177:7 › M2/M3 localized controls and help in ja (1.9s)
+  ✓  1 [chromium] › tests/e2e/music-sources.spec.ts:451:7 › the source field explains what it recognised in en (2.0s)
+  ✓  4 [chromium] › tests/e2e/music-sources.spec.ts:451:7 › the source field explains what it recognised in ja (942ms)
+  ✓  3 [chromium] › tests/e2e/music-m2-m3.spec.ts:177:7 › M2/M3 localized controls and help in ko (970ms)
+  ✓  5 [chromium] › tests/e2e/music-sources.spec.ts:451:7 › the source field explains what it recognised in ko (720ms)
+
+  5 passed (5.5s)

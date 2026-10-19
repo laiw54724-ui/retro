@@ -1,6 +1,6 @@
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
-import { musicPlayback } from "./audioCoordinator";
+import { musicPlayback, type AudioPort } from "./audioCoordinator";
 
 export type EmbedSnapshot = { windowId: string | null; trackId: string | null; instanceId: string | null };
 
@@ -66,4 +66,18 @@ export function stopWindowMedia(windowId: string) {
 export function stopAllMedia() {
   embedSession.dispose();
   musicPlayback.stopAll();
+}
+
+/** A visible native video participates in exactly the same session as audio. */
+export function playVideo(windowId: string, trackId: string, url: string, video: AudioPort) {
+  flushSync(() => embedSession.dispose());
+  return musicPlayback.play(windowId, trackId, url, video);
+}
+
+export function useStopMediaOnResize(windowId: string) {
+  useEffect(() => {
+    const stop = () => stopWindowMedia(windowId);
+    globalThis.addEventListener("resize", stop);
+    return () => globalThis.removeEventListener("resize", stop);
+  }, [windowId]);
 }

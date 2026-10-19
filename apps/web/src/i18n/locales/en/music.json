@@ -146,5 +146,20 @@
     "thisIsAWebPage": "This is a {{platformLabel}} web page link, not an audio file, so the browser can't play it directly. Change the source to \"External link\" or \"Platform player\".",
     "thisUrlDoesntLookLike": "{{rawMessage}} This URL doesn't look like an audio file (.mp3, .ogg, .wav…).",
     "theFileMayHaveBeen": "{{rawMessage}} The file may have been removed, the site may not allow use elsewhere, or the format may not be supported."
+  },
+  "m2": {
+    "needHelp": "Can’t play?",
+    "heading": "Playback help",
+    "guidance": "If this {{label}} player does not play, Retro cannot confirm the cause. Access to the content, browser privacy settings or the network may affect playback. Retry, or open the original site to check availability.",
+    "retry": "Try again"
+  },
+  "m3": {
+    "recognizedVideo": "Video file URL detected: visitors can load it here. The extension is a hint; playback depends on the actual file and browser.",
+    "externalFile": "This file is saved as an external link. Keep that choice, or choose the in-page player below.",
+    "player": "Video player: {{title}}",
+    "playVideo": "Load / play video",
+    "cannotPlay": "The video could not be played",
+    "failure": "The video could not be loaded or played. The file may be unavailable, the server may restrict playback, or this browser may not support its format or codecs. Retry or open the original link.",
+    "formatNote": "Direct HTTPS .mp4, .webm, .m4v, .mov and .ogv files only. Browser format and codec support varies; webpages are opened externally."
   }
 }
