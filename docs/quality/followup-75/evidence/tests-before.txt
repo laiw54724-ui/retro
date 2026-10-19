@@ -1,0 +1,16 @@
+[WebServer] (node:2120) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 7 tests using 1 worker
+
+(node:2175) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/quality/followup-75.spec.ts:89:7 › followup editor heavy 390px (6.2s)
+  ✓  2 tests/quality/followup-75.spec.ts:89:7 › followup editor heavy 1280px (6.9s)
+  ✓  3 tests/quality/followup-75.spec.ts:89:7 › followup public heavy 390px (5.6s)
+  ✓  4 tests/quality/followup-75.spec.ts:89:7 › followup public heavy 1280px (5.7s)
+  ✓  5 tests/quality/followup-75.spec.ts:89:7 › followup sample ig 390px (6.0s)
+  ✓  6 tests/quality/followup-75.spec.ts:89:7 › followup sample ig 1280px (9.5s)
+  ✓  7 tests/quality/followup-75.spec.ts:105:5 › one separate public heavy desktop CPU diagnostic (2.6s)
+
+  7 passed (48.9s)

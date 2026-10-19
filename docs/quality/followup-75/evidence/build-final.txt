@@ -1,0 +1,35 @@
+
+> @retrodesk/web@0.0.1 build /Users/wen/Documents/Codex/2026-10-19/task-10/retro-performance-followup/apps/web
+> tsc -b && vite build && node scripts/build-pages-worker.mjs
+
+vite v7.3.7 building client environment for production...
+transforming...
+../../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/util.js (400:0): A comment
+
+"// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle."
+
+in "../../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/util.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+../../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/regexes.js (74:0): A comment
+
+"/** Anchors a pattern source. The interpolation lives here rather than at the call site because
+ * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it
+ * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */"
+
+in "../../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/regexes.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+✓ 420 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                     0.68 kB │ gzip:   0.44 kB
+dist/assets/CollaborativeSitePage-Cl3LRjVS.css      0.07 kB │ gzip:   0.08 kB
+dist/assets/index-BS6hf-eX.css                    147.07 kB │ gzip:  27.63 kB
+dist/assets/catalog.generated-Bz3d29Gr.js          68.19 kB │ gzip:  17.37 kB │ map:   137.11 kB
+dist/assets/CollaborativeSitePage-xkzNUths.js      73.81 kB │ gzip:  21.56 kB │ map:   225.01 kB
+dist/assets/windowsIconManifest-BSvZw_z7.js       168.35 kB │ gzip:  20.66 kB │ map:   307.10 kB
+dist/assets/index-CjrXJB1s.js                   1,522.48 kB │ gzip: 455.07 kB │ map: 4,888.16 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.02s
+pages-worker: built with API origin http://127.0.0.1:5197
