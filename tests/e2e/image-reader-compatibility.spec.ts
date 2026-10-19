@@ -33,7 +33,7 @@ for (const width of [1440, 390]) {
       await dialog.locator(".retro-titlebar").click();
       await expect(page.locator("#editor-right-panel").getByRole("textbox").first()).toHaveValue("Portrait.png");
     } else {
-      await dialog.getByRole("button", { name: "編輯此視窗", exact: true }).click();
+      await dialog.getByRole("button", { name: "編輯內容", exact: true }).click();
     }
     await expect(dialog.getByRole("img", { name: site.image.content.alt })).toBeVisible();
     await expect(dialog.locator("[data-frame='simple']")).toBeVisible();

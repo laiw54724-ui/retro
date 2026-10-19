@@ -26,7 +26,7 @@ async function openGame(page: Page, mobile: boolean) {
   await page.goto("/editor/site-1");
   if (mobile) {
     await page.getByRole("button", { name: "Minesweeper.exe", exact: true }).click();
-    await page.getByRole("button", { name: "編輯此視窗" }).click();
+    await page.getByRole("button", { name: "編輯內容" }).click();
   }
   const dialog = page.getByRole("dialog", { name: "Minesweeper.exe" });
   await expect(dialog.getByRole("spinbutton", { name: "列", exact: true })).toBeVisible();

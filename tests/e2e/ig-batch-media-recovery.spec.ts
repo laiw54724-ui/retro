@@ -27,7 +27,7 @@ async function open(page: Page, width = 1400) {
     return route.fulfill({ json: { asset } });
   });
   await page.setViewportSize({ width, height: 950 }); await page.goto("/editor/site-1");
-  if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯此視窗" }).click(); }
+  if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯內容" }).click(); }
   const win = page.getByRole("dialog", { name: "Instagram.exe", exact: true }); await expect(win.getByRole("textbox", { name: "Handle", exact: true })).toBeVisible();
   await win.getByRole("tab", { name: "貼文", exact: true }).click();
   const posts = win.locator(".ig-canonical-posts");

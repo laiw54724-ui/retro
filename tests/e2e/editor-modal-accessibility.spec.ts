@@ -39,8 +39,8 @@ async function openEditor(page: Page, options: { publishError?: "version_conflic
   return { publishes: () => publishes, finishPublish: () => releasePublish?.(), reads: () => reads, saves: () => saves, draft: () => draft, setRemoteTitle: (title: string) => { draft = structuredClone(draft); draft.windows[0].title = title; version += 1; } };
 }
 
-const editTrigger = (page: Page) => page.locator(".m-toolbar").getByRole("button", { name: "編輯", exact: true });
-const editDialog = (page: Page) => page.getByRole("dialog", { name: "編輯視窗", exact: true });
+const editTrigger = (page: Page) => page.locator(".m-toolbar").getByRole("button", { name: "視窗設定", exact: true });
+const editDialog = (page: Page) => page.getByRole("dialog", { name: "視窗設定", exact: true });
 const publishDialog = (page: Page) => page.getByRole("dialog", { name: "發布 Retro Desktop", exact: true });
 
 async function expectFocusInside(dialog: Locator) {

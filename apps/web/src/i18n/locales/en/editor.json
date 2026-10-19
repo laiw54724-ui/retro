@@ -115,16 +115,18 @@
     "emptyEditor": "Tap Add below to create your first window.",
     "emptyVisitor": "This desktop has no content yet.",
     "desktop": "Desktop",
-    "finishEditing": "Finish editing",
-    "editWindow": "Edit this window",
+    "finishEditing": "Done",
+    "editWindow": "Edit content",
     "toolbar": "Mobile editor tools",
     "add": "Add",
-    "edit": "Edit",
+    "edit": "Window settings",
     "theme": "Theme",
     "preview": "Preview",
     "addWindow": "Add a window",
-    "editWindowTitle": "Edit window",
-    "siteMenu": "Site options"
+    "editWindowTitle": "Window settings",
+    "siteMenu": "Site options",
+    "returnToContent": "Return to {{title}} content",
+    "openWindowForContent": "Open a window, then choose “Edit content”."
   },
   "integrity": {
     "targetWindow": "Window: {{name}}",
@@ -522,8 +524,7 @@
     "openAutomaticallyWhenVisitorsArrive": "Open automatically when visitors arrive",
     "moveIconEarlier": "▲ Move icon earlier",
     "moveIconLater": "▼ Move icon later",
-    "duplicate": "Duplicate",
-    "contentCloseThisPanelOpen": "Content: close this panel, open the window, then choose \"Edit this window\" and click the text or image directly to edit it."
+    "duplicate": "Duplicate"
   },
   "windowTitleBar": {
     "minimize": "Minimize",

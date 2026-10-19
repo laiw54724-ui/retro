@@ -38,7 +38,7 @@ async function fixture(page: Page) {
   });
   await page.goto('/editor/history');
   await page.getByRole('button', { name: 'Links.exe', exact: true }).click();
-  await page.getByRole('button', { name: '編輯此視窗', exact: true }).click();
+  await page.getByRole('button', { name: '編輯內容', exact: true }).click();
   await expect(page.locator('.link-input')).toHaveValue('Example');
   return { saves, hold: () => { hold = true; }, release: () => { hold = false; release?.(); }, fail: (status: number) => { failure = status; } };
 }

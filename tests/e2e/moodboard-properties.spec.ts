@@ -30,7 +30,7 @@ async function openEditor(page: Page, width: number) {
   await page.goto("/editor/site-1");
   if (width < 768) {
     await page.getByRole("button", { name: "Moodboard.exe", exact: true }).click();
-    await page.getByRole("button", { name: "編輯此視窗" }).click();
+    await page.getByRole("button", { name: "編輯內容" }).click();
   }
   return site;
 }
@@ -102,7 +102,7 @@ for (const width of [1440, 320, 390]) {
       await page.reload();
       if (width < 768) {
         await page.getByRole("button", { name: "Moodboard.exe", exact: true }).click();
-        await page.getByRole("button", { name: "編輯此視窗" }).click();
+        await page.getByRole("button", { name: "編輯內容" }).click();
       }
       await expect(inspector.getByRole("spinbutton", { name: "X", exact: true })).toHaveValue("160");
       await expect(inspector.getByRole("spinbutton", { name: "高", exact: true })).toHaveValue("210");

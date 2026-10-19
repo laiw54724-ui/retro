@@ -343,7 +343,7 @@ test("mobile OC editor exposes the same profile tools without horizontal overflo
   await page.getByRole("button", { name: "手機版" }).click();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole("button", { name: "Instagram.exe" }).click();
-  await page.getByRole("button", { name: "編輯此視窗" }).click();
+  await page.getByRole("button", { name: "編輯內容" }).click();
   const win = page.getByRole("dialog", { name: "Instagram.exe" });
   const switcher = win.getByRole("region", { name: "角色切換器" });
   await expect(switcher).toBeVisible();
@@ -383,7 +383,7 @@ for (const width of [320, 375, 430]) {
     await page.getByRole("button", { name: "手機版" }).click();
     await page.setViewportSize({ width, height: 844 });
     await page.getByRole("button", { name: "Instagram.exe" }).click();
-    await page.getByRole("button", { name: "編輯此視窗" }).click();
+    await page.getByRole("button", { name: "編輯內容" }).click();
     const win = page.getByRole("dialog", { name: "Instagram.exe" });
     const selection = win.getByRole("combobox", { name: "此視窗入口角色" });
     const add = win.locator("summary").filter({ hasText: "管理角色" });

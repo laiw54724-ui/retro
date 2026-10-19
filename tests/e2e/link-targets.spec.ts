@@ -113,7 +113,7 @@ test("320px shared Links picker stages unsafe URL/cancel without a save; keyboar
   await overlay(page).getByRole("button", { name: /回到編輯器/ }).click();
   await page.locator(".m-icon").getByText("Links.exe", { exact: true }).click();
   const links = page.getByRole("dialog", { name: "Links.exe", exact: true });
-  await links.locator("..").getByRole("button", { name: "編輯此視窗", exact: true }).click();
+  await links.locator("..").getByRole("button", { name: "編輯內容", exact: true }).click();
   await links.getByRole("button", { name: /^設定連結/ }).click();
   await links.getByRole("button", { name: "選擇目的地…", exact: true }).click();
   const picker = page.getByRole("dialog", { name: "目的地", exact: true });

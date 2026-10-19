@@ -115,16 +115,18 @@
     "emptyEditor": "下の「追加」から最初のウィンドウを作成しましょう。",
     "emptyVisitor": "このデスクトップにはまだ内容がありません。",
     "desktop": "デスクトップ",
-    "finishEditing": "編集を終了",
-    "editWindow": "このウィンドウを編集",
+    "finishEditing": "完了",
+    "editWindow": "内容を編集",
     "toolbar": "モバイル編集ツール",
     "add": "追加",
-    "edit": "編集",
+    "edit": "ウィンドウ設定",
     "theme": "テーマ",
     "preview": "プレビュー",
     "addWindow": "ウィンドウを追加",
-    "editWindowTitle": "ウィンドウを編集",
-    "siteMenu": "サイトのオプション"
+    "editWindowTitle": "ウィンドウ設定",
+    "siteMenu": "サイトのオプション",
+    "returnToContent": "「{{title}}」の内容に戻る",
+    "openWindowForContent": "ウィンドウを開いて「内容を編集」を選んでください。"
   },
   "integrity": {
     "targetWindow": "ウィンドウ：{{name}}",
@@ -522,8 +524,7 @@
     "openAutomaticallyWhenVisitorsArrive": "訪問者が来たときに自動で開く",
     "moveIconEarlier": "▲ アイコンを前へ",
     "moveIconLater": "▼ アイコンを後ろへ",
-    "duplicate": "複製",
-    "contentCloseThisPanelOpen": "内容：このパネルを閉じてウィンドウを開き、「このウィンドウを編集」を押してから、テキストや画像を直接クリックして編集します。"
+    "duplicate": "複製"
   },
   "windowTitleBar": {
     "minimize": "最小化",

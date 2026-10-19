@@ -19,7 +19,7 @@ async function openEditor(page: Page, width = 1400) {
   await page.route("**/api/sites/site-1/draft", (route) => { saved = route.request().postDataJSON().document; saves++; return route.fulfill({ json: { version: saves + 1, updatedAt: "2026-10-19T00:00:00Z" } }); });
   await page.setViewportSize({ width, height: 900 });
   await page.goto("/editor/site-1");
-  if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯此視窗" }).click(); }
+  if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯內容" }).click(); }
   const win = page.getByRole("dialog", { name: "Instagram.exe", exact: true });
   await expect(win.getByRole("textbox", { name: "Handle", exact: true })).toBeVisible();
   return { win, saved: () => saved, profile: () => saved.entities.profiles[0], saves: () => saves };
@@ -68,8 +68,8 @@ test("Done editing retains invalid identity input, cancellation is explicit, rel
   const handle = win.getByRole("textbox", { name: "Handle", exact: true });
   await handle.fill(""); await handle.press("Enter");
   await expect(handle).toHaveAttribute("aria-invalid", "true");
-  await win.getByRole("button", { name: "完成編輯", exact: true }).click();
-  await win.getByRole("button", { name: "編輯此視窗", exact: true }).click();
+  await win.getByRole("button", { name: "完成", exact: true }).click();
+  await win.getByRole("button", { name: "編輯內容", exact: true }).click();
   await expect(handle).toHaveValue(""); await expect(handle).toHaveAttribute("aria-invalid", "true");
   expect(s.profile().handle).toBe("retro"); expect(s.saves()).toBe(0);
   await expect(win.locator("[data-ig-pending-drafts]")).toContainText("尚未儲存");
@@ -78,9 +78,9 @@ test("Done editing retains invalid identity input, cancellation is explicit, rel
   await expect(handle).toHaveValue("retro");
   await expect(win.locator("[data-ig-pending-drafts]")).toBeHidden();
   await handle.fill("other"); await handle.press("Enter");
-  await win.getByRole("button", { name: "完成編輯", exact: true }).click();
+  await win.getByRole("button", { name: "完成", exact: true }).click();
   await page.reload();
-  await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯此視窗" }).click();
+  await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯內容" }).click();
   await expect(handle).toHaveValue("retro");
 });
 
@@ -107,8 +107,8 @@ test("highlights and collections retain task selection, search and unfinished UR
 test("unfinished source URLs, pending additions and custom-field names survive Done editing", async ({ page }) => {
   const s = await openEditor(page, 390); const { win } = s;
   const leaveAndReturn = async () => {
-    await win.getByRole("button", { name: "完成編輯", exact: true }).click();
-    await win.getByRole("button", { name: "編輯此視窗", exact: true }).click();
+    await win.getByRole("button", { name: "完成", exact: true }).click();
+    await win.getByRole("button", { name: "編輯內容", exact: true }).click();
   };
   const avatar = win.getByRole("textbox", { name: "頭像網址", exact: true });
   await avatar.fill("https:"); await avatar.press("Enter");
