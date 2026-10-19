@@ -90,7 +90,7 @@ async function mockMedia(page: Page, { long = false, legacyAlt = false, width = 
   await page.goto("/editor/site-1");
   if (width < 768) {
     await page.getByRole("button", { name: "Gallery A", exact: true }).click();
-    await page.getByRole("button", { name: "編輯此視窗" }).click();
+    await page.getByRole("button", { name: "編輯內容" }).click();
   }
   const gallery = page.getByRole("dialog", { name: "Gallery A", exact: true });
   await expect(gallery.locator(".gal-editor")).toBeVisible();

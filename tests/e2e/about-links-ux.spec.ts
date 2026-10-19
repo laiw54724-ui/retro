@@ -44,7 +44,7 @@ async function expectLastControlAboveDone(dialog: Locator, control: Locator) {
   const bodyBox = await body.boundingBox();
   // The finish-editing action now lives in the window's title bar, so it can never cover a control; the last control
   // must still be fully reachable inside the scrolled content area.
-  const done = dialog.getByRole("button", { name: "完成編輯", exact: true });
+  const done = dialog.getByRole("button", { name: "完成", exact: true });
   await expect(done).toBeVisible();
   const doneBox = await done.boundingBox();
   if (!controlBox || !doneBox || !bodyBox) throw new Error("mobile control is missing");
@@ -174,7 +174,7 @@ for (const width of [320, 375, 390, 430]) {
     await mockEditor(page, document, width);
     await page.locator(".m-icon").getByText("About.exe", { exact: true }).click();
     const aboutDialog = page.getByRole("dialog", { name: "About.exe", exact: true });
-    const editAbout = aboutDialog.locator("..").getByRole("button", { name: "編輯此視窗", exact: true });
+    const editAbout = aboutDialog.locator("..").getByRole("button", { name: "編輯內容", exact: true });
     await expect(editAbout).toBeVisible();
     await editAbout.click();
     await expectContained(aboutDialog.locator(".about-editor"));
@@ -183,12 +183,12 @@ for (const width of [320, 375, 390, 430]) {
     await expectContained(aboutDialog.locator(".about-editor"));
     await expectContained(aboutDialog.locator(".m-win-body"));
     await expectLastControlAboveDone(aboutDialog, aboutDialog.getByRole("button", { name: "新增社群" }));
-    await aboutDialog.locator("..").getByRole("button", { name: "完成編輯", exact: true }).click();
+    await aboutDialog.locator("..").getByRole("button", { name: "完成", exact: true }).click();
     await expectContained(aboutDialog.locator(".about-view"));
     await aboutDialog.getByRole("button", { name: "關閉", exact: true }).click();
     await page.locator(".m-icon").getByText("Links.exe", { exact: true }).click();
     const linksDialog = page.getByRole("dialog", { name: "Links.exe", exact: true });
-    const editLinks = linksDialog.locator("..").getByRole("button", { name: "編輯此視窗", exact: true });
+    const editLinks = linksDialog.locator("..").getByRole("button", { name: "編輯內容", exact: true });
     await expect(editLinks).toBeVisible();
     await editLinks.click();
     await linksDialog.getByRole("button", { name: /^設定連結/ }).click();

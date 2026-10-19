@@ -19,7 +19,7 @@ async function openEditor(page: Page, width = 1400) {
   await page.route("**/api/sites/site-1/draft", (route) => { saved = route.request().postDataJSON().document; saves++; return route.fulfill({ json: { version: saves + 1, updatedAt: "2026-10-19T00:00:00Z" } }); });
   await page.setViewportSize({ width, height: 950 });
   await page.goto("/editor/site-1");
-  if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯此視窗" }).click(); }
+  if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯內容" }).click(); }
   const win = page.getByRole("dialog", { name: "Instagram.exe", exact: true });
   await expect(win.getByRole("textbox", { name: "Handle", exact: true })).toBeVisible();
   return { win, saved: () => saved, profile: () => saved.entities.profiles[0], saves: () => saves };
@@ -54,7 +54,7 @@ for (const width of [1400, 390]) {
     await expect(page.getByRole("alert")).toHaveCount(0);
     await page.screenshot({ path: testInfo.outputPath(`identity-${width}.png`) });
     await page.reload();
-    if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯此視窗" }).click(); }
+    if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯內容" }).click(); }
     await expect(identity(win)).toHaveValue("new-name");
     await expect(nameField(win)).toHaveValue("New Display Name");
   });

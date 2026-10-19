@@ -89,7 +89,7 @@ async function openAbout(page: Page, width = 1280) {
   await expect(page.locator('.editor-topbar')).toBeVisible();
   if (width < 768) {
     await page.getByRole('button', { name: 'About.exe', exact: true }).click();
-    await page.getByRole('button', { name: '編輯此視窗', exact: true }).click();
+    await page.getByRole('button', { name: '編輯內容', exact: true }).click();
   }
   await expect(page.getByLabel('簡介', { exact: true })).toBeVisible();
 }

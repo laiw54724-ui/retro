@@ -115,16 +115,18 @@
     "emptyEditor": "點下方「新增」放上第一個視窗。",
     "emptyVisitor": "這個桌面還沒有內容。",
     "desktop": "桌面",
-    "finishEditing": "完成編輯",
-    "editWindow": "編輯此視窗",
+    "finishEditing": "完成",
+    "editWindow": "編輯內容",
     "toolbar": "手機編輯工具",
     "add": "新增",
-    "edit": "編輯",
+    "edit": "視窗設定",
     "theme": "主題",
     "preview": "預覽",
     "addWindow": "新增視窗",
-    "editWindowTitle": "編輯視窗",
-    "siteMenu": "網站選項"
+    "editWindowTitle": "視窗設定",
+    "siteMenu": "網站選項",
+    "returnToContent": "返回「{{title}}」內容",
+    "openWindowForContent": "先開啟視窗，再按「編輯內容」。"
   },
   "integrity": {
     "targetWindow": "視窗：{{name}}",
@@ -522,8 +524,7 @@
     "openAutomaticallyWhenVisitorsArrive": "訪客進站時自動開啟",
     "moveIconEarlier": "▲ 圖示往前",
     "moveIconLater": "▼ 圖示往後",
-    "duplicate": "複製",
-    "contentCloseThisPanelOpen": "內容：關閉此面板，開啟視窗後按「編輯此視窗」，直接點文字或圖片編輯。"
+    "duplicate": "複製"
   },
   "windowTitleBar": {
     "minimize": "最小化",

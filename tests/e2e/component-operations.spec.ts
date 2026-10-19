@@ -37,7 +37,7 @@ for (const width of [1440, 320]) {
     await page.goto("/editor/site-1");
     if (width < 768) {
       await page.getByRole("button", { name: "Instagram.exe", exact: true }).click();
-      await page.getByRole("button", { name: "編輯此視窗" }).click();
+      await page.getByRole("button", { name: "編輯內容" }).click();
     }
     const profile = page.locator(".ig-profile-editor:visible");
     await profile.getByRole("button", { name: "展開角色設定" }).click();
@@ -54,7 +54,7 @@ for (const width of [1440, 320]) {
     await page.reload();
     if (width < 768) {
       await page.getByRole("button", { name: "Instagram.exe", exact: true }).click();
-      await page.getByRole("button", { name: "編輯此視窗" }).click();
+      await page.getByRole("button", { name: "編輯內容" }).click();
     }
     const reloaded = page.locator(".ig-profile-editor:visible");
     await reloaded.getByRole("button", { name: "展開角色設定" }).click();
@@ -71,7 +71,7 @@ for (const width of [1440, 320]) {
     await page.goto("/editor/site-1");
     if (width < 768) {
       await page.getByRole("button", { name: "Moodboard.exe", exact: true }).click();
-      await page.getByRole("button", { name: "編輯此視窗" }).click();
+      await page.getByRole("button", { name: "編輯內容" }).click();
     }
     const dialog = page.getByRole("dialog", { name: "Moodboard.exe" });
     const second = dialog.getByRole("button", { name: "選取文字：Second" });

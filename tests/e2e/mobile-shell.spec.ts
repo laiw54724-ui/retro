@@ -157,21 +157,21 @@ test.describe("phone editor shell", () => {
     await shot(page, "editor-About-390");
     await expect(page.locator(".m-fab")).toHaveCount(0);
     await expect(page.locator(".m-titlebar")).toBeHidden();
-    const toggle = page.getByRole("button", { name: "編輯此視窗", exact: true });
+    const toggle = page.getByRole("button", { name: "編輯內容", exact: true });
     const rect = await box(toggle);
     expect(rect.height).toBeGreaterThanOrEqual(43.5);
     // it sits in the title bar row, above the content
     expect(rect.y + rect.height).toBeLessThanOrEqual((await box(page.locator(".m-win-body"))).y + 1);
     await toggle.click();
-    await expect(page.getByRole("button", { name: "完成編輯", exact: true })).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByRole("button", { name: "完成", exact: true })).toHaveAttribute("aria-pressed", "true");
     await shot(page, "editor-About-editing-390");
-    await page.getByRole("button", { name: "完成編輯", exact: true }).click();
-    await expect(page.getByRole("button", { name: "編輯此視窗", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "完成", exact: true }).click();
+    await expect(page.getByRole("button", { name: "編輯內容", exact: true })).toBeVisible();
     // the editor's own toolbar stays reachable above the home indicator
     await expect(page.getByRole("toolbar")).toBeVisible();
     await page.getByRole("button", { name: /‹ 桌面/ }).click();
     await expect(page.locator(".m-titlebar")).toBeVisible();
-    await page.locator(".m-toolbar").getByRole("button", { name: "編輯", exact: true }).click();
+    await page.locator(".m-toolbar").getByRole("button", { name: "視窗設定", exact: true }).click();
     await expect(page.locator(".m-sheet").getByRole("checkbox", { name: "訪客進入時預設開啟（僅桌面版）", exact: true })).toBeVisible();
   });
 });

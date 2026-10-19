@@ -49,7 +49,7 @@ async function openDocument(page: Page, options: { width?: number; long?: boolea
   await page.goto("/editor/site-1");
   if (width < 768) {
     await page.getByRole("button", { name: "Document.exe", exact: true }).click();
-    await page.getByRole("button", { name: "編輯此視窗" }).click();
+    await page.getByRole("button", { name: "編輯內容" }).click();
   }
   const dialog = page.getByRole("dialog", { name: "Document.exe", exact: true });
   await expect(dialog.locator(".document-editor")).toBeVisible();
@@ -188,7 +188,7 @@ for (const width of [320, 375, 430]) {
     await expect(dialog.getByLabel("連結網址", { exact: true })).toBeVisible();
     await expectContained(page, editor);
 
-    await page.getByRole("button", { name: "完成編輯" }).click();
+    await page.getByRole("button", { name: "完成" }).click();
     await expectContained(page, dialog.locator(".document-view"));
     await page.goto("/@demo");
     await page.getByRole("button", { name: "Document.exe", exact: true }).click();

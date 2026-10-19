@@ -75,6 +75,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const [inlineEdit, setInlineEdit] = useState(false);
   const iconRefs = useRef(new Map<string, HTMLButtonElement>());
   const screenRef = useRef<HTMLDivElement | null>(null);
+  const contentEditButton = useRef<HTMLButtonElement | null>(null);
   const music = useMusicPlayback();
   const ordered = useMemo(() => [...document.windows].sort((a, b) => a.layout.mobile.order - b.layout.mobile.order), [document.windows]);
   const visitor = useVisitorNavigation({ document, siteId: navigationSiteId, profileDirectory, profileIdsByWindow, navigation, editing: editor, recordReturns: true, onOpen: (window) => open(window.id, true) });
@@ -139,7 +140,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
               onClose={back}
               titleBarLeading={<WindowChromeButton className="m-btn m-back" onClick={back}>‹ {visitor.hasReturn ? common("auth.back") : t("mobile.desktop")}</WindowChromeButton>}
               titleBarTrailing={editor
-                ? <WindowChromeButton className="m-btn m-edit-toggle" aria-pressed={inlineEdit} onClick={() => setInlineEdit(!inlineEdit)}>{t(inlineEdit ? "mobile.finishEditing" : "mobile.editWindow")}</WindowChromeButton>
+                ? <WindowChromeButton ref={contentEditButton} className="m-btn m-edit-toggle" aria-pressed={inlineEdit} onClick={() => setInlineEdit(!inlineEdit)}>{t(inlineEdit ? "mobile.finishEditing" : "mobile.editWindow")}</WindowChromeButton>
                 : <MobileSiteMenu label={t("mobile.siteMenu")} playing={music.windowId === openWindow.id && music.status === "playing"} playingLabel={musicText("playback.playing")} />}
             >
               <WindowRenderer
@@ -199,6 +200,13 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
           <div role="dialog" aria-label={t(({ add: "mobile.addWindow", edit: "mobile.editWindowTitle", theme: "mobile.theme" } as const)[sheet])} className="m-sheet w98-window" style={{ fontFamily }}>
             <div className="m-sheet-title"><strong>{t(({ add: "mobile.addWindow", edit: "mobile.editWindowTitle", theme: "mobile.theme" } as const)[sheet])}</strong><button type="button" className="m-btn sq" aria-label={common("actions.close")} onClick={() => setSheet(null)}>×</button></div>
             <div className="m-sheet-body">
+              {sheet === "edit" && openWindow ? (
+                <button type="button" className="w98-btn m-return-content" onClick={() => {
+                  // Keep the content editor mounted and preserve its mode, local drafts and scroll.
+                  setSheet(null);
+                  requestAnimationFrame(() => contentEditButton.current?.focus({ preventScroll: true }));
+                }}>{t("mobile.returnToContent", { title: openWindow.title })}</button>
+              ) : sheet === "edit" && selected ? <p className="w98-hint">{t("mobile.openWindowForContent")}</p> : null}
               {sheet === "add" ? creatableModuleDefinitions.filter((module) => module.type !== "image" || imageWriter).map((module) => (
                 <button key={module.type} type="button" className="w98-btn m-add" onClick={() => { store.addWindow(module.type); setSheet(null); }}>
                   <Icon name={module.mobile.icon} size={32} />
@@ -247,8 +255,6 @@ function MobileEdit({ theme, window, count, siteId, upload }: { theme: SiteDocum
         <button type="button" className="w98-btn" onClick={() => store.duplicateWindow(window.id)}>{tr("mobileScreen.duplicate")}</button>
         <button type="button" className="w98-btn danger" onClick={() => store.deleteWindow(window.id)}>{tr("inspectorContent.delete")}</button>
       </div>
-      <div className="w98-sep" />
-      <span className="w98-hint">{tr("mobileScreen.contentCloseThisPanelOpen")}</span>
     </>
   );
 }

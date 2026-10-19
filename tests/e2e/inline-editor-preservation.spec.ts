@@ -34,7 +34,7 @@ async function openEditor(page: Page, type: "document" | "gallery" | "about", wi
   await page.goto("/editor/site-1");
   if (width < 768) {
     await page.getByRole("button", { name: win.title, exact: true }).click();
-    await page.getByRole("button", { name: "編輯此視窗", exact: true }).click();
+    await page.getByRole("button", { name: "編輯內容", exact: true }).click();
   }
   const editor = page.getByRole("dialog", { name: win.title, exact: true });
   await expect(editor.locator(`.${type === "document" ? "document" : type === "gallery" ? "gal" : "about"}-editor`)).toBeVisible();
@@ -178,7 +178,7 @@ for (const width of [320, 390, 430]) {
 
 async function reopenMobile(page: Page, name: string) {
   await page.getByRole("button", { name, exact: true }).click();
-  await page.getByRole("button", { name: "編輯此視窗", exact: true }).click();
+  await page.getByRole("button", { name: "編輯內容", exact: true }).click();
 }
 async function assertFits(page: Page, root: import("@playwright/test").Locator) {
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);

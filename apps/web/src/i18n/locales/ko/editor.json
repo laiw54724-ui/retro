@@ -115,16 +115,18 @@
     "emptyEditor": "아래의 추가를 눌러 첫 번째 창을 만들어 보세요.",
     "emptyVisitor": "이 데스크톱에는 아직 내용이 없습니다.",
     "desktop": "데스크톱",
-    "finishEditing": "편집 완료",
-    "editWindow": "이 창 편집",
+    "finishEditing": "완료",
+    "editWindow": "내용 편집",
     "toolbar": "모바일 편집 도구",
     "add": "추가",
-    "edit": "편집",
+    "edit": "창 설정",
     "theme": "테마",
     "preview": "미리보기",
     "addWindow": "창 추가",
-    "editWindowTitle": "창 편집",
-    "siteMenu": "사이트 옵션"
+    "editWindowTitle": "창 설정",
+    "siteMenu": "사이트 옵션",
+    "returnToContent": "{{title}} 내용으로 돌아가기",
+    "openWindowForContent": "창을 연 다음 “내용 편집”을 선택하세요."
   },
   "integrity": {
     "targetWindow": "창: {{name}}",
@@ -522,8 +524,7 @@
     "openAutomaticallyWhenVisitorsArrive": "방문자가 들어오면 자동으로 열기",
     "moveIconEarlier": "▲ 아이콘 앞으로",
     "moveIconLater": "▼ 아이콘 뒤로",
-    "duplicate": "복제",
-    "contentCloseThisPanelOpen": "내용: 이 패널을 닫고 창을 연 다음 \"이 창 편집\"을 눌러 텍스트나 이미지를 직접 눌러 편집하세요."
+    "duplicate": "복제"
   },
   "windowTitleBar": {
     "minimize": "최소화",

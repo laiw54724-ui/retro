@@ -9,7 +9,7 @@ test("default build hides P2 writers while reading saved colors", async ({ page 
   await page.setViewportSize({ width: 390, height: 850 });
   await page.goto("/editor/site-1");
   await page.getByRole("button", { name: "First.exe", exact: true }).click();
-  await page.getByRole("button", { name: "編輯", exact: true }).click();
+  await page.getByRole("button", { name: "視窗設定", exact: true }).click();
   await expect(page.locator("[data-appearance-p2-writer]")).toHaveCount(0);
   await expect(page.getByRole("dialog", { name: "First.exe", exact: true })).toHaveCSS("background-color", "rgb(51, 68, 85)");
 });
@@ -21,8 +21,8 @@ for (const width of [320, 390, 430]) {
     await page.setViewportSize({ width, height: 850 });
     await page.goto("/editor/site-1");
     await page.getByRole("button", { name: "First.exe", exact: true }).click();
-    await page.getByRole("button", { name: "編輯", exact: true }).click();
-    let sheet = page.getByRole("dialog", { name: "編輯視窗", exact: true });
+    await page.getByRole("button", { name: "視窗設定", exact: true }).click();
+    let sheet = page.getByRole("dialog", { name: "視窗設定", exact: true });
     await sheet.getByRole("textbox", { name: "視窗框體色碼", exact: true }).fill("#12");
     await expect(sheet.getByRole("textbox", { name: "視窗框體色碼", exact: true })).toHaveAttribute("aria-invalid", "true");
     await sheet.getByRole("textbox", { name: "視窗框體色碼", exact: true }).fill("#332211");
@@ -47,8 +47,8 @@ for (const width of [320, 390, 430]) {
     await page.reload();
     await page.getByRole("button", { name: "First.exe", exact: true }).click();
     await expect(page.getByRole("dialog", { name: "First.exe", exact: true })).toHaveCSS("background-color", "rgb(51, 34, 17)");
-    await page.getByRole("button", { name: "編輯", exact: true }).click();
-    sheet = page.getByRole("dialog", { name: "編輯視窗", exact: true });
+    await page.getByRole("button", { name: "視窗設定", exact: true }).click();
+    sheet = page.getByRole("dialog", { name: "視窗設定", exact: true });
     await sheet.getByRole("button", { name: "重設內容底色", exact: true }).click();
     expect(site.saved().windows[0].appearance?.contentBackground).toBe("#fefddd");
     await sheet.getByRole("button", { name: "套用視窗色彩", exact: true }).click();
@@ -109,8 +109,8 @@ test("gated warnings require visual wallpaper checking and hide unsupported cont
   await page.setViewportSize({ width: 390, height: 850 });
   await page.goto("/editor/site-1");
   await page.getByRole("button", { name: "First.exe", exact: true }).click();
-  await page.getByRole("button", { name: "編輯", exact: true }).click();
-  let sheet = page.getByRole("dialog", { name: "編輯視窗", exact: true });
+  await page.getByRole("button", { name: "視窗設定", exact: true }).click();
+  let sheet = page.getByRole("dialog", { name: "視窗設定", exact: true });
   await expect(sheet.getByText(/透明標籤遇到圖樣或圖片桌布需目視確認/)).toBeVisible();
   await sheet.getByRole("checkbox", { name: "自訂圖示名稱底色", exact: true }).check();
   await expect(sheet.getByText(/透明標籤遇到圖樣或圖片桌布需目視確認/)).toHaveCount(0);
@@ -119,8 +119,8 @@ test("gated warnings require visual wallpaper checking and hide unsupported cont
   await page.getByRole("button", { name: "關閉", exact: true }).click();
   await page.getByRole("button", { name: "Canvas.exe", exact: true }).click();
   await expect(page.getByRole("dialog", { name: "Canvas.exe", exact: true }).locator(".moodboard-stage")).toHaveCSS("background-color", "rgb(170, 34, 187)");
-  await page.getByRole("button", { name: "編輯", exact: true }).click();
-  sheet = page.getByRole("dialog", { name: "編輯視窗", exact: true });
+  await page.getByRole("button", { name: "視窗設定", exact: true }).click();
+  sheet = page.getByRole("dialog", { name: "視窗設定", exact: true });
   await expect(sheet.getByRole("textbox", { name: "內容底色色碼", exact: true })).toHaveCount(0);
   await expect(sheet.getByRole("textbox", { name: "視窗框體色碼", exact: true })).toBeVisible();
   await sheet.getByRole("button", { name: "關閉", exact: true }).click();

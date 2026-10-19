@@ -11,7 +11,7 @@ for (const [label, advertisement, visible] of [
     await page.setViewportSize({ width: 390, height: 850 });
     await page.goto("/editor/site-1");
     await page.getByRole("button", { name: "First.exe", exact: true }).click();
-    await page.getByRole("button", { name: "編輯", exact: true }).click();
+    await page.getByRole("button", { name: "視窗設定", exact: true }).click();
     await expect(page.locator("[data-appearance-p2-writer]")).toHaveCount(visible ? 1 : 0);
   });
 }
