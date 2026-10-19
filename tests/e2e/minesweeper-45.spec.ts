@@ -49,6 +49,7 @@ test(`owner selects difficulties, customizes them, and reaches the board at ${wi
   expect(await scroll.evaluate((node) => node.scrollLeft)).toBeGreaterThan(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
   await dialog.getByRole("spinbutton", { name: "地雷" }).fill("20");
+  await dialog.getByRole("spinbutton", { name: "地雷" }).press("Tab");
   await expect(dialog.getByRole("button", { name: "進階難度" })).toHaveAttribute("aria-pressed", "false");
   await expect.poll(() => {
     const saved = site.draft_document.windows.find((window) => window.type === "minesweeper");

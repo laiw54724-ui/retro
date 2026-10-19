@@ -97,6 +97,8 @@
     "thisUrlIsAlreadyTaken": "このURLはすでに使われています",
     "thisUrlIsAvailable": "このURLは使用できます",
     "checking": "確認中...",
+    "availabilityFailed": "URLを確認できませんでした。ネットワーク接続を確認して、もう一度お試しください。",
+    "retryAvailability": "確認を再試行",
     "desktopName": "デスクトップ名",
     "chooseAStartingTheme": "最初のテーマを選んでください",
     "chooseAStartingTemplate": "最初のテンプレートを選んでください",
