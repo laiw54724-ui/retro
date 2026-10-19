@@ -1,5 +1,7 @@
+import type { CSSProperties } from "react";
 import type { PreviewNavigation } from "./previewNavigation";
 import type { CollectionEntityV2, DesktopWindow, PostEntityV2, ProfileEntityV2, RetroTheme, SiteDocumentV2Input } from "@retrodesk/shared";
+import { resolveContentAppearance } from "../../lib/windowAppearance";
 import { useThemeView } from "../../lib/themeView";
 import { renderModule } from "../modules/registry";
 import type { LinkAction, ModuleCtx, ProfileDirectoryEntry } from "../modules/types";
@@ -51,6 +53,7 @@ function openExternal(url: string) {
 
 export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, mobile = false, editing = false, siteId, upload, onUpdate, profiles, posts, collections, profileId, initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
   const tv = useThemeView(theme);
+  const content = resolveContentAppearance(theme, win);
   const onLink = (action: LinkAction) => {
     if (editing) return; // links are inert while editing
     if (action.target === "window") { if (action.windowId) onOpenWindow?.(action.windowId); return; }
@@ -72,7 +75,7 @@ export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, m
   const update = (recipe: (current: DesktopWindow) => DesktopWindow, key?: string) => onUpdate?.(win.id, recipe, key);
 
   return (
-    <div className={`module-host module-${win.type}`} style={{ fontFamily: tv.fontFamily, color: tv.text, background: win.type === "document" || win.type === "gallery" || win.type === "links" ? "#fff" : tv.face }}>
+    <div className={`module-host module-${win.type}`} style={{ "--window-content-background": content.background, "--window-content-text": content.color, fontFamily: tv.fontFamily, color: "var(--window-content-text)", background: "var(--window-content-background)" } as CSSProperties}>
       {renderModule({ window: win, ctx, editing: ctx.editing, update })}
     </div>
   );

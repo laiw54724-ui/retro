@@ -1,3 +1,4 @@
+import { resolveDesktopLabelAppearance } from "../../lib/windowAppearance";
 import type { PreviewNavigation } from "./previewNavigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -103,7 +104,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
             {ordered.map((window) => (
               <button key={window.id} ref={(node) => { if (node) iconRefs.current.set(window.id, node); else iconRefs.current.delete(window.id); }} type="button" className="m-icon" aria-label={window.title} style={{ outline: editor && store.selectedId === window.id ? `2px dotted ${tv.text}` : "none" }} onClick={() => open(window.id)}>
                 <span className="m-tile" style={{ background: tv.tileBg, boxShadow: tv.tileShadow }}><Icon name={window.icon} size={40} /></span>
-                <span className="m-label" style={{ background: tv.labelBg, color: tv.labelColor, border: tv.labelBorder, borderRadius: tv.labelRadius }}>{window.title}</span>
+                <span className="m-label" style={resolveDesktopLabelAppearance(document.theme, window.appearance)}>{window.title}</span>
               </button>
             ))}
           </div>

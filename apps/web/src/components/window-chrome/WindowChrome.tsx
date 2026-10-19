@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useId, useLayoutEffect, useMemo
 import { createPortal } from "react-dom";
 import { resolveWindowChrome, type WindowChromeSection } from "@retrodesk/shared";
 import { useThemeView } from "../../lib/themeView";
-import { resolveWindowAppearance } from "../../lib/windowAppearance";
+import { resolveWindowAppearance, resolveWindowFrame } from "../../lib/windowAppearance";
 import { WindowTitleBar } from "./WindowTitleBar";
 import type { WindowChromeProps, WindowTitleBarProps } from "./types";
 import styles from "./WindowChrome.module.css";
@@ -36,7 +36,8 @@ export function WindowChromeSlot({ name, children }: { name: WindowChromeSection
 /** Stable frame/content DOM across presets. Layout, focus, and persistence belong to its host. */
 export function WindowChrome({ title, theme, appearance, chrome, icon, children, active = true, maximized = false, interactiveControls = false, presentation = "desktop", slots, fallbackSlots, titleBarLeading, titleBarTrailing, titleBarProps, controlLabels, contentProps, frameProps, style, bodyStyle, onMinimize, onMaximize, onClose }: WindowChromeProps) {
   const config = useMemo(() => resolveWindowChrome(chrome), [chrome]);
-  const tv = useThemeView(theme);
+  const baseView = useThemeView(theme);
+  const tv = { ...baseView, ...resolveWindowFrame(theme, appearance) };
   const titleView = resolveWindowAppearance(theme, appearance, active, { preset: config.preset });
   const [hosts, setHosts] = useState<SlotHosts>({});
   const [registrations, setRegistrations] = useState<Record<string, WindowChromeSection>>({});
