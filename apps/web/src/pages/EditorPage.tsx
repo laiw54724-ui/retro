@@ -396,7 +396,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   const migrationAudits = assetAudits.filter((entry) => entry.asset.storageScope === "legacy_public" || entry.asset.publicCopyRemaining);
 
   if (loadError) return <main className="not-found" style={{ fontFamily }}><div><h1 style={{ fontFamily }}>{t("shell.loadingError")}</h1><p>{loadError}</p><LanguageSwitcher /></div></main>;
-  if (loading || !store.document) return <div className="boot-screen" style={{ fontFamily }}>{common("app.loading")}</div>;
+  if (loading || !store.document) return <><div className="boot-screen" style={{ fontFamily }}>{common("app.loading")}</div>{leaveGuard.prompt}</>;
 
   async function uploadImage(file: File, kind: "image" | "icon" | "audio" = "image"): Promise<string | null> {
     const audio = kind === "audio";
@@ -445,41 +445,47 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
   async function confirmPublish() {
     if (upgradePaused.current) { setUpgradeRecoveryOpen(true); return; }
+    const isCurrentSession = captureSaveSession();
     setPublishing(true);
     setMessage("");
     try {
       const result = await api.publish(siteId, store.version);
+      if (!isCurrentSession() || upgradePaused.current) return;
       const absoluteUrl = new URL(result.url, window.location.origin).toString();
       store.markPublished(result.publishedVersion);
       setPublishPrompt(false);
       setPublishSuccess({ version: result.publishedVersion, url: absoluteUrl, artifactStatus: result.artifactStatus, retryable: result.retryable });
       await refreshAssetInventory();
     } catch (error) {
+      if (!isCurrentSession()) return;
       if (stopForUpgrade(error)) return;
       if (error instanceof ApiError && error.code === "version_conflict") {
         setConflict(true);
       }
       setMessage({ code: error instanceof ApiError ? error.code : undefined, fallback: "editor.publishingFailed" });
     } finally {
-      setPublishing(false);
+      if (isCurrentSession()) setPublishing(false);
     }
   }
 
   async function reloadRemote() {
+    const isCurrentSession = captureSaveSession();
     setLoading(true);
     try {
       const { site } = await api.getSite(siteId);
+      if (!isCurrentSession()) return;
       if (site.access_role === "viewer") {
-        navigate(`/auth?notice=${encodeURIComponent(t("page.nowViewOnly"))}`, { replace: true });
+        void leaveGuard.leaveAfterAccessLoss(() => navigate(`/auth?notice=${encodeURIComponent(t("page.nowViewOnly"))}`, { replace: true }));
         return;
       }
       applyLoadedSite(site);
       setConflict(false);
       setMessage(t("editor.reloadedTheLatestCloudDraft"));
     } catch (error) {
+      if (!isCurrentSession()) return;
       setMessage({ code: error instanceof ApiError ? error.code : undefined, fallback: "editor.reloadFailed" });
     } finally {
-      setLoading(false);
+      if (isCurrentSession()) setLoading(false);
     }
   }
 
