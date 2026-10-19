@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { THEME_PRESETS, type DesktopWindow, type RetroTheme, type SiteDocument } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
+import { useImageWriter } from "./ImageWriteContext";
 import { COMING_SOON, creatableModuleDefinitions, registry } from "../modules/registry";
 import { ThemeAppearanceEditor } from "./ThemeAppearanceEditor";
 import { FilePick } from "../modules/ui";
@@ -43,6 +44,7 @@ export function LeftPanel({ document, selectedId, view, onAdd, onSelect, onToggl
 }
 
 function AddTab({ onAdd }: { onAdd: Props["onAdd"] }) {
+  const imageWriter = useImageWriter();
   const { t } = useTranslation("editor");
   // The legacy coming-soon list contains product labels, not persisted window data.
   const comingSoonKeys: Record<string, "add.diary" | "add.characterProfile" | "add.visualNovel"> = { "日記": "add.diary", "角色檔案": "add.characterProfile", "視覺小說": "add.visualNovel" }; // i18n-ignore: lookup keys of legacy product labels
@@ -50,7 +52,7 @@ function AddTab({ onAdd }: { onAdd: Props["onAdd"] }) {
     <>
       <strong>{t("add.heading")}</strong>
       <span className="w98-hint">{t("add.hint")}</span>
-      {creatableModuleDefinitions.map((module) => (
+      {creatableModuleDefinitions.filter((module) => module.type !== "image" || imageWriter).map((module) => (
         <button key={module.type} type="button" className="w98-btn add-card" onClick={() => onAdd(module.type)}>
           <Icon name={module.icon} size={32} />
           <span className="add-card-text"><strong>{t(`modules.${module.type}.label`, { defaultValue: module.label })}</strong><span>{t(`modules.${module.type}.description`, { defaultValue: module.description })}</span></span>

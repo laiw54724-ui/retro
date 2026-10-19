@@ -46,6 +46,9 @@
     "divider": "Divider"
   },
   "image": {
+    "frame": "Frame",
+    "frameless": "Frameless",
+    "simpleFrame": "Simple frame",
     "settings": "Image settings",
     "source": "Image source",
     "upload": "Upload image…",
@@ -58,7 +61,7 @@
     "decorative": "Decorative image",
     "alt": "Alt text",
     "altHint": "Describe the image for screen readers.",
-    "decorativeHint": "Decorative images are skipped by screen readers. The saved alt text is kept if you switch back.",
+    "decorativeHint": "Visitors cannot click decorative images, and clicks pass through to objects underneath. Screen readers skip them; saved alt text is kept if you switch back.",
     "caption": "Caption",
     "showCaption": "Show caption",
     "placement": "Placement",

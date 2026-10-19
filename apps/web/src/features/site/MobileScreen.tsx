@@ -7,7 +7,8 @@ import { makeWindow, THEME_PRESETS, type CollectionEntityV2, type DesktopWindow,
 import { Icon } from "../../components/Icon";
 import { IconPicker } from "../modules/links/IconPicker";
 import { useThemeView } from "../../lib/themeView";
-import { RetroWindow } from "../../components/RetroWindow";
+import { ImageWindowShell } from "./ImageWindowShell";
+import { useImageWriter } from "../editor/ImageWriteContext";
 import { WindowChromeButton } from "../../components/window-chrome";
 import { WindowAppearanceEditor } from "../editor/WindowAppearanceEditor";
 import { WindowChromeEditor } from "../editor/WindowChromeEditor";
@@ -65,6 +66,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const now = new Date();
   const clock = formatTime(now, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
   const editor = mode === "editor";
+  const imageWriter = useImageWriter();
   const store = useEditorStore();
   const tv = useThemeView(document.theme);
   const [openId, setOpenId] = useState<string | null>(() => initialOpenId ?? (navigation?.openId && [...document.windows, ...(navigation.visitor?.source === document ? navigation.visitor.windows : [])].some((window) => window.id === navigation.openId) ? navigation.openId : null) ?? (mode === "visitor" ? document.windows.find((window) => window.type === "character-dialog" && window.content.autoShow)?.id ?? null : null));
@@ -118,7 +120,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
 
         {openWindow ? (
           <div style={{ position: "absolute", inset: 0, zIndex: 5 }}>
-            <RetroWindow
+            <ImageWindowShell window={openWindow} editor={editor}
               title={openWindow.title}
               icon={openWindow.icon}
               theme={document.theme}
@@ -167,7 +169,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
                 publicShareBaseUrl={publicShareBaseUrl}
                 siteHandle={siteHandle}
               />
-            </RetroWindow>
+            </ImageWindowShell>
           </div>
         ) : null}
       </div>
@@ -190,7 +192,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
           <div role="dialog" aria-label={t(({ add: "mobile.addWindow", edit: "mobile.editWindowTitle", theme: "mobile.theme" } as const)[sheet])} className="m-sheet w98-window" style={{ fontFamily }}>
             <div className="m-sheet-title"><strong>{t(({ add: "mobile.addWindow", edit: "mobile.editWindowTitle", theme: "mobile.theme" } as const)[sheet])}</strong><button type="button" className="m-btn sq" aria-label={common("actions.close")} onClick={() => setSheet(null)}>×</button></div>
             <div className="m-sheet-body">
-              {sheet === "add" ? creatableModuleDefinitions.map((module) => (
+              {sheet === "add" ? creatableModuleDefinitions.filter((module) => module.type !== "image" || imageWriter).map((module) => (
                 <button key={module.type} type="button" className="w98-btn m-add" onClick={() => { store.addWindow(module.type); setSheet(null); }}>
                   <Icon name={module.mobile.icon} size={32} />
                   <span className="add-card-text"><strong>{t(`modules.${module.type}.label`, { defaultValue: module.label })}</strong><span>{t(`modules.${module.type}.description`, { defaultValue: module.description })}</span></span>

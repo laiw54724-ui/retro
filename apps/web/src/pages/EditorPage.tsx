@@ -1,3 +1,4 @@
+import { ImageWriteProvider } from "../features/editor/ImageWriteContext";
 import { AppearanceWriteProvider } from "../features/editor/AppearanceWriteContext";
 import { DocumentUpgradeRecovery } from "../features/editor/DocumentUpgradeRecovery";
 import type { AppearanceApiLoad } from "../lib/appearanceCompatibility";
@@ -583,6 +584,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   }
 
   return (
+    <ImageWriteProvider siteId={siteId} apiOrigin={API_URL} load={appearanceLoad} blocked={upgradeRequired}>
     <AppearanceWriteProvider siteId={siteId} apiOrigin={API_URL} load={appearanceLoad} blocked={upgradeRequired}>
     <AssetSourceProvider siteId={siteId}>
     <EditorMediaProvider key={siteId} siteId={siteId}>
@@ -804,5 +806,6 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     </EditorMediaProvider>
     </AssetSourceProvider>
     </AppearanceWriteProvider>
+    </ImageWriteProvider>
   );
 }

@@ -1,3 +1,7 @@
+import { useImageWriter } from "./ImageWriteContext";
+import { WindowRenderer } from "../site/WindowRenderer";
+import type { ModuleCtx } from "../modules/types";
+import type { RetroTheme } from "@retrodesk/shared";
 import { LegacyLinkTargetButton } from "../navigation/LegacyLinkTargetButton";
 import { useId, useState, type ChangeEvent } from "react";
 import { translateSystemMessage } from "../../i18n/systemMessages";
@@ -13,7 +17,9 @@ type Props = {
   window: DesktopWindow;
   allWindows: DesktopWindow[];
   siteId: string;
-  update: (recipe: (window: DesktopWindow) => DesktopWindow) => void;
+  theme?: RetroTheme;
+  upload?: ModuleCtx["upload"];
+  update: (recipe: (window: DesktopWindow) => DesktopWindow, historyKey?: string) => void;
   onMessage: (message: string) => void;
 };
 
@@ -150,9 +156,11 @@ function MediaUpload({ siteId, label, onUploaded, onMessage }: {
   );
 }
 
-export function InspectorContent({ window, allWindows, siteId, update, onMessage }: Props) {
+export function InspectorContent({ window, allWindows, siteId, update, onMessage, theme, upload }: Props) {
+  const imageWriter = useImageWriter();
   const { t: tr } = useTranslation("editor");
   if (window.type === "image") {
+    if (imageWriter && theme) return <WindowRenderer window={window} theme={theme} allWindows={allWindows} siteId={siteId} upload={upload} editing imageControls onUpdate={(_id, recipe, key) => update(recipe, key)} />;
     return <section className="inspector-section" data-testid="image-reader-inspector">
       <div className="section-heading"><strong>{window.title}</strong></div>
       <p>{tr("documentCompatibility.imageReadOnly")}</p>

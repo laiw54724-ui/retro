@@ -675,3 +675,6 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 .p2-preview-content { padding: 10px; overflow-wrap: anywhere; }
 .p2-contrast-warning { padding: 6px; background: #fffbe7; color: #5c3600; border: 1px solid #9a8500; font-size: 12px; overflow-wrap: anywhere; }
 .p2-reset-actions { display: grid; gap: 8px; margin-top: 10px; }
+
+/* Image authoring selection handle overlays the visual object and stays reachable at canvas edges. */
+.image-move-handle { position: absolute; left: 0; top: 0; max-width: 100%; min-height: 22px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: move; touch-action: none; }
