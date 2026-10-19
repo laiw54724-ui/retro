@@ -20,12 +20,26 @@ function CharacterDialog({ window, ctx, update, editing }: ModuleProps<"characte
     const iconClass = surface.classList.contains("visitor-mobile") ? ".m-icon" : ".visitor-icon";
     const opener = Array.from(surface.querySelectorAll<HTMLButtonElement>(iconClass)).find((icon) => icon.dataset.windowId === window.id);
     const focusBeforeOpen = document.activeElement;
-    const focusFrame = requestAnimationFrame(() => {
+    let focusFrame = 0;
+    const removePointerListeners = () => {
+      document.removeEventListener("pointerdown", cancelEntryFocus, true);
+      document.removeEventListener("touchstart", cancelEntryFocus, true);
+    };
+    const cancelEntryFocus = (event: Event) => {
+      if (dialog.contains(event.target as Node)) return;
+      cancelAnimationFrame(focusFrame);
+      removePointerListeners();
+    };
+    document.addEventListener("pointerdown", cancelEntryFocus, true);
+    document.addEventListener("touchstart", cancelEntryFocus, true);
+    focusFrame = requestAnimationFrame(() => {
+      removePointerListeners();
       // Desktop and phone trees can coexist; only the visible character dialog receives focus.
       if (dialog.isConnected && dialog.getClientRects().length && document.activeElement === focusBeforeOpen && (focusBeforeOpen === document.body || focusBeforeOpen === opener)) root.focus();
     });
     return () => {
       cancelAnimationFrame(focusFrame);
+      removePointerListeners();
       if (dialog.contains(document.activeElement) || document.activeElement === document.body) {
         restoreFocusUnlessMoved(() => !dialog.isConnected ? opener : null);
       }

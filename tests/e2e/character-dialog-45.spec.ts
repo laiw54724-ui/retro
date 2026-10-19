@@ -146,3 +146,40 @@ test("a deferred character focus frame respects a newer icon click and a closed 
   await expect(dialog).toHaveCount(0);
   await expect(otherIcon).toBeFocused();
 });
+
+test("auto-show focus frame does not re-raise the character after another title bar is pressed", async ({ page }) => {
+  const character = makeWindow("character-dialog");
+  const about = makeWindow("about");
+  character.id = "welcome";
+  character.title = "Welcome.exe";
+  character.defaultOpen = false;
+  character.content.autoShow = true;
+  character.layout.desktop = { ...character.layout.desktop, x: 200, y: 40, w: 390, h: 400, z: 2 };
+  about.id = "other";
+  about.title = "About.exe";
+  about.defaultOpen = true;
+  about.layout.desktop = { ...about.layout.desktop, x: 650, y: 50, w: 340, h: 350, z: 1 };
+  const published = { ...structuredClone(documentFixture), windows: [character, about] } as SiteDocument;
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.addInitScript(() => {
+    const frames = new Map<number, FrameRequestCallback>();
+    let next = 1;
+    window.requestAnimationFrame = (callback) => { const id = next++; frames.set(id, callback); return id; };
+    window.cancelAnimationFrame = (id) => { frames.delete(id); };
+    Object.assign(window, { flushFocusFrames: () => { const queued = [...frames.values()]; frames.clear(); queued.forEach((callback) => callback(performance.now())); } });
+  });
+  await page.route("**/api/public/sites/demo", (route) => route.fulfill({ json: { site: { username: "demo", site_name: "Demo", published_document: published, published_version: 1, published_at: "2026-10-17T00:00:00.000Z" } } }));
+  await page.goto("/@demo");
+  const surface = page.locator(".visitor-desktop");
+  const welcome = surface.getByRole("dialog", { name: "Welcome.exe" });
+  const other = surface.getByRole("dialog", { name: "About.exe" });
+  await expect(welcome).toBeVisible();
+  await expect(other).toBeVisible();
+  await expect.poll(() => page.evaluate(() => document.activeElement === document.body)).toBe(true);
+  await other.locator(".retro-titlebar").click();
+  await expect.poll(() => other.evaluate((node) => Number(getComputedStyle(node.parentElement!).zIndex))).toBeGreaterThan(await welcome.evaluate((node) => Number(getComputedStyle(node.parentElement!).zIndex)));
+  await expect.poll(() => page.evaluate(() => document.activeElement === document.body)).toBe(true);
+  await page.evaluate(() => (window as typeof window & { flushFocusFrames: () => void }).flushFocusFrames());
+  expect(await other.evaluate((node) => Number(getComputedStyle(node.parentElement!).zIndex))).toBeGreaterThan(await welcome.evaluate((node) => Number(getComputedStyle(node.parentElement!).zIndex)));
+  expect(await page.evaluate(() => document.activeElement === document.body)).toBe(true);
+});
