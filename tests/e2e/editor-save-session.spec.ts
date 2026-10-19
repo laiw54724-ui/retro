@@ -275,7 +275,7 @@ test('390px save failure retains Retry after the notice closes', async ({ page }
 test('real current-session conflict still pauses saving and retains the edit', async ({ page }) => {
   const state = await fixture(page); state.fail(409);
   await page.getByLabel('簡介', { exact: true }).fill('Conflict bio');
-  await expect(page.locator('.editor-message')).toContainText('另一個分頁');
+  await expect(page.locator('.editor-message[role="alert"]')).toContainText('另一個分頁');
   await expect(page.getByRole('button', { name: '重試儲存', exact: true })).toHaveCount(0);
   await page.waitForTimeout(750); expect(state.saves).toHaveLength(1);
   await expect(page.getByLabel('簡介', { exact: true })).toHaveValue('Conflict bio');
