@@ -216,6 +216,24 @@ test(`phone ${width}px Add and inline authoring keep Back reachable after switch
   await page.getByLabel("Image URL", { exact: true }).fill(SOURCE); await page.getByLabel("Image URL", { exact: true }).press("Enter");
   await page.getByRole("combobox", { name: "Frame", exact: true }).selectOption("none");
   await page.getByLabel("Image role").selectOption("decorative");
+  const help = page.getByRole("region", { name: "Image settings", exact: true }).getByText("Visitors cannot click decorative images", { exact: false });
+  const contrast = await help.evaluate((element) => {
+    const rgb = (value: string) => (value.match(/[\d.]+/g) ?? []).map(Number);
+    const luminance = (color: number[]) => color.slice(0, 3).map((value) => {
+      const channel = value / 255; return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+    }).reduce((sum, value, index) => sum + value * [0.2126, 0.7152, 0.0722][index], 0);
+    let parent: Element | null = element;
+    while (parent) {
+      const background = rgb(getComputedStyle(parent).backgroundColor);
+      if (background.length === 3 || background[3] === 1) {
+        const pair = [luminance(rgb(getComputedStyle(element).color)), luminance(background)].sort((a, b) => a - b);
+        return (pair[1] + 0.05) / (pair[0] + 0.05);
+      }
+      parent = parent.parentElement;
+    }
+    throw new Error("No opaque editor background");
+  });
+  expect(contrast).toBeGreaterThanOrEqual(4.5);
   await page.screenshot({ path: info.outputPath(`image-authoring-${width}.png`), fullPage: false });
   await page.getByRole("button", { name: "Finish editing", exact: true }).click();
   await expect(page.locator(".m-screen [data-image-shell='none']")).toBeVisible();
