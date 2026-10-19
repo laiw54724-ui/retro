@@ -486,5 +486,12 @@
   "linkSummary": {
     "openWindow": "Opens window: {{title}}",
     "untitledWindow": "Untitled window"
+  },
+  "navigationTargets": {
+    "choose": "Choose destination…",
+    "apply": "Apply",
+    "removeTarget": "Remove destination",
+    "urlHelp": "Use a complete HTTP, HTTPS or mailto URL. Changes are saved only when you apply.",
+    "unavailable": "This destination is unavailable. Choose another target."
   }
 }

@@ -1,3 +1,4 @@
+import type { NavigationRequest } from "../../navigation/linkDestination";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -8,7 +9,7 @@ export type Route = { screen: IgScreen; profileId: string; postId: string | null
 export type HistoryFrame = { route: Route; scrollTop: number };
 
 /** Visitor-only Instagram state. Lives in memory; never writes the document or API. */
-export function useIgSession(highlightCount: (profileId: string) => number, entryProfileId = "entry", sessionScope = "ig", initialPostId: string | null = null, persist?: { restore: { route: Route; history: HistoryFrame[] } | null; save: (state: { route: Route; history: HistoryFrame[] }) => void }) {
+export function useIgSession(highlightCount: (profileId: string) => number, entryProfileId = "entry", sessionScope = "ig", initialPostId: string | null = null, persist?: { restore: { route: Route; history: HistoryFrame[] } | null; save: (state: { route: Route; history: HistoryFrame[] }) => void }, request?: NavigationRequest) {
   const { t: tr } = useTranslation("instagram");
   // A route handed over by a previous renderer (rotation) is used for this mount only; a real scope change starts fresh.
   const restored = useRef(persist?.restore ?? null);
@@ -99,6 +100,13 @@ export function useIgSession(highlightCount: (profileId: string) => number, entr
     setSheetId(null);
     closeStory();
   };
+  useEffect(() => {
+    if (!request || request.consumed) return;
+    request.consumed = true;
+    const next: Route = { screen: request.postId ? "post" : "profile", profileId: request.profileId, postId: request.postId, collectionId: null, peopleKind: null };
+    if (route.profileId === next.profileId && route.screen === next.screen && route.postId === next.postId) { if (scrollRef.current) scrollRef.current.scrollTop = 0; closeStory(); return; }
+    push(next);
+  }, [request?.requestId]);
   const go = (screen: Exclude<IgScreen, "post" | "directory" | "collection" | "people">) => {
     history.current = [];
     pendingScroll.current = 0;

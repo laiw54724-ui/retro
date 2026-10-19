@@ -1,3 +1,4 @@
+import { restoreNavigationFocus, useVisitorNavigation } from "../navigation/useVisitorNavigation";
 import { resolveDesktopLabelAppearance } from "../../lib/windowAppearance";
 import type { PreviewNavigation } from "./previewNavigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -28,6 +29,7 @@ type Props = {
   /** Draw the phone bezel and status bar (preview and editor); the real visitor page is full screen. */
   framed?: boolean;
   siteId?: string;
+  navigationSiteId?: string | null;
   upload?: (file: File, kind?: "image" | "icon" | "audio") => Promise<string | null>;
   onPreview?: () => void;
   profiles?: ProfileEntityV2[];
@@ -55,7 +57,7 @@ type Props = {
 };
 
 /** The single-window phone experience. Used for visitors, the editor preview and the mobile editor. */
-export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview, profiles, posts, collections, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument, initialOpenId, initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle }: Props) {
+export function MobileScreen({ document, mode, framed = false, siteId, upload, onPreview, profiles, posts, collections, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument, initialOpenId, initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle, navigationSiteId }: Props) {
   const { t } = useTranslation("editor");
   const { t: common } = useTranslation("common");
   const { t: musicText } = useTranslation("music");
@@ -65,18 +67,19 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const editor = mode === "editor";
   const store = useEditorStore();
   const tv = useThemeView(document.theme);
-  const [openId, setOpenId] = useState<string | null>(() => initialOpenId ?? (navigation?.openId && document.windows.some((window) => window.id === navigation.openId) ? navigation.openId : null) ?? (mode === "visitor" ? document.windows.find((window) => window.type === "character-dialog" && window.content.autoShow)?.id ?? null : null));
+  const [openId, setOpenId] = useState<string | null>(() => initialOpenId ?? (navigation?.openId && [...document.windows, ...(navigation.visitor?.source === document ? navigation.visitor.windows : [])].some((window) => window.id === navigation.openId) ? navigation.openId : null) ?? (mode === "visitor" ? document.windows.find((window) => window.type === "character-dialog" && window.content.autoShow)?.id ?? null : null));
   const [sheet, setSheet] = useState<Sheet>(null);
   const [inlineEdit, setInlineEdit] = useState(false);
   const iconRefs = useRef(new Map<string, HTMLButtonElement>());
   const music = useMusicPlayback();
   const ordered = useMemo(() => [...document.windows].sort((a, b) => a.layout.mobile.order - b.layout.mobile.order), [document.windows]);
-  const openWindow = ordered.find((window) => window.id === openId) ?? null;
+  const visitor = useVisitorNavigation({ document, siteId: navigationSiteId, profileDirectory, profileIdsByWindow, navigation, editing: editor, recordReturns: true, onOpen: (window) => open(window.id, true) });
+  const openWindow = visitor.windows.find((window) => window.id === openId) ?? null;
   const selected = document.windows.find((window) => window.id === store.selectedId) ?? null;
 
   useEffect(() => () => stopAllMedia(), []);
-  const open = (id: string) => { if (openId && openId !== id) stopWindowMedia(openId); if (navigation) navigation.openId = id; setOpenId(id); setInlineEdit(false); if (editor) store.select(id); };
-  const back = () => { const closingId = openId; if (closingId) stopWindowMedia(closingId); if (navigation) navigation.openId = null; setOpenId(null); setInlineEdit(false); if (closingId) requestAnimationFrame(() => iconRefs.current.get(closingId)?.focus()); };
+  const open = (id: string, fromNavigation = false) => { if (!fromNavigation) visitor.clearReturns(); if (openId && openId !== id) stopWindowMedia(openId); if (navigation) navigation.openId = id; setOpenId(id); setInlineEdit(false); if (editor) store.select(id); };
+  const back = () => { const closingId = openId; if (closingId) stopWindowMedia(closingId); const previous = visitor.back(openId); const returning = previous && visitor.windows.some((window) => window.id === previous.windowId) ? previous : null; if (navigation) navigation.openId = returning?.windowId ?? null; setOpenId(returning?.windowId ?? null); setInlineEdit(false); if (returning) restoreNavigationFocus(returning.focusKey); else if (closingId) requestAnimationFrame(() => iconRefs.current.get(closingId)?.focus()); };
   useEffect(() => {
     if (!openId) return;
     // preventDefault marks the key as handled, so a surrounding preview does not also close on the same Escape
@@ -125,7 +128,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
               interactiveControls
               controlLabels={{ close: common("actions.close") }}
               onClose={back}
-              titleBarLeading={<WindowChromeButton className="m-btn m-back" onClick={back}>‹ {t("mobile.desktop")}</WindowChromeButton>}
+              titleBarLeading={<WindowChromeButton className="m-btn m-back" onClick={back}>‹ {visitor.hasReturn ? common("auth.back") : t("mobile.desktop")}</WindowChromeButton>}
               titleBarTrailing={editor
                 ? <WindowChromeButton className="m-btn m-edit-toggle" aria-pressed={inlineEdit} onClick={() => setInlineEdit(!inlineEdit)}>{t(inlineEdit ? "mobile.finishEditing" : "mobile.editWindow")}</WindowChromeButton>
                 : <MobileSiteMenu label={t("mobile.siteMenu")} playing={music.windowId === openWindow.id && music.status === "playing"} playingLabel={musicText("playback.playing")} />}
@@ -135,7 +138,10 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
                 theme={document.theme}
                 mobile
                 editing={editor && inlineEdit}
-                allWindows={document.windows}
+                allWindows={visitor.windows}
+                onNavigate={editor ? undefined : visitor.navigate}
+                navigationSiteId={navigationSiteId}
+                navigationRequest={visitor.requests[openWindow.id]}
                 siteId={siteId}
                 upload={upload}
                 onUpdate={store.updateWindow}

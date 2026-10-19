@@ -1,51 +1,10 @@
-import { useMemo, useState } from "react";
+import { LinkTargetPicker } from "../../navigation/LinkTargetPicker";
 import { useTranslation } from "react-i18next";
 import { ModalDialog } from "../../../components/ModalDialog";
 import { pathLabel, rootLabel, type DeleteImpact, type Folder, type MoveOption, type TargetOption } from "./explorerModel";
 
-export function TargetPickerDialog({ title, hint, confirmLabel, options, onPick, onClose }: {
-  title: string; hint?: string; confirmLabel: string; options: TargetOption[]; onPick: (option: TargetOption) => void; onClose: () => void;
-}) {
-  const { t: tr } = useTranslation("modules");
-  const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState<TargetOption | null>(null);
-  const shown = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    return needle ? options.filter((option) => option.label.toLowerCase().includes(needle) || option.group.toLowerCase().includes(needle)) : options;
-  }, [options, query]);
-  const groups = useMemo(() => [...new Set(shown.map((option) => option.group))], [shown]);
-  const isSelected = (option: TargetOption) => selected?.kind === option.kind && selected.id === option.id;
-  return (
-    <ModalDialog
-      title={title}
-      onClose={onClose}
-      width={520}
-      actions={<><button type="button" className="w98-btn" onClick={onClose}>{tr("iconPicker.cancel")}</button><button type="button" className="w98-btn primary" disabled={!selected} onClick={() => selected && onPick(selected)}>{confirmLabel}</button></>}
-    >
-      {hint ? <p className="w98-hint">{hint}</p> : null}
-      <label className="w98-field"><span>{tr("explorerDialogs.search")}</span><input data-autofocus className="w98-input" type="search" value={query} placeholder={tr("explorerDialogs.enterAWindowOcOr")} onChange={(event) => setQuery(event.target.value)} /></label>
-      {options.length === 0 ? <p className="explorer-empty">{tr("explorerDialogs.thisDesktopHasNoWindows")}</p> : null}
-      {options.length > 0 && shown.length === 0 ? <p className="explorer-empty" role="status">{tr("explorerDialogs.notFound", { query })}</p> : null}
-      <div className="target-list w98-sunken" role="listbox" aria-label={tr("explorerDialogs.shortcutTarget")}>
-        {groups.map((group) => (
-          <div key={group} role="group" aria-label={group}>
-            <strong className="target-group">{group}</strong>
-            {shown.filter((option) => option.group === group).map((option) => (
-              <button
-                key={`${option.kind}:${option.id}`}
-                type="button"
-                role="option"
-                aria-selected={isSelected(option)}
-                className={"target-option" + (isSelected(option) ? " selected" : "")}
-                onClick={() => setSelected(option)}
-                onDoubleClick={() => onPick(option)}
-              >{option.label}</button>
-            ))}
-          </div>
-        ))}
-      </div>
-    </ModalDialog>
-  );
+export function TargetPickerDialog({ title, hint, confirmLabel, options, onPick, onClose }: { title: string; hint?: string; confirmLabel: string; options: TargetOption[]; onPick: (option: TargetOption) => void; onClose: () => void }) {
+  return <LinkTargetPicker title={title} hint={hint} confirmLabel={confirmLabel} options={options} onClose={onClose} onApply={(value) => { if (value.kind === "target") onPick(value.option); }} />;
 }
 
 export function MoveDialog({ itemName, kindLabel, options, onPick, onClose }: {

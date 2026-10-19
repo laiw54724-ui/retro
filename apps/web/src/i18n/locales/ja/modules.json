@@ -486,5 +486,12 @@
   "linkSummary": {
     "openWindow": "ウィンドウを開く：{{title}}",
     "untitledWindow": "無題のウィンドウ"
+  },
+  "navigationTargets": {
+    "choose": "移動先を選択…",
+    "apply": "適用",
+    "removeTarget": "移動先を削除",
+    "urlHelp": "完全な HTTP、HTTPS または mailto URL を入力してください。適用するまで変更は保存されません。",
+    "unavailable": "この移動先は利用できません。別の対象を選択してください。"
   }
 }

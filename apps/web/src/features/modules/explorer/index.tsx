@@ -1,9 +1,10 @@
+import { targetCatalog } from "../../navigation/targetCatalog";
 import { useEffect, useId, useMemo, useRef, useState, type DragEvent, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import type { ModuleProps } from "../types";
 import { Icon } from "../../../components/Icon";
 import { IconPickerAction } from "../links/IconPicker";
-import { buildPublicEntityUrl } from "../../../lib/publicShare";
+
 import { DeleteFolderDialog, MoveDialog, TargetPickerDialog } from "./ExplorerDialogs";
 import {
   rootLabel, canCreateFolder, canCreateShortcut, deleteImpact, moveItem, moveOptions, nextOrderIn, pathLabel, removeFolder,
@@ -56,11 +57,13 @@ function RenameInput({ label, value, onCommit, onCancel }: { label: string; valu
 
 function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer"> & { editing: boolean }) {
   const { t: tr } = useTranslation("modules");
-  const [folderId, setFolderId] = useState<string | null>(null);
+  const visit = !editing ? ctx.navigation?.visitor : undefined;
+  const restored = visit?.explorer[window.id];
+  const [folderId, setFolderId] = useState<string | null>(() => restored?.folderId && window.content.folders.some((folder) => folder.id === restored.folderId) ? restored.folderId : null);
   const [selected, setSelected] = useState<Item | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(restored?.query ?? "");
   const [status, setStatus] = useState("");
   const [dragging, setDragging] = useState<Item | null>(null);
   const [dropOver, setDropOver] = useState<string | null>(null);
@@ -68,6 +71,7 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
   const idPrefix = useId();
   const coarse = useCoarsePointer(ctx.mobile);
   const content = window.content;
+  useEffect(() => { if (visit) visit.explorer[window.id] = { folderId, query }; }, [visit, window.id, folderId, query]);
   const foldersById = useMemo(() => new Map(content.folders.map((folder) => [folder.id, folder])), [content.folders]);
   const active = folderId ? foldersById.get(folderId) ?? null : null;
   const setContent = (next: ExplorerContent, key?: string) => update((current) => ({ ...current, content: next }), key);
@@ -90,13 +94,7 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
   const search = query.trim().toLowerCase();
   const searchResults = search ? content.shortcuts.filter((shortcut) => shortcut.label.toLowerCase().includes(search)) : [];
 
-  const targetOptions: TargetOption[] = useMemo(() => [
-    ...ctx.windows.filter((candidate) => candidate.id !== window.id).map((candidate) => ({ kind: "window" as const, id: candidate.id, label: candidate.title || tr("explorer.untitledWindow"), group: tr("explorer.window") })),
-    ...(ctx.profileDirectory ?? []).flatMap((entry) => [
-      { kind: "profile" as const, id: entry.id, label: entry.profile.name || entry.profile.username, group: "OC" },
-      ...entry.posts.map((post) => ({ kind: "post" as const, id: post.id, label: `${entry.profile.name || entry.profile.username}：${post.title || post.caption || post.id}`, group: tr("explorer.post") }))
-    ])
-  ], [ctx.windows, ctx.profileDirectory, window.id]);
+  const targetOptions: TargetOption[] = useMemo(() => targetCatalog({ siteId: ctx.navigationSiteId ?? ctx.siteId ?? null, windows: ctx.windows, profiles: ctx.profileDirectory ?? [] }, { window: tr("explorer.window"), profile: "OC", post: tr("explorer.post") }, window.id), [ctx.windows, ctx.profileDirectory, ctx.navigationSiteId, ctx.siteId, window.id, tr]);
   // Only call a shortcut broken when the host actually told us what exists; otherwise we cannot know.
   const canVerify = { window: ctx.windows.length > 0, profile: !!ctx.profileDirectory, post: !!ctx.profileDirectory };
   const statusOf = (shortcut: Shortcut) => targetStatus(shortcut.target, targetOptions, canVerify);
@@ -178,14 +176,10 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
     if (editing) { setStatus(tr("explorer.shortcutsDontNavigateWhileEditing")); return; }
     const state = statusOf(shortcut);
     if (state.status === "missing") { setStatus(tr("explorer.thisShortcutsTargetNoLonger")); return; }
-    if (shortcut.target.kind === "window") { ctx.onLink({ target: "window", windowId: shortcut.target.id, label: shortcut.label }); return; }
-    if (ctx.publicShareBaseUrl) {
-      const base = new URL(ctx.publicShareBaseUrl, globalThis.location.origin);
-      const handle = decodeURIComponent(base.pathname.replace(/^\/@/, "").split("/")[0] ?? "");
-      globalThis.location.assign(buildPublicEntityUrl(base.origin, handle, shortcut.target.kind === "profile" ? "oc" : "post", shortcut.target.id));
-      return;
-    }
-    if (shortcut.target.kind === "profile") ctx.onProfileSelect?.(shortcut.target.id);
+    // Legacy public v1 has no site namespace; retain its source-local window callback only.
+    if (!ctx.navigationSiteId && shortcut.target.kind === "window") { ctx.onLink({ target: "window", windowId: shortcut.target.id }); return; }
+    const result = ctx.onNavigate?.(shortcut.target);
+    if (!result?.ok) setStatus(tr("navigationTargets.unavailable"));
   }
   function openItem(item: Item) {
     if (item.kind === "folder") { setFolderId(item.id); setSelected(null); setStatus(""); return; }
@@ -251,6 +245,7 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
         <button
           type="button"
           className="explorer-open"
+          data-navigation-focus={`explorer:${window.id}:${item.kind}:${item.id}`}
           aria-label={name}
           aria-describedby={descId}
           aria-pressed={editing ? isSelected : undefined}
@@ -290,7 +285,7 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
       ) : null}
 
       {search ? (
-        <ul className="explorer-results" aria-label={tr("explorer.searchResults")}>{searchResults.map((shortcut) => <li key={shortcut.id}><button type="button" onClick={() => openShortcut(shortcut)}>▣ {shortcut.label}</button><small>{pathLabel(content.folders, shortcut.parentId)}</small></li>)}</ul>
+        <ul className="explorer-results" aria-label={tr("explorer.searchResults")}>{searchResults.map((shortcut) => <li key={shortcut.id}><button type="button" data-navigation-focus={`explorer:${window.id}:shortcut:${shortcut.id}`} onClick={() => openShortcut(shortcut)}>▣ {shortcut.label}</button><small>{pathLabel(content.folders, shortcut.parentId)}</small></li>)}</ul>
       ) : (
         <div className="explorer-grid" role="list" aria-label={active?.name ?? rootLabel()} onClick={(event) => { if (event.target === event.currentTarget) select(null); }}>
           {folders.map((folder) => renderTile({ kind: "folder", id: folder.id }, folder.name, tr("explorer.folderItems", { v1: folderItemCount(folder.id) }), { glyph: "📁", icon: folder.icon, draft: folder.visibility === "draft" }))}

@@ -1,0 +1,5 @@
+.list { max-height: 45dvh; overflow: auto; display: grid; gap: 4px; padding: 6px; }
+.option { min-height: 44px; text-align: left; white-space: normal; overflow-wrap: anywhere; }
+.option[aria-selected="true"] { outline: 2px solid #000080; outline-offset: -3px; font-weight: bold; }
+.types { display: flex; gap: 6px; flex-wrap: wrap; }
+.types button { min-height: 44px; }
