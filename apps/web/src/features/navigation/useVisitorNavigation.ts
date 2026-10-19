@@ -5,6 +5,7 @@ import type { PreviewNavigation } from "../site/previewNavigation";
 import type { InternalDestination, NavigationRequest } from "./linkDestination";
 import { dispatchUiActions } from "./dispatchUiActions";
 import { createEntityViewer } from "./createEntityViewer";
+export { restoreNavigationFocus } from "./navigationFocus";
 export type ReturnFrame = { windowId: string; openedWindowId: string; focusKey: string | null };
 export type VisitorSession = { source: SiteDocument | null; windows: DesktopWindow[]; requests: Record<string, NavigationRequest>; nextRequest: number; explorer: Record<string, { folderId: string | null; query: string }>; returns: ReturnFrame[] };
 export const createVisitorSession = (): VisitorSession => ({ source: null, windows: [], requests: {}, nextRequest: 0, explorer: {}, returns: [] });
@@ -41,8 +42,4 @@ export function useVisitorNavigation(options: { document: SiteDocument; siteId?:
     }
   });
   return { windows, requests: saved.requests, navigate, resetWindow: (id: string) => resetVisitorWindow(saved, id, options.navigation), hasReturn: saved.returns.length > 0, clearReturns: () => { saved.returns = []; }, back: (currentId: string | null) => saved.returns.at(-1)?.openedWindowId === currentId ? saved.returns.pop()! : null };
-}
-export function restoreNavigationFocus(key: string | null) {
-  if (!key) return;
-  requestAnimationFrame(() => Array.from(document.querySelectorAll<HTMLElement>("[data-navigation-focus]")).find((node) => node.dataset.navigationFocus === key)?.focus());
 }
