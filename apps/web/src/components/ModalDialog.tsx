@@ -83,7 +83,7 @@ export function ModalDialog({ title, onClose, children, actions, dismissOnBackdr
       onContextMenu={contain}
       onClick={(event) => { event.stopPropagation(); if (dismissOnBackdrop && event.target === event.currentTarget) onClose(); }}
     >
-      <div ref={root} role="dialog" aria-modal="true" aria-labelledby={titleId} className="modal-card w98-window" style={{ width: `min(${width}px, 100%)` }}>
+      <div ref={root} role="dialog" aria-modal="true" aria-labelledby={titleId} className="modal-card w98-window" style={{ width: `min(${width}px, 100%)`, maxWidth: "calc(100vw - 32px)", minWidth: 0 }}>
         <div className="w98-titlebar"><strong id={titleId} className="grow">{title}</strong><button type="button" className="w98-titlebtn" aria-label={tr("editor.close")} onClick={onClose}>×</button></div>
         <div className="modal-body">{children}</div>
         {actions ? <div className="modal-actions">{actions}</div> : null}

@@ -30,7 +30,7 @@ export type PaintWorkspaceProps = {
   onEngineReady?: (engine: PaintEngine | null) => void;
 };
 
-/** Local operation UI. No document, asset, or site-save channel is present. */
+/** Canvas operation UI. Hosts may supply an explicit snapshot save channel. */
 export function PaintWorkspace({ labels = englishPaintLabels, initialSize = DEFAULT_SIZE, onEngineReady, onSave, saveLabels, saveDisabled = false }: PaintWorkspaceProps) {
   const [saving, setSaving] = useState(false);
   const saveInFlight = useRef(false);

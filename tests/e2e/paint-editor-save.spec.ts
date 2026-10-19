@@ -74,10 +74,11 @@ async function draw(page: Page, direction = "ArrowRight") {
 const saveName = "儲存 PNG 到新相簿";
 const galleries = (doc: SiteDocumentV2Input) => doc.windows.filter((window) => window.type === "gallery");
 
-test("formal entry saves a new PNG/Gallery, retains original, supports document undo and reload", async ({ page }) => {
+test("formal entry saves a new PNG/Gallery, retains original, supports document undo and reload", async ({ page }, info) => {
   const state = await fixture(page); await draw(page);
   await page.waitForTimeout(750); expect(state.writes).toHaveLength(0);
   await state.dialog.getByLabel("作品名稱", { exact: true }).fill("My Paint");
+  await page.screenshot({ path: info.outputPath("paint-editor-desktop.png"), fullPage: false });
   await state.dialog.getByRole("button", { name: saveName, exact: true }).click();
   await expect.poll(() => galleries(state.docs["site-1"]).length).toBe(1);
   expect(state.uploads).toHaveLength(1);
@@ -133,9 +134,18 @@ for (const width of [320, 390]) test(`phone-visible draw/export/save at ${width}
   const state = await fixture(page, width); await draw(page);
   const download = page.waitForEvent("download");
   await state.dialog.getByRole("button", { name: "匯出 PNG", exact: true }).click();
-  const png = await readFile((await download).path()!);
+  const pngPath = await (await download).path();
+  if (!pngPath) throw new Error("PNG download has no local path");
+  const png = await readFile(pngPath);
   expect(png.readUInt32BE(16)).toBe(640); expect(png.readUInt32BE(20)).toBe(480);
   await expect(state.dialog.getByRole("button", { name: saveName, exact: true })).toBeEnabled();
+  const bounds = await state.dialog.boundingBox();
+  expect(bounds!.x).toBeGreaterThanOrEqual(0);
+  expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width);
+  expect(await state.dialog.locator("button, input, select").evaluateAll((controls, viewportWidth) => controls.every((control) => {
+    const rect = control.getBoundingClientRect();
+    return rect.left >= 0 && rect.right <= viewportWidth;
+  }), width)).toBe(true);
   await page.screenshot({ path: info.outputPath(`paint-editor-${width}.png`), fullPage: false });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await state.dialog.getByRole("button", { name: saveName, exact: true }).click();
@@ -152,4 +162,14 @@ test("Paint command Undo never rewinds the editor document history", async ({ pa
   await expect(state.dialog.getByRole("button", { name: saveName, exact: true })).toBeDisabled();
   await page.waitForTimeout(750);
   expect(state.docs["site-1"].windows[0].title).toBe("Keep this title");
+  await draw(page);
+  await page.goBack();
+  const leave = page.getByRole("dialog", { name: "離開編輯器？", exact: true });
+  await expect(leave).toBeVisible();
+  await leave.getByRole("button", { name: "保留並繼續編輯", exact: true }).press("ControlOrMeta+z");
+  await page.waitForTimeout(750);
+  expect(state.docs["site-1"].windows[0].title).toBe("Keep this title");
+  await leave.getByRole("button", { name: "保留並繼續編輯", exact: true }).press("ControlOrMeta+y");
+  await leave.getByRole("button", { name: "保留並繼續編輯", exact: true }).click();
+  await expect(state.dialog.getByRole("button", { name: saveName, exact: true })).toBeEnabled();
 });

@@ -29,7 +29,7 @@ function hasUnsavedWork(siteId: string) {
 
 type ExitAction = () => void | Promise<void>;
 
-/** Covers canonical save state and registered theme preview, not module-local input buffers. */
+/** Covers canonical save state and explicitly registered local work, including theme preview. */
 export function useEditorLeaveGuard(siteId: string) {
   const { t } = useTranslation("editor");
   const [action, setAction] = useState<ExitAction | null>(null);
@@ -61,7 +61,7 @@ export function useEditorLeaveGuard(siteId: string) {
     else if (action) { setAction(null); void run(action); }
   };
   const prompt = blocker.state === "blocked" || action ? (
-    <ModalDialog title={t("saveSession.leaveTitle")} onClose={stay} dismissOnBackdrop={false} actions={<>
+    <ModalDialog title={t("saveSession.leaveTitle")} onClose={stay} dismissOnBackdrop={false} containShortcuts actions={<>
       <button type="button" className="w98-btn primary" data-autofocus onClick={stay}>{t("saveSession.stay")}</button>
       <button type="button" className="w98-btn" onClick={leave}>{t("saveSession.leave")}</button>
     </>}>
