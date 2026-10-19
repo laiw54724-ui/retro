@@ -1,24 +1,17 @@
-import { createContext, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { useEditorStore } from "../../editor/store";
-import { didMediaHistoryChange } from "../../media/windowMediaSession";
+import { getIgDraftSession, type IgFieldDraft } from "./igDraftSession";
 import type { DraftError, DraftResult } from "./igDraftValidation";
 import styles from "./ocEditor.module.css";
 
-type Draft = { base: string; text: string; error?: DraftError };
+type Draft = IgFieldDraft;
 const DraftContext = createContext<{ drafts: Map<string, Draft>; epoch: number } | null>(null);
 
 /** Session-only drafts survive profile/section switches, but never history travel or reload. */
 export function IgDraftProvider({ children }: { children: ReactNode }) {
-  const drafts = useRef(new Map<string, Draft>());
-  const [epoch, setEpoch] = useState(0);
-  useEffect(() => useEditorStore.subscribe((state, previous) => {
-    if (state.siteId !== previous.siteId || didMediaHistoryChange(state, previous)) {
-      drafts.current.clear();
-      setEpoch((value) => value + 1);
-    }
-  }), []);
-  return <DraftContext.Provider value={{ drafts: drafts.current, epoch }}>{children}</DraftContext.Provider>;
+  const igDraftSession = getIgDraftSession();
+  const epoch = useSyncExternalStore(igDraftSession.subscribe, igDraftSession.getEpoch);
+  return <DraftContext.Provider value={{ drafts: igDraftSession.drafts, epoch }}>{children}</DraftContext.Provider>;
 }
 
 type Props = {
@@ -49,7 +42,12 @@ function DraftControl({ draftKey, value, label, validate, onCommit, drafts, ...i
   const feedback = useRef<{ error?: DraftError } | null>(null);
   const showFeedback = dirty || !!draft.error;
   if (showFeedback) feedback.current = { error: draft.error };
-  const set = (next: Draft) => { drafts.set(draftKey, next); setState(next); };
+  const set = (next: Draft) => { drafts.set(draftKey, next); setState(next); getIgDraftSession().notifyControls(); };
+  useEffect(() => {
+    if (state.base !== value && drafts.has(draftKey)) {
+      drafts.set(draftKey, { base: value, text: value }); getIgDraftSession().notifyControls();
+    }
+  }, [value, state.base, drafts, draftKey]);
   const cancel = () => { composing.current = false; blurredDuringComposition.current = false; set({ base: value, text: value }); };
   const commit = (text: string) => {
     if (text === value) { set({ base: value, text: value }); return; }
@@ -79,6 +77,7 @@ function DraftControl({ draftKey, value, label, validate, onCommit, drafts, ...i
     {feedback.current ? <span className={styles.draftFeedback} style={{ visibility: showFeedback ? "visible" : "hidden" }}>
       <span id={`${id}-feedback`} className={feedback.current.error ? "ie-error" : "w98-hint"} role={showFeedback && feedback.current.error ? "alert" : undefined}>{feedback.current.error ? t(`inputDraft.${feedback.current.error}`) : t("inputDraft.pending")}</span>
       <button type="button" className="w98-btn small" aria-label={t("inputDraft.cancelField", { field: label })} onMouseDown={(event) => event.preventDefault()} onClick={cancel}>{t("inputDraft.cancel")}</button>
+      <small className="w98-hint">{t("editorFlow.retainedDrafts")}</small>
     </span> : null}
   </span>;
 }

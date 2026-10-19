@@ -425,5 +425,22 @@
     "omitted": "画像の空き枠がないため、{{count}} 件を追加できませんでした。待機中や失敗した項目をキャンセル・削除するか、画像を削除してから再選択してください。",
     "draftHint": "ファイルを選ぶと編集可能な下書きを作成します。成功した画像は保持され、各ファイルを再試行・キャンセルできます。すべてキャンセルした場合、空の下書きを削除できます。",
     "uploadPages": "ページをアップロード（複数可）"
+  },
+  "editorFlow": {
+    "entryCharacter": "このウィンドウの入口キャラクター",
+    "manageCharacters": "キャラクターを管理（{{count}}）",
+    "newPost": "新しい投稿",
+    "backPosts": "← 投稿一覧に戻る",
+    "filters": "絞り込み",
+    "edit": "編集",
+    "datePlace": "日時と場所",
+    "highlights": "ハイライト",
+    "collections": "投稿コレクション",
+    "organizeContent": "コンテンツの種類",
+    "backHighlights": "← ハイライト一覧に戻る",
+    "backCollections": "← コレクション一覧に戻る",
+    "backEditing": "← 編集に戻る",
+    "pendingStatus": "未完成のIG入力は未保存です。このタブ内にのみ保持されます。",
+    "retainedDrafts": "未完成の入力はこのタブに保持されます。再読み込みすると消えます。"
   }
 }

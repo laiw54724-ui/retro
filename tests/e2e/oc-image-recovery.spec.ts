@@ -93,11 +93,13 @@ for (const width of [320, 390]) test(`visible sources and highlight replacement 
   await expect.poll(() => s.profile().avatar).toBe("https://assets.test/phone.png");
   await page.screenshot({ path: testInfo.outputPath(`avatar-${width}.png`) });
   await s.win.getByRole("tab", { name: "貼文", exact: true }).click();
-  await expect(s.win.getByText("新貼文圖片網址", { exact: true })).toBeVisible();
-  const newPostUrl = s.win.getByRole("textbox", { name: "新貼文圖片網址", exact: true });
+  await s.win.getByRole("button", { name: "新增貼文", exact: true }).click();
+  await expect(s.win.getByText("新增輪播圖片網址", { exact: true })).toBeVisible();
+  const newPostUrl = s.win.getByRole("textbox", { name: "新增輪播圖片網址", exact: true });
   expect((await newPostUrl.boundingBox())!.width).toBeGreaterThan(140);
   await page.screenshot({ path: testInfo.outputPath(`post-fields-${width}.png`) });
   await s.win.getByRole("tab", { name: "精選／合集", exact: true }).click();
+  await s.win.locator(".ig-canonical-highlights [data-ig-edit]").first().click();
   const url = s.win.getByRole("textbox", { name: "精選第 1 頁圖片網址", exact: true });
   const before = structuredClone(s.saved().entities.highlights![0].frames[0]);
   await expect(url).toBeVisible();

@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { useIgEntityEditor } from "./useIgEntityEditor";
 import { translateSystemMessage } from "../../../i18n/systemMessages";
 import { useTranslation } from "react-i18next";
 import {
@@ -32,7 +33,7 @@ export function CanonicalCollectionEditor({ props }: Props) {
   );
   const scope = `${igEditorScope(props)}:collections`;
   const editorId = useId();
-  const [openId, setOpenId] = useIgEditorState<string | null>(scope, collections[0]?.id ?? null);
+  const { root, openId, setOpenId, wasOpened } = useIgEntityEditor(scope, collections.map((item) => item.id));
   const [query, setQuery] = useIgEditorState(scope, "");
   const [postQueries, setPostQueries] = useIgEditorState<Record<string, string>>(scope, {});
   const [error, setError] = useIgEditorState(scope, "");
@@ -74,8 +75,10 @@ export function CanonicalCollectionEditor({ props }: Props) {
   );
 
   return (
-    <fieldset className="w98-fieldset ig-canonical-collections">
+    <fieldset ref={root} className="w98-fieldset ig-canonical-collections">
       <legend>{tr("ig.collectionsCount", { count: collections.length })}</legend>
+      {openId ? <button data-ig-back type="button" className="w98-btn small" onClick={() => setOpenId(null)}>{tr("editorFlow.backCollections")}</button> : null}
+      <div hidden={!!openId} className="ig-list-tools">
       <div className="ie-row">
         <button
           type="button"
@@ -103,9 +106,10 @@ export function CanonicalCollectionEditor({ props }: Props) {
       <p className="ig-editor-summary" role="status">{tr("ig.collectionSummary", { matching: matchingCollections.length, total: collections.length, published: publishedCount, drafts: collections.length - publishedCount })}{retainedEditor ? tr("ig.collectionRetained") : ""}</p>
       {query ? <button type="button" className="w98-btn small" onClick={() => setQuery("")}>{tr("canonicalCollectionEditor.clearCollectionSearch")}</button> : null}
       {search ? <p className="w98-hint" id={`${editorId}-order-hint`}>{tr("canonicalCollectionEditor.clearTheSearchToReorder")}</p> : null}
+      </div>
       {error ? <div role="alert" className="ie-error">{error}</div> : null}
       {!collections.length ? <p className="ig-editor-empty">{tr("canonicalCollectionEditor.noCollectionsYetOrganizeThis")}</p> : !visibleCollections.length ? <p className="ig-editor-empty">{tr("canonicalCollectionEditor.noCollectionsMatchTheSearch")}</p> : null}
-      {visibleCollections.map((collection) => {
+      {collections.map((collection) => {
         const collectionIndex = collections.findIndex((candidate) => candidate.id === collection.id);
         const expanded = openId === collection.id;
         const bodyId = `${editorId}-${collection.id}`;
@@ -126,22 +130,23 @@ export function CanonicalCollectionEditor({ props }: Props) {
         const selectedPublished = selectedPosts.filter((post) => post.visibility === "published").length;
         const selectedDrafts = selectedPosts.filter((post) => post.visibility === "draft").length;
         return (
-          <article key={collection.id} className="ig-canonical-post">
+          <article key={collection.id} className="ig-canonical-post" hidden={openId ? !expanded : !visibleCollections.includes(collection)}>
             <div className="ig-post-row">
               <button
                 type="button"
-                className="ig-post-toggle"
+                className="ig-post-toggle" data-ig-edit={collection.id}
                 aria-expanded={expanded}
                 aria-controls={expanded ? bodyId : undefined}
                 onClick={() => setOpenId(expanded ? null : collection.id)}
               >
-                <span>{expanded ? "▾" : "▸"} {collection.title || tr("canonicalCollectionEditor.untitledCollection")}</span>
+                <span>{tr("editorFlow.edit")} · {collection.title || tr("canonicalCollectionEditor.untitledCollection")}</span>
                 <small>{tr("ig.collectionMeta", { count: collection.postIds.length, status: collection.visibility === "published" ? tr("canonicalCollectionEditor.public") : tr("canonicalCollectionEditor.draft") })}</small>
               </button>
+              <div className="ig-item-actions">
               <button
                 type="button"
                 className="mini-btn"
-                aria-label={tr("canonicalCollectionEditor.moveCollectionUp")}
+                aria-label={`${tr("canonicalCollectionEditor.moveCollectionUp")}：${collection.title || tr("canonicalCollectionEditor.untitledCollection")}`}
                 aria-describedby={search ? `${editorId}-order-hint` : undefined}
                 disabled={!!search || collectionIndex === 0}
                 onClick={() => mutate((document) => run(reorderCollection(document, collection.id, -1, { siteId }), document))}
@@ -149,7 +154,7 @@ export function CanonicalCollectionEditor({ props }: Props) {
               <button
                 type="button"
                 className="mini-btn"
-                aria-label={tr("canonicalCollectionEditor.moveCollectionDown")}
+                aria-label={`${tr("canonicalCollectionEditor.moveCollectionDown")}：${collection.title || tr("canonicalCollectionEditor.untitledCollection")}`}
                 aria-describedby={search ? `${editorId}-order-hint` : undefined}
                 disabled={!!search || collectionIndex === collections.length - 1}
                 onClick={() => mutate((document) => run(reorderCollection(document, collection.id, 1, { siteId }), document))}
@@ -163,9 +168,10 @@ export function CanonicalCollectionEditor({ props }: Props) {
                   mutate((document) => run(deleteCollection(document, collection.id, { siteId }), document));
                 }}
               >×</button>
+              </div>
             </div>
-            {expanded ? (
-              <div id={bodyId} className="ig-post-body ig-canonical-collection-fields">
+            {wasOpened(collection.id) ? (
+              <div hidden={!expanded} id={bodyId} className="ig-post-body ig-canonical-collection-fields">
                 <label className="w98-field">
                   <span className="w98-hint">{tr("canonicalCollectionEditor.collectionTitle")}</span>
                   <input
