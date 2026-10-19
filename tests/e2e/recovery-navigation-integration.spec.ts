@@ -23,17 +23,19 @@ async function owner(page: Page, held: boolean) {
   const auth = { access_token: "a.b.c", refresh_token: "r", expires_at: 4102444800, expires_in: 3600, token_type: "bearer", user: { id: "u", email: "x@y.z", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01" } };
   await page.addInitScript((value) => localStorage.setItem("sb-example-auth-token", JSON.stringify(value)), auth);
   await page.route("https://assets.test/**", (route) => route.fulfill({ contentType: "image/png", body: PNG }));
+  await page.route("**/api/sites", (route) => route.fulfill({ json: { sites: [{ id: "site-1", username: "demo", site_name: "Cross-batch", draft_version: version, published_version: null, access_role: "owner", updated_at: "2026-10-19T00:00:00Z" }] } }));
   await page.route("**/api/sites/site-1", (route) => route.fulfill({ json: { site: { id: "site-1", username: "demo", site_name: "Cross-batch", draft_document: saved, draft_version: version, published_document: null, published_version: null, published_at: null, access_role: "owner" } } }));
   await page.route("**/api/sites/site-1/draft", (route) => { saves++; saved = route.request().postDataJSON().document; return route.fulfill({ json: { version: ++version } }); });
   await page.route("**/api/sites/site-1/assets**", async (route) => {
     if (route.request().url().endsWith("/content")) return route.fulfill({ contentType: "image/png", body: PNG });
     if (route.request().method() !== "POST") return route.fulfill({ json: { assets: [] } });
     uploads++;
-    if (held) await new Promise<void>((resolve) => { release = resolve; });
-    return route.fulfill({ json: { asset: { id: ASSET_ID, url: createAssetReference(ASSET_ID), name: "cross.png", kind: "image", mimeType: "image/png", size: PNG.length, createdAt: "2026-10-19T00:00:00Z" } } });
+    const id = uploads === 1 ? ASSET_ID : "11111111-2222-4333-8444-555555555556";
+    if (held && uploads === 1) await new Promise<void>((resolve) => { release = resolve; });
+    return route.fulfill({ json: { asset: { id, url: createAssetReference(id), name: "cross.png", kind: "image", mimeType: "image/png", size: PNG.length, createdAt: "2026-10-19T00:00:00Z" } } });
   });
   await page.setViewportSize({ width: 1400, height: 950 });
-  await page.goto("/editor/site-1");
+  await page.goto("/auth"); await page.locator('a[href="/editor/site-1"]').click();
   const win = page.getByRole("dialog", { name: "Instagram.exe", exact: true });
   await expect(win.getByRole("textbox", { name: "Handle", exact: true })).toBeVisible();
   return { win, baseline, saved: () => saved, saves: () => saves, uploads: () => uploads, release: () => { release?.(); release = undefined; } };
@@ -45,15 +47,15 @@ async function phonePreview(page: Page, width: number) {
   await expect(scope.locator(".m-screen")).toBeVisible();
   return scope;
 }
-async function roundTrip(page: Page, scope: ReturnType<Page["locator"]>, image = false) {
+async function roundTrip(page: Page, scope: ReturnType<Page["locator"]>, image: boolean | string = false) {
   await scope.locator(".m-icon").getByText("Links.exe", { exact: true }).click();
   const link = scope.getByRole("button", { name: "Open targets", exact: true });
   await link.focus(); await page.keyboard.press("Enter");
   const post = scope.getByRole("button", { name: "Open exact post", exact: true });
   await post.click();
   await expect(scope.locator(".ig-card")).toContainText("second sunset");
-  if (image) await expect(scope.locator(".ig-card-head img").first()).toHaveAttribute("src", /^blob:/);
-  else await expect(scope.locator(".ig-card-head img").first()).toHaveAttribute("src", ORIGINAL);
+  if (image === true) await expect(scope.locator(".ig-card-head img").first()).toHaveAttribute("src", /^blob:/);
+  else await expect(scope.locator(".ig-card-head img").first()).toHaveAttribute("src", typeof image === "string" ? image : ORIGINAL);
   await scope.locator(".m-back").click(); await expect(post).toBeFocused();
   await scope.locator(".m-back").click(); await expect(link).toBeFocused();
   await page.keyboard.press("Space"); await expect(post).toBeVisible();
@@ -98,4 +100,67 @@ test("saved avatar recovery survives Links nested Back without extra writes at 3
   await expect(page.getByRole("button", { name: "復原", exact: true })).toBeEnabled();
   await page.waitForTimeout(1200);
   expect(state.saves()).toBe(1); expect(state.saved()).toEqual(saved);
+});
+
+async function drawInPaint(page: Page) {
+  const paint = page.getByRole("dialog", { name: "Paint", exact: true });
+  const canvas = paint.locator("canvas");
+  await expect(canvas).toBeVisible();
+  await canvas.focus(); await canvas.press("Space"); await canvas.press("ArrowRight"); await canvas.press("Space");
+  return paint;
+}
+
+test("Paint nested leave shortcuts preserve an IG edit and subsequent Links focus", async ({ page }) => {
+  const state = await owner(page, false);
+  const changed = "https://assets.test/committed.png";
+  const url = state.win.getByRole("textbox", { name: "頭像網址", exact: true });
+  await url.fill(changed); await url.press("Enter");
+  await expect.poll(state.saves).toBe(1);
+  const saved = structuredClone(state.saved());
+  await page.getByRole("button", { name: "Paint", exact: true }).click();
+  const paint = await drawInPaint(page);
+  await page.goBack();
+  const leave = page.getByRole("dialog", { name: "離開編輯器？", exact: true });
+  await expect(leave).toBeVisible();
+  const stay = leave.getByRole("button", { name: "保留並繼續編輯", exact: true });
+  await stay.press("ControlOrMeta+z"); await stay.press("ControlOrMeta+y");
+  expect(state.saved()).toEqual(saved);
+  await page.keyboard.press("Escape");
+  await expect(leave).toHaveCount(0); await expect(paint).toBeVisible();
+  await expect(paint.getByRole("button", { name: "儲存 PNG 到新相簿", exact: true })).toBeEnabled();
+  page.once("dialog", (dialog) => dialog.accept());
+  await paint.getByRole("button", { name: "關閉", exact: true }).click();
+  await expect(paint).toHaveCount(0);
+  const scope = await phonePreview(page, 390);
+  await roundTrip(page, scope, changed);
+  await scope.getByRole("button", { name: /回到編輯器/ }).click();
+  await page.waitForTimeout(1200);
+  expect(state.saves()).toBe(1); expect(state.saved()).toEqual(saved);
+});
+
+test("late avatar completion preserves a newly saved Paint Gallery before Links navigation", async ({ page }) => {
+  const state = await owner(page, true);
+  try {
+    await state.win.locator('.ig-profile-editor input[type="file"]').setInputFiles({ name: "cross.png", mimeType: "image/png", buffer: PNG });
+    await expect.poll(state.uploads).toBe(1);
+    await page.getByRole("button", { name: "Paint", exact: true }).click();
+    const paint = await drawInPaint(page);
+    await paint.getByLabel("作品名稱", { exact: true }).fill("Paint integration");
+    await paint.getByRole("button", { name: "儲存 PNG 到新相簿", exact: true }).click();
+    await expect.poll(() => state.saved().windows.filter((window) => window.type === "gallery").length).toBe(1);
+    expect(state.saved().entities.profiles[0].avatar).toBe(ORIGINAL);
+    const gallery = structuredClone(state.saved().windows.find((window) => window.type === "gallery")!);
+    state.release();
+    await expect.poll(() => state.saved().entities.profiles[0].avatar).toBe(createAssetReference(ASSET_ID));
+    await expect.poll(state.saves).toBe(2);
+    expect(state.saved().windows.find((window) => window.id === gallery.id)).toEqual(gallery);
+    await expect(paint.getByRole("button", { name: "儲存 PNG 到新相簿", exact: true })).toBeDisabled();
+    await paint.getByRole("button", { name: "關閉", exact: true }).click();
+    const saved = structuredClone(state.saved());
+    const scope = await phonePreview(page, 320);
+    await roundTrip(page, scope, true);
+    await scope.getByRole("button", { name: /回到編輯器/ }).click();
+    await page.waitForTimeout(1200);
+    expect(state.saves()).toBe(2); expect(state.saved()).toEqual(saved);
+  } finally { state.release(); }
 });
