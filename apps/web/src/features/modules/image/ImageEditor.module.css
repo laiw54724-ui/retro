@@ -1,0 +1,14 @@
+.editor { display: flex; flex-direction: column; gap: 12px; min-width: 0; height: 100%; overflow: auto; padding: 10px; box-sizing: border-box; }
+.preview { flex: 0 0 auto; height: clamp(160px, 28vh, 260px); min-height: 0; }
+.controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); align-content: start; gap: 10px; }
+.group { min-width: 0; display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 9px; border: 1px solid #7f8589; }
+.group legend { padding: 0 4px; font-weight: 700; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field input, .field textarea, .field select { width: 100%; box-sizing: border-box; }
+.row { display: flex; flex-wrap: wrap; gap: 6px; }
+.hint { margin: 0; color: #4b5359; font-size: 12px; }
+.check, .color { display: flex; align-items: center; gap: 7px; }
+.sliders { display: flex; flex-direction: column; gap: 6px; }
+.slider { display: grid; grid-template-columns: 58px 1fr; gap: 2px 6px; align-items: center; }
+.slider output { justify-self: end; }
+.slider input { grid-column: 1 / -1; width: 100%; }
