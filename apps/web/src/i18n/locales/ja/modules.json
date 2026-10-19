@@ -345,6 +345,9 @@
     "makePublic": "公開にする",
     "makeDraft": "下書きにする",
     "theShortcutWillBePlaced": "ショートカットは「{{v1}}」に置かれます。指す対象を選んでください。",
+    "changeTarget": "対象を変更",
+    "changeShortcutTarget": "「{{label}}」の対象を変更",
+    "changeTargetHint": "新しい対象を選んでください。ショートカットの名前、アイコン、場所は保持されます。",
     "repairShortcut": "ショートカット「{{label}}」を修復",
     "theOriginalTargetNoLonger": "元の対象が存在しなくなりました。新しい対象を選んでください。ショートカットの名前は保持されます。",
     "pointToThis": "これを指す",
@@ -525,6 +528,7 @@
     "untitledWindow": "無題のウィンドウ"
   },
   "navigationTargets": {
+    "selected": "選択中：{{group}}：{{label}}",
     "choose": "移動先を選択…",
     "apply": "適用",
     "removeTarget": "移動先を削除",

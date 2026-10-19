@@ -25,6 +25,7 @@ export function LinkTargetPicker({ title, hint, confirmLabel, options, initial, 
     {urlMode ? <><label className="w98-field"><span>{t("document.linkUrl")}</span><input data-autofocus className="w98-input" value={url} maxLength={2048} aria-invalid={!validUrl} aria-describedby={help} onChange={(event) => setUrl(event.currentTarget.value)} placeholder="https://" /></label><p id={help} className="w98-hint">{t("navigationTargets.urlHelp")}</p></> : <>
       <label className="w98-field"><span>{t("explorerDialogs.search")}</span><input data-autofocus className="w98-input" type="search" value={query} onChange={(event) => setQuery(event.currentTarget.value)} /></label>
       {key && !selected ? <p role="status">{t("navigationTargets.unavailable")}</p> : null}
+      <p role="status" className={`w98-hint ${styles.selection}`}>{selected ? t("navigationTargets.selected", { group: selected.group, label: selected.label }) : "\u00a0"}</p>
       {!shown.length ? <p role="status">{t("explorerDialogs.notFound", { query })}</p> : null}
       <div className={`${styles.list} w98-sunken`} role="listbox" aria-label={t("explorerDialogs.shortcutTarget")} onKeyDown={(event) => {
         if (!["ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) return;

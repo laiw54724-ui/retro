@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 import { ModalDialog } from "../../../components/ModalDialog";
 import { pathLabel, rootLabel, type DeleteImpact, type Folder, type MoveOption, type TargetOption } from "./explorerModel";
 
-export function TargetPickerDialog({ title, hint, confirmLabel, options, onPick, onClose }: { title: string; hint?: string; confirmLabel: string; options: TargetOption[]; onPick: (option: TargetOption) => void; onClose: () => void }) {
-  return <LinkTargetPicker title={title} hint={hint} confirmLabel={confirmLabel} options={options} onClose={onClose} onApply={(value) => { if (value.kind === "target") onPick(value.option); }} />;
+export function TargetPickerDialog({ title, hint, confirmLabel, options, initialTarget, onPick, onClose }: { title: string; hint?: string; confirmLabel: string; options: TargetOption[]; initialTarget?: Pick<TargetOption, "kind" | "id">; onPick: (option: TargetOption) => void; onClose: () => void }) {
+  return <LinkTargetPicker title={title} hint={hint} confirmLabel={confirmLabel} options={options} initial={initialTarget ? { kind: "target", targetKind: initialTarget.kind, id: initialTarget.id } : undefined} onClose={onClose} onApply={(value) => { if (value.kind === "target") onPick(value.option); }} />;
 }
 
 export function MoveDialog({ itemName, kindLabel, options, onPick, onClose }: {

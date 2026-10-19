@@ -48,6 +48,69 @@ const explorerContent = (saves: Array<{ document: SiteDocument }>) => {
   return explorer?.type === "explorer" ? explorer.content : null;
 };
 
+function canonicalFixture(document: SiteDocument) {
+  const migrated = migrateSiteDocumentV2(document, { siteId: "site-1" });
+  if (!migrated.ok) throw new Error("fixture migration failed");
+  return migrated.document as unknown as SiteDocument;
+}
+
+test("healthy shortcut target editing stages Cancel/Escape, preserves fields, and supports undo/reload", async ({ page }) => {
+  const document = withContent([], [S("link", null, "Keep this label")]);
+  const target = makeWindow("document", 2); target.id = "next"; target.title = "Next target.txt"; target.defaultOpen = false;
+  document.windows.push(target);
+  const explorer = document.windows.find((window) => window.type === "explorer")!;
+  if (explorer.type !== "explorer") throw new Error("fixture");
+  explorer.content.shortcuts[0] = { ...explorer.content.shortcuts[0], icon: "heart", order: 7, visibility: "draft" };
+  const original = structuredClone(explorer.content.shortcuts[0]);
+  const { dialog, saves } = await openEditor(page, canonicalFixture(document));
+  await dialog.getByRole("button", { name: "Keep this label", exact: true }).click();
+  const change = dialog.getByRole("button", { name: "變更目標", exact: true });
+  await change.click();
+  const picker = page.getByRole("dialog", { name: "變更捷徑「Keep this label」的目標", exact: true });
+  await expect(picker.getByRole("option", { name: /角色設定.txt/ })).toHaveAttribute("aria-selected", "true");
+  await picker.getByRole("searchbox").fill("Next target");
+  await expect(picker.getByRole("status")).toContainText("目前選擇：視窗：角色設定.txt");
+  await picker.getByRole("option", { name: /Next target.txt/ }).click();
+  await picker.getByRole("button", { name: "取消", exact: true }).click();
+  await expect(change).toBeFocused();
+  await change.click();
+  await picker.getByRole("option", { name: /Next target.txt/ }).click();
+  await page.keyboard.press("Escape");
+  await expect(change).toBeFocused();
+  await change.click();
+  await picker.getByRole("button", { name: "改指向這個", exact: true }).click(); // same target is a no-op
+  await page.waitForTimeout(1200); expect(saves).toHaveLength(0);
+  await expect(page.getByRole("button", { name: "復原", exact: true })).toBeDisabled();
+  await change.click();
+  await picker.getByRole("option", { name: /Next target.txt/ }).focus(); await page.keyboard.press("Space");
+  await picker.getByRole("button", { name: "改指向這個", exact: true }).click();
+  await expect.poll(() => explorerContent(saves)?.shortcuts[0]).toEqual({ ...original, target: { siteId: "site-1", id: "next", kind: "window" } });
+  expect(saves).toHaveLength(1);
+  await expect(dialog.getByRole("toolbar", { name: "選取項目的操作" })).toContainText("Keep this label");
+  await page.getByRole("button", { name: "復原", exact: true }).click();
+  await expect.poll(() => explorerContent(saves)?.shortcuts[0]).toEqual(original);
+  await page.getByRole("button", { name: "重做", exact: true }).click();
+  await expect.poll(() => explorerContent(saves)?.shortcuts[0].target.id).toBe("next");
+  await page.reload();
+  await page.getByRole("dialog", { name: "World.exe", exact: true }).getByRole("button", { name: "Keep this label", exact: true }).click();
+  await page.getByRole("button", { name: "變更目標", exact: true }).click();
+  await expect(picker.getByRole("option", { name: /Next target.txt/ })).toHaveAttribute("aria-selected", "true");
+});
+
+test("target search with no results retains the visible pending selection without saving", async ({ page }) => {
+  const { dialog, saves } = await openEditor(page, canonicalFixture(withContent([], [S("link", null, "Keep target")])));
+  await dialog.getByRole("button", { name: "Keep target", exact: true }).click();
+  await dialog.getByRole("button", { name: "變更目標", exact: true }).click();
+  const picker = page.getByRole("dialog", { name: "變更捷徑「Keep target」的目標", exact: true });
+  await picker.getByRole("searchbox").fill("no matching target");
+  await expect(picker.getByRole("option")).toHaveCount(0);
+  await expect(picker.getByRole("status").filter({ hasText: "目前選擇" })).toContainText("角色設定.txt");
+  await picker.getByRole("searchbox").fill("角色設定");
+  await expect(picker.getByRole("option", { selected: true })).toHaveCount(1);
+  await picker.getByRole("button", { name: "改指向這個", exact: true }).click();
+  await page.waitForTimeout(1200); expect(saves).toHaveLength(0);
+});
+
 test("author creates, names and selects a folder, builds a nested folder, adds shortcuts from a picker and reloads", async ({ page }) => {
   const { dialog, saves } = await openEditor(page);
   await dialog.getByRole("button", { name: "新增資料夾" }).click();
@@ -399,6 +462,38 @@ function socialExplorerDocument() {
   };
   return { document, postTitle: post.title };
 }
+
+test("320px author redirects an OC shortcut to an exact post, then tests it in visitor preview without writes", async ({ page }, info) => {
+  const { document } = socialExplorerDocument();
+  const post = document.entities.posts[0];
+  const { saves } = await openEditor(page, document as unknown as SiteDocument);
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.locator(".m-icon").getByText("World.exe", { exact: true }).click();
+  await page.getByRole("button", { name: "編輯此視窗", exact: true }).click();
+  const world = page.getByRole("dialog", { name: "World.exe", exact: true });
+  await world.getByRole("button", { name: "主角 的操作", exact: true }).click();
+  await world.getByRole("button", { name: "變更目標", exact: true }).click();
+  const picker = page.getByRole("dialog", { name: "變更捷徑「主角」的目標", exact: true });
+  await expect(picker.getByRole("option", { selected: true })).toContainText("OC:");
+  await picker.getByRole("searchbox").fill(post.title);
+  await picker.getByRole("option").filter({ hasText: post.title }).focus(); await page.keyboard.press("Enter");
+  await expect(picker.getByRole("status")).toContainText(post.title);
+  const box = await picker.boundingBox();
+  expect(box!.x).toBeGreaterThanOrEqual(0); expect(box!.x + box!.width).toBeLessThanOrEqual(321);
+  await page.screenshot({ path: info.outputPath("retarget-picker-320.png") });
+  await picker.getByRole("button", { name: "改指向這個", exact: true }).click();
+  await expect.poll(() => explorerContent(saves)?.shortcuts.find((shortcut) => shortcut.id === "to-profile")?.target).toEqual({ siteId: "site-1", kind: "post", id: post.id });
+  expect(explorerContent(saves)?.shortcuts.find((shortcut) => shortcut.id === "to-profile")?.label).toBe("主角");
+  const savedCount = saves.length;
+  await page.locator(".m-tool", { hasText: "預覽" }).first().click();
+  const preview = page.locator(".preview-overlay");
+  await preview.locator(".m-icon").getByText("World.exe", { exact: true }).click();
+  await preview.getByRole("button", { name: "主角", exact: true }).click();
+  await expect(preview.locator(".ig-card")).toContainText(post.caption);
+  await preview.locator(".m-back").click();
+  await expect(preview.getByRole("button", { name: "主角", exact: true })).toBeVisible();
+  await page.waitForTimeout(1200); expect(saves).toHaveLength(savedCount);
+});
 
 test("deleting a post that shortcuts point at lists them, removes only those on confirm, and undo restores both", async ({ page }) => {
   const { document, postTitle } = socialExplorerDocument();
