@@ -114,6 +114,16 @@
     "back": "上一步",
     "next": "下一步 ›",
     "creating": "建立中...",
+    "createError": {
+      "username": "設定期間這個網址已被使用。請換個網址；主題和模板選擇會保留。",
+      "validation": "這些資料未通過檢查。請確認網址和桌面名稱後再試一次。",
+      "auth": "登入狀態已過期。請重新登入後再建立桌面。",
+      "general": "無法建立桌面。請檢查網路後重試；你的選擇仍會保留。"
+    },
+    "changeUrl": "更換網址",
+    "reviewDetails": "檢查資料",
+    "signInAgain": "重新登入",
+    "retryCreation": "重試建立",
     "doneOpenTheEditor": "完成，進入編輯器"
   },
   "desktopHub": {

@@ -114,6 +114,16 @@
     "back": "戻る",
     "next": "次へ ›",
     "creating": "作成中...",
+    "createError": {
+      "username": "設定中にこのURLが使われました。別のURLを選んでください。テーマとテンプレートは保持されます。",
+      "validation": "入力内容を受け付けられませんでした。URLとデスクトップ名を確認して再試行してください。",
+      "auth": "ログインの有効期限が切れました。再ログインしてデスクトップを作成してください。",
+      "general": "デスクトップを作成できませんでした。接続を確認して再試行してください。選択内容は保持されます。"
+    },
+    "changeUrl": "URLを変更",
+    "reviewDetails": "入力内容を確認",
+    "signInAgain": "再ログイン",
+    "retryCreation": "作成を再試行",
     "doneOpenTheEditor": "完了してエディターを開く"
   },
   "desktopHub": {

@@ -1,6 +1,6 @@
 import { useImageWriter } from "./ImageWriteContext";
 import { InspectorContent } from "./InspectorContent";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { makeWindow, type DesktopWindow, type SiteDocument } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
@@ -27,6 +27,54 @@ type Props = {
 };
 
 const clamp = (value: number, min: number, max: number) => Math.round(Math.min(max, Math.max(min, Number.isFinite(value) ? value : min)));
+
+function GeometryNumberInput({ value, min, max, onCommit }: { value: number; min: number; max: number; onCommit: (value: number) => void }) {
+  const [draft, setDraft] = useState(String(value));
+  const focused = useRef(false);
+  const composing = useRef(false);
+  const cancelBlur = useRef(false);
+
+  useEffect(() => {
+    if (!focused.current) setDraft(String(value));
+  }, [value]);
+
+  const commit = (raw = draft) => {
+    if (cancelBlur.current || composing.current) {
+      cancelBlur.current = false;
+      setDraft(String(value));
+      return;
+    }
+    const text = raw.trim();
+    const parsed = /^-?\d+$/.test(text) ? Number(text) : NaN;
+    if (!Number.isSafeInteger(parsed)) {
+      setDraft(String(value));
+      return;
+    }
+    const next = clamp(parsed, min, max);
+    setDraft(String(next));
+    if (next !== value) onCommit(next);
+  };
+
+  return <input className="w98-input" type="text" inputMode="numeric" value={draft}
+    onFocus={() => { focused.current = true; setDraft(String(value)); }}
+    onChange={(event) => setDraft(event.target.value)}
+    onCompositionStart={() => { composing.current = true; }}
+    onCompositionEnd={(event) => {
+      composing.current = false;
+      const text = event.currentTarget.value;
+      setDraft(text);
+      if (!focused.current) commit(text);
+    }}
+    onBlur={() => { focused.current = false; if (!composing.current) commit(); }}
+    onKeyDown={(event) => {
+      if (composing.current || event.nativeEvent.isComposing) return;
+      if (event.key === "Escape") { cancelBlur.current = true; event.currentTarget.blur(); return; }
+      if (event.key === "Enter") {
+        event.preventDefault();
+        event.currentTarget.blur();
+      }
+    }} />;
+}
 
 export function RightPanel({ document, selected, siteId, upload, onUpdate, onDelete, onDuplicate, onBringToFront, onEnterLayout, onSiteName, indexing, onIndexing, onColumns }: Props) {
   const { t: tr } = useTranslation("editor");
@@ -90,10 +138,10 @@ export function RightPanel({ document, selected, siteId, upload, onUpdate, onDel
             <WindowAppearanceEditor key={selected.id} theme={document.theme} window={selected} onChange={(appearance, historyKey) => onUpdate((window) => ({ ...window, appearance }), historyKey)} />
             <div className="w98-sep" />
             <div className="geometry-grid">
-              <label className="w98-field"><span>X</span><input className="w98-input" type="number" value={layout.x} onChange={(event) => setDesktop({ x: clamp(Number(event.target.value), 0, 5000) }, "x" + selected.id)} /></label>
-              <label className="w98-field"><span>Y</span><input className="w98-input" type="number" value={layout.y} onChange={(event) => setDesktop({ y: clamp(Number(event.target.value), 0, 5000) }, "y" + selected.id)} /></label>
-              <label className="w98-field"><span>{tr("rightPanel.w")}</span><input className="w98-input" type="number" min={220} max={1400} value={layout.w} onChange={(event) => setDesktop({ w: clamp(Number(event.target.value), 220, 1400) }, "w" + selected.id)} /></label>
-              <label className="w98-field"><span>{tr("rightPanel.h")}</span><input className="w98-input" type="number" min={140} max={1200} value={layout.h} onChange={(event) => setDesktop({ h: clamp(Number(event.target.value), 140, 1200) }, "h" + selected.id)} /></label>
+              <label className="w98-field"><span>X</span><GeometryNumberInput key={`${selected.id}-x`} value={layout.x} min={0} max={5000} onCommit={(x) => setDesktop({ x })} /></label>
+              <label className="w98-field"><span>Y</span><GeometryNumberInput key={`${selected.id}-y`} value={layout.y} min={0} max={5000} onCommit={(y) => setDesktop({ y })} /></label>
+              <label className="w98-field"><span>{tr("rightPanel.w")}</span><GeometryNumberInput key={`${selected.id}-w`} value={layout.w} min={220} max={1400} onCommit={(w) => setDesktop({ w })} /></label>
+              <label className="w98-field"><span>{tr("rightPanel.h")}</span><GeometryNumberInput key={`${selected.id}-h`} value={layout.h} min={140} max={1200} onCommit={(h) => setDesktop({ h })} /></label>
             </div>
             <button type="button" className="w98-btn block" onClick={onEnterLayout}>{tr("rightPanel.enterLayoutMode")}</button>
             <span className="w98-hint">{tr("rightPanel.inLayoutModeYouCan")}</span>
