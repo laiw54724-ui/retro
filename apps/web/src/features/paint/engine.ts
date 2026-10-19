@@ -9,6 +9,9 @@ export const MAX_HEIGHT = 768;
 export const MAX_PIXELS = MAX_WIDTH * MAX_HEIGHT;
 export const HISTORY_LIMIT = 8;
 export const MAX_DPR = 2;
+/** The decoded source is checked after decode; callers must also cap encoded bytes before decode. */
+export const MAX_IMPORT_EDGE = 2048;
+export const MAX_IMPORT_PIXELS = 4_194_304;
 
 type Snapshot = { pixels: ImageData; revision: number };
 type Gesture = { start: PaintPoint; last: PaintPoint; before: Snapshot; changed: boolean; options: PaintOptions };
@@ -173,6 +176,34 @@ export class PaintEngine {
     const before = this.snapshot();
     if (!before.pixels.data.some((channel, index) => index % 4 === 3 && channel !== 0)) return false;
     this.ctx.clearRect(0, 0, this.width, this.height);
+    this.pushUndo(before);
+    this.redoStack = [];
+    this.revision = ++this.nextRevision;
+    this.render();
+    return true;
+  }
+
+  /** Add a source as one undoable, centered contain-fit overlay without changing its original. */
+  importImage(source: CanvasImageSource, sourceWidth: number, sourceHeight: number): boolean {
+    if (this.gesture) return false;
+    if (!Number.isInteger(sourceWidth) || !Number.isInteger(sourceHeight) || sourceWidth < 1 || sourceHeight < 1 ||
+        sourceWidth > MAX_IMPORT_EDGE || sourceHeight > MAX_IMPORT_EDGE || sourceWidth * sourceHeight > MAX_IMPORT_PIXELS) {
+      throw new RangeError("Image dimensions exceed the Paint import limit");
+    }
+    const stage = document.createElement("canvas");
+    stage.width = this.width;
+    stage.height = this.height;
+    const staging = stage.getContext("2d", { willReadFrequently: true });
+    if (!staging) throw new Error("Canvas 2D is unavailable");
+    const scale = Math.min(this.width / sourceWidth, this.height / sourceHeight);
+    const width = sourceWidth * scale;
+    const height = sourceHeight * scale;
+    staging.drawImage(source, (this.width - width) / 2, (this.height - height) / 2, width, height);
+    // Readback verifies that an external source has not tainted the stage.
+    // A SecurityError happens before the working bitmap or history is changed.
+    staging.getImageData(0, 0, this.width, this.height);
+    const before = this.snapshot();
+    this.ctx.drawImage(stage, 0, 0);
     this.pushUndo(before);
     this.redoStack = [];
     this.revision = ++this.nextRevision;

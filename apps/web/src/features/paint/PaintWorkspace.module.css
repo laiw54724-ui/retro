@@ -8,6 +8,12 @@
 .workspace label { display: inline-flex; align-items: center; gap: 6px; }
 .commandBar, .settings { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
 .commandBar { padding-bottom: 8px; border-bottom: 1px solid #a2a8ad; }
+.importControl { position: relative; min-height: 36px; padding: 5px 9px; border: 1px solid #666f77; border-radius: 2px; background: #f8f9fa; cursor: pointer; overflow: hidden; }
+.importControl:hover { background: #e0eaf2; }
+.importControl:focus-within { outline: 3px solid #155d91; outline-offset: 2px; }
+.importControl input { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
+.importSlot { display: inline-block; flex: 0 0 120px; min-height: 36px; }
+.importSlot button { width: 100%; }
 .body { display: flex; align-items: stretch; gap: 10px; min-width: 0; }
 .toolBar { flex: 0 0 114px; display: grid; grid-template-columns: 1fr; gap: 5px; align-content: start; }
 .toolBar button { text-align: left; }
