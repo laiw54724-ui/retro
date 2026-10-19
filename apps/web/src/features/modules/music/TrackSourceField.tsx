@@ -12,7 +12,11 @@ const urlOf = (source: TrackSource): string => {
   return url === "https://" ? "" : url;
 };
 
+export type SourceDraftCache = Map<string, { source: string; pending: string | null; externalFor: string | null }>;
+
 type Props = {
+  draftCache?: SourceDraftCache;
+  onEdit?: () => void;
   track: MusicTrack;
   windowId: string;
   /** Replaces the track's source (stops any preview first); `key` coalesces typing into one undo step. */
@@ -29,13 +33,20 @@ type Props = {
  * The author can always choose the external link instead of the player. Nothing here loads a third party; the player
  * preview is the same click-to-load card visitors get.
  */
-export function TrackSourceField({ track, windowId, patchSource, uploadAudio, onOpenOriginal, resourceName }: Props) {
+export function TrackSourceField({ draftCache, onEdit, track, windowId, patchSource, uploadAudio, onOpenOriginal, resourceName }: Props) {
   const { t: tr } = useTranslation("music");
   const inputId = useId();
   // Text that is not yet a usable URL (still being typed) stays in the field without being saved over the last good source.
-  const [pending, setPending] = useState<string | null>(null);
+  const draftKey = `${windowId}:${track.id}`;
+  const cached = draftCache?.get(draftKey);
+  const matchingDraft = cached?.source === JSON.stringify(track.source) ? cached : undefined;
+  const [pending, setPending] = useState<string | null>(matchingDraft?.pending ?? null);
   // The author chose the external link for this embeddable URL; keeps the choice until they paste something different.
-  const [externalFor, setExternalFor] = useState<string | null>(null);
+  const [externalFor, setExternalFor] = useState<string | null>(matchingDraft?.externalFor ?? null);
+
+  useEffect(() => {
+    draftCache?.set(draftKey, { source: JSON.stringify(track.source), pending, externalFor });
+  }, [draftCache, draftKey, track.source, pending, externalFor]);
 
   // The source can change under us (upload, undo/redo, another edit). Text that was only ever typed here and never saved
   // must not outlive that: drop it and any "choose external" memory, so the field always reflects the real source.
@@ -52,6 +63,7 @@ export function TrackSourceField({ track, windowId, patchSource, uploadAudio, on
   const decision: PastedSource = classifyPastedUrl(pending ?? stored);
 
   const commit = (raw: string) => {
+    onEdit?.();
     const result = classifyPastedUrl(raw);
     const key = `music-source-${track.id}`;
     if (result.type === "invalid") { setPending(raw); return; }
@@ -66,8 +78,8 @@ export function TrackSourceField({ track, windowId, patchSource, uploadAudio, on
     patchSource({ kind: "externalLink", url: result.url }, key);
   };
 
-  const useExternal = () => { setExternalFor(stored); patchSource({ kind: "externalLink", url: stored }, `music-source-${track.id}`); };
-  const usePlayer = () => { const result = classifyPastedUrl(stored); if (result.type === "embed" || result.type === "audio-file" || result.type === "video-file") { setExternalFor(null); patchSource(result.type === "embed" ? result.source : { kind: "audioUrl", url: result.url }, `music-source-${track.id}`); } };
+  const useExternal = () => { onEdit?.(); setExternalFor(stored); patchSource({ kind: "externalLink", url: stored }, `music-source-${track.id}`); };
+  const usePlayer = () => { onEdit?.(); const result = classifyPastedUrl(stored); if (result.type === "embed" || result.type === "audio-file" || result.type === "video-file") { setExternalFor(null); patchSource(result.type === "embed" ? result.source : { kind: "audioUrl", url: result.url }, `music-source-${track.id}`); } };
 
   const embedSource = track.source.kind === "providerEmbed" ? track.source : null;
   const offerPlayer = (track.source.kind === "externalLink" || track.source.kind === "audioUrl") && (decision.type === "embed" || track.source.kind === "externalLink" && (decision.type === "audio-file" || decision.type === "video-file"));

@@ -109,11 +109,12 @@ test("author adds, reorders, deletes and reloads a music playlist", async ({ pag
   await editors.nth(0).getByLabel("貼上連結或上傳檔案").fill("https://media.example.com/first.mp3");
   await player.getByRole("button", { name: "新增曲目" }).click();
   editors = player.locator(".music-track-editor");
-  await editors.nth(1).getByLabel("曲名").fill("Second Theme");
-  await editors.nth(1).getByLabel("演出者").fill("Creator B");
-  await editors.nth(1).getByRole("button", { name: "往前" }).click();
+  await editors.nth(0).getByLabel("曲名").fill("Second Theme");
+  await editors.nth(0).getByLabel("演出者").fill("Creator B");
+  await editors.nth(0).getByRole("button", { name: "往前" }).click();
   await expect(player.locator(".music-track-editor").first().getByLabel("曲名")).toHaveValue("Second Theme");
-  await player.locator(".music-track-editor").nth(1).getByRole("button", { name: "刪除" }).click();
+  await player.locator(".music-authoring-track").filter({ hasText: "First Theme" }).click();
+  await player.locator(".music-track-editor").getByRole("button", { name: "刪除" }).click();
   await expect(player.locator(".music-track-editor")).toHaveCount(1);
 
   await expect.poll(() => {

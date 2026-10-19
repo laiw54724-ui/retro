@@ -1,0 +1,14 @@
+.music-editor .music-authoring-list { display: grid; gap: 4px; max-height: 240px; overflow: auto; min-width: 0; }
+.music-editor .music-authoring-track { display: flex; gap: 8px; align-items: flex-start; text-align: left; min-height: 44px; white-space: normal; }
+.music-editor .music-authoring-track > span:last-child { display: grid; gap: 3px; min-width: 0; overflow-wrap: anywhere; }
+.music-editor .music-authoring-track[aria-pressed="true"] { border: 2px solid var(--accent, #000080); }
+.music-editor .music-authoring-track:focus-visible { outline: 2px solid var(--accent, #000080); outline-offset: -4px; }
+.music-editor .music-editor-tools button { min-width: 44px; min-height: 44px; }
+.music-editor .music-editor-grid { grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); }
+.music-editor .music-cover-editor > div:last-child { min-width: 0; }
+.music-editor .music-cover-editor input:not([type="file"]) { width: 100%; min-width: 0; box-sizing: border-box; }
+.music-editor .music-orphan-tasks { min-width: 0; overflow-wrap: anywhere; }
+.music-editor .music-track-editor { min-width: 0; width: 100%; box-sizing: border-box; grid-template-columns: minmax(0, 1fr); }
+.music-editor .music-track-editor legend { overflow-wrap: anywhere; max-width: calc(100% - 16px); box-sizing: border-box; }
+
+.music-editor .media-upload-tasks button { min-width: 44px; min-height: 44px; }
