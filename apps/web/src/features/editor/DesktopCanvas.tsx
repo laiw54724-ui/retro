@@ -59,7 +59,9 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
   const drag = useRef<Gesture | null>(null);
   const suppressClick = useRef(false);
   const canvasRef = useRef<HTMLDivElement | null>(null);
-  const tv = useThemeView(document.theme);
+  const themePreview = useEditorStore((state) => state.themePreview);
+  const theme = themePreview ?? document.theme;
+  const tv = useThemeView(theme);
   const music = useMusicPlayback();
   const snapping = layoutMode && snap;
 
@@ -229,7 +231,7 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
               data-index={index}
             >
               <span className="deskicon-tile" style={{ background: tv.tileBg, boxShadow: tv.tileShadow }}><Icon name={win.icon} size={32} /></span>
-              <span className="deskicon-label" style={resolveDesktopLabelAppearance(document.theme, win.appearance)}>{win.title}</span>
+              <span className="deskicon-label" style={resolveDesktopLabelAppearance(theme, win.appearance)}>{win.title}</span>
             </button>
           );
         })}
@@ -270,7 +272,7 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
             <ImageWindowShell window={win} editor
               title={win.title}
               icon={win.icon}
-              theme={document.theme}
+              theme={theme}
               appearance={win.appearance}
               chrome={win.chrome}
               active={isSel || layout.z === topZ}
@@ -283,7 +285,7 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
               style={{ height: "100%" }}
               bodyStyle={{ padding: 0 }}
             >
-              <WindowRenderer window={win} theme={document.theme} editing={!layoutMode} allWindows={document.windows} siteId={siteId} upload={upload} onUpdate={store().updateWindow} profiles={profiles} posts={posts} collections={collections} profileId={profileId} profileIdsByWindow={profileIdsByWindow} onProfileSelect={onProfileSelect} onProfileAdd={onProfileAdd} onProfileDuplicate={onProfileDuplicate} onProfileChange={onProfileChange} onProfileDelete={onProfileDelete} profileDeleteBlocked={profileDeleteBlocked} profileDeleteGuardById={profileDeleteGuardById} profileDirectory={profileDirectory} updateContent={updateContent} socialDocument={socialDocument} />
+              <WindowRenderer window={win} theme={theme} editing={!layoutMode} allWindows={document.windows} siteId={siteId} upload={upload} onUpdate={store().updateWindow} profiles={profiles} posts={posts} collections={collections} profileId={profileId} profileIdsByWindow={profileIdsByWindow} onProfileSelect={onProfileSelect} onProfileAdd={onProfileAdd} onProfileDuplicate={onProfileDuplicate} onProfileChange={onProfileChange} onProfileDelete={onProfileDelete} profileDeleteBlocked={profileDeleteBlocked} profileDeleteGuardById={profileDeleteGuardById} profileDirectory={profileDirectory} updateContent={updateContent} socialDocument={socialDocument} />
             </ImageWindowShell>
             {isFramelessImage(win) ? <button type="button" className="image-move-handle" data-image-move-handle aria-label={tr("imageHost.move", { title: win.title })} onKeyDown={(event) => {
               const direction = ({ ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] } as Record<string, number[]>)[event.key];

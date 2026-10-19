@@ -27,10 +27,10 @@ export function MusicCoverUrlField({ raw, label, placeholder, onCommit, onEdit, 
     if (!result.ok) { setError(translateSystemMessage(result.reason)); return; }
     setError(""); onCommit(value, result.url);
   };
-  return <>
+  return <label className="image-source-field"><span>{label}</span>
     <input className="ie small" value={text} placeholder={placeholder} aria-label={label} aria-invalid={!!error} maxLength={2048}
       onChange={(event) => { onEdit(); setText(event.target.value); }} onBlur={commit}
       onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); commit(); } }} />
     {error ? <span role="alert" className="ie-error">{error}</span> : null}
-  </>;
+  </label>;
 }

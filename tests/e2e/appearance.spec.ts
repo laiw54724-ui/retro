@@ -77,16 +77,16 @@ test("mobile theme changes stay in preview until applied and retain window overr
   await page.getByRole("button", { name: "主題", exact: true }).click();
   const sheet = page.getByRole("dialog", { name: "主題", exact: true });
   await sheet.getByRole("button", { name: "粉紅 98", exact: true }).click();
-  await expect(page.locator(".m-titlebar")).toHaveCSS("background-image", "linear-gradient(90deg, rgb(0, 0, 128), rgb(16, 132, 208))");
+  await expect(page.locator(".m-titlebar")).toHaveCSS("background-image", "linear-gradient(90deg, rgb(194, 24, 91), rgb(244, 143, 177))");
   await sheet.getByRole("button", { name: "取消預覽", exact: true }).click();
-  await expect(sheet.getByRole("button", { name: "套用主題", exact: true })).toBeDisabled();
+  await expect(sheet.getByRole("button", { name: "套用至草稿", exact: true })).toBeDisabled();
   // Observe beyond the 650ms autosave debounce: preview/cancel must not write.
   await page.waitForTimeout(800);
   expect(site.writes()).toBe(0);
   await sheet.getByRole("button", { name: "粉紅 98", exact: true }).click();
   await sheet.locator(".m-sheet-body").evaluate((element) => { element.scrollTop = 0; });
   await page.screenshot({ path: testInfo.outputPath("mobile-theme-preview.png") });
-  await sheet.getByRole("button", { name: "套用主題", exact: true }).click();
+  await sheet.getByRole("button", { name: "套用至草稿", exact: true }).click();
   await expect.poll(() => site.writes()).toBe(1);
   expect(site.saved().theme.id).toBe("pink98");
   expect(site.saved().windows[0].appearance).toEqual(appearanceDocument().windows[0].appearance);
@@ -127,7 +127,7 @@ test("global title color edits keep accent and window overrides unchanged", asyn
   const panel = page.getByRole("complementary", { name: "工具面板" });
   await panel.getByRole("button", { name: "標題列配色", exact: true }).nth(2).click();
   await panel.getByRole("textbox", { name: "主題標題起始色色碼", exact: true }).fill("#112233");
-  await panel.getByRole("button", { name: "套用主題", exact: true }).click();
+  await panel.getByRole("button", { name: "套用至草稿", exact: true }).click();
   await expect.poll(() => site.writes()).toBe(1);
   expect(site.saved().theme.accent).toBe(documentFixture.theme.accent);
   expect(site.saved().theme.titleFrom).toBe("#112233");

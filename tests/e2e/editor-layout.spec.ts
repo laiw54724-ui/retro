@@ -73,12 +73,12 @@ test("theme tab previews, cancels, and explicitly applies a preset before autosa
   const saves = await openEditor(page);
   await page.getByRole("tab", { name: "主題" }).click();
   await page.getByRole("button", { name: /Y2K 銀藍/ }).click();
-  await expect(page.getByRole("button", { name: "套用主題" })).toBeEnabled();
-  await page.getByRole("button", { name: "取消預覽" }).click();
-  await expect(page.getByRole("button", { name: "套用主題" })).toBeDisabled();
+  await expect(page.locator(".left-panel2").getByRole("button", { name: "套用至草稿" })).toBeEnabled();
+  await page.locator(".left-panel2").getByRole("button", { name: "取消預覽" }).click();
+  await expect(page.locator(".left-panel2").getByRole("button", { name: "套用至草稿" })).toBeDisabled();
   expect(saves.some((save) => save.document.theme.id === "y2k")).toBe(false);
   await page.getByRole("button", { name: /像素夜光/ }).click();
-  await page.getByRole("button", { name: "套用主題" }).click();
+  await page.locator(".left-panel2").getByRole("button", { name: "套用至草稿" }).click();
   await page.getByLabel("視窗標題").fill("關於我");
   await expect.poll(() => saves.at(-1)?.document.theme.id).toBe("pixel");
   expect(saves.at(-1)!.document.windows.find((w) => w.id === "about")!.title).toBe("關於我");

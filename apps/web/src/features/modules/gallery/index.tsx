@@ -113,8 +113,9 @@ export function GalleryInlineEditor({ window, ctx, update }: ModuleProps<"galler
         {[2, 3, 4].map((count) => <MiniBtn key={count} label={tr("gallery.columns", { count })} on={window.content.columns === count} onClick={() => update((current) => ({ ...current, content: { ...current.content, columns: count } }))}>{count}</MiniBtn>)}
         <FilePick multiple disabled={images.length >= 200} onFiles={addFiles}><b>{tr("gallery.uploadImagesMultipleAllowed")}</b></FilePick>
       </div>
+      <label className="image-source-label" htmlFor={`gallery-url-${window.id}`}>{tr("gallery.addImageUrl")}</label>
       <div className="ie-row gal-add-url">
-        <input className="w98-input small-input" value={url} maxLength={2048} placeholder={tr("gallery.pasteAnImageUrlTo")} aria-label={tr("gallery.addImageUrl")} onChange={(event) => { setUrl(event.target.value); setUrlError(""); }} onCompositionStart={() => { composingUrl.current = true; }} onCompositionEnd={() => { composingUrl.current = false; }} onKeyDown={(event) => {
+        <input id={`gallery-url-${window.id}`} className="w98-input small-input" value={url} maxLength={2048} placeholder={tr("gallery.pasteAnImageUrlTo")} aria-label={tr("gallery.addImageUrl")} onChange={(event) => { setUrl(event.target.value); setUrlError(""); }} onCompositionStart={() => { composingUrl.current = true; }} onCompositionEnd={() => { composingUrl.current = false; }} onKeyDown={(event) => {
           if (event.key !== "Enter" || composingUrl.current || event.nativeEvent.isComposing || event.keyCode === 229) return;
           event.preventDefault();
           addUrl();
@@ -154,7 +155,7 @@ export function GalleryInlineEditor({ window, ctx, update }: ModuleProps<"galler
                 {selected.alt !== undefined ? <MiniBtn label={tr("gallery.followCaptionOrTitle")} className="mini-btn wide" onClick={() => patch(selected.id, { alt: undefined })}>{tr("gallery.followCaptionOrTitle")}</MiniBtn> : null}
               </div>
               <FilePick title={tr("gallery.replaceSelectedImage")} onFiles={(files) => replace(selected, files[0])}>{tr("document.replaceImage")}</FilePick>
-              <label>{tr("gallery.imageSource")}<ImageUrlField raw={selected.srcUrl} label={tr("document.imageUrl")} placeholder={tr("gallery.imageUrlPublicGoogleDrive")} onCommit={(raw, src) => patch(selected.id, { srcUrl: raw, src })} /></label>
+              <label>{tr("gallery.imageSource")}<ImageUrlField key={selected.id} onEdit={() => media.cancel(`replace:${selected.id}`)} raw={selected.srcUrl} label={tr("document.imageUrl")} placeholder={tr("gallery.imageUrlPublicGoogleDrive")} onCommit={(raw, src) => patch(selected.id, { srcUrl: raw, src })} /></label>
               <label>{tr("gallery.imageLink")}<input className="ie small" value={selected.href} maxLength={2048} placeholder={tr("gallery.httpsOrMailtoOptional")} aria-invalid={!!selected.href && safeHref(selected.href) === "#"} onChange={(event) => patch(selected.id, { href: event.target.value }, historyKey("href", selected.id))} /></label>
               {selected.href && safeHref(selected.href) === "#" ? <span role="alert" className="ie-error">{tr("gallery.enterAValidHttpHttps")}</span> : null}
             </section>

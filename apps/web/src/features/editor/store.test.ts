@@ -19,6 +19,33 @@ function withProfileAccent(document: SiteDocumentV2Input, accent: string): SiteD
 }
 
 describe("editor canonical history", () => {
+  it("keeps theme previews outside draft history until Apply and clears them on site change", () => {
+    const { legacy, versioned } = profileFixture();
+    const store = useEditorStore.getState();
+    store.setSite("site-a", "alice", legacy, 1, null, null, "owner");
+    store.setVersionedDocument(versioned);
+    const preview = { ...legacy.theme, wall: "#112233" };
+    store.setThemePreview(preview);
+    expect(useEditorStore.getState().document).toBe(legacy);
+    expect(useEditorStore.getState().versionedDocument).toBe(versioned);
+    expect(useEditorStore.getState().saveStatus).toBe("saved");
+    expect(useEditorStore.getState().past).toHaveLength(0);
+    store.undo();
+    expect(useEditorStore.getState().themePreview).toBeNull();
+    expect(useEditorStore.getState().document).toBe(legacy);
+    store.setThemePreview(preview);
+    store.setTheme(preview);
+    expect(useEditorStore.getState().themePreview).toBeNull();
+    expect(useEditorStore.getState().document?.theme).toEqual(preview);
+    expect(useEditorStore.getState().past).toHaveLength(1);
+    store.undo();
+    expect(useEditorStore.getState().document).toEqual(legacy);
+    store.redo();
+    expect(useEditorStore.getState().document?.theme).toEqual(preview);
+    store.setThemePreview(legacy.theme);
+    store.setSite("site-b", "bob", legacy, 1, null, null, "owner");
+    expect(useEditorStore.getState().themePreview).toBeNull();
+  });
   it("applies a theme as one undo step while retaining window appearance and OC content", () => {
     const { legacy, versioned } = profileFixture();
     const appearance = { titleFrom: "#ffffff", titleTo: "#001144", titleGradient: false };

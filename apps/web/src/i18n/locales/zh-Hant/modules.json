@@ -530,5 +530,15 @@
     "removeTarget": "移除目的地",
     "urlHelp": "請使用完整的 HTTP、HTTPS 或 mailto 網址。按下套用才會儲存變更。",
     "unavailable": "此目的地無法使用，請選擇其他目標。"
+  },
+  "imageInput": {
+    "imageUrl": "圖片連結",
+    "commitHint": "貼上連結後，按 Enter 或離開欄位即可預覽。",
+    "previewPending": "佈景預覽尚未儲存。發佈前請套用至草稿或取消。",
+    "applyDraft": "套用至草稿",
+    "applied": "目前顯示已套用的草稿佈景，發佈需另外操作。",
+    "uploading": "圖片上傳中…",
+    "uploadFailed": "圖片上傳失敗，請重試或貼上圖片連結。",
+    "addUrlImage": "從連結新增圖片"
   }
 }

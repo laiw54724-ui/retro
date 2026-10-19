@@ -530,5 +530,15 @@
     "removeTarget": "移動先を削除",
     "urlHelp": "完全な HTTP、HTTPS または mailto URL を入力してください。適用するまで変更は保存されません。",
     "unavailable": "この移動先は利用できません。別の対象を選択してください。"
+  },
+  "imageInput": {
+    "imageUrl": "画像URL",
+    "commitHint": "リンクを貼り付け、Enterを押すか欄を離れるとプレビューします。",
+    "previewPending": "テーマのプレビューは未保存です。公開前に下書きに適用するかキャンセルしてください。",
+    "applyDraft": "下書きに適用",
+    "applied": "適用済みの下書きテーマを表示中です。公開は別の操作です。",
+    "uploading": "画像をアップロード中…",
+    "uploadFailed": "画像のアップロードに失敗しました。再試行するか画像URLを貼り付けてください。",
+    "addUrlImage": "URLから画像を追加"
   }
 }

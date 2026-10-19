@@ -4,6 +4,7 @@ import { THEME_PRESETS, type DesktopWindow, type RetroTheme, type SiteDocument }
 import { Icon } from "../../components/Icon";
 import { useImageWriter } from "./ImageWriteContext";
 import { COMING_SOON, creatableModuleDefinitions, registry } from "../modules/registry";
+import { useEditorStore } from "./store";
 import { ThemeAppearanceEditor } from "./ThemeAppearanceEditor";
 import { FilePick } from "../modules/ui";
 import { useLocaleFormatting } from "../../i18n/format";
@@ -27,6 +28,8 @@ type Props = {
 export function LeftPanel({ document, selectedId, view, onAdd, onSelect, onToggleVisible, onMoveLayer, onTheme, upload, initialTab = "add" }: Props) {
   const { t } = useTranslation("editor");
   const { fontFamily } = useLocaleFormatting();
+  const themePreview = useEditorStore((state) => state.themePreview);
+  const setThemePreview = useEditorStore((state) => state.setThemePreview);
   const [tab, setTab] = useState<Tab>(initialTab);
   const tabs: Tab[] = ["add", "layers", "theme"];
   return (
@@ -37,7 +40,7 @@ export function LeftPanel({ document, selectedId, view, onAdd, onSelect, onToggl
       <div className="w98-tabpanel w98-scroll panel-scroll" role="tabpanel">
         {tab === "add" ? <AddTab onAdd={onAdd} /> : null}
         {tab === "layers" ? <LayersTab document={document} selectedId={selectedId} view={view} onSelect={onSelect} onToggleVisible={onToggleVisible} onMoveLayer={onMoveLayer} /> : null}
-        {tab === "theme" ? <ThemeAppearanceEditor theme={document.theme} onTheme={onTheme} upload={upload} /> : null}
+        {tab === "theme" ? <ThemeAppearanceEditor previewTheme={themePreview} onPreviewTheme={setThemePreview} theme={document.theme} onTheme={onTheme} upload={upload} /> : null}
       </div>
     </aside>
   );

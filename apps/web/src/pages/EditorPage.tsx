@@ -417,6 +417,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   }
 
   function requestPublish() {
+    if (store.themePreview) { setMessage(t("imageInput.previewPending")); return; }
     if (upgradePaused.current) { setUpgradeRecoveryOpen(true); return; }
     const invalid = validationMessage(store.document);
     if (invalid) {
@@ -435,6 +436,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   }
 
   async function confirmPublish() {
+    if (useEditorStore.getState().themePreview) { setPublishPrompt(false); setMessage(t("imageInput.previewPending")); return; }
     if (upgradePaused.current) { setUpgradeRecoveryOpen(true); return; }
     setPublishing(true);
     setMessage("");
@@ -617,6 +619,8 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         <Link className="retro-link mobile-hide" to="/">{t("shell.home")}</Link>
         <RetroButton className="mobile-hide" onClick={async () => { await signOut(); navigate("/"); }}>{t("shell.signOut")}</RetroButton>
       </header>
+
+      {store.themePreview ? <div className="theme-preview-notice" role="status"><span>{t("imageInput.previewPending")}</span><button type="button" className="w98-btn primary" onClick={() => store.themePreview && store.setTheme(store.themePreview)}>{t("imageInput.applyDraft")}</button><button type="button" className="w98-btn" onClick={() => store.setThemePreview(null)}>{t("themeAppearanceEditor.cancelPreview")}</button></div> : null}
 
       {message ? (
         <div className="editor-message" role="alert">

@@ -139,7 +139,7 @@ export function DocumentInlineEditor({ window, ctx, update }: ModuleProps<"docum
                     <FilePick onFiles={(files) => uploadInto(block, files[0])}>{block.src ? tr("document.replaceImage") : tr("document.uploadImage")}</FilePick>
                     <label className="doc-setting-label">
                       <span>{tr("document.imageUrl")}</span>
-                      <ImageUrlField raw={block.srcUrl} label={tr("document.imageUrl")} placeholder={tr("document.httpsPublicGoogleDriveLinks")} onCommit={(raw, src) => patch(block.id, { srcUrl: raw, src } as never)} />
+                      <ImageUrlField onEdit={() => media.cancel(`image:${block.id}`)} raw={block.srcUrl} label={tr("document.imageUrl")} placeholder={tr("document.httpsPublicGoogleDriveLinks")} onCommit={(raw, src) => patch(block.id, { srcUrl: raw, src } as never)} />
                     </label>
                     <label className="doc-setting-label">
                       <span>{tr("document.caption")}</span>
