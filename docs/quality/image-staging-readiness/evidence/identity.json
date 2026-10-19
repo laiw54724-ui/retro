@@ -1,0 +1,34 @@
+{
+  "baseMain": "8e2e54241ecca4c79cb5d6190e7b4b0beb804075",
+  "testSourceBeforeContrast": "ee11942e1dbe252d4a8a1a4361bed7a07f3c82f7",
+  "finalRuntime": "80079e668ce81011129ca0525e9300f41bea545d",
+  "finalRuntimeTree": "2dbb89c71d46d5ce892c7f87fb9154abbd2549ad",
+  "branch": "codex/image-staging-readiness-51",
+  "appChanges": [
+    "apps/web/src/features/modules/image/ImageEditor.module.css"
+  ],
+  "units": {
+    "shared": 22,
+    "web": 24,
+    "api": 40
+  },
+  "browserDistinctCaseEnginePairs": {
+    "chromiumAuthoring": 10,
+    "webkitAuthoring": 10,
+    "webkitProductionReader": 7,
+    "webkitRenderer": 5
+  },
+  "postCssAffectedChecks": {
+    "chromiumPhone": 3,
+    "chromiumDesktop": 1,
+    "webkitDesktopAndPhone": 4
+  },
+  "finalSuccessfulSelectedSkips": 0,
+  "retries": 0,
+  "rolloutFlagsChanged": false,
+  "schemaChanged": false,
+  "deployed": false,
+  "liveAuthenticatedValidation": "not attempted; existing403stop retained",
+  "nativeDevices": "not run",
+  "review": "No blocker in scoped CSS, JPEG checks or multi-engine fixture config; read-only reviewer ran no tests"
+}

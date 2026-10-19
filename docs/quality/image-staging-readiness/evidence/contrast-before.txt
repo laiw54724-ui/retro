@@ -1,0 +1,44 @@
+[WebServer] (node:38448) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:38461) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:38473) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/image-authoring/image-authoring.spec.ts:209:5 › phone 320px Add and inline authoring keep Back reachable after switching to frameless/decorative (2.1s)
+
+
+  1) [chromium] › tests/image-authoring/image-authoring.spec.ts:209:5 › phone 320px Add and inline authoring keep Back reachable after switching to frameless/decorative
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 4.5
+    Received:    1.6411109136147988
+
+      234 |     throw new Error("No opaque editor background");
+      235 |   });
+    > 236 |   expect(contrast).toBeGreaterThanOrEqual(4.5);
+          |                    ^
+      237 |   await page.screenshot({ path: info.outputPath(`image-authoring-${width}.png`), fullPage: false });
+      238 |   await page.getByRole("button", { name: "Finish editing", exact: true }).click();
+      239 |   await expect(page.locator(".m-screen [data-image-shell='none']")).toBeVisible();
+        at /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-staging-readiness-51/tests/image-authoring/image-authoring.spec.ts:236:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/image-readiness-authoring/image-authoring-phone-320p-26d92-ing-to-frameless-decorative-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/image-readiness-authoring/image-authoring-phone-320p-26d92-ing-to-frameless-decorative-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/image-readiness-authoring/image-authoring-phone-320p-26d92-ing-to-frameless-decorative-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/image-readiness-authoring/image-authoring-phone-320p-26d92-ing-to-frameless-decorative-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/image-authoring/image-authoring.spec.ts:209:5 › phone 320px Add and inline authoring keep Back reachable after switching to frameless/decorative
