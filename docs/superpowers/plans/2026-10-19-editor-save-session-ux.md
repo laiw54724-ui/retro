@@ -15,8 +15,10 @@
 - [x] Implement session-scoped save completions and guarded SPA/native exits. Preserve pending server writes rather than claiming Leave rolls them back. Guard explicit sign-out before session removal.
 - [x] Move Retry into persistent header chrome, leave descriptive notice behavior intact, and clear only an obsolete save-failure message after recovery.
 - [x] Run the focused browser file, web types, and changed-locale resource checks. Build once for the finished slice and exercise the existing production deferred-route recovery checks because the router root changes.
-- [ ] Record exact commands/results and source identities, push the requested branch, open a Draft PR, and preserve the worktree. The integrator owns the aggregate gate; no merge or deploy.
+- [x] Record exact commands/results and source identities, push the requested branch, open a Draft PR, and preserve the worktree. The integrator owns the aggregate gate; no merge or deploy.
 
 **Acceptance constraints:** Late responses must not touch a different or remounted session's version, status, notices, conflicts or redirects. Normal in-flight edits must continue to queue a subsequent save. Incomplete content continues to pause writes. Unapplied preview state is only read as unsaved work. Leaving is explicit; native beforeunload provides browser-controlled wording. A closed error notice must not remove the recovery action. Existing public/auth route behavior must remain usable.
 
 Limits: uncommitted per-field buffers (including IG blur/Enter drafts) are not detected or persisted. Existing current-session 403/404 access-loss redirects bypass author confirmation; stale responses cannot redirect the next session. The root remains one catch-all data-router wrapper around the unchanged App routes.
+
+Review correction completed at `3b105aa25cdbd9e2ead7c92221dbb9201b6bea01`: publish and remote reload success/error/finally now use mounted-session identity; loading retains the leave prompt. Ten new receipt regressions plus two affected existing router/native cases pass (12 total), as does web typecheck. No production build repeated; combined acceptance remains with the integrator. Sent server writes can still finish.
