@@ -52,6 +52,10 @@
     "visualNovel": "Visual novel"
   },
   "modules": {
+    "image": {
+      "label": "Image",
+      "description": "A single image (read-only)"
+    },
     "document": {
       "label": "Document",
       "description": "Headings, paragraphs, images, buttons, and lists"

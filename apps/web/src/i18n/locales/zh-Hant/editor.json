@@ -52,6 +52,10 @@
     "visualNovel": "視覺小說"
   },
   "modules": {
+    "image": {
+      "label": "圖片",
+      "description": "單張圖片（唯讀）"
+    },
     "document": {
       "label": "文件視窗",
       "description": "標題、段落、圖片、按鈕、清單"

@@ -52,6 +52,10 @@
     "visualNovel": "비주얼 노벨"
   },
   "modules": {
+    "image": {
+      "label": "이미지",
+      "description": "단일 이미지(읽기 전용)"
+    },
     "document": {
       "label": "문서",
       "description": "제목, 문단, 이미지, 버튼, 목록"

@@ -1,0 +1,16 @@
+
+ RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01/apps/web
+
+ ✓ src/i18n/translationQuality.test.ts (7 tests) 54ms
+stderr | src/i18n/resources.test.ts > resource quality gates (all supported locales, including preview) > covers every app type through render-time catalog labels without changing registry data
+Retro Desktop: Supabase env vars are missing. Auth will not work until configured.
+
+ ✓ src/i18n/resources.test.ts (6 tests) 952ms
+   ✓ resource quality gates (all supported locales, including preview) > covers every app type through render-time catalog labels without changing registry data  821ms
+ ✓ src/i18n/hardcodedText.test.ts (1 test) 5ms
+
+ Test Files  3 passed (3)
+      Tests  14 passed (14)
+   Start at  16:30:45
+   Duration  1.35s (transform 1.15s, setup 462ms, collect 1.07s, tests 1.01s, environment 0ms, prepare 169ms)
+

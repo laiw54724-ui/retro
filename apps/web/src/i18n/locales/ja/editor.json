@@ -52,6 +52,10 @@
     "visualNovel": "ビジュアルノベル"
   },
   "modules": {
+    "image": {
+      "label": "画像",
+      "description": "1枚の画像（読み取り専用）"
+    },
     "document": {
       "label": "文書",
       "description": "見出し、段落、画像、ボタン、リスト"
