@@ -36,4 +36,3 @@ export async function mockColors(page: Page, options: { authoredModules?: boolea
   await page.route("**/api/public/sites/demo", (route) => route.fulfill({ json: { site: { username: "demo", site_name: "Demo", published_document: saved, published_version: 1, published_at: "2026-10-19T00:00:00Z" } } }));
   return { saved: () => saved, writes: () => writes };
 }
-

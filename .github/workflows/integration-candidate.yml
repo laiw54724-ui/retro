@@ -15,6 +15,7 @@ on:
       - integration/retro-night-quality-01
       - integration/retro-followup-bc-01
       - integration/retro-reader-polish-01
+      - integration/retro-guard-paint-01
   workflow_dispatch:
 
 permissions:
