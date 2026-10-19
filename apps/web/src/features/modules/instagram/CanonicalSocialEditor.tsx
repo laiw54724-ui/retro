@@ -5,6 +5,9 @@ import { addFollow, removeFollow, setProfileExtraCounts, type SiteDocumentV2Inpu
 import type { ModuleProps } from "../types";
 import { igEditorScope, useIgEditorState } from "./useIgEditorState";
 
+import { IgDraftInput } from "./IgDraftInput";
+import { validateCountDraft } from "./igDraftValidation";
+
 type Props = { props: ModuleProps<"instagram"> };
 
 export function CanonicalSocialEditor({ props }: Props) {
@@ -59,7 +62,7 @@ export function CanonicalSocialEditor({ props }: Props) {
         "otherFollowerCount", tr("canonicalSocialEditor.otherFollowerCount"), profile.legacyFollowersLabel ?? profile.followers
       ], [
         "otherFollowingCount", tr("canonicalSocialEditor.otherFollowingCount"), profile.legacyFollowingLabel ?? profile.following
-      ]] as const).map(([field, label, legacy]) => <label key={field} className="w98-field"><span>{label}</span>{profile[field] === null || profile[field] === undefined ? <span className="ie-row"><span className="w98-hint">{tr("ig.legacyDisplay", { label: legacy || tr("canonicalSocialEditor.blank") })}</span><button type="button" className="w98-btn small" onClick={() => setCount(field, 0)}>{tr("canonicalSocialEditor.useStructuredCounts")}</button></span> : <span className="ie-row"><input className="w98-input compact" type="number" min={0} max={1_000_000_000} aria-label={label} value={profile[field] ?? 0} onChange={(event) => setCount(field, Math.max(0, Number(event.target.value) || 0))} /><button type="button" className="w98-btn small" onClick={() => setCount(field, null)}>{tr("canonicalSocialEditor.restoreLegacyDisplay")}</button></span>}</label>)}
+      ]] as const).map(([field, label, legacy]) => <label key={field} className="w98-field"><span>{label}</span>{profile[field] === null || profile[field] === undefined ? <span className="ie-row"><span className="w98-hint">{tr("ig.legacyDisplay", { label: legacy || tr("canonicalSocialEditor.blank") })}</span><button type="button" className="w98-btn small" onClick={() => setCount(field, 0)}>{tr("canonicalSocialEditor.useStructuredCounts")}</button></span> : <span className="ie-row"><IgDraftInput draftKey={`${scope}:${field}`} type="number" min={0} max={1_000_000_000} label={label} value={String(profile[field] ?? 0)} validate={validateCountDraft} onCommit={(value) => setCount(field, Number(value))} /><button type="button" className="w98-btn small" onClick={() => setCount(field, null)}>{tr("canonicalSocialEditor.restoreLegacyDisplay")}</button></span>}</label>)}
     </div>
   </fieldset>;
 }

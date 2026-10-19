@@ -11,6 +11,7 @@ import { ProfileAppearanceEditor, ProfileEditor } from "./ProfileEditor";
 import { ProfileSwitcher } from "./ProfileSwitcher";
 import { useLocaleFormatting } from "../../../i18n/format";
 import { igEditorScope, useIgEditorState } from "./useIgEditorState";
+import { IgDraftProvider } from "./IgDraftInput";
 import styles from "./ocEditor.module.css";
 
 const SECTION_KEYS = ["profile", "posts", "collections", "social", "appearance"] as const;
@@ -30,6 +31,10 @@ export function IgSkinPicker(props: ModuleProps<"instagram">) {
 
 /** A local workspace around the existing canonical operations; it never stores UI state in v2. */
 export function IgEditorWorkspace(props: ModuleProps<"instagram">) {
+  return <IgDraftProvider><IgEditorWorkspaceContent {...props} /></IgDraftProvider>;
+}
+
+function IgEditorWorkspaceContent(props: ModuleProps<"instagram">) {
   const { t: tr } = useTranslation("instagram");
   const { formatList } = useLocaleFormatting();
   const { ctx } = props;
@@ -79,7 +84,7 @@ export function IgEditorWorkspace(props: ModuleProps<"instagram">) {
     <div ref={scroll} className={`ig-edit-scroll w98-scroll ${styles.content}`} tabIndex={0} aria-label={tr("igEditorWorkspace.instagramContentEditor")}
       onScroll={(event) => positions.current.set(positionKey, event.currentTarget.scrollTop)}>
       <section role="tabpanel" id={`${id}-profile-panel`} aria-labelledby={`${id}-profile-tab`} hidden={section !== "profile"} className={styles.panel}>
-        <ProfileEditor profile={current} onChange={changeProfile} showAppearance={false} upload={async (file) => (await ctx.upload?.(file, "image")) ?? null} />
+        <ProfileEditor draftScope={scope} profiles={ctx.profiles} profile={current} onChange={changeProfile} showAppearance={false} upload={async (file) => (await ctx.upload?.(file, "image")) ?? null} />
         <IgEditForm {...props} section="profile" />
         {ctx.onProfileDelete ? <details className={styles.management}>
           <summary>{tr("igEditorWorkspace.characterManagement")}</summary>

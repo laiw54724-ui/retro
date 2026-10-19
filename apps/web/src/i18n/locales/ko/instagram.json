@@ -400,5 +400,18 @@
     "legacyDisplay": "이전 표시: {{label}}",
     "findManage": "캐릭터 찾기 및 관리({{count}})",
     "foundCharacters": "캐릭터 {{total}}명 중 {{shown}}명 찾음"
+  },
+  "inputDraft": {
+    "required": "필수 항목입니다. 저장된 값은 변경되지 않았습니다.",
+    "handle": "영문자, 숫자, 하이픈 1~64자를 사용하고 처음과 끝은 영문자 또는 숫자로 입력하세요.",
+    "duplicate": "이미 사용 중인 핸들입니다. 다른 값을 입력하세요.",
+    "nameLength": "160자 이내로 입력하세요.",
+    "fieldLength": "80자 이내로 입력하세요.",
+    "tags": "태그는 최대 30개, 각각 64자 이내로 입력하세요.",
+    "count": "0부터 1,000,000,000까지의 정수를 입력하세요.",
+    "url": "완전한 HTTP, HTTPS 또는 mailto 링크를 입력하거나 비워 두세요.",
+    "pending": "아직 적용되지 않았습니다. Enter 또는 필드에서 나가면 적용하고 Esc로 취소합니다.",
+    "cancel": "취소",
+    "cancelField": "{{field}} 편집 취소"
   }
 }

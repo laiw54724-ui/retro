@@ -400,5 +400,18 @@
     "legacyDisplay": "Legacy display: {{label}}",
     "findManage": "Find and manage characters ({{count}})",
     "foundCharacters": "Found {{shown}} of {{total}} characters"
+  },
+  "inputDraft": {
+    "required": "This field is required. Your saved value is unchanged.",
+    "handle": "Use 1–64 letters, numbers or hyphens; start and end with a letter or number.",
+    "duplicate": "This handle is already in use. Choose another.",
+    "nameLength": "Use at most 160 characters.",
+    "fieldLength": "Use at most 80 characters.",
+    "tags": "Use at most 30 tags, each up to 64 characters.",
+    "count": "Enter a whole number from 0 to 1,000,000,000.",
+    "url": "Enter a complete HTTP, HTTPS or mailto link, or leave it blank.",
+    "pending": "Unsaved edit. Enter or leave the field to apply; Esc cancels.",
+    "cancel": "Cancel",
+    "cancelField": "Cancel edit to {{field}}"
   }
 }

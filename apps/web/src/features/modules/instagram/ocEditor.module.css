@@ -95,3 +95,10 @@
 @media (forced-colors: active) {
   .sections > button[aria-selected="true"] { border: 2px solid Highlight; color: HighlightText; background: Highlight; }
 }
+
+.draftField { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; }
+.draftField > input { width: 100%; box-sizing: border-box; }
+.draftFeedback { display: flex; align-items: start; flex-wrap: wrap; gap: 4px; overflow-wrap: anywhere; }
+.draftFeedback > span { flex: 1 1 140px; }
+.draftFeedback > button { flex: 0 0 auto; min-height: 32px; }
+@media (max-width: 600px) { .draftFeedback > button { min-height: 44px; } }

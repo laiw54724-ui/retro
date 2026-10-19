@@ -6,6 +6,10 @@ import { makeIgComment, makeIgHighlight, makeIgPost, normalizeImageUrl, type IgP
 import { FilePick, ImageUrlField, MiniBtn, SafeImg } from "../ui";
 import { moveById, patchById, type ModuleProps } from "../types";
 
+import { IgDraftInput } from "./IgDraftInput";
+import { validateLinkDraft } from "./igDraftValidation";
+import { igEditorScope } from "./useIgEditorState";
+
 type Profile = ModuleProps<"instagram">["window"]["content"]["profile"];
 
 const textFieldDefs = (): Array<{ key: keyof Profile; label: string; wide?: boolean; placeholder?: string }> => [
@@ -34,6 +38,7 @@ const INTERACTION_KEYS: Array<keyof Profile> = ["allowLikes", "allowComments"];
 
 export function IgEditForm({ window, ctx, update, children, section = "all" }: ModuleProps<"instagram"> & { children?: ReactNode; section?: FormSection }) {
   const { t: tr } = useTranslation("instagram");
+  const scope = igEditorScope({ window, ctx, update });
   const { profile, images: posts } = window.content;
   const canonicalProfile = !!(ctx.onProfileChange && ctx.profiles?.some((item) => item.id === ctx.profileId));
   const showProfile = section === "all" || section === "profile";
@@ -98,7 +103,7 @@ export function IgEditForm({ window, ctx, update, children, section = "all" }: M
           {textFields.map((field) => (
             <label key={field.key} className="w98-field" style={{ gridColumn: field.wide ? "1 / -1" : undefined }}>
               <span className="w98-hint">{field.label}</span>
-              <input className="w98-input compact" value={String(profile[field.key] ?? "")} placeholder={field.placeholder} onChange={(event) => setProfile({ [field.key]: event.target.value } as Partial<Profile>, "p" + field.key)} />
+              {field.key === "linkUrl" || field.key === "dmUrl" ? <IgDraftInput draftKey={`${scope}:${field.key}`} label={field.label} value={String(profile[field.key] ?? "")} placeholder={field.placeholder} validate={validateLinkDraft} onCommit={(value) => setProfile({ [field.key]: value } as Partial<Profile>, "p" + field.key)} /> : <input className="w98-input compact" value={String(profile[field.key] ?? "")} placeholder={field.placeholder} onChange={(event) => setProfile({ [field.key]: event.target.value } as Partial<Profile>, "p" + field.key)} />}
             </label>
           ))}
         </div>
