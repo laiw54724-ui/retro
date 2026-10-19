@@ -401,6 +401,11 @@
       "reported": "신고를 시뮬레이션했습니다. 신고는 전송되지 않았습니다."
     },
     "couldntLoadMessagesRightNow": "지금은 메시지를 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.",
+    "loading": "불러오는 중…",
+    "retry": "다시 시도",
+    "all": "전체",
+    "reported": "미처리 신고",
+    "noMatchingMessages": "이 분류에는 메시지가 없습니다.",
     "theGuestbookIsntOpenYet": "방명록이 아직 열리지 않았습니다",
     "theSiteOwnerIsntAccepting": "지금은 사이트 운영자가 새 메시지를 받지 않습니다.",
     "publishTheSiteToUse": "사이트를 게시하면 실제 방명록을 사용할 수 있습니다.",

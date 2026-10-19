@@ -401,6 +401,11 @@
       "reported": "模擬檢舉完成；未傳送任何檢舉。"
     },
     "couldntLoadMessagesRightNow": "目前無法載入留言，請稍後再試。",
+    "loading": "載入中…",
+    "retry": "重試",
+    "all": "全部",
+    "reported": "有待處理檢舉",
+    "noMatchingMessages": "這個分類目前沒有留言。",
     "theGuestbookIsntOpenYet": "留言簿尚未開放",
     "theSiteOwnerIsntAccepting": "站長目前不接受新留言。",
     "publishTheSiteToUse": "發布網站後即可使用真實留言簿。",
