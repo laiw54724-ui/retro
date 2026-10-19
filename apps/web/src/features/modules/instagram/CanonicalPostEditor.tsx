@@ -1,4 +1,5 @@
 import { useId } from "react";
+import sourceStyles from "./ImageSourceFields.module.css";
 import { translateSystemMessage } from "../../../i18n/systemMessages";
 import { useTranslation } from "react-i18next";
 import { useLocaleFormatting } from "../../../i18n/format";
@@ -28,11 +29,11 @@ import { AvatarImage, DEFAULT_CROP } from "../../../components/AvatarImage";
 import { igEditorScope, useIgEditorState } from "./useIgEditorState";
 import { DEFAULT_POST_EDITOR_FILTERS, hasPostEditorFilters, selectPostEditorRows, type PostEditorFilters } from "./postEditorFilters";
 
+import { useIgMedia } from "./useIgMedia";
 import { IgDraftInput } from "./IgDraftInput";
 import { validateCountDraft } from "./igDraftValidation";
 
 type Props = { props: ModuleProps<"instagram"> };
-type Uploaded = { src: string; name: string };
 
 export function CanonicalPostEditor({ props }: Props) {
   const { t: tr } = useTranslation("instagram");
@@ -46,7 +47,7 @@ export function CanonicalPostEditor({ props }: Props) {
   const [mediaUrls, setMediaUrls] = useIgEditorState<Record<string, string>>(scope, {});
   const [openId, setOpenId] = useIgEditorState<string | null>(scope, posts[0]?.id ?? null);
   const [error, setError] = useIgEditorState(scope, "");
-  const [pendingUploads, setPendingUploads] = useIgEditorState(scope, 0);
+  const media = useIgMedia(props);
   const [filters, setFilters] = useIgEditorState<PostEditorFilters>(scope, DEFAULT_POST_EDITOR_FILTERS);
   const { rows, matchCount, retainedCount } = selectPostEditorRows(posts, filters, openId);
   const filtersActive = hasPostEditorFilters(filters);
@@ -69,27 +70,8 @@ export function CanonicalPostEditor({ props }: Props) {
     }
     return result.document;
   };
-  // Render-bound author/site ids and scoped setters keep late uploads attached
-  // to the original character when the user switches profiles mid-upload.
-  const uploadFiles = async (files: File[], onUploaded: (items: Uploaded[]) => void) => {
-    setError("");
-    setPendingUploads((current) => current + 1);
-    try {
-      const uploaded = await Promise.allSettled(files.map(async (file) => {
-        const src = await ctx.upload?.(file, "image");
-        return src ? { src, name: file.name } : null;
-      }));
-      const successful = uploaded.flatMap((item) => item.status === "fulfilled" && item.value ? [item.value] : []);
-      if (successful.length) onUploaded(successful);
-      if (successful.length !== files.length) setError((current) => [current, tr("canonicalPostEditor.imageSFailedToUpload", { v1: files.length - successful.length })].filter(Boolean).join(" "));
-    } catch {
-      setError(tr("canonicalPostEditor.theImageUploadOrPost"));
-    } finally {
-      setPendingUploads((current) => Math.max(0, current - 1));
-    }
-  };
   const addPostFromMedia = (items: Array<{ src: string; srcUrl: string; alt: string }>, title = "") => {
-    if (!items.length) return;
+    let created: string | null = null;
     const id = `post:${crypto.randomUUID()}`;
     mutate((document) => {
       const result = createPost(document, {
@@ -100,11 +82,18 @@ export function CanonicalPostEditor({ props }: Props) {
         media: items.slice(0, 10).map((item) => ({ id: `media:${crypto.randomUUID()}`, ...item }))
       }, { siteId });
       if (result.ok) {
+        created = id;
         setFilters(DEFAULT_POST_EDITOR_FILTERS);
         setOpenId(id);
       }
       return run(result, document);
     });
+    return created;
+  };
+  const uploadFiles = (postId: string, files: File[]) => {
+    setError("");
+    const omitted = media.upload("post", postId, files);
+    if (omitted) setError(tr("batchMedia.omitted", { count: omitted }));
   };
   const patchPost = (post: PostEntityV2, patch: Partial<PostEntityV2>, key?: string) => mutate(
     (document) => run(updatePost(document, post.id, patch, { siteId }), document),
@@ -129,10 +118,11 @@ export function CanonicalPostEditor({ props }: Props) {
 
   return <fieldset className="w98-fieldset ig-canonical-posts"><legend>{tr("ig.postsAndWorks", { count: posts.length })}</legend>
     <div className="ie-row">
-      <FilePick multiple className="w98-btn small" onFiles={async (files) => {
-        await uploadFiles(files.slice(0, 10), (uploaded) => addPostFromMedia(uploaded.map((item) => ({ src: item.src, srcUrl: "", alt: "" })), uploaded[0]?.name.replace(/\.[^.]+$/, "") ?? ""));
-      }}>{pendingUploads > 0 ? tr("canonicalHighlightEditor.uploading") : tr("canonicalPostEditor.uploadANewPostUp")}</FilePick>
-      <input className="w98-input compact grow" aria-label={tr("canonicalPostEditor.newPostImageUrl")} value={newPostUrl} onChange={(event) => setNewPostUrl(event.target.value)} placeholder={tr("canonicalHighlightEditor.orPasteAnImageUrl")} />
+      <FilePick multiple disabled={!media.canUpload} className="w98-btn small" onFiles={(files) => {
+        const id = addPostFromMedia([], files[0].name.replace(/\.[^.]+$/, ""));
+        if (id) uploadFiles(id, files);
+      }}>{tr("canonicalPostEditor.uploadANewPostUp")}</FilePick>
+      <label className={`ig-col grow ${sourceStyles.url}`}><span className="w98-hint">{tr("canonicalPostEditor.newPostImageUrl")}</span><input className="w98-input compact" aria-label={tr("canonicalPostEditor.newPostImageUrl")} value={newPostUrl} onChange={(event) => setNewPostUrl(event.target.value)} placeholder={tr("canonicalHighlightEditor.orPasteAnImageUrl")} /></label>
       <button type="button" className="w98-btn small" onClick={() => {
         const result = normalizeImageUrl(newPostUrl);
         if (!result.ok) { setError(translateSystemMessage(result.reason)); return; }
@@ -142,6 +132,7 @@ export function CanonicalPostEditor({ props }: Props) {
     </div>
     {error ? <div className="ie-error" role="alert">{error}</div> : null}
     <p className="w98-hint">{tr("canonicalPostEditor.eachPostCanHold1")}</p>
+    <p className="w98-hint">{tr("batchMedia.draftHint")}</p>
     <div className="ig-post-filters" role="group" aria-label={tr("canonicalPostEditor.postSearchAndFilters")}>
       <label className="w98-field"><span className="w98-hint">{tr("canonicalPostEditor.searchPosts")}</span><input type="search" className="w98-input compact" aria-label={tr("canonicalPostEditor.searchPosts2")} value={filters.query} onChange={(event) => changeFilters({ query: event.target.value })} placeholder={tr("canonicalPostEditor.titleContentPlaceDateOr")} /></label>
       <div className="ie-row">
@@ -170,6 +161,7 @@ export function CanonicalPostEditor({ props }: Props) {
           <button type="button" className="mini-btn" aria-label={tr("canonicalPostEditor.movePostDown")} aria-describedby={filtersActive ? `${editorId}-order-hint` : undefined} disabled={filtersActive || authoredIndex === posts.length - 1} onClick={() => mutate((document) => run(reorderPost(document, post.id, 1, { siteId }), document))}>▼</button>
           <button type="button" className="mini-btn danger" aria-label={tr("canonicalPostEditor.deletePost")} onClick={() => mutate((document) => run(deletePost(document, post.id, { siteId }), document))}>×</button>
         </div>
+        {media.taskList("post", post.id)}
         {expanded ? <div className="ig-post-body ig-canonical-post-fields" id={`${editorId}-${post.id}`}>
           <label className="w98-field"><span className="w98-hint">{tr("canonicalPostEditor.heading")}</span><input className="w98-input compact" value={post.title} onChange={(event) => patchPost(post, { title: event.target.value }, `post-title-${post.id}`)} /></label>
           <label className="w98-field"><span className="w98-hint">{tr("canonicalPostEditor.postContent")}</span><textarea className="w98-textarea" rows={3} value={post.caption} onChange={(event) => patchPost(post, { caption: event.target.value }, `post-caption-${post.id}`)} /></label>
@@ -208,7 +200,7 @@ export function CanonicalPostEditor({ props }: Props) {
           {post.media.map((media, mediaIndex) => <div key={media.id} className="ig-media-edit-row">
             <span className="ig-thumb sq48 ph">{media.src ? <AvatarImage src={media.src} crop={media.crop} alt={media.alt} /> : null}</span>
             <div className="ig-col grow">
-              <ImageUrlField raw={media.srcUrl} placeholder={tr("canonicalPostEditor.imageUrl")} label={tr("canonicalPostEditor.urlOfImage", { v1: mediaIndex + 1 })} className="w98-input compact" onCommit={(raw, src) => mutate((document) => run(patchPostMedia(document, post.id, media.id, { src, srcUrl: raw }, { siteId }), document))} />
+              <ImageUrlField visibleLabel raw={media.srcUrl} placeholder={tr("canonicalPostEditor.imageUrl")} label={tr("canonicalPostEditor.urlOfImage", { v1: mediaIndex + 1 })} className="w98-input compact" onCommit={(raw, src) => mutate((document) => run(patchPostMedia(document, post.id, media.id, { src, srcUrl: raw }, { siteId }), document))} />
               <input className="w98-input compact" aria-label={tr("canonicalPostEditor.altTextOfImage", { v1: mediaIndex + 1 })} value={media.alt} placeholder={tr("canonicalPostEditor.altTextMakesTheImage")} onChange={(event) => mutate((document) => run(patchPostMedia(document, post.id, media.id, { alt: event.target.value }, { siteId }), document), `media-alt-${media.id}`)} />
               <div className="ig-media-crop-controls" role="group" aria-label={tr("canonicalPostEditor.thumbnailCropOfImage", { v1: mediaIndex + 1 })}>
                 <label><span>{tr("canonicalPostEditor.horizontal")}</span><input type="range" min={0} max={100} value={(media.crop ?? DEFAULT_CROP).x} aria-label={tr("canonicalPostEditor.horizontalCropOfImage", { v1: mediaIndex + 1 })} onChange={(event) => mutate((document) => run(patchPostMedia(document, post.id, media.id, { crop: { ...(media.crop ?? DEFAULT_CROP), x: Number(event.target.value) } }, { siteId }), document), `media-crop-x-${media.id}`)} /></label>
@@ -223,10 +215,8 @@ export function CanonicalPostEditor({ props }: Props) {
           </div>)}
           {post.media.length < 10 ? <>
             <div className="ie-row">
-              <FilePick multiple className="w98-btn small" onFiles={async (files) => {
-                await uploadFiles(files.slice(0, 10 - post.media.length), (uploaded) => addMediaItems(post, uploaded.map((item) => ({ src: item.src, srcUrl: "", alt: "" }))));
-              }}>{tr("canonicalPostEditor.uploadMoreImages")}</FilePick>
-              <input className="w98-input compact grow" aria-label={tr("canonicalPostEditor.addCarouselImageUrl")} value={mediaUrls[post.id] ?? ""} onChange={(event) => setMediaUrls((current) => ({ ...current, [post.id]: event.target.value }))} placeholder={tr("canonicalPostEditor.orPasteACarouselImage")} />
+              <FilePick multiple disabled={!media.canUpload} className="w98-btn small" onFiles={(files) => uploadFiles(post.id, files)}>{tr("canonicalPostEditor.uploadMoreImages")}</FilePick>
+              <label className={`ig-col grow ${sourceStyles.url}`}><span className="w98-hint">{tr("canonicalPostEditor.addCarouselImageUrl")}</span><input className="w98-input compact" aria-label={tr("canonicalPostEditor.addCarouselImageUrl")} value={mediaUrls[post.id] ?? ""} onChange={(event) => setMediaUrls((current) => ({ ...current, [post.id]: event.target.value }))} placeholder={tr("canonicalPostEditor.orPasteACarouselImage")} /></label>
               <button type="button" className="w98-btn small" onClick={() => {
                 const raw = mediaUrls[post.id] ?? "";
                 const result = normalizeImageUrl(raw);

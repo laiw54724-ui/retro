@@ -34,6 +34,7 @@ export function LinksView({ window, ctx }: ModuleProps<"links">) {
             <button
               type="button"
               className="link-tile"
+              data-navigation-focus={`links:${window.id}:${link.id}`}
               style={{ background: link.color, color: readableOn(link.color), boxShadow: tileShadow }}
               disabled={unavailable}
               title={destination.summary}

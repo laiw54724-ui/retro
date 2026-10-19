@@ -3,7 +3,7 @@ import { duplicateProfile, makeWindow, migrateSiteDocumentV2, projectPublicSiteD
 import { igDocument } from "./ig-fixture";
 const SITE = "site-1";
 const auth = { access_token: "a.b.c", refresh_token: "r", expires_at: 4102444800, expires_in: 3600, token_type: "bearer", user: { id: "u", email: "x@y.z", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01" } };
-function fixture(noHost = false) {
+function fixture(noHost = false, windowLinks = false) {
   const migrated = migrateSiteDocumentV2(igDocument({ name: "Public Character" }), { siteId: SITE });
   if (!migrated.ok || migrated.version !== 2) throw new Error("fixture");
   const copy = duplicateProfile(migrated.document, migrated.document.entities.profiles[0].id, { siteId: SITE, id: "profile:private", handle: "private" });
@@ -26,11 +26,13 @@ function fixture(noHost = false) {
   for (const window of doc.windows) { window.defaultOpen = false; window.layout.desktop = { ...window.layout.desktop, x: 520, y: 30, w: 420, h: 690 }; }
   if (noHost) doc.windows = [];
   doc.windows.push(explorer);
-  const links = makeWindow("links", 2); links.id = "links"; links.title = "Links.exe"; links.defaultOpen = false; doc.windows.push(links);
+  const links = makeWindow("links", 2); links.id = "links"; links.title = "Links.exe"; links.defaultOpen = false;
+  if (links.type === "links" && windowLinks) links.content.links = [{ ...links.content.links[0], id: "open-targets", label: "Open targets", target: "window", windowId: explorer.id }];
+  doc.windows.push(links);
   return doc;
 }
-async function publicPage(page: Page, noHost = false, nested = false) {
-  const doc = fixture(noHost);
+async function publicPage(page: Page, noHost = false, nested = false, windowLinks = false) {
+  const doc = fixture(noHost, windowLinks);
   if (nested) { const explorer = doc.windows.find((window) => window.type === "explorer")!; if (explorer.type === "explorer") { explorer.content.folders = [{ id: "posts", parentId: null, name: "Posts", order: 0, visibility: "published" }]; explorer.content.shortcuts.find((shortcut) => shortcut.id === "post")!.parentId = "posts"; } }
   const projection = projectPublicSiteDocument(doc, SITE);
   if (!projection.ok) throw new Error("projection");
@@ -39,8 +41,8 @@ async function publicPage(page: Page, noHost = false, nested = false) {
   await page.route("**/api/public/sites/demo", (route) => route.fulfill({ json: { site: { username: "demo", site_name: "Nav", published_document: projection.document, published_version: 1, published_at: "2026-10-19T00:00:00Z" } } }));
   await page.goto("/@demo"); return requests;
 }
-async function owner(page: Page, width: number) {
-  const doc = fixture(true); let writes = 0;
+async function owner(page: Page, width: number, windowLinks = false) {
+  const doc = fixture(true, windowLinks); let writes = 0;
   await page.addInitScript((value) => localStorage.setItem("sb-example-auth-token", JSON.stringify(value)), auth);
   await page.route("**/api/sites/site-1", (route) => route.fulfill({ json: { site: { id: SITE, username: "demo", site_name: "Nav", draft_document: doc, draft_version: 1, published_document: null, published_version: null, published_at: null, updated_at: "2026-10-19T00:00:00Z", access_role: "owner" } } }));
   await page.route("**/api/sites/site-1/assets**", (route) => route.fulfill({ json: { assets: [] } }));
@@ -166,3 +168,30 @@ test("mobile to desktop rotation keeps the temporary exact post, author and Back
   await expect(preview.getByRole("button", { name: "Open exact post", exact: true })).toBeFocused();
   await page.waitForTimeout(1200); expect(writes()).toBe(0);
 });
+
+for (const source of ["public", "preview"] as const) {
+  test(`${source} Links window button preserves nested Back path and keyboard focus without writes`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 844 });
+    const requests = source === "public" ? await publicPage(page, true, false, true) : [];
+    const writes = source === "preview" ? await owner(page, 320, true) : () => 0;
+    const scope = source === "public" ? page.locator(".visitor-page") : overlay(page);
+    await scope.locator(".m-icon").getByText("Links.exe", { exact: true }).click();
+    const trigger = scope.getByRole("button", { name: "Open targets", exact: true });
+    await trigger.focus(); await page.keyboard.press("Enter");
+    await expect(targetWindow(page)).toBeVisible();
+    const postTrigger = scope.getByRole("button", { name: "Open exact post", exact: true });
+    await postTrigger.click();
+    await expect(scope.locator(".ig-card")).toContainText("EXACT POST CONTENT");
+    await scope.locator(".m-back").click(); await expect(postTrigger).toBeFocused();
+    await scope.locator(".m-back").click(); await expect(trigger).toBeFocused();
+    await page.keyboard.press("Space"); await expect(targetWindow(page)).toBeVisible();
+    await page.keyboard.press("Escape"); await expect(trigger).toBeFocused();
+    if (source === "preview") {
+      await scope.getByRole("button", { name: /回到編輯器/ }).click();
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await expect(page.getByRole("button", { name: "復原", exact: true })).toBeDisabled();
+    }
+    await page.waitForTimeout(1200);
+    expect(writes()).toBe(0); expect(requests).toEqual([]);
+  });
+}

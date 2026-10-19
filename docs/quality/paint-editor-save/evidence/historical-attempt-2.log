@@ -1,0 +1,48 @@
+[WebServer] (node:14379) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:14403) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:14426) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › tests/e2e/paint-editor-save.spec.ts:77:5 › formal entry saves a new PNG/Gallery, retains original, supports document undo and reload (5.4s)
+  ✓  2 [chromium] › tests/e2e/paint-editor-save.spec.ts:96:5 › failed upload preserves the canvas and Retry saves once; newer strokes stay dirty (1.9s)
+  ✓  3 [chromium] › tests/e2e/paint-editor-save.spec.ts:110:5 › dirty Paint guards nested Back/Stay, Escape and native reload; late upload cannot follow B (1.2s)
+  ✘  4 [chromium] › tests/e2e/paint-editor-save.spec.ts:132:37 › phone-visible draw/export/save at 320px (743ms)
+Testing stopped early after 1 maximum allowed failures.
+
+
+  1) [chromium] › tests/e2e/paint-editor-save.spec.ts:132:37 › phone-visible draw/export/save at 320px
+
+    TypeError: The "path" argument must be of type string or an instance of Buffer or URL. Received an instance of Promise
+
+      134 |   const download = page.waitForEvent("download");
+      135 |   await state.dialog.getByRole("button", { name: "匯出 PNG", exact: true }).click();
+    > 136 |   const png = await readFile((await download).path()!);
+          |                             ^
+      137 |   expect(png.readUInt32BE(16)).toBe(640); expect(png.readUInt32BE(20)).toBe(480);
+      138 |   await expect(state.dialog.getByRole("button", { name: saveName, exact: true })).toBeEnabled();
+      139 |   await page.screenshot({ path: info.outputPath(`paint-editor-${width}.png`), fullPage: false });
+        at /Users/wen/Documents/Codex/2026-10-19/task-9/retro-paint-editor-save-53/tests/e2e/paint-editor-save.spec.ts:136:29
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/paint-editor-save-phone-visible-draw-export-save-at-320px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/paint-editor-save-phone-visible-draw-export-save-at-320px-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/paint-editor-save-phone-visible-draw-export-save-at-320px-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/paint-editor-save-phone-visible-draw-export-save-at-320px-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/e2e/paint-editor-save.spec.ts:132:37 › phone-visible draw/export/save at 320px
+  2 did not run
+  3 passed (11.1s)
+  1 error was not a part of any test, see above for details

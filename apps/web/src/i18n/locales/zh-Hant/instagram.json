@@ -413,5 +413,17 @@
     "pending": "尚未套用。按 Enter 或離開欄位套用；Esc 取消。",
     "cancel": "取消",
     "cancelField": "取消編輯{{field}}"
+  },
+  "imageControls": {
+    "cancelUpload": "取消上傳",
+    "removeAvatar": "移除頭像",
+    "sourceChanged": "已變更頭像來源或取消上傳，保留原有圖片。",
+    "highlightPageUrl": "精選第 {{n}} 頁圖片網址"
+  },
+  "batchMedia": {
+    "cancelled": "已取消上傳，保留成功的圖片。",
+    "omitted": "有 {{count}} 個檔案未加入佇列，因為貼文或精選沒有剩餘圖片空間。請取消或清除待處理／失敗項目，或移除圖片，再選取檔案。",
+    "draftHint": "選取檔案後立即建立可編輯的草稿。成功的圖片會保留；可逐一重試或取消。若取消所有檔案，可自行刪除空白草稿。",
+    "uploadPages": "上傳頁面（可多選）"
   }
 }

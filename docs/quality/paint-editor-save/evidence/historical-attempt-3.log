@@ -1,0 +1,54 @@
+[WebServer] (node:16313) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:16327) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:16379) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › tests/e2e/paint-editor-save.spec.ts:77:5 › formal entry saves a new PNG/Gallery, retains original, supports document undo and reload (5.5s)
+  ✓  2 [chromium] › tests/e2e/paint-editor-save.spec.ts:96:5 › failed upload preserves the canvas and Retry saves once; newer strokes stay dirty (1.9s)
+  ✓  3 [chromium] › tests/e2e/paint-editor-save.spec.ts:110:5 › dirty Paint guards nested Back/Stay, Escape and native reload; late upload cannot follow B (1.2s)
+  ✓  4 [chromium] › tests/e2e/paint-editor-save.spec.ts:132:37 › phone-visible draw/export/save at 320px (1.7s)
+  ✓  5 [chromium] › tests/e2e/paint-editor-save.spec.ts:132:37 › phone-visible draw/export/save at 390px (1.7s)
+  ✘  6 [chromium] › tests/e2e/paint-editor-save.spec.ts:147:5 › Paint command Undo never rewinds the editor document history (30.2s)
+Testing stopped early after 1 maximum allowed failures.
+
+
+  1) [chromium] › tests/e2e/paint-editor-save.spec.ts:147:5 › Paint command Undo never rewinds the editor document history
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.press: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('dialog', { name: '離開編輯器？', exact: true }).getByRole('button', { name: '留在這裡', exact: true })
+
+
+      159 |   const leave = page.getByRole("dialog", { name: "離開編輯器？", exact: true });
+      160 |   await expect(leave).toBeVisible();
+    > 161 |   await leave.getByRole("button", { name: "留在這裡", exact: true }).press("ControlOrMeta+z");
+          |                                                                  ^
+      162 |   await page.waitForTimeout(750);
+      163 |   expect(state.docs["site-1"].windows[0].title).toBe("Keep this title");
+      164 |   await leave.getByRole("button", { name: "留在這裡", exact: true }).press("ControlOrMeta+y");
+        at /Users/wen/Documents/Codex/2026-10-19/task-9/retro-paint-editor-save-53/tests/e2e/paint-editor-save.spec.ts:161:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/paint-editor-save-Paint-co-0914e-the-editor-document-history-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/paint-editor-save-Paint-co-0914e-the-editor-document-history-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/paint-editor-save-Paint-co-0914e-the-editor-document-history-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/paint-editor-save-Paint-co-0914e-the-editor-document-history-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/e2e/paint-editor-save.spec.ts:147:5 › Paint command Undo never rewinds the editor document history
+  5 passed (44.3s)
+  1 error was not a part of any test, see above for details

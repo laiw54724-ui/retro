@@ -84,7 +84,7 @@ function IgEditorWorkspaceContent(props: ModuleProps<"instagram">) {
     <div ref={scroll} className={`ig-edit-scroll w98-scroll ${styles.content}`} tabIndex={0} aria-label={tr("igEditorWorkspace.instagramContentEditor")}
       onScroll={(event) => positions.current.set(positionKey, event.currentTarget.scrollTop)}>
       <section role="tabpanel" id={`${id}-profile-panel`} aria-labelledby={`${id}-profile-tab`} hidden={section !== "profile"} className={styles.panel}>
-        <ProfileEditor draftScope={scope} profiles={ctx.profiles} profile={current} onChange={changeProfile} showAppearance={false} upload={async (file) => (await ctx.upload?.(file, "image")) ?? null} />
+        <ProfileEditor siteId={ctx.siteId ?? ""} windowId={props.window.id} draftScope={scope} profiles={ctx.profiles} profile={current} onChange={changeProfile} showAppearance={false} upload={ctx.upload ? (file) => ctx.upload!(file, "image") : undefined} />
         <IgEditForm {...props} section="profile" />
         {ctx.onProfileDelete ? <details className={styles.management}>
           <summary>{tr("igEditorWorkspace.characterManagement")}</summary>

@@ -1,0 +1,23 @@
+[WebServer] (node:18184) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 13 tests using 1 worker
+
+(node:18206) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [BABEL] Note: The code generator has deoptimised the styling of /tmp/retro-paint-operation-vite-cache/deps/react-dom_client.js?v=b5dc8bd4 as it exceeds the max of 500KB.
+  ✓   1 tests/paint-operation/paint-import.spec.ts:58:5 › a local transparent image becomes one undoable overlay and exports at logical size (1.0s)
+  ✓   2 tests/paint-operation/paint-import.spec.ts:85:5 › import keeps an existing mouse stroke and branches redo history (543ms)
+  ✓   3 tests/paint-operation/paint-import.spec.ts:106:5 › bad type, encoded size, corrupt decode, and decoded dimensions leave pixels unchanged (997ms)
+  ✓   4 tests/paint-operation/paint-import.spec.ts:119:5 › cancelled, repeated, and edit-interrupted decodes cannot overwrite newer pixels (600ms)
+  ✓   5 tests/paint-operation/paint-import.spec.ts:144:5 › tainted source failure is atomic, and touch during decode cancels import (721ms)
+  ✓   6 tests/paint-operation/paint-operation.spec.ts:25:5 › toolbar, palette, picker, transparent eraser, and undo/redo operate on real pixels (679ms)
+  ✓   7 tests/paint-operation/paint-operation.spec.ts:46:5 › shape tools and filled toggle commit one stroke at a time (713ms)
+  ✓   8 tests/paint-operation/paint-operation.spec.ts:68:5 › clear and new ask before discarding, and local PNG keeps logical size and alpha (597ms)
+  ✓   9 tests/paint-operation/paint-operation.spec.ts:102:5 › keyboard cursor draws, cancels, and leaves editable controls alone (360ms)
+  ✓  10 tests/paint-operation/paint-operation.spec.ts:128:7 › held Space activates one keyboard gesture until a fresh press commits it (377ms)
+  ✓  11 tests/paint-operation/paint-operation.spec.ts:128:7 › held Enter activates one keyboard gesture until a fresh press commits it (366ms)
+  ✓  12 tests/paint-operation/paint-operation.spec.ts:154:5 › pointer and keyboard cannot take over each other's active gesture (379ms)
+  ✓  13 tests/paint-operation/paint-operation.spec.ts:189:5 › 320, 390, and 430px controls stay reachable; touch paints only inside canvas (1.3s)
+
+  13 passed (10.2s)
