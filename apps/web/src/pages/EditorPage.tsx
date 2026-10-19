@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { trustedPublicAssetBaseUrls } from "../lib/publicAssets";
 import { translateSystemMessage } from "../i18n/systemMessages";
+import { translateError } from "../i18n/errors";
 import { i18n } from "../i18n";
 import { buildPublishChecks, CollectionEntityV2Schema, createProfile, deleteOrRetargetProfile, duplicateProfile, hasBlockingCheck, hasUnpublishedChanges as hasUnpublishedDraftChanges, loadVersionedSiteDocument, normalizeDocument, parseSiteDocument, PostEntityV2Schema, ProfileEntityV2Schema, projectV2ToLegacyDocument, updateProfile, type DesktopWindow, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { Link, useNavigate } from "react-router-dom";
@@ -71,6 +72,7 @@ function loadSidebarPreferences(): SidebarPreferences {
 
 export function EditorPage({ site }: { site: SiteRecord }) {
   const { t } = useTranslation("editor");
+  const { t: errorT } = useTranslation("errors");
   const { t: common } = useTranslation("common");
   const { formatNumber, formatList, fontFamily } = useLocaleFormatting();
   const siteId = site.id;
@@ -80,7 +82,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   const saveInFlight = useRef(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState<string | { code?: string; fallback: "editor.saveFailed" | "editor.publishingFailed" }>("");
   const [conflict, setConflict] = useState(false);
   // IME composition in progress anywhere on the page: autosave waits so a half-composed fragment is never written.
   const [composing, setComposing] = useState(false);
@@ -276,7 +278,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
           setConflict(true);
           setMessage(t("editor.anUpdateFromAnotherTab"));
         } else {
-          setMessage(error instanceof Error ? error.message : t("editor.saveFailed"));
+          setMessage({ code: error instanceof ApiError ? error.code : undefined, fallback: "editor.saveFailed" });
         }
       }
     }, 650);
@@ -418,7 +420,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       if (error instanceof ApiError && error.code === "version_conflict") {
         setConflict(true);
       }
-      setMessage(error instanceof Error ? error.message : t("editor.publishingFailed"));
+      setMessage({ code: error instanceof ApiError ? error.code : undefined, fallback: "editor.publishingFailed" });
     } finally {
       setPublishing(false);
     }
@@ -578,7 +580,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
       {message ? (
         <div className="editor-message" role="alert">
-          <span>{message}</span>
+          <span>{typeof message === "string" ? message : translateError(message, errorT, t(message.fallback))}</span>
           {store.saveStatus === "error" && !conflict ? <button onClick={store.retrySave}>{t("shell.retrySave")}</button> : null}
           <button aria-label={t("shell.closeNotice")} onClick={() => setMessage("")}>×</button>
         </div>

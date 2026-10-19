@@ -140,4 +140,18 @@ describe("readable fallback, plurals, and errors", () => {
       expect(translateError(error, t)).toBe(resources.en.errors.generic);
     }
   });
+
+  it("uses a contextual safe fallback and retranslates error codes in each bundled language", async () => {
+    const runtime = controllerFixture({ browser: ["en-SG"] });
+    await runtime.init();
+    for (const locale of SUPPORTED_LOCALES) {
+      await runtime.changeLocale(locale);
+      const t = runtime.i18n.getFixedT(null, "errors");
+      expect(translateError({ code: "invalid_draft", message: "private draft details" }, t, "safe fallback"))
+        .toBe(resources[locale].errors.codes.invalid_draft);
+      expect(translateError({ code: "unmapped", message: "private server details" }, t, runtime.i18n.t("editor:editor.saveFailed")))
+        .toBe(resources[locale].editor.editor.saveFailed);
+      expect(translateError(new Error("private transport detail"), t)).toBe(resources[locale].errors.generic);
+    }
+  });
 });
