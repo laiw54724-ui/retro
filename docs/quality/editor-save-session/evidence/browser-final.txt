@@ -1,0 +1,34 @@
+[WebServer] (node:93257) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:93286) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 23 tests using 1 worker
+
+(node:93326) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › tests/e2e/appearance-migration-upgrade.spec.ts:25:5 › upgrade pause keeps both migration controls disabled after local editing becomes dirty (3.6s)
+  ✓   2 [chromium] › tests/e2e/appearance-migration-upgrade.spec.ts:40:7 › migration action routes save 426 to upgrade recovery without replacing local edits (1.9s)
+  ✓   3 [chromium] › tests/e2e/appearance-migration-upgrade.spec.ts:60:7 › pending migration save success is ignored after a separate 426 pause (2.8s)
+  ✓   4 [chromium] › tests/e2e/appearance-migration-upgrade.spec.ts:40:7 › migration action routes migration 426 to upgrade recovery without replacing local edits (1.9s)
+  ✓   5 [chromium] › tests/e2e/appearance-migration-upgrade.spec.ts:60:7 › pending migration migration success is ignored after a separate 426 pause (2.9s)
+  ✓   6 [chromium] › tests/e2e/asset-migration.spec.ts:9:5 › legacy asset warning identifies each asset and refreshes after v2 migration (1.0s)
+  ✓   7 [chromium] › tests/e2e/editor-save-session.spec.ts:83:38 › immediate exit at 1280px retains the canonical edit until confirmed (1.8s)
+  ✓   8 [chromium] › tests/e2e/editor-save-session.spec.ts:83:38 › immediate exit at 390px retains the canonical edit until confirmed (1.9s)
+  ✓   9 [chromium] › tests/e2e/editor-save-session.spec.ts:98:52 › late success from A cannot change B's save session (3.6s)
+  ✓  10 [chromium] › tests/e2e/editor-save-session.spec.ts:98:52 › late 500 from A cannot change B's save session (3.6s)
+  ✓  11 [chromium] › tests/e2e/editor-save-session.spec.ts:98:52 › late 403 from A cannot change B's save session (3.6s)
+  ✓  12 [chromium] › tests/e2e/editor-save-session.spec.ts:98:52 › late 409 from A cannot change B's save session (3.6s)
+  ✓  13 [chromium] › tests/e2e/editor-save-session.spec.ts:98:52 › late 426 from A cannot change B's save session (3.6s)
+  ✓  14 [chromium] › tests/e2e/editor-save-session.spec.ts:116:5 › old A completion cannot affect a remounted A session (2.6s)
+  ✓  15 [chromium] › tests/e2e/editor-save-session.spec.ts:127:5 › normal in-flight edits save again using the acknowledged version (2.6s)
+  ✓  16 [chromium] › tests/e2e/editor-save-session.spec.ts:139:5 › 390px save failure retains Retry after the notice closes (2.5s)
+  ✓  17 [chromium] › tests/e2e/editor-save-session.spec.ts:152:5 › real current-session conflict still pauses saving and retains the edit (2.3s)
+  ✓  18 [chromium] › tests/e2e/editor-save-session.spec.ts:161:39 › current-session 403 keeps the access-loss redirect (1.5s)
+  ✓  19 [chromium] › tests/e2e/editor-save-session.spec.ts:161:39 › current-session 404 keeps the access-loss redirect (1.5s)
+  ✓  20 [chromium] › tests/e2e/editor-save-session.spec.ts:169:5 › Back can be cancelled; reload warns; confirmed leaving does not claim to cancel a sent save (2.0s)
+  ✓  21 [chromium] › tests/e2e/editor-save-session.spec.ts:187:5 › router preserves auth return parameters, direct entry, unknown route and preview history (2.5s)
+  ✓  22 [chromium] › tests/e2e/editor-save-session.spec.ts:209:5 › unapplied registered theme preview blocks leaving without writing it (832ms)
+  ✓  23 [chromium] › tests/e2e/editor-save-session.spec.ts:228:5 › sign-out confirmation happens before the authentication session is removed (882ms)
+
+  23 passed (57.5s)
