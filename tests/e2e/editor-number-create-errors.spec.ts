@@ -86,6 +86,27 @@ async function reachCreate(page: Page) {
   await page.locator(".template-grid button").nth(2).click();
 }
 
+test("unchanged normalized URL keeps its availability and Next action", async ({ page }) => {
+  await signIn(page);
+  let checks = 0;
+  await page.route("**/api/usernames/*/availability", (route) => {
+    checks++;
+    return route.fulfill({ json: { available: true } });
+  });
+  await page.goto("/onboarding");
+  const url = page.getByPlaceholder("your-name");
+  await url.fill("demo");
+  await expect(page.getByText("這個網址可以使用")).toBeVisible();
+  expect(checks).toBe(1);
+  await url.fill("DEMO"); // Normalizes back to the same stored username.
+  await expect(url).toHaveValue("demo");
+  await expect(page.getByText("這個網址可以使用")).toBeVisible();
+  await expect(page.getByRole("button", { name: "下一步 ›" })).toBeEnabled();
+  expect(checks).toBe(1);
+  await page.getByRole("button", { name: "下一步 ›" }).click();
+  await expect(page.getByRole("heading", { name: "選一個初始主題" })).toBeVisible();
+});
+
 test("409 offers URL correction while preserving the chosen theme and template", async ({ page }) => {
   let creates = 0;
   await page.route("**/api/sites", (route) => {

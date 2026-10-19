@@ -82,7 +82,9 @@ export function OnboardingPage() {
                   <div className="url-input">
                     <span>retrodesk.me/</span>
                     <input value={username} onChange={(event) => {
-                      setUsername(event.target.value.toLowerCase().replace(/\s+/g, "-"));
+                      const nextUsername = event.target.value.toLowerCase().replace(/\s+/g, "-");
+                      if (nextUsername === username) return;
+                      setUsername(nextUsername);
                       setAvailable(null);
                       setCreateError(null);
                     }} placeholder="your-name" />
