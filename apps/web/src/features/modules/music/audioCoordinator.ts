@@ -129,6 +129,9 @@ export function createAudioCoordinator(options: CoordinatorOptions) {
       bindAudio(audio);
     }
     const player = audio!;
+    // Preserve the native audio reset before loading a new source. Supplied
+    // video elements keep their own control lifecycle.
+    if (changed && !element) player.pause();
     emit({ status: "loading", windowId, trackId, url, currentTime: changed ? 0 : snapshot.currentTime, duration: changed ? null : snapshot.duration, canSeek: changed ? false : snapshot.canSeek, error: "" });
     if (changed) {
       player.src = url;
