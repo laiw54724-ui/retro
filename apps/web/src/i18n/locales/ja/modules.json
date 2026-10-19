@@ -401,6 +401,11 @@
       "reported": "通報をシミュレーションしました。通報は送信されていません。"
     },
     "couldntLoadMessagesRightNow": "現在メッセージを読み込めません。しばらくしてからもう一度お試しください。",
+    "loading": "読み込み中…",
+    "retry": "再試行",
+    "all": "すべて",
+    "reported": "未処理の報告あり",
+    "noMatchingMessages": "この分類にメッセージはありません。",
     "theGuestbookIsntOpenYet": "ゲストブックはまだ公開されていません",
     "theSiteOwnerIsntAccepting": "現在、サイトの管理者は新しいメッセージを受け付けていません。",
     "publishTheSiteToUse": "サイトを公開すると、実際のゲストブックが使えます。",
