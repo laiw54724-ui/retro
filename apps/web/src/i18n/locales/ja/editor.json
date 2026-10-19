@@ -557,6 +557,7 @@
     "copySuffix": " のコピー"
   },
   "defaults": {
+    "image": "画像",
     "leaveAMessageNew": "メッセージをどうぞ。新しいメッセージはサイトの管理者が先に確認します。",
     "gallery": "ギャラリー",
     "links": "リンク",

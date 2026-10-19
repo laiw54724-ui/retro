@@ -46,6 +46,7 @@
     "divider": "Divider"
   },
   "image": {
+    "sourceChanged": "The image source was edited. The previous upload will not replace it.",
     "frame": "Frame",
     "frameless": "Frameless",
     "simpleFrame": "Simple frame",

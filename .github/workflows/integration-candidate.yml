@@ -95,6 +95,31 @@ jobs:
           set -euo pipefail
           pnpm exec playwright test --config=playwright.image-w3b.config.ts 2>&1 | tee .candidate-evidence/image-w3b.log
 
+      - name: Paint import dedicated Chromium acceptance
+        run: |
+          set -euo pipefail
+          trap 'if [ -d test-results ]; then cp -a test-results .candidate-evidence/paint-import-test-results; fi' EXIT
+          pnpm exec playwright test --config=playwright.paint-operation.config.ts tests/paint-operation/paint-import.spec.ts 2>&1 | tee .candidate-evidence/paint-import.log
+
+      - name: Image authoring dedicated Chromium acceptance
+        run: |
+          set -euo pipefail
+          trap 'if [ -d test-results ]; then cp -a test-results .candidate-evidence/image-authoring-test-results; fi' EXIT
+          pnpm exec playwright test --config=playwright.image-authoring.config.ts 2>&1 | tee .candidate-evidence/image-authoring.log
+
+      - name: Image production writer exclusion and preservation
+        run: |
+          set -euo pipefail
+          trap 'if [ -d test-results ]; then cp -a test-results .candidate-evidence/image-production-test-results; fi' EXIT
+          pnpm exec playwright test --config=playwright.image-reader-production.config.ts 2>&1 | tee .candidate-evidence/image-production.log
+
+      - name: Deferred editor route production regression
+        run: |
+          set -euo pipefail
+          VITE_API_URL=http://127.0.0.1:5197 pnpm --filter @retrodesk/web build 2>&1 | tee .candidate-evidence/deferred-editor-build.log
+          trap 'if [ -d test-results ]; then cp -a test-results .candidate-evidence/deferred-editor-test-results; fi' EXIT
+          pnpm exec playwright test --config=tests/quality/playwright.config.ts tests/quality/editor-route-75.spec.ts 2>&1 | tee .candidate-evidence/deferred-editor.log
+
       - name: Confirm unchanged source
         env:
           EXPECTED_SHA: ${{ github.sha }}

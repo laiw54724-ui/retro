@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import type { ImageContent, ImageCrop } from "@retrodesk/shared";
 import { FilePick, ImageUrlField } from "../ui";
 import type { ModuleProps } from "../types";
-import { UploadTaskList, useWindowMedia } from "../../media/editorMedia";
+import { UploadTaskList, useMediaQueue, useWindowMedia } from "../../media/editorMedia";
 import { ImagePresentation } from "./presentation/ImagePresentation";
 import { DEFAULT_IMAGE_CROP } from "./presentation/placement";
 import { createImageContent, imageUploadOptions, patchImageContent } from "./model";
@@ -26,6 +26,8 @@ const colorOf = (background: ImageContent["background"]) => typeof background ==
 export function ImageInlineEditor({ window, ctx, update }: ModuleProps<"image">) {
   const { t } = useTranslation("modules");
   const media = useWindowMedia(window, ctx);
+  const { queue } = useMediaQueue();
+  const cancelSourceUpload = () => queue?.invalidate(t("image.sourceChanged"), (entry) => entry.options.scope === `window:${window.id}:content` && entry.options.slot === "source");
   const content = window.content;
   const crop = content.crop ?? DEFAULT_IMAGE_CROP;
   const canUpload = !!(ctx.editing && ctx.siteId && ctx.upload);
@@ -55,7 +57,7 @@ export function ImageInlineEditor({ window, ctx, update }: ModuleProps<"image">)
             {content.src ? <button type="button" className="mini-btn wide" onClick={() => patch({ src: null, srcUrl: "" })}>{t("image.remove")}</button> : null}
           </div>
           <label className={styles.field}>{t("image.url")}
-            <ImageUrlField raw={content.srcUrl} label={t("image.url")} placeholder="https://" onCommit={(srcUrl, src) => patch({ srcUrl, src })} />
+            <ImageUrlField onEdit={cancelSourceUpload} raw={content.srcUrl} label={t("image.url")} placeholder="https://" onCommit={(srcUrl, src) => patch({ srcUrl, src })} />
           </label>
           <UploadTaskList tasks={media.tasks} onRetry={media.retry} onDismiss={media.dismiss} />
         </fieldset>

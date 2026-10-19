@@ -557,6 +557,7 @@
     "copySuffix": " 複本"
   },
   "defaults": {
+    "image": "圖片",
     "leaveAMessageNew": "歡迎留下訊息。新留言會先交由站長審核。",
     "gallery": "相簿",
     "links": "連結",

@@ -46,6 +46,7 @@
     "divider": "区切り線"
   },
   "image": {
+    "sourceChanged": "画像の参照先が編集されたため、前のアップロードでは置き換えません。",
     "frame": "フレーム",
     "frameless": "フレームなし",
     "simpleFrame": "シンプルな枠",

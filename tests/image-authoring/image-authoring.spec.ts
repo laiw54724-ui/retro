@@ -16,6 +16,25 @@ async function fixture(page: Page, options: { legacy?: SiteDocument; advertiseme
   let pendingUpload: Route | null = null, holdUpload = false;
   const session = { access_token: "a.b.c", refresh_token: "r", expires_at: 4102444800, expires_in: 3600, token_type: "bearer", user: { id: "u", email: "x@y.z", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01" } };
   await page.addInitScript((value) => localStorage.setItem("sb-example-auth-token", JSON.stringify(value)), session);
+  // Mark a response only after the application's JSON consumer has completed.
+  // The next task runs after the promise chain that could commit the late asset.
+  await page.addInitScript(() => {
+    const state = window as typeof window & { imageUploadResponsesConsumed: number };
+    state.imageUploadResponsesConsumed = 0;
+    const original = window.fetch.bind(window);
+    window.fetch = async (...args) => {
+      const response = await original(...args);
+      if (String(args[0]).endsWith("/api/sites/site-1/assets") && args[1]?.method === "POST") {
+        const json = response.json.bind(response);
+        response.json = async () => {
+          const value = await json();
+          setTimeout(() => { state.imageUploadResponsesConsumed++; }, 0);
+          return value;
+        };
+      }
+      return response;
+    };
+  });
   await page.route("https://example.supabase.co/**", (route) => route.abort());
   await page.route("https://images.example.test/**", (route) => route.fulfill({ path: FILE, contentType: "image/png" }));
   await page.route("**/api/sites/site-1", (route) => route.fulfill({ json: { site: { id: "site-1", username: "demo", site_name: "Image authoring", draft_document: saved, draft_version: writes.length + 1, published_document: null, published_version: null, access_role: "owner", writeCompatibility: options.advertisement ?? { appearanceP2: 1, imageWindow: 1 } } } }));
@@ -179,4 +198,33 @@ test(`phone ${width}px Add and inline authoring keep Back reachable after switch
   await page.getByRole("button", { name: "‹ Desktop", exact: true }).click();
 });
 
+}
+
+for (const edited of [true, false]) {
+  test(`delayed upload from an existing URL ${edited ? "preserves newer uncommitted URL input" : "commits when source input is untouched"}`, async ({ page }) => {
+    const legacy = createStarterDocument("Existing URL", "classic98", "card"), existing = makeWindow("image");
+    if (existing.type !== "image") throw new Error("fixture");
+    existing.content.src = SOURCE; existing.content.srcUrl = SOURCE; legacy.windows = [existing];
+    const site = await fixture(page, { legacy }); site.holdUpload();
+    await page.setViewportSize({ width: 1440, height: 1000 }); await page.goto("/editor/site-1");
+    const panel = page.locator("#editor-right-panel"), url = panel.getByRole("textbox", { name: "Image URL", exact: true });
+    await panel.getByLabel("Replace image…", { exact: true }).setInputFiles(FILE);
+    await expect.poll(site.pending).toBe(true);
+    const next = "https://images.example.test/newer.png";
+    if (edited) await url.fill(next); // Keep focus: no blur/Enter persistence yet.
+    await site.completeUpload();
+    await expect.poll(() => page.evaluate(() => (window as typeof window & { imageUploadResponsesConsumed: number }).imageUploadResponsesConsumed)).toBe(1);
+    if (edited) {
+      await expect(url).toHaveValue(next);
+      await expect(url).toBeFocused();
+      expect(image(site.saved()).content).toMatchObject({ src: SOURCE, srcUrl: SOURCE });
+      await expect(panel.locator('[data-upload-state="failed"]')).toHaveCount(1);
+      await url.press("Enter");
+      await expect.poll(() => image(site.saved()).content).toMatchObject({ src: next, srcUrl: next });
+    } else {
+      await expect(url).toHaveValue("");
+      await expect(panel.locator('[data-upload-state="completed"]')).toHaveCount(1);
+      await expect.poll(() => image(site.saved()).content).toMatchObject({ src: ASSET, srcUrl: "" });
+    }
+  });
 }

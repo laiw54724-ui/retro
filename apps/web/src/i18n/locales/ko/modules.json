@@ -46,6 +46,7 @@
     "divider": "구분선"
   },
   "image": {
+    "sourceChanged": "이미지 소스가 편집되어 이전 업로드로 덮어쓰지 않습니다.",
     "frame": "프레임",
     "frameless": "프레임 없음",
     "simpleFrame": "기본 프레임",

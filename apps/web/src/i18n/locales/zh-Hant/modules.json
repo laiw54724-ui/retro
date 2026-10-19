@@ -46,6 +46,7 @@
     "divider": "分隔線"
   },
   "image": {
+    "sourceChanged": "圖片來源已編輯，先前的上傳不會取代它。",
     "frame": "外框",
     "frameless": "無框",
     "simpleFrame": "簡框",

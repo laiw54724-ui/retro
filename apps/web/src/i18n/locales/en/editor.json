@@ -557,6 +557,7 @@
     "copySuffix": " copy"
   },
   "defaults": {
+    "image": "Image",
     "leaveAMessageNew": "Leave a message. New messages are reviewed by the site owner first.",
     "gallery": "Gallery",
     "links": "Links",
