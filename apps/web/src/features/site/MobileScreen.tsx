@@ -11,7 +11,7 @@ import { WindowChromeButton } from "../../components/window-chrome";
 import { WindowAppearanceEditor } from "../editor/WindowAppearanceEditor";
 import { WindowChromeEditor } from "../editor/WindowChromeEditor";
 import { ThemeAppearanceEditor } from "../editor/ThemeAppearanceEditor";
-import { moduleDefinitions } from "../modules/registry";
+import { creatableModuleDefinitions } from "../modules/registry";
 import { useEditorStore } from "../editor/store";
 import { WindowRenderer } from "./WindowRenderer";
 import type { ProfileDirectoryEntry } from "../modules/types";
@@ -184,7 +184,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
           <div role="dialog" aria-label={t(({ add: "mobile.addWindow", edit: "mobile.editWindowTitle", theme: "mobile.theme" } as const)[sheet])} className="m-sheet w98-window" style={{ fontFamily }}>
             <div className="m-sheet-title"><strong>{t(({ add: "mobile.addWindow", edit: "mobile.editWindowTitle", theme: "mobile.theme" } as const)[sheet])}</strong><button type="button" className="m-btn sq" aria-label={common("actions.close")} onClick={() => setSheet(null)}>×</button></div>
             <div className="m-sheet-body">
-              {sheet === "add" ? moduleDefinitions.map((module) => (
+              {sheet === "add" ? creatableModuleDefinitions.map((module) => (
                 <button key={module.type} type="button" className="w98-btn m-add" onClick={() => { store.addWindow(module.type); setSheet(null); }}>
                   <Icon name={module.mobile.icon} size={32} />
                   <span className="add-card-text"><strong>{t(`modules.${module.type}.label`, { defaultValue: module.label })}</strong><span>{t(`modules.${module.type}.description`, { defaultValue: module.description })}</span></span>

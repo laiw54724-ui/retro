@@ -22,9 +22,14 @@ describe("compatible senders with author controls off", () => {
     for (const [, request] of calls.slice(0, 2)) {
       const body = JSON.parse(String(request?.body));
       expect(body.clientAppearanceContract).toBe(1);
+      expect(body.clientImageWindowContract).toBe(1);
       expect(body.document).not.toHaveProperty("clientAppearanceContract");
+      expect(body.document).not.toHaveProperty("clientImageWindowContract");
     }
-    for (const [url] of calls.slice(2)) expect(new URL(String(url)).searchParams.get("clientAppearanceContract")).toBe("1");
+    for (const [url] of calls.slice(2)) {
+      expect(new URL(String(url)).searchParams.get("clientAppearanceContract")).toBe("1");
+      expect(new URL(String(url)).searchParams.get("clientImageWindowContract")).toBe("1");
+    }
   });
   it("requests a fresh site load and binds origin locally rather than trusting response metadata", async () => {
     const fetcher = vi.fn(async (_url: RequestInfo | URL, _request?: RequestInit) => new Response(JSON.stringify({ site: { id: "site-a", clientApiOrigin: "https://wrong.example", writeCompatibility: { appearanceP2: 1 } } })));

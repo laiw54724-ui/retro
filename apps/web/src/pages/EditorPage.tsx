@@ -1,5 +1,5 @@
 import { AppearanceWriteProvider } from "../features/editor/AppearanceWriteContext";
-import { AppearanceUpgradeRecovery } from "../features/editor/AppearanceUpgradeRecovery";
+import { DocumentUpgradeRecovery } from "../features/editor/DocumentUpgradeRecovery";
 import type { AppearanceApiLoad } from "../lib/appearanceCompatibility";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { trustedPublicAssetBaseUrls } from "../lib/publicAssets";
@@ -624,8 +624,8 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         </div>
       ) : null}
 
-      {upgradeRequired ? <div className="editor-message" role="status"><span>{t("appearanceCompatibility.paused")}</span><button onClick={() => setUpgradeRecoveryOpen(true)}>{t("appearanceCompatibility.title")}</button></div> : null}
-      {upgradeRequired && upgradeRecoveryOpen && store.document ? <AppearanceUpgradeRecovery key={siteId} siteId={siteId} localDocument={store.versionedDocument ?? versionedDraft ?? store.document} onClose={() => setUpgradeRecoveryOpen(false)} /> : null}
+      {upgradeRequired ? <div className="editor-message" role="status"><span>{t("documentCompatibility.paused")}</span><button onClick={() => setUpgradeRecoveryOpen(true)}>{t("documentCompatibility.title")}</button></div> : null}
+      {upgradeRequired && upgradeRecoveryOpen && store.document ? <DocumentUpgradeRecovery key={siteId} siteId={siteId} localDocument={store.versionedDocument ?? versionedDraft ?? store.document} onClose={() => setUpgradeRecoveryOpen(false)} /> : null}
 
       {legacyAssets.length > 0 || pendingPublicCopyAssets.length > 0 ? <div className="editor-message asset-migration-message" role="status">
         <div className="asset-migration-summary">
