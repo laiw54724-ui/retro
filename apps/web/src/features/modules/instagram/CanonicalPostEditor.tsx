@@ -1,4 +1,5 @@
 import { useId } from "react";
+import sourceStyles from "./ImageSourceFields.module.css";
 import { translateSystemMessage } from "../../../i18n/systemMessages";
 import { useTranslation } from "react-i18next";
 import { useLocaleFormatting } from "../../../i18n/format";
@@ -132,7 +133,7 @@ export function CanonicalPostEditor({ props }: Props) {
       <FilePick multiple className="w98-btn small" onFiles={async (files) => {
         await uploadFiles(files.slice(0, 10), (uploaded) => addPostFromMedia(uploaded.map((item) => ({ src: item.src, srcUrl: "", alt: "" })), uploaded[0]?.name.replace(/\.[^.]+$/, "") ?? ""));
       }}>{pendingUploads > 0 ? tr("canonicalHighlightEditor.uploading") : tr("canonicalPostEditor.uploadANewPostUp")}</FilePick>
-      <input className="w98-input compact grow" aria-label={tr("canonicalPostEditor.newPostImageUrl")} value={newPostUrl} onChange={(event) => setNewPostUrl(event.target.value)} placeholder={tr("canonicalHighlightEditor.orPasteAnImageUrl")} />
+      <label className={`ig-col grow ${sourceStyles.url}`}><span className="w98-hint">{tr("canonicalPostEditor.newPostImageUrl")}</span><input className="w98-input compact" aria-label={tr("canonicalPostEditor.newPostImageUrl")} value={newPostUrl} onChange={(event) => setNewPostUrl(event.target.value)} placeholder={tr("canonicalHighlightEditor.orPasteAnImageUrl")} /></label>
       <button type="button" className="w98-btn small" onClick={() => {
         const result = normalizeImageUrl(newPostUrl);
         if (!result.ok) { setError(translateSystemMessage(result.reason)); return; }
@@ -208,7 +209,7 @@ export function CanonicalPostEditor({ props }: Props) {
           {post.media.map((media, mediaIndex) => <div key={media.id} className="ig-media-edit-row">
             <span className="ig-thumb sq48 ph">{media.src ? <AvatarImage src={media.src} crop={media.crop} alt={media.alt} /> : null}</span>
             <div className="ig-col grow">
-              <ImageUrlField raw={media.srcUrl} placeholder={tr("canonicalPostEditor.imageUrl")} label={tr("canonicalPostEditor.urlOfImage", { v1: mediaIndex + 1 })} className="w98-input compact" onCommit={(raw, src) => mutate((document) => run(patchPostMedia(document, post.id, media.id, { src, srcUrl: raw }, { siteId }), document))} />
+              <ImageUrlField visibleLabel raw={media.srcUrl} placeholder={tr("canonicalPostEditor.imageUrl")} label={tr("canonicalPostEditor.urlOfImage", { v1: mediaIndex + 1 })} className="w98-input compact" onCommit={(raw, src) => mutate((document) => run(patchPostMedia(document, post.id, media.id, { src, srcUrl: raw }, { siteId }), document))} />
               <input className="w98-input compact" aria-label={tr("canonicalPostEditor.altTextOfImage", { v1: mediaIndex + 1 })} value={media.alt} placeholder={tr("canonicalPostEditor.altTextMakesTheImage")} onChange={(event) => mutate((document) => run(patchPostMedia(document, post.id, media.id, { alt: event.target.value }, { siteId }), document), `media-alt-${media.id}`)} />
               <div className="ig-media-crop-controls" role="group" aria-label={tr("canonicalPostEditor.thumbnailCropOfImage", { v1: mediaIndex + 1 })}>
                 <label><span>{tr("canonicalPostEditor.horizontal")}</span><input type="range" min={0} max={100} value={(media.crop ?? DEFAULT_CROP).x} aria-label={tr("canonicalPostEditor.horizontalCropOfImage", { v1: mediaIndex + 1 })} onChange={(event) => mutate((document) => run(patchPostMedia(document, post.id, media.id, { crop: { ...(media.crop ?? DEFAULT_CROP), x: Number(event.target.value) } }, { siteId }), document), `media-crop-x-${media.id}`)} /></label>
@@ -226,7 +227,7 @@ export function CanonicalPostEditor({ props }: Props) {
               <FilePick multiple className="w98-btn small" onFiles={async (files) => {
                 await uploadFiles(files.slice(0, 10 - post.media.length), (uploaded) => addMediaItems(post, uploaded.map((item) => ({ src: item.src, srcUrl: "", alt: "" }))));
               }}>{tr("canonicalPostEditor.uploadMoreImages")}</FilePick>
-              <input className="w98-input compact grow" aria-label={tr("canonicalPostEditor.addCarouselImageUrl")} value={mediaUrls[post.id] ?? ""} onChange={(event) => setMediaUrls((current) => ({ ...current, [post.id]: event.target.value }))} placeholder={tr("canonicalPostEditor.orPasteACarouselImage")} />
+              <label className={`ig-col grow ${sourceStyles.url}`}><span className="w98-hint">{tr("canonicalPostEditor.addCarouselImageUrl")}</span><input className="w98-input compact" aria-label={tr("canonicalPostEditor.addCarouselImageUrl")} value={mediaUrls[post.id] ?? ""} onChange={(event) => setMediaUrls((current) => ({ ...current, [post.id]: event.target.value }))} placeholder={tr("canonicalPostEditor.orPasteACarouselImage")} /></label>
               <button type="button" className="w98-btn small" onClick={() => {
                 const raw = mediaUrls[post.id] ?? "";
                 const result = normalizeImageUrl(raw);

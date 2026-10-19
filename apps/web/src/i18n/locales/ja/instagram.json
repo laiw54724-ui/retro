@@ -413,5 +413,11 @@
     "pending": "未適用です。Enterまたはフォーカスを移すと適用、Escで取り消します。",
     "cancel": "取消",
     "cancelField": "{{field}}の編集を取り消す"
+  },
+  "imageControls": {
+    "cancelUpload": "アップロードをキャンセル",
+    "removeAvatar": "アバターを削除",
+    "sourceChanged": "画像の変更またはアップロードのキャンセルにより、元の画像を保持しました。",
+    "highlightPageUrl": "ハイライト {{n}} ページ目の画像URL"
   }
 }

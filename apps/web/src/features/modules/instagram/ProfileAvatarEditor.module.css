@@ -1,0 +1,8 @@
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-width: 0; }
+.controls > label,
+.controls > button { flex: 0 1 auto; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.controls > span { flex-shrink: 0; }
+@media (max-width: 600px) {
+  .controls > label,
+  .controls > button { min-height: 36px; }
+}

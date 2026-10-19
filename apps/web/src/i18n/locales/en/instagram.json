@@ -413,5 +413,11 @@
     "pending": "Unsaved edit. Enter or leave the field to apply; Esc cancels.",
     "cancel": "Cancel",
     "cancelField": "Cancel edit to {{field}}"
+  },
+  "imageControls": {
+    "cancelUpload": "Cancel upload",
+    "removeAvatar": "Remove avatar",
+    "sourceChanged": "Avatar source changed or upload cancelled. The previous image is kept.",
+    "highlightPageUrl": "Highlight page {{n}} image URL"
   }
 }

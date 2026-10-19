@@ -1,13 +1,15 @@
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ProfileEntityV2 } from "@retrodesk/shared";
-import { FilePick, ImageUrlField, SafeImg } from "../ui";
+import { ProfileAvatarEditor } from "./ProfileAvatarEditor";
 
 import { IgDraftInput } from "./IgDraftInput";
 import { validateProfileDraft } from "./igDraftValidation";
 
 type Props = {
   draftScope?: string;
+  siteId: string;
+  windowId: string;
   profiles?: ProfileEntityV2[];
   profile: ProfileEntityV2;
   onChange: (patch: Record<string, unknown>, historyKey?: string) => void;
@@ -16,7 +18,7 @@ type Props = {
 };
 
 /** Compact-by-default OC authoring form. Advanced legacy presentation fields stay collapsed. */
-export function ProfileEditor({ profile, profiles = [], draftScope = profile.id, onChange, upload, showAppearance = true }: Props) {
+export function ProfileEditor({ siteId, windowId, profile, profiles = [], draftScope = profile.id, onChange, upload, showAppearance = true }: Props) {
   const { t: tr } = useTranslation("instagram");
   const [advanced, setAdvanced] = useState(false);
   // Custom fields have no persisted ID. Keep row identity local to this editor
@@ -30,15 +32,11 @@ export function ProfileEditor({ profile, profiles = [], draftScope = profile.id,
   return (
     <div className="ig-profile-editor">
       <fieldset className="w98-fieldset"><legend>{tr("profileDetails.characterInfo")}</legend>
-        <div className="ig-edit-avatar">
-          <span className="ig-thumb round ph">{profile.avatar ? <SafeImg src={profile.avatar} alt="" compact style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : null}</span>
-          <FilePick onFiles={async (files) => { const url = await upload?.(files[0]); if (url) onChange({ avatar: url, avatarUrl: "", avatarCrop: undefined }); }}>{tr("igEditForm.uploadAvatar")}</FilePick>
-        </div>
+        <ProfileAvatarEditor profile={profile} siteId={siteId} windowId={windowId} upload={upload} onChange={onChange} />
         <label className="w98-field"><span className="w98-hint">Handle</span><IgDraftInput draftKey={`${draftScope}:handle`} label="Handle" value={profile.handle ?? ""} validate={(text) => validateProfileDraft("handle", text, profiles, profile.id)} onCommit={(value) => set("handle", value, "profile-handle")} /></label>
         <label className="w98-field"><span className="w98-hint">{tr("profileEditor.displayName")}</span><IgDraftInput draftKey={`${draftScope}:name`} label={tr("profileEditor.displayName")} value={profile.displayName ?? profile.name} validate={(text) => validateProfileDraft("displayName", text)} onCommit={(value) => set("displayName", value, "profile-name")} /></label>
         <label className="w98-field"><span className="w98-hint">Pronouns</span><input className="w98-input compact" value={profile.pronouns ?? ""} onChange={(event) => set("pronouns", event.target.value)} /></label>
         <label className="w98-field"><span className="w98-hint">{tr("igEditForm.bio")}</span><textarea className="w98-textarea" rows={3} value={profile.bio} onChange={(event) => set("bio", event.target.value, "profile-bio")} /></label>
-        <ImageUrlField key={profile.id} raw={profile.avatarUrl} label={tr("igEditForm.avatarUrl")} placeholder={tr("canonicalHighlightEditor.orPasteAnImageUrl")} className="w98-input compact" onCommit={(raw, src) => onChange({ avatarUrl: raw, avatar: src, avatarCrop: undefined })} />
       </fieldset>
       <button type="button" className="w98-btn block" aria-expanded={advanced} onClick={() => setAdvanced((value) => !value)}>{advanced ? tr("profileEditor.collapseCharacterSettings") : tr("profileEditor.expandCharacterSettings")}</button>
       {advanced ? <fieldset className="w98-fieldset"><legend>{tr("profileEditor.characterSettings")}</legend>

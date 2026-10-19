@@ -1,4 +1,5 @@
 import { useId } from "react";
+import sourceStyles from "./ImageSourceFields.module.css";
 import { translateSystemMessage } from "../../../i18n/systemMessages";
 import { useTranslation } from "react-i18next";
 import {
@@ -14,7 +15,7 @@ import {
   type SiteDocumentV2Input,
 } from "@retrodesk/shared";
 import type { ModuleProps } from "../types";
-import { FilePick, SafeImg } from "../ui";
+import { FilePick, ImageUrlField, SafeImg } from "../ui";
 import { igEditorScope, useIgEditorState } from "./useIgEditorState";
 
 type Props = { props: ModuleProps<"instagram"> };
@@ -119,6 +120,7 @@ export function CanonicalHighlightEditor({ props }: Props) {
             <span className="ig-thumb sq48 ph">{frame.src ? <SafeImg src={frame.src} alt={frame.alt} compact style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : null}</span>
             <div className="ig-col grow">
               <strong>{tr("ig.frameHeading", { n: frameIndex + 1, cover: frameIndex === 0 ? tr("canonicalHighlightEditor.cover") : "" })}</strong>
+              <ImageUrlField visibleLabel raw={frame.srcUrl} label={tr("imageControls.highlightPageUrl", { n: frameIndex + 1 })} placeholder={tr("canonicalHighlightEditor.orPasteAnImageUrl")} className="w98-input compact" onCommit={(raw, src) => mutate((document) => run(updateHighlightFrame(document, highlight.id, frame.id, { src, srcUrl: raw }, { siteId }), document))} />
               <input className="w98-input compact" aria-label={tr("canonicalHighlightEditor.altTextForHighlightPage", { v1: frameIndex + 1 })} value={frame.alt} placeholder={tr("canonicalHighlightEditor.altText")} onChange={(event) => mutate((document) => run(updateHighlightFrame(document, highlight.id, frame.id, { alt: event.target.value }, { siteId }), document), `highlight-alt-${frame.id}`)} />
               <textarea className="w98-textarea" rows={2} aria-label={tr("canonicalHighlightEditor.textForHighlightPage", { v1: frameIndex + 1 })} value={frame.text} placeholder={tr("canonicalHighlightEditor.optionalShortText")} onChange={(event) => mutate((document) => run(updateHighlightFrame(document, highlight.id, frame.id, { text: event.target.value }, { siteId }), document), `highlight-text-${frame.id}`)} />
             </div>
@@ -130,7 +132,7 @@ export function CanonicalHighlightEditor({ props }: Props) {
             <fieldset className="ig-upload-control" aria-label={tr("canonicalHighlightEditor.uploadHighlightImages")} disabled={!!uploading[highlight.id] || !ctx.upload} aria-busy={!!uploading[highlight.id]}>
               <FilePick className="w98-btn small" onFiles={(files) => { const file = files[0]; if (file) void uploadFrame(highlight.id, file); }}>{uploading[highlight.id] ? tr("canonicalHighlightEditor.uploading") : tr("canonicalHighlightEditor.uploadANewPage")}</FilePick>
             </fieldset>
-            <input className="w98-input compact grow" aria-label={tr("canonicalHighlightEditor.addHighlightPageImageUrl")} value={urls[highlight.id] ?? ""} placeholder={tr("canonicalHighlightEditor.orPasteAnImageUrl")} onChange={(event) => setUrls((current) => ({ ...current, [highlight.id]: event.target.value }))} />
+            <label className={`ig-col grow ${sourceStyles.url}`}><span className="w98-hint">{tr("canonicalHighlightEditor.addHighlightPageImageUrl")}</span><input className="w98-input compact" aria-label={tr("canonicalHighlightEditor.addHighlightPageImageUrl")} value={urls[highlight.id] ?? ""} placeholder={tr("canonicalHighlightEditor.orPasteAnImageUrl")} onChange={(event) => setUrls((current) => ({ ...current, [highlight.id]: event.target.value }))} /></label>
             <button type="button" className="w98-btn small" onClick={() => {
               const raw = urls[highlight.id] ?? "";
               const normalized = normalizeImageUrl(raw);

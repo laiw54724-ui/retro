@@ -413,5 +413,11 @@
     "pending": "아직 적용되지 않았습니다. Enter 또는 필드에서 나가면 적용하고 Esc로 취소합니다.",
     "cancel": "취소",
     "cancelField": "{{field}} 편집 취소"
+  },
+  "imageControls": {
+    "cancelUpload": "업로드 취소",
+    "removeAvatar": "프로필 사진 삭제",
+    "sourceChanged": "이미지 소스 변경 또는 업로드 취소로 기존 이미지를 유지했습니다.",
+    "highlightPageUrl": "하이라이트 {{n}}페이지 이미지 URL"
   }
 }
