@@ -401,6 +401,11 @@
       "reported": "Simulated report complete. No report was sent."
     },
     "couldntLoadMessagesRightNow": "Couldn't load messages right now. Please try again later.",
+    "loading": "Loading…",
+    "retry": "Retry",
+    "all": "All",
+    "reported": "Open reports",
+    "noMatchingMessages": "No messages in this category.",
     "theGuestbookIsntOpenYet": "The guestbook isn't open yet",
     "theSiteOwnerIsntAccepting": "The site owner isn't accepting new messages right now.",
     "publishTheSiteToUse": "Publish the site to use a real guestbook.",

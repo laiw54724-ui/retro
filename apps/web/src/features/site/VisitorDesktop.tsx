@@ -1,3 +1,4 @@
+import { resolveDesktopLabelAppearance } from "../../lib/windowAppearance";
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import type { DesktopWindow, ProfileEntityV2, SiteDocument } from "@retrodesk/shared";
@@ -209,7 +210,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
             onClick={() => openWindow(window.id)}
           >
             <span className="deskicon-tile" style={{ background: tv.tileBg, boxShadow: tv.tileShadow }}><Icon name={window.icon} size={32} /></span>
-            <small className="deskicon-label" style={{ background: tv.labelBg, color: tv.labelColor, border: tv.labelBorder, borderRadius: tv.labelRadius, textShadow: tv.labelShadow }}>{window.title}</small>
+            <small className="deskicon-label" style={resolveDesktopLabelAppearance(document.theme, window.appearance)}>{window.title}</small>
           </button>
         );
       })}

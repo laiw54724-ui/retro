@@ -1,3 +1,4 @@
+import { resolveDesktopLabelAppearance } from "../../lib/windowAppearance";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import type { CollectionEntityV2, DesktopWindow, PostEntityV2, ProfileEntityV2, SiteDocumentV2Input } from "@retrodesk/shared";
@@ -228,7 +229,7 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
               data-index={index}
             >
               <span className="deskicon-tile" style={{ background: tv.tileBg, boxShadow: tv.tileShadow }}><Icon name={win.icon} size={32} /></span>
-              <span className="deskicon-label" style={{ background: tv.labelBg, color: tv.labelColor, border: tv.labelBorder, borderRadius: tv.labelRadius, textShadow: tv.labelShadow }}>{win.title}</span>
+              <span className="deskicon-label" style={resolveDesktopLabelAppearance(document.theme, win.appearance)}>{win.title}</span>
             </button>
           );
         })}
