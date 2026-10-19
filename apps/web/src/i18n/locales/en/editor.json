@@ -540,6 +540,8 @@
     "theAvatarCouldntBeLoaded": "The avatar couldn't be loaded"
   },
   "editorMedia": {
+    "cancelFile": "Cancel {{name}}",
+    "cancelUpload": "Cancel upload",
     "youLeftTheEditorThe": "You left the editor; the unfinished upload wasn't applied.",
     "queued": "Queued",
     "uploading": "Uploading",
