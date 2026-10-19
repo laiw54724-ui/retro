@@ -486,5 +486,12 @@
   "linkSummary": {
     "openWindow": "開啟視窗：{{title}}",
     "untitledWindow": "未命名視窗"
+  },
+  "navigationTargets": {
+    "choose": "選擇目的地…",
+    "apply": "套用",
+    "removeTarget": "移除目的地",
+    "urlHelp": "請使用完整的 HTTP、HTTPS 或 mailto 網址。按下套用才會儲存變更。",
+    "unavailable": "此目的地無法使用，請選擇其他目標。"
   }
 }

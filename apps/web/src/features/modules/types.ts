@@ -1,3 +1,4 @@
+import type { InternalDestination, NavigationRequest, NavigationResult } from "../navigation/linkDestination";
 import type { PreviewNavigation } from "../site/previewNavigation";
 import type { ReactElement } from "react";
 import type { CollectionEntityV2, DesktopWindow, EntityRef, HighlightEntityV2, IgPost, PostEntityV2, ProfileEntityV2, RetroTheme, SiteDocumentV2Input } from "@retrodesk/shared";
@@ -16,6 +17,9 @@ export type ModuleCtx = {
   siteId?: string;
   windows: Array<{ id: string; title: string }>;
   onLink: (action: LinkAction) => void;
+  onNavigate?: (target: InternalDestination) => NavigationResult;
+  navigationRequest?: NavigationRequest;
+  navigationSiteId?: string | null;
   /** Editor only. Resolves to the stable stored asset reference, or null after showing an error. */
   upload?: (file: File, kind?: "image" | "icon" | "audio") => Promise<string | null>;
   /** Optional boundary for resolving future site-level entities. v1 callers omit it. */

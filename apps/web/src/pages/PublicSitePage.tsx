@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { createEntityViewer } from "../features/navigation/createEntityViewer";
+import { createPreviewNavigation } from "../features/site/previewNavigation";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { loadVersionedSiteDocument, makeWindow, normalizeDocument, projectPublicSiteDocument, projectV2ToLegacyDocument, ProfileEntityV2Schema, type ProfileEntityV2, type SiteDocument, type SiteDocumentV2 } from "@retrodesk/shared";
+import { loadVersionedSiteDocument, normalizeDocument, projectPublicSiteDocument, projectV2ToLegacyDocument, ProfileEntityV2Schema, type ProfileEntityV2, type SiteDocument, type SiteDocumentV2 } from "@retrodesk/shared";
 import { Navigate, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useMobileViewport } from "../lib/useMobileViewport";
@@ -18,6 +20,7 @@ export function PublicSitePage() {
   const [profileIdsByWindow, setProfileIdsByWindow] = useState<Record<string, string>>({});
   const [profileDirectory, setProfileDirectory] = useState<ReturnType<typeof buildProfileDirectory>>([]);
   const [initialTarget, setInitialTarget] = useState<{ windowId: string; postId?: string } | null>(null);
+  const [navigationSiteId, setNavigationSiteId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -25,6 +28,7 @@ export function PublicSitePage() {
     let active = true;
     setDocument(null);
     setError("");
+    setNavigationSiteId(null);
     api.publicSite(username)
       .then(({ site }) => {
         if (!active) return;
@@ -34,6 +38,7 @@ export function PublicSitePage() {
         if (loaded.version === 1 && (profileId || postId)) throw new Error(tr("publicSite.publicContentNotFound"));
         if (loaded.version === 2) {
           const scope = loaded.document.entities.profiles[0]?.siteId ?? loaded.document.windows.find((window) => window.type === "instagram")?.content.profileRef.siteId ?? loaded.document.windows.flatMap((window) => window.type === "explorer" ? window.content.shortcuts : [])[0]?.target.siteId ?? "public-site";
+          setNavigationSiteId(scope);
           const projected = projectPublicSiteDocument(loaded.document, scope);
           if (!projected.ok || projected.version !== 2 || projected.document.schemaVersion !== 2) throw new Error(tr("publicSite.thePublicCharacterProjectionIs"));
           publicV2 = projected.document;
@@ -52,12 +57,8 @@ export function PublicSitePage() {
             if (!targetWindow) {
               const entry = directory.find((candidate) => candidate.id === requestedProfileId);
               if (!entry) throw new Error(tr("publicSite.publicContentNotFound"));
-              const viewer = makeWindow("instagram", renderedDocument.windows.length);
-              if (viewer.type !== "instagram") throw new Error(tr("publicSite.couldntCreateThePublicViewer"));
+              const viewer = createEntityViewer(entry, renderedDocument.windows);
               viewer.id = `viewer:${requestedProfileId}`;
-              viewer.title = `${entry.profile.name || entry.profile.username}.exe`;
-              viewer.defaultOpen = false;
-              viewer.content = { ...viewer.content, profile: entry.profile, images: entry.posts };
               renderedDocument = { ...renderedDocument, windows: [...renderedDocument.windows, viewer] };
               idsByWindow[viewer.id] = requestedProfileId;
               targetWindow = viewer.id;
@@ -80,10 +81,11 @@ export function PublicSitePage() {
   if (error) return <main className="not-found"><div><h1>{tr("publicSite.thisDesktopCouldntBeFound")}</h1><p>{error}</p></div></main>;
   if (!document) return <div className="boot-screen">Loading desktop...</div>;
 
-  return <PublishedDesktop key={`${username}:${profileId ?? ""}:${postId ?? ""}`} document={document} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialTarget={initialTarget} shareBaseUrl={`${window.location.origin}/@${encodeURIComponent(username)}`} siteHandle={username} />;
+  return <PublishedDesktop key={`${username}:${profileId ?? ""}:${postId ?? ""}`} navigationSiteId={navigationSiteId} document={document} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialTarget={initialTarget} shareBaseUrl={`${window.location.origin}/@${encodeURIComponent(username)}`} siteHandle={username} />;
 }
 
-function PublishedDesktop({ document, profiles, profileIdsByWindow, profileDirectory, initialTarget, shareBaseUrl, siteHandle }: { document: SiteDocument; profiles: ProfileEntityV2[]; profileIdsByWindow: Record<string, string>; profileDirectory: ReturnType<typeof buildProfileDirectory>; initialTarget: { windowId: string; postId?: string } | null; shareBaseUrl: string; siteHandle: string }) {
+function PublishedDesktop({ navigationSiteId, document, profiles, profileIdsByWindow, profileDirectory, initialTarget, shareBaseUrl, siteHandle }: { navigationSiteId: string | null; document: SiteDocument; profiles: ProfileEntityV2[]; profileIdsByWindow: Record<string, string>; profileDirectory: ReturnType<typeof buildProfileDirectory>; initialTarget: { windowId: string; postId?: string } | null; shareBaseUrl: string; siteHandle: string }) {
+  const navigation = useRef(createPreviewNavigation()).current;
   const mobile = useMobileViewport();
   const theme = document.theme;
   const tv = useThemeView(theme);
@@ -100,9 +102,9 @@ function PublishedDesktop({ document, profiles, profileIdsByWindow, profileDirec
       }}
     >
       {mobile ? (
-        <MobileScreen document={document} mode="visitor" profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialOpenId={initialTarget?.windowId} initialPostId={initialTarget?.postId} publicShareBaseUrl={shareBaseUrl} siteHandle={siteHandle} />
+        <MobileScreen navigation={navigation} navigationSiteId={navigationSiteId} document={document} mode="visitor" profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialOpenId={initialTarget?.windowId} initialPostId={initialTarget?.postId} publicShareBaseUrl={shareBaseUrl} siteHandle={siteHandle} />
       ) : (
-        <VisitorDesktop document={document} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialOpenId={initialTarget?.windowId} initialPostId={initialTarget?.postId} publicShareBaseUrl={shareBaseUrl} siteHandle={siteHandle} />
+        <VisitorDesktop navigation={navigation} navigationSiteId={navigationSiteId} document={document} profiles={profiles} profileIdsByWindow={profileIdsByWindow} profileDirectory={profileDirectory} initialOpenId={initialTarget?.windowId} initialPostId={initialTarget?.postId} publicShareBaseUrl={shareBaseUrl} siteHandle={siteHandle} />
       )}
     </main>
   );
