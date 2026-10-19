@@ -36,6 +36,19 @@ export const UsernameSchema = z
   .regex(usernamePattern, "Use lowercase letters, numbers, or hyphens")
   .refine((value) => !reservedUsernames.has(value), "This username is reserved");
 
+const AppearanceHexSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+/** Missing fields inherit; readers must never materialize theme defaults here. */
+export const ColorAppearanceSchema = z.object({
+  titleText: AppearanceHexSchema.optional(),
+  frameColor: AppearanceHexSchema.optional(),
+  contentBackground: AppearanceHexSchema.optional(),
+  contentText: AppearanceHexSchema.optional(),
+  desktopLabelText: AppearanceHexSchema.optional(),
+  desktopLabelBackground: AppearanceHexSchema.optional(),
+  titleGradient: z.boolean().optional()
+}).strict();
+export type ColorAppearance = z.infer<typeof ColorAppearanceSchema>;
+
 export const ThemeSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1).max(64),
@@ -53,7 +66,8 @@ export const ThemeSchema = z.object({
   taskbar: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   accent: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   font: z.enum(["noto", "maru", "dot", "pixel"]),
-  iconStyle: z.enum(["classic", "sticker", "tile"])
+  iconStyle: z.enum(["classic", "sticker", "tile"]),
+  appearance: ColorAppearanceSchema.optional()
 });
 
 const DesktopLayoutSchema = z.object({
@@ -306,10 +320,9 @@ export const InstagramProfileSchema = z.object({
   highlights: z.array(IgHighlightSchema).max(20).default([])
 });
 
-export const WindowAppearanceSchema = z.object({
-  titleFrom: z.string().regex(/^#[0-9a-fA-F]{6}$/),
-  titleTo: z.string().regex(/^#[0-9a-fA-F]{6}$/),
-  titleGradient: z.boolean().default(true)
+export const WindowAppearanceSchema = ColorAppearanceSchema.extend({
+  titleFrom: AppearanceHexSchema.optional(),
+  titleTo: AppearanceHexSchema.optional()
 });
 
 export const BaseWindowSchema = z.object({

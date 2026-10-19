@@ -82,9 +82,9 @@ export function themeView(t: RetroTheme): ThemeView {
     bevel,
     sunken: `inset -1px -1px #ffffff, inset 1px 1px ${t.shadow}, inset -2px -2px ${t.light}, inset 2px 2px ${t.dark}`,
     pressed: `inset -1px -1px #ffffff, inset 1px 1px ${t.dark}, inset -2px -2px ${t.light}, inset 2px 2px ${t.shadow}`,
-    titleBg: `linear-gradient(90deg, ${t.titleFrom}, ${t.titleTo})`,
-    titleBgV: `linear-gradient(0deg, ${t.titleFrom}, ${t.titleTo})`,
-    titleText: readableOn(t.titleFrom, t.titleTo),
+    titleBg: t.appearance?.titleGradient === false ? t.titleFrom : `linear-gradient(90deg, ${t.titleFrom}, ${t.titleTo})`,
+    titleBgV: t.appearance?.titleGradient === false ? t.titleFrom : `linear-gradient(0deg, ${t.titleFrom}, ${t.titleTo})`,
+    titleText: t.appearance?.titleText ?? readableOn(...titleBackgroundSamples(t.titleFrom, t.titleTo, t.appearance?.titleGradient !== false)),
     accentText: readableOn(t.accent),
     inactiveTitle: `linear-gradient(90deg, ${t.shadow}, ${t.light})`,
     taskbarText: isDark(t.taskbar) ? "#ffffff" : t.text,
@@ -116,4 +116,9 @@ export function mixHex(a: string, b: string, t: number): string {
   const parse = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
   const [pa, pb] = [parse(a), parse(b)];
   return "#" + pa.map((v, i) => Math.round(v + (pb[i] - v) * t).toString(16).padStart(2, "0")).join("");
+}
+
+/** Sample sRGB backgrounds across the full title gradient, including both endpoints. */
+export function titleBackgroundSamples(from: string, to: string, gradient: boolean): string[] {
+  return gradient ? Array.from({ length: 33 }, (_, index) => mixHex(from, to, index / 32)) : [from];
 }
