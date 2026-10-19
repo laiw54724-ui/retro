@@ -530,5 +530,15 @@
     "removeTarget": "Remove destination",
     "urlHelp": "Use a complete HTTP, HTTPS or mailto URL. Changes are saved only when you apply.",
     "unavailable": "This destination is unavailable. Choose another target."
+  },
+  "imageInput": {
+    "imageUrl": "Image URL",
+    "commitHint": "Paste a link, then press Enter or leave the field to preview.",
+    "previewPending": "Theme preview is not saved. Apply to the draft or cancel before publishing.",
+    "applyDraft": "Apply to draft",
+    "applied": "Showing the applied draft theme. Publishing is a separate step.",
+    "uploading": "Uploading image…",
+    "uploadFailed": "Image upload failed. Try again or paste an image URL.",
+    "addUrlImage": "Add image from URL"
   }
 }

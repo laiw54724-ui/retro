@@ -1,0 +1,11 @@
+{
+  "branch": "codex/editor-save-session-ux",
+  "base": "92d8e0294e99dbdf0a99ac183ca04cd78004f4ec",
+  "previousHead": "a631fb9c0795708ccba6542847b521870b8a5e73",
+  "correctedRuntime": "3b105aa25cdbd9e2ead7c92221dbb9201b6bea01",
+  "selectedChromiumCasesPassed": 12,
+  "webTypecheckPassed": true,
+  "productionBuildRepeated": false,
+  "aggregateAcceptanceOwner": "integrator",
+  "serverWriteCancellationClaim": false
+}

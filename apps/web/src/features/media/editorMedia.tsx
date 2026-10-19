@@ -40,6 +40,7 @@ export function useWindowMedia<T extends DesktopWindow["type"]>(window: WindowOf
       if (!queue || !ctx.siteId || !ctx.upload || !ctx.editing) return;
       enqueueWindowUpload(queue, useEditorStore, { siteId: ctx.siteId, windowId: window.id, windowType: window.type, scope }, file, ctx.upload, options);
     },
+    cancel: (slot: string) => queue?.invalidate(i18n.t("modules:image.sourceChanged"), (entry) => entry.options.scope === scope && entry.options.slot === slot),
     retry: (id: string) => queue?.retry(id),
     dismiss: (id: string) => queue?.dismiss(id)
   };

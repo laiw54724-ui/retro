@@ -1,0 +1,14 @@
+
+ RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-10/retro-editor-save-session/apps/web
+
+ ✓ src/i18n/translationQuality.test.ts (7 tests) 152ms
+stderr | src/i18n/resources.test.ts > resource quality gates (all supported locales, including preview) > covers every app type through render-time catalog labels without changing registry data
+Retro Desktop: Supabase env vars are missing. Auth will not work until configured.
+
+ ✓ src/i18n/resources.test.ts (6 tests) 1143ms
+   ✓ resource quality gates (all supported locales, including preview) > covers every app type through render-time catalog labels without changing registry data  863ms
+
+ Test Files  2 passed (2)
+      Tests  13 passed (13)
+   Start at  22:33:04
+   Duration  1.75s (transform 620ms, setup 387ms, collect 44ms, tests 1.29s, environment 0ms, prepare 140ms)

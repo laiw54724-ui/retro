@@ -1,4 +1,11 @@
 {
+  "saveSession": {
+    "leaveTitle": "離開編輯器？",
+    "stay": "保留並繼續編輯",
+    "leave": "仍要離開",
+    "unsavedBody": "最近的修改或主題預覽尚未確認儲存，離開可能會遺失。已送出的儲存仍可能完成。請留下完成編輯或重試儲存。",
+    "savedBody": "修改已儲存，可以離開或繼續編輯。"
+  },
   "imageHost": { "move": "移動圖片 {{title}}" },
   "shell": {
     "backToDesktops": "回到我的桌面",
@@ -701,5 +708,16 @@
     "panHelp": "平移中：拖曳移動畫面。關閉平移後可操作元件。",
     "interactHelp": "適合畫面為總覽。使用 100% 或放大操作元件，可捲動或開啟平移。",
     "region": "桌面預覽畫布"
+  },
+  "imageInput": {
+    "removeImage": "移除桌布圖片",
+    "imageUrl": "圖片連結",
+    "commitHint": "貼上連結後，按 Enter 或離開欄位即可預覽。",
+    "previewPending": "佈景預覽尚未儲存。發佈前請套用至草稿或取消。",
+    "applyDraft": "套用至草稿",
+    "applied": "目前顯示已套用的草稿佈景，發佈需另外操作。",
+    "uploading": "圖片上傳中…",
+    "uploadFailed": "圖片上傳失敗，請重試或貼上圖片連結。",
+    "addUrlImage": "從連結新增圖片"
   }
 }

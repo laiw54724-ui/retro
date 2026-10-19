@@ -52,6 +52,8 @@ type EditorState = {
   setMobileColumns: (columns: 3 | 4) => void;
   setSiteName: (name: string) => void;
   setSeoIndexing: (indexing: boolean) => void;
+  themePreview: SiteDocument["theme"] | null;
+  setThemePreview: (theme: SiteDocument["theme"] | null) => void;
   setTheme: (theme: SiteDocument["theme"]) => void;
   addWindow: (type: DesktopWindow["type"]) => void;
   /** `historyKey`: edits with the same key within 1200ms collapse into one undo step. */
@@ -146,6 +148,8 @@ export const useEditorStore = create<EditorState>((set) => ({
   selectedId: null,
   device: "desktop",
   saveStatus: "idle",
+  themePreview: null,
+  setThemePreview: (themePreview) => set({ themePreview }),
   past: [],
   future: [],
 
@@ -166,6 +170,7 @@ export const useEditorStore = create<EditorState>((set) => ({
     past: [],
     future: [],
     pendingIntegrity: null,
+    themePreview: null,
     viewState: {}
   }),
   setSaveStatus: (saveStatus) => set({ saveStatus }),
@@ -186,6 +191,7 @@ export const useEditorStore = create<EditorState>((set) => ({
     publishedRaw: (() => { if (!state.versionedDocument || !state.siteId) return null; const projected = projectPublicSiteDocument(state.versionedDocument, state.siteId); return projected.ok ? projected.document : null; })(),
   })),
   undo: () => set((state) => {
+    if (state.themePreview) return { themePreview: null };
     if ((!state.document || state.past.length === 0) && state.versionedPast.length === 0) return {};
     const previous = state.past[state.past.length - 1] ?? state.document!;
     const future = state.document ? [state.document, ...state.future].slice(0, 50) : state.future;
@@ -205,6 +211,7 @@ export const useEditorStore = create<EditorState>((set) => ({
     };
   }),
   redo: () => set((state) => {
+    if (state.themePreview) return { themePreview: null };
     if ((!state.document || state.future.length === 0) && state.versionedFuture.length === 0) return {};
     const next = state.future[0] ?? state.document!;
     const selectedId = next.windows.some((window) => window.id === state.selectedId)
@@ -284,7 +291,7 @@ export const useEditorStore = create<EditorState>((set) => ({
     ? withHistory(state, state.document, {}, undefined, { ...state.versionedDocument, seo: { indexing } })
     : {}),
   setTheme: (theme) => set((state) => state.document
-    ? withHistory(state, { ...state.document, theme })
+    ? withHistory(state, { ...state.document, theme }, { themePreview: null })
     : {}),
   addWindow: (type) => set((state) => {
     if (!state.document || !canCreateWindowType(type)) return {};

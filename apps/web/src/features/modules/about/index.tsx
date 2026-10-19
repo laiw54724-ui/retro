@@ -85,7 +85,7 @@ export function AboutInlineEditor({ window, ctx, update }: ModuleProps<"about">)
               {content.avatar ? <MiniBtn label={tr("about.adjustPosition")} className="mini-btn wide" on={cropping} aria-pressed={cropping} onClick={() => setCropping(!cropping)}>{tr("about.adjustPosition")}</MiniBtn> : null}
               {content.avatar ? <MiniBtn label={tr("about.removeAvatar")} className="mini-btn wide" onClick={() => { setCropping(false); patch({ avatar: null, avatarUrl: "", avatarCrop: undefined }); }}>{tr("about.removeAvatar")}</MiniBtn> : null}
             </div>
-            <ImageUrlField key={window.id} raw={content.avatarUrl} label={tr("about.avatarUrl")} placeholder={tr("about.orPasteAnAvatarUrl")} onCommit={(raw, src) => { setCropping(false); patch({ avatarUrl: raw, avatar: src, avatarCrop: undefined }); }} />
+            <ImageUrlField visibleLabel onEdit={() => media.cancel("avatar")} key={window.id} raw={content.avatarUrl} label={tr("about.avatarUrl")} placeholder={tr("about.orPasteAnAvatarUrl")} onCommit={(raw, src) => { setCropping(false); patch({ avatarUrl: raw, avatar: src, avatarCrop: undefined }); }} />
             {cropping && content.avatar ? <CropEditor key={content.avatar} src={content.avatar} crop={content.avatarCrop as ImageCrop | undefined} onChange={(avatarCrop) => patch({ avatarCrop }, "avatar-crop")} /> : null}
           </div>
           <div className="about-info">

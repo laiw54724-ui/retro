@@ -114,6 +114,16 @@
     "back": "Back",
     "next": "Next ›",
     "creating": "Creating...",
+    "createError": {
+      "username": "That URL was taken while you were setting up. Choose another URL; your theme and template will stay selected.",
+      "validation": "These details couldn't be accepted. Review the URL and desktop name, then try again.",
+      "auth": "Your session expired. Sign in again to create this desktop.",
+      "general": "We couldn't create this desktop. Check your connection and try again; your choices are still here."
+    },
+    "changeUrl": "Change URL",
+    "reviewDetails": "Review details",
+    "signInAgain": "Sign in again",
+    "retryCreation": "Retry creation",
     "doneOpenTheEditor": "Done, open the editor"
   },
   "desktopHub": {

@@ -374,10 +374,10 @@ function IconLibraryDialog({ siteId, value, onChange, upload, defaultValue, defa
                 {upload && queue && siteId ? <FilePick onFiles={(files) => addFiles(files.slice(0, 1), true)}>{tr("iconPicker.uploadOne")}</FilePick> : null}
                 {upload && queue && siteId ? <FilePick multiple onFiles={(files) => addFiles(files, false)}>{tr("iconPicker.uploadAnIconPack")}</FilePick> : null}
               </div>
-              <div className="ie-row">
-                <input className="ie small grow" value={url} placeholder={tr("iconPicker.orPasteAnIconUrl")} aria-label={tr("iconPicker.iconUrl")} onChange={(event) => setUrl(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); useUrl(); } }} />
+              <div className="image-source-field"><label htmlFor={`${dialogId}-url`}>{tr("iconPicker.iconUrl")}</label><div className="ie-row">
+                <input id={`${dialogId}-url`} className="ie small grow" value={url} placeholder={tr("iconPicker.orPasteAnIconUrl")} aria-label={tr("iconPicker.iconUrl")} onChange={(event) => { selectionGeneration.current += 1; queue?.invalidate(tr("iconPicker.aDifferentIconWasChosen"), (entry) => entry.options.scope === scope && entry.options.slot === "single"); setUrl(event.target.value); }} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); useUrl(); } }} />
                 <MiniBtn label={tr("iconPicker.useUrl")} className="mini-btn wide" onClick={useUrl}>{tr("iconPicker.use")}</MiniBtn>
-              </div>
+              </div></div>
             </div>
           ) : null}
           {category === "windows" ? <span className="w98-hint icon-attribution">{tr("iconPicker.sourceLabel")}<a href={WINDOWS_ICON_SOURCE}>{WINDOWS_ICON_SOURCE.replace("https://github.com/", "")}</a>{tr("iconPicker.sentenceEnd")}{tr("iconPicker.rightsNote")}</span> : null}

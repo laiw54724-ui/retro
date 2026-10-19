@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type ChangeEvent, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import { translateSystemMessage } from "../../i18n/systemMessages";
 import { i18n } from "../../i18n";
 import { useTranslation } from "react-i18next";
@@ -45,7 +45,7 @@ export function SafeImg({ src, alt, className, style, compact }: { src: string; 
  * Text field for an image link. Commits on blur/Enter: stores the raw input in `srcUrl`
  * and the normalised URL (Google Drive etc.) in `src`.
  */
-export function ImageUrlField({ raw, placeholder, label, onCommit, onEdit, className = "ie small", maxLength = 2048 }: {
+export function ImageUrlField({ raw, placeholder, label, onCommit, onEdit, className = "ie small", maxLength = 2048, visibleLabel = false }: {
   raw: string;
   placeholder: string;
   label: string;
@@ -54,14 +54,17 @@ export function ImageUrlField({ raw, placeholder, label, onCommit, onEdit, class
   onEdit?: () => void;
   className?: string;
   maxLength?: number;
+  visibleLabel?: boolean;
 }) {
+  const composing = useRef(false);
+  const inputId = useId();
   const [text, setText] = useState(raw);
   const [error, setError] = useState("");
-  useEffect(() => setText(raw), [raw]);
+  useEffect(() => { setText(raw); setError(""); }, [raw]);
 
   function commit() {
     const value = text.trim();
-    if (value === raw.trim()) return;
+    if (value === raw.trim()) { setError(""); return; }
     if (!value) {
       setError("");
       onCommit("", null);
@@ -78,7 +81,9 @@ export function ImageUrlField({ raw, placeholder, label, onCommit, onEdit, class
 
   return (
     <>
+      {visibleLabel ? <label className="image-source-label" htmlFor={inputId}>{label}</label> : null}
       <input
+        id={inputId}
         className={className}
         value={text}
         placeholder={placeholder}
@@ -86,8 +91,10 @@ export function ImageUrlField({ raw, placeholder, label, onCommit, onEdit, class
         aria-invalid={!!error}
         maxLength={maxLength}
         onChange={(event) => { onEdit?.(); setText(event.target.value); }}
+        onCompositionStart={() => { composing.current = true; }}
+        onCompositionEnd={() => { composing.current = false; }}
         onBlur={commit}
-        onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); commit(); } }}
+        onKeyDown={(event) => { if (event.key === "Enter" && !composing.current && !event.nativeEvent.isComposing && event.keyCode !== 229) { event.preventDefault(); commit(); } }}
       />
       {error ? <span role="alert" className="ie-error">{error}</span> : null}
     </>

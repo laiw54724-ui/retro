@@ -1,0 +1,23 @@
+[WebServer] (node:3497) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:3511) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 12 tests using 1 worker
+
+(node:3538) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › tests/e2e/editor-save-session.spec.ts:119:42 › publish receipt success from ended A leaves B unchanged (1.4s)
+  ✓   2 [chromium] › tests/e2e/editor-save-session.spec.ts:119:42 › publish receipt 409 from ended A leaves B unchanged (997ms)
+  ✓   3 [chromium] › tests/e2e/editor-save-session.spec.ts:119:42 › publish receipt 426 from ended A leaves B unchanged (978ms)
+  ✓   4 [chromium] › tests/e2e/editor-save-session.spec.ts:135:5 › publish receipt after unmount cannot mark a reopened A session published (897ms)
+  ✓   5 [chromium] › tests/e2e/editor-save-session.spec.ts:144:5 › ordinary publish completion still marks its current editor published (801ms)
+  ✓   6 [chromium] › tests/e2e/editor-save-session.spec.ts:160:41 › reload receipt from ended A (owner) leaves B unchanged (2.7s)
+  ✓   7 [chromium] › tests/e2e/editor-save-session.spec.ts:160:41 › reload receipt from ended A (viewer) leaves B unchanged (2.6s)
+  ✓   8 [chromium] › tests/e2e/editor-save-session.spec.ts:176:5 › reload receipt cannot replace a remounted A with an older response (1.8s)
+  ✓   9 [chromium] › tests/e2e/editor-save-session.spec.ts:192:5 › ordinary remote reload still replaces the conflicting local draft (1.6s)
+  ✓  10 [chromium] › tests/e2e/editor-save-session.spec.ts:199:5 › ordinary remote reload to viewer retains its access-loss redirect (1.6s)
+  ✓  11 [chromium] › tests/e2e/editor-save-session.spec.ts:292:5 › Back can be cancelled; reload warns; confirmed leaving does not claim to cancel a sent save (1.9s)
+  ✓  12 [chromium] › tests/e2e/editor-save-session.spec.ts:310:5 › router preserves auth return parameters, direct entry, unknown route and preview history (2.3s)
+
+  12 passed (21.6s)

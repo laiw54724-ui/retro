@@ -530,5 +530,15 @@
     "removeTarget": "이동 대상 제거",
     "urlHelp": "전체 HTTP, HTTPS 또는 mailto URL을 입력하세요. 적용할 때만 변경 사항이 저장됩니다.",
     "unavailable": "이동 대상을 사용할 수 없습니다. 다른 대상을 선택하세요."
+  },
+  "imageInput": {
+    "imageUrl": "이미지 URL",
+    "commitHint": "링크를 붙여넣고 Enter를 누르거나 입력란을 벗어나면 미리 봅니다.",
+    "previewPending": "테마 미리보기가 저장되지 않았습니다. 게시 전에 초안에 적용하거나 취소하세요.",
+    "applyDraft": "초안에 적용",
+    "applied": "적용된 초안 테마를 표시합니다. 게시는 별도 작업입니다.",
+    "uploading": "이미지 업로드 중…",
+    "uploadFailed": "이미지 업로드에 실패했습니다. 다시 시도하거나 이미지 URL을 붙여넣으세요.",
+    "addUrlImage": "URL로 이미지 추가"
   }
 }

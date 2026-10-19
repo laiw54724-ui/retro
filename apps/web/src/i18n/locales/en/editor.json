@@ -1,4 +1,11 @@
 {
+  "saveSession": {
+    "leaveTitle": "Leave the editor?",
+    "stay": "Keep editing",
+    "leave": "Leave anyway",
+    "unsavedBody": "Recent edits or a theme preview have not been confirmed saved. Leaving may lose them. A save already sent may still finish. Stay to finish editing or retry saving.",
+    "savedBody": "Your changes are now saved. You can leave or keep editing."
+  },
   "imageHost": { "move": "Move image {{title}}" },
   "shell": {
     "backToDesktops": "Back to my desktops",
@@ -701,5 +708,16 @@
     "panHelp": "Pan on: drag to move the view. Turn off to use apps.",
     "interactHelp": "Fit is an overview. Use 100% or zoom for app controls; scroll or enable Pan.",
     "region": "Desktop preview canvas"
+  },
+  "imageInput": {
+    "removeImage": "Remove wallpaper image",
+    "imageUrl": "Image URL",
+    "commitHint": "Paste a link, then press Enter or leave the field to preview.",
+    "previewPending": "Theme preview is not saved. Apply to the draft or cancel before publishing.",
+    "applyDraft": "Apply to draft",
+    "applied": "Showing the applied draft theme. Publishing is a separate step.",
+    "uploading": "Uploading image…",
+    "uploadFailed": "Image upload failed. Try again or paste an image URL.",
+    "addUrlImage": "Add image from URL"
   }
 }
