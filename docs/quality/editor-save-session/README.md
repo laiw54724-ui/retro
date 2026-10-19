@@ -1,6 +1,6 @@
 # Editor save-session and exit recovery
 
-Branch base: `92d8e0294e99dbdf0a99ac183ca04cd78004f4ec`. Verified runtime: `2adb08e1fba33884f0a87647064733ed250349c3`. Subsequent commits contain evidence only. No merge, deploy, full unrelated gate, or real-user data mutation was performed.
+Branch base: `92d8e0294e99dbdf0a99ac183ca04cd78004f4ec`. Review-corrected runtime: `3b105aa25cdbd9e2ead7c92221dbb9201b6bea01`. Original runtime/build evidence below remains pinned to `2adb08e1fba33884f0a87647064733ed250349c3`. No merge, deploy, full unrelated gate, or real-user data mutation was performed.
 
 ## Behavior
 
@@ -13,11 +13,27 @@ The router change is limited to one `createBrowserRouter` / `RouterProvider` cat
 
 The same session check also protects receipt handling around the existing explicit asset conversion save/response. Asset conversion policy, calls, migration files and server behavior are unchanged; only local side effects from an ended editor are ignored.
 
-## Focused evidence
+## Review correction: publish and remote reload receipts
+
+Publish and remote reload now capture the same mounted-session identity as saves. Their success, error and final state updates are ignored after switching sites or unmounting, including reopening the same site. A reload loading screen retains the existing leave prompt so Back/Leave remains usable while the response is held. A current viewer downgrade still redirects for access loss. An already-sent publish can still complete on the server; these guards do not cancel or roll it back.
+
+At corrected runtime `3b105aa25cdbd9e2ead7c92221dbb9201b6bea01`, **12 selected Chromium cases passed**: ten new publish/reload cases plus existing native Back/reload and router compatibility cases. These cover delayed publish success/409/426 after switching, publish after same-site remount, ordinary publish, delayed owner/viewer reload after switching, stale reload after same-site remount, ordinary reload, and current viewer redirect. Web typecheck and diff whitespace check passed. [Browser log](evidence/review-browser.txt), [typecheck log](evidence/review-types.txt), [identity](evidence/review-identity.json).
+
+Before correction, the focused publish repro showed B incorrectly marked published. The reload repro stopped earlier because its loading screen hid the leave confirmation; it did not independently demonstrate replacement of B. [Before log](evidence/review-before.txt). Initial corrected test runs exposed hardcoded receipt counts under StrictMode; the final harness captures the count before releasing each response and waits for its exact increment.
+
+```sh
+PLAYWRIGHT_PORT=5312 pnpm exec playwright test tests/e2e/editor-save-session.spec.ts --grep 'publish receipt|ordinary publish|reload receipt|ordinary remote reload|Back can|router preserves' --workers=1 --output=test-results/session-review-verified
+pnpm --filter @retrodesk/web typecheck
+```
+
+No production build or aggregate gate was repeated for this correction. The integrator owns the combined build and acceptance with #116/#117.
+
+## Original focused evidence (runtime `2adb08e`)
+
 
 Both new P1 checks failed on untouched main: no immediate-exit confirmation, and a late A receipt caused an unsolicited B save with A's version. [Before output](evidence/repro-before.txt) retains both failures. Early browser-harness expectations were corrected for preview's existing history marker, cancelled native reloads having no load event, and a truly anonymous context for auth checks; these are not product fixes or first-pass claims.
 
-The final source passed:
+The original runtime passed:
 
 - **23 targeted Chromium cases**: 17 save/router cases plus 6 existing asset/upgrade compatibility cases. Covers desktop/390px exit Stay, explicit leave/unmount, late A success/500/403/409/426 after B, same-site remount, normal in-flight newer edits, phone Retry after dismissal, real conflict pause, current 403/404 redirect, native Back/reload, preview Back/Forward, direct entry, unknown route, auth return query/hash, optional theme-preview guard, and sign-out cancellation. [Log](evidence/browser-final.txt)
 - **2 production route checks**: unauthenticated redirect without fetching private editor code; failed editor chunk followed by translated retry/reload recovery. [Log](evidence/production-routes.txt)

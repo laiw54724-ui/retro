@@ -16,6 +16,11 @@ async function fixture(page: Page, width = 1280) {
   docs.b.windows[0].content = { ...docs.b.windows[0].content, bio: 'Beta saved bio' } as typeof docs.b.windows[0]['content'];
   const versions = { a: 1, b: 50 };
   const saves: Array<{ id: 'a' | 'b'; expectedVersion: number; document: typeof docs.a }> = [];
+  const published: Record<'a' | 'b', typeof docs.a | null> = { a: null, b: null };
+  const publishes: string[] = [];
+  const reloads: string[] = [];
+  let holdPublish = false, holdReload = false, publishFailure = 0, reloadViewer = false;
+  let releasePublish: (() => void) | undefined, releaseReload: (() => void) | undefined;
   let holdA = false;
   let fail = 0;
   let release: (() => void) | undefined;
@@ -24,12 +29,18 @@ async function fixture(page: Page, width = 1280) {
     localStorage.setItem('sb-example-auth-token', JSON.stringify(value));
     localStorage.setItem('retrodesk:locale', 'zh-Hant');
     (window as any).__saveReceipts = [];
+    (window as any).__editorReceipts = [];
     const original = window.fetch;
     window.fetch = async (...args) => {
       const response = await original(...args);
-      if (response.url.endsWith('/draft')) {
+      if (response.url.includes('/api/')) {
         const json = response.json.bind(response);
-        response.json = async () => { const result = await json(); (window as any).__saveReceipts.push(response.url); return result; };
+        response.json = async () => {
+          const result = await json();
+          (window as any).__editorReceipts.push(new URL(response.url).pathname);
+          if (response.url.endsWith('/draft')) (window as any).__saveReceipts.push(response.url);
+          return result;
+        };
       }
       return response;
     };
@@ -39,6 +50,13 @@ async function fixture(page: Page, width = 1280) {
     if (url.hostname !== '127.0.0.1') return route.abort();
     if (!url.pathname.startsWith('/api/')) return route.continue();
     const id = url.pathname.startsWith('/api/sites/b') ? 'b' : 'a';
+    if (url.pathname.endsWith('/publish')) {
+      publishes.push(id);
+      if (holdPublish) await new Promise<void>(resolve => { releasePublish = resolve; });
+      if (publishFailure) return route.fulfill({ status: publishFailure, json: { error: { code: publishFailure === 426 ? 'client_upgrade_required' : 'version_conflict', message: 'Synthetic publish failure' } } });
+      published[id] = structuredClone(docs[id]);
+      return route.fulfill({ json: { publishedVersion: versions[id], publishedAt: '2026-10-19T00:00:00Z', url: `/@${id}`, artifactStatus: 'synced', retryable: false } });
+    }
     if (url.pathname.endsWith('/draft')) {
       const payload = route.request().postDataJSON(); saves.push({ id, ...payload });
       const failure = fail;
@@ -50,13 +68,21 @@ async function fixture(page: Page, width = 1280) {
     }
     if (url.pathname.endsWith('/assets')) return route.fulfill({ json: { assets: [] } });
     if (url.pathname === '/api/sites') return route.fulfill({ json: { sites: ['a', 'b'].map(id => ({ id, username: id, site_name: id === 'a' ? 'Alpha Desk' : 'Beta Desk', draft_version: versions[id as 'a' | 'b'], published_version: null, published_at: null, updated_at: '2026-10-19T00:00:00Z', access_role: 'owner' })) } });
-    if (/^\/api\/sites\/[ab]$/.test(url.pathname)) return route.fulfill({ json: { site: { id, username: id, site_name: docs[id].siteName, draft_document: docs[id], draft_version: versions[id], published_document: null, published_version: null, published_at: null, updated_at: '2026-10-19T00:00:00Z', access_role: 'owner' } } });
+    if (/^\/api\/sites\/[ab]$/.test(url.pathname)) {
+      const site = { id, username: id, site_name: docs[id].siteName, draft_document: structuredClone(docs[id]), draft_version: versions[id], published_document: published[id], published_version: published[id] ? versions[id] : null, published_at: null, updated_at: '2026-10-19T00:00:00Z', access_role: id === 'a' && holdReload && reloadViewer ? 'viewer' : 'owner' };
+      if (id === 'a' && holdReload) { reloads.push(id); await new Promise<void>(resolve => { releaseReload = resolve; }); }
+      return route.fulfill({ json: { site } });
+    }
     return route.fulfill({ status: 404, json: { error: { code: 'not_found', message: 'Synthetic endpoint' } } });
   });
   await page.goto('/auth');
   await page.locator('a[href="/editor/a"]').click();
   await openAbout(page, width);
-  return { docs, versions, saves, fail: (status: number) => { fail = status; }, hold: () => { holdA = true; }, release: () => { holdA = false; release?.(); } };
+  return { docs, versions, saves, published, publishes, reloads,
+    fail: (status: number) => { fail = status; }, hold: () => { holdA = true; }, release: () => { holdA = false; release?.(); },
+    holdPublish: (failure = 0) => { holdPublish = true; publishFailure = failure; }, releasePublish: () => { holdPublish = false; releasePublish?.(); },
+    holdReload: (viewer = false) => { holdReload = true; reloadViewer = viewer; }, allowReloadReads: () => { holdReload = false; }, releaseReload: () => { holdReload = false; releaseReload?.(); },
+  };
 }
 
 async function openAbout(page: Page, width = 1280) {
@@ -79,6 +105,103 @@ async function consumed(page: Page) {
   await expect.poll(() => page.evaluate(() => (window as any).__saveReceipts.length)).toBeGreaterThan(0);
   await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
 }
+async function received(page: Page, path: string, count: number) {
+  await expect.poll(() => page.evaluate(path => (window as any).__editorReceipts.filter((item: string) => item === path).length, path)).toBe(count);
+  await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+}
+const receiptCount = (page: Page, path: string) => page.evaluate(path => (window as any).__editorReceipts.filter((item: string) => item === path).length as number, path);
+
+async function startPublish(page: Page) {
+  await page.getByRole('button', { name: '發布', exact: true }).click();
+  await page.getByRole('button', { name: '確認發布', exact: true }).click();
+}
+
+for (const failure of [0, 409, 426]) test(`publish receipt ${failure || 'success'} from ended A leaves B unchanged`, async ({ page }) => {
+  const state = await fixture(page); state.holdPublish(failure);
+  await startPublish(page); await expect.poll(() => state.publishes.length).toBe(1);
+  await page.goBack(); await expect(page).toHaveURL(/\/auth$/);
+  await page.locator('a[href="/editor/b"]').click(); await openAbout(page);
+  state.releasePublish(); await received(page, '/api/sites/a/publish', 1);
+  await expect(page.locator('.status-badge')).toHaveText('尚未發布');
+  await expect(page.getByLabel('簡介', { exact: true })).toHaveValue('Beta saved bio');
+  await expect(page.locator('.editor-message')).toHaveCount(0);
+  await expect(page.locator('.save-text')).toHaveText('已儲存');
+  await expect(page).toHaveURL(/\/editor\/b$/);
+  await expect(page.getByRole('button', { name: '發布', exact: true })).toBeEnabled();
+  expect(state.published.b).toBeNull();
+  if (!failure) expect(state.published.a).not.toBeNull(); // The actual A server write is not cancelled.
+});
+
+test('publish receipt after unmount cannot mark a reopened A session published', async ({ page }) => {
+  const state = await fixture(page); state.holdPublish();
+  await startPublish(page); await expect.poll(() => state.publishes.length).toBe(1);
+  await page.goBack(); await page.locator('a[href="/editor/a"]').click(); await openAbout(page);
+  state.releasePublish(); await received(page, '/api/sites/a/publish', 1);
+  await expect(page.locator('.status-badge')).toHaveText('尚未發布');
+  expect(state.published.a).not.toBeNull();
+});
+
+test('ordinary publish completion still marks its current editor published', async ({ page }) => {
+  const state = await fixture(page); await startPublish(page);
+  await expect(page.getByRole('dialog', { name: '發布完成', exact: true })).toBeVisible();
+  await expect(page.locator('.status-badge')).not.toHaveText('尚未發布');
+  expect(state.published.a).not.toBeNull();
+});
+
+async function startRemoteReload(page: Page, state: Awaited<ReturnType<typeof fixture>>) {
+  state.fail(409); await page.getByLabel('簡介', { exact: true }).fill('Retained conflicting local bio');
+  await expect(page.getByRole('alertdialog')).toBeVisible(); state.fail(0);
+  state.docs.a = structuredClone(state.docs.a);
+  state.docs.a.windows[0].content = { ...state.docs.a.windows[0].content, bio: 'Remote A bio' } as typeof state.docs.a.windows[0]['content'];
+  state.versions.a = 8;
+  await page.getByRole('button', { name: '重新載入雲端版本', exact: true }).click();
+}
+
+for (const viewer of [false, true]) test(`reload receipt from ended A (${viewer ? 'viewer' : 'owner'}) leaves B unchanged`, async ({ page }) => {
+  const state = await fixture(page); state.holdReload(viewer);
+  await startRemoteReload(page, state); await expect.poll(() => state.reloads.length).toBe(1);
+  await page.evaluate(() => history.back());
+  await page.getByRole('dialog', { name: leaveTitle, exact: true }).getByRole('button', { name: leave, exact: true }).click();
+  await page.locator('a[href="/editor/b"]').click(); await openAbout(page);
+  const beforeRelease = await receiptCount(page, '/api/sites/a');
+  state.releaseReload(); await received(page, '/api/sites/a', beforeRelease + 1);
+  await expect(page).toHaveURL(/\/editor\/b$/);
+  await expect(page.getByLabel('簡介', { exact: true })).toHaveValue('Beta saved bio');
+  await expect(page.locator('.editor-message')).toHaveCount(0);
+  await page.getByLabel('簡介', { exact: true }).fill('B after remote A');
+  await expect.poll(() => state.saves.length).toBe(2);
+  expect(state.saves[1]).toMatchObject({ id: 'b', expectedVersion: 50 });
+});
+
+test('reload receipt cannot replace a remounted A with an older response', async ({ page }) => {
+  const state = await fixture(page); state.holdReload(); await startRemoteReload(page, state);
+  await expect.poll(() => state.reloads.length).toBe(1);
+  await page.evaluate(() => history.back());
+  await page.getByRole('dialog', { name: leaveTitle, exact: true }).getByRole('button', { name: leave, exact: true }).click();
+  state.docs.a.windows[0].content = { ...state.docs.a.windows[0].content, bio: 'Newest re-entry bio' } as typeof state.docs.a.windows[0]['content'];
+  state.versions.a = 9;
+  state.allowReloadReads();
+  await page.locator('a[href="/editor/a"]').click(); await openAbout(page);
+  await expect(page.getByLabel('簡介', { exact: true })).toHaveValue('Newest re-entry bio');
+  const beforeRelease = await receiptCount(page, '/api/sites/a');
+  state.releaseReload();
+  await received(page, '/api/sites/a', beforeRelease + 1);
+  await expect(page.getByLabel('簡介', { exact: true })).toHaveValue('Newest re-entry bio');
+});
+
+test('ordinary remote reload still replaces the conflicting local draft', async ({ page }) => {
+  const state = await fixture(page); await startRemoteReload(page, state);
+  await expect(page.getByLabel('簡介', { exact: true })).toHaveValue('Remote A bio');
+  await expect(page.locator('.save-text')).toHaveText('已儲存');
+  await expect(page.getByRole('alertdialog')).toHaveCount(0);
+});
+
+test('ordinary remote reload to viewer retains its access-loss redirect', async ({ page }) => {
+  const state = await fixture(page); state.holdReload(true); await startRemoteReload(page, state);
+  await expect.poll(() => state.reloads.length).toBe(1); state.releaseReload();
+  await expect(page).toHaveURL(/\/auth\?notice=/);
+  await expect(page.getByRole('dialog', { name: leaveTitle, exact: true })).toHaveCount(0);
+});
 
 for (const width of [1280, 390]) test(`immediate exit at ${width}px retains the canonical edit until confirmed`, async ({ page }, testInfo) => {
   const state = await fixture(page, width);

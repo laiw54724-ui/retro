@@ -1,0 +1,89 @@
+[WebServer] (node:1632) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:1648) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:1675) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/editor-save-session.spec.ts:118:42 › publish receipt success from ended A leaves B unchanged (6.7s)
+(node:1752) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [chromium] › tests/e2e/editor-save-session.spec.ts:158:41 › reload receipt from ended A (owner) leaves B unchanged (30.1s)
+
+
+  1) [chromium] › tests/e2e/editor-save-session.spec.ts:118:42 › publish receipt success from ended A leaves B unchanged
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  locator('.status-badge')
+    Expected: "尚未發布"
+    Received: "已發布 v1"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveText" locator('.status-badge') with timeout 5000ms
+      - waiting for locator('.status-badge')
+        14 × locator resolved to <span title="已發布 v1" class="status-badge">已發布 v1</span>
+           - unexpected value "已發布 v1"
+
+
+      122 |   await page.locator('a[href="/editor/b"]').click(); await openAbout(page);
+      123 |   state.releasePublish(); await received(page, '/api/sites/a/publish', 1);
+    > 124 |   await expect(page.locator('.status-badge')).toHaveText('尚未發布');
+          |                                               ^
+      125 |   await expect(page.getByLabel('簡介', { exact: true })).toHaveValue('Beta saved bio');
+      126 |   await expect(page.locator('.editor-message')).toHaveCount(0);
+      127 |   await expect(page).toHaveURL(/\/editor\/b$/);
+        at /Users/wen/Documents/Codex/2026-10-19/task-10/retro-editor-save-session/tests/e2e/editor-save-session.spec.ts:124:47
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/session-review-before/editor-save-session-publis-f38dd--ended-A-leaves-B-unchanged-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/session-review-before/editor-save-session-publis-f38dd--ended-A-leaves-B-unchanged-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/session-review-before/editor-save-session-publis-f38dd--ended-A-leaves-B-unchanged-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/session-review-before/editor-save-session-publis-f38dd--ended-A-leaves-B-unchanged-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/e2e/editor-save-session.spec.ts:158:41 › reload receipt from ended A (owner) leaves B unchanged
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('dialog', { name: '離開編輯器？', exact: true }).getByRole('button', { name: '仍要離開', exact: true })
+
+
+      160 |   await startRemoteReload(page, state); await expect.poll(() => state.reloads.length).toBe(1);
+      161 |   await page.evaluate(() => history.back());
+    > 162 |   await page.getByRole('dialog', { name: leaveTitle, exact: true }).getByRole('button', { name: leave, exact: true }).click();
+          |                                                                                                                       ^
+      163 |   await page.locator('a[href="/editor/b"]').click(); await openAbout(page);
+      164 |   state.releaseReload(); await received(page, '/api/sites/a', 2);
+      165 |   await expect(page).toHaveURL(/\/editor\/b$/);
+        at /Users/wen/Documents/Codex/2026-10-19/task-10/retro-editor-save-session/tests/e2e/editor-save-session.spec.ts:162:119
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/session-review-before/editor-save-session-reload-43711--A-owner-leaves-B-unchanged-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/session-review-before/editor-save-session-reload-43711--A-owner-leaves-B-unchanged-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/session-review-before/editor-save-session-reload-43711--A-owner-leaves-B-unchanged-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/session-review-before/editor-save-session-reload-43711--A-owner-leaves-B-unchanged-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › tests/e2e/editor-save-session.spec.ts:118:42 › publish receipt success from ended A leaves B unchanged
+    [chromium] › tests/e2e/editor-save-session.spec.ts:158:41 › reload receipt from ended A (owner) leaves B unchanged
