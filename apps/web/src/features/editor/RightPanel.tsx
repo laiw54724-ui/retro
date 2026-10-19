@@ -1,3 +1,5 @@
+import { useImageWriter } from "./ImageWriteContext";
+import { InspectorContent } from "./InspectorContent";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { makeWindow, type DesktopWindow, type SiteDocument } from "@retrodesk/shared";
@@ -28,6 +30,7 @@ const clamp = (value: number, min: number, max: number) => Math.round(Math.min(m
 
 export function RightPanel({ document, selected, siteId, upload, onUpdate, onDelete, onDuplicate, onBringToFront, onEnterLayout, onSiteName, indexing, onIndexing, onColumns }: Props) {
   const { t: tr } = useTranslation("editor");
+  const imageWriter = useImageWriter();
   const [tab, setTab] = useState<Tab>("general");
 
   if (!selected) {
@@ -68,9 +71,10 @@ export function RightPanel({ document, selected, siteId, upload, onUpdate, onDel
               <input className="w98-input" value={selected.title} onChange={(event) => onUpdate((window) => ({ ...window, title: event.target.value }), "title" + selected.id)} />
             </label>
             <label className="check-row"><input type="checkbox" checked={selected.defaultOpen} onChange={(event) => onUpdate((window) => ({ ...window, defaultOpen: event.target.checked }))} />{tr("rightPanel.openByDefaultWhenVisitors")}</label>
+            {selected.type === "image" ? <InspectorContent key={selected.id} window={selected} allWindows={document.windows} siteId={siteId} theme={document.theme} upload={upload} update={onUpdate} onMessage={() => undefined} /> : null}
             <div className="w98-sep" />
             <button type="button" className="w98-btn block" onClick={onBringToFront}>{tr("rightPanel.bringToFront")}</button>
-            <button type="button" className="w98-btn block" onClick={onDuplicate}>{tr("rightPanel.duplicateWindow")}</button>
+            <button type="button" className="w98-btn block" disabled={selected.type === "image" && !imageWriter} onClick={onDuplicate}>{tr("rightPanel.duplicateWindow")}</button>
             <button type="button" className="w98-btn block danger" onClick={onDelete}>{tr("mobileEditor.deleteWindow")}</button>
           </>
         ) : null}

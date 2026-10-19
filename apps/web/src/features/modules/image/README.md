@@ -1,15 +1,26 @@
-# Image module leaf (Issue #51 W3b)
+# Single-image module (#51)
 
-`ImageView` reads the shared image content contract through the W3a `ImagePresentation`. `ImageInlineEditor` edits source, alt text, caption, fit, crop, background, and pixel rendering through the normal `ModuleProps<"image">.update` callback. Each toggle, source change, or completed upload is one history update; typing and slider drags use field-specific history keys.
+`ImageView`, `ImageInlineEditor` and `createImageContent` use the existing strict shared image contract. The registry binds both components. Desktop canvas content remains a visual image; the selected image Inspector and phone inline editor reuse the same leaf controls.
 
-Uploads use `useWindowMedia` with a single `source` slot. Choosing another file supersedes the pending one. A URL edit, source removal, undo, site switch, or window deletion invalidates pending work. Only a successful current upload writes the returned stable asset reference; neither file bytes nor a temporary blob URL enter the document. Retry uses the existing media queue.
+## Local authoring acceptance
 
-The leaf is deliberately unregistered. The central reader/compatibility change owns schema, registry, store and add-surface gating. The standalone debug page is disposable and uses local synthetic images; it does not save or upload to a site. The editor does not expose `frameMode: none` until the outer window shell can truly support frameless images. Existing `none` content still renders through W3a, but the current outer shell can remain opaque.
+```sh
+VITE_IMAGE_WINDOW_WRITER=true corepack pnpm --filter @retrodesk/web dev
+corepack pnpm exec playwright test --config playwright.image-authoring.config.ts
+```
 
-Focused verification after the shared image contract is present:
+The local API must advertise `writeCompatibility.imageWindow: 1` for the loaded site and API origin. Add Image and author controls stay hidden without that advertisement or while upgrade recovery is paused. Production builds remain disabled even if the variable is set. Appearance writers keep their separate existing gate. No schema version, transport marker or privacy projection changed.
+
+Sources use `ImageUrlField` and the existing image upload pipeline (JPEG/PNG/WebP/GIF, 8 MB limit). The media queue owns a single source slot: another upload supersedes the previous request; URL/source edits, undo/redo, reload, site switch or deletion invalidate stale work. Only current stable asset references enter the canonical draft; preview blob URLs never do.
+
+The none/simple control changes presentation only; source/crop data stays intact. Frameless desktop hosts remove actual outer chrome/background/padding. Editor objects retain a keyboard-accessible move handle, selection and existing resize/layout gestures. Visitor decorative hosts are inert and pass clicks through at the outer boundary. Phone keeps Back and editor navigation outside frameless content.
+
+## Focused verification
 
 ```sh
 corepack pnpm --filter @retrodesk/web typecheck
-corepack pnpm --filter @retrodesk/web exec vitest run src/features/modules/image/model.test.ts
-corepack pnpm exec playwright test --config playwright.image-w3b.config.ts
+corepack pnpm --filter @retrodesk/web exec vitest run src/features/editor/store.image-authoring.test.ts src/features/modules/image/model.test.ts src/features/editor/ImageWriteContext.test.tsx src/lib/imageWindowCreation.test.ts
+corepack pnpm exec playwright test --config playwright.image-authoring.config.ts
 ```
+
+Browser fixtures mock authentication/API/upload transport and projected publication assets. They do not certify live Supabase/storage, actual publication or native mobile devices. Viewer/Paint presets, UiActions and animation pause/lifecycle controls remain later #51 work. Production writer enablement requires separate reviewed reader/API/stale-client, media/privacy and cross-browser acceptance plus release-owner approval.

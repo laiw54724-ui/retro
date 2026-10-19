@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import type { CollectionEntityV2, DesktopWindow, PostEntityV2, ProfileEntityV2, SiteDocumentV2Input } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
-import { RetroWindow } from "../../components/RetroWindow";
+import { ImageWindowShell, isFramelessImage } from "../site/ImageWindowShell";
 import { useThemeView } from "../../lib/themeView";
 import { WindowRenderer } from "../site/WindowRenderer";
 import { DesktopTaskbar } from "../site/DesktopTaskbar";
@@ -100,7 +100,7 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
     if (view[win.id] === "max") return;
     const layout = win.layout.desktop;
     const onGrip = !!target.closest(".window-resize-handle");
-    const onTitle = !!target.closest(".retro-titlebar");
+    const onTitle = !!target.closest(".retro-titlebar, [data-image-move-handle]");
     if (!(onGrip || onTitle || layoutMode)) return;
     drag.current = { kind: onGrip ? "resize" : "move", id: win.id, startX: event.clientX, startY: event.clientY, x: layout.x, y: layout.y, w: layout.w, h: layout.h };
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -267,7 +267,7 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
             onPointerCancel={() => { drag.current = null; }}
             onFocusCapture={() => { if (store().selectedId !== win.id) store().focusWindow(win.id); }}
           >
-            <RetroWindow
+            <ImageWindowShell window={win} editor
               title={win.title}
               icon={win.icon}
               theme={document.theme}
@@ -284,7 +284,15 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
               bodyStyle={{ padding: 0 }}
             >
               <WindowRenderer window={win} theme={document.theme} editing={!layoutMode} allWindows={document.windows} siteId={siteId} upload={upload} onUpdate={store().updateWindow} profiles={profiles} posts={posts} collections={collections} profileId={profileId} profileIdsByWindow={profileIdsByWindow} onProfileSelect={onProfileSelect} onProfileAdd={onProfileAdd} onProfileDuplicate={onProfileDuplicate} onProfileChange={onProfileChange} onProfileDelete={onProfileDelete} profileDeleteBlocked={profileDeleteBlocked} profileDeleteGuardById={profileDeleteGuardById} profileDirectory={profileDirectory} updateContent={updateContent} socialDocument={socialDocument} />
-            </RetroWindow>
+            </ImageWindowShell>
+            {isFramelessImage(win) ? <button type="button" className="image-move-handle" data-image-move-handle aria-label={tr("imageHost.move", { title: win.title })} onKeyDown={(event) => {
+              const direction = ({ ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] } as Record<string, number[]>)[event.key];
+              if (!direction) return;
+              event.preventDefault();
+              const step = event.shiftKey ? 10 : 1;
+              const pos = clampWindowPos(layout.x + direction[0] * step, layout.y + direction[1] * step, layout.w);
+              store().updateWindow(win.id, (current) => ({ ...current, layout: { ...current.layout, desktop: { ...current.layout.desktop, ...pos } } }), `image-move:${win.id}`);
+            }}>{win.title}</button> : null}
             {layoutMode ? <div className={`layout-veil ${styles.layoutVeil}`}><span className="geo-text">{layout.x}, {layout.y} · {layout.w}×{layout.h}</span></div> : null}
             {!maximized ? <span className="window-resize-handle" aria-label={tr("desktopCanvas.resize")} /> : null}
           </div>

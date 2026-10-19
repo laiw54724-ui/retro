@@ -45,11 +45,13 @@ export function SafeImg({ src, alt, className, style, compact }: { src: string; 
  * Text field for an image link. Commits on blur/Enter: stores the raw input in `srcUrl`
  * and the normalised URL (Google Drive etc.) in `src`.
  */
-export function ImageUrlField({ raw, placeholder, label, onCommit, className = "ie small", maxLength = 2048 }: {
+export function ImageUrlField({ raw, placeholder, label, onCommit, onEdit, className = "ie small", maxLength = 2048 }: {
   raw: string;
   placeholder: string;
   label: string;
   onCommit: (raw: string, src: string | null) => void;
+  /** Invalidate an in-flight source replacement before the draft URL is committed. */
+  onEdit?: () => void;
   className?: string;
   maxLength?: number;
 }) {
@@ -83,7 +85,7 @@ export function ImageUrlField({ raw, placeholder, label, onCommit, className = "
         aria-label={label}
         aria-invalid={!!error}
         maxLength={maxLength}
-        onChange={(event) => setText(event.target.value)}
+        onChange={(event) => { onEdit?.(); setText(event.target.value); }}
         onBlur={commit}
         onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); commit(); } }}
       />

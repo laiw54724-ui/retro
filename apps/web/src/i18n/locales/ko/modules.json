@@ -46,6 +46,10 @@
     "divider": "구분선"
   },
   "image": {
+    "sourceChanged": "이미지 소스가 편집되어 이전 업로드로 덮어쓰지 않습니다.",
+    "frame": "프레임",
+    "frameless": "프레임 없음",
+    "simpleFrame": "기본 프레임",
     "settings": "이미지 설정",
     "source": "이미지 소스",
     "upload": "이미지 업로드…",
@@ -58,7 +62,7 @@
     "decorative": "장식 이미지",
     "alt": "대체 텍스트",
     "altHint": "화면 낭독기를 위해 이미지를 설명하세요.",
-    "decorativeHint": "장식 이미지는 화면 낭독기에서 건너뜁니다. 콘텐츠 이미지로 되돌리면 대체 텍스트가 유지됩니다.",
+    "decorativeHint": "장식 이미지는 클릭을 가로채지 않아 아래 요소를 조작할 수 있습니다. 화면 낭독기는 건너뛰며 다시 전환해도 대체 텍스트는 유지됩니다.",
     "caption": "설명",
     "showCaption": "설명 표시",
     "placement": "배치",

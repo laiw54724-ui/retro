@@ -1,0 +1,18 @@
+[WebServer] (node:7852) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:7890) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/quality/editor-route-75.spec.ts:6:5 › unauthenticated editor keeps return parameters without loading the editor chunk (212ms)
+  ✓  2 tests/quality/editor-route-75.spec.ts:15:5 › editor chunk failure shows translated recovery and retry reloads successfully (495ms)
+  ✓  3 tests/quality/followup-75.spec.ts:89:7 › followup editor heavy 390px (6.3s)
+  ✓  4 tests/quality/followup-75.spec.ts:89:7 › followup editor heavy 1280px (7.0s)
+  ✓  5 tests/quality/followup-75.spec.ts:89:7 › followup public heavy 390px (5.7s)
+  ✓  6 tests/quality/followup-75.spec.ts:89:7 › followup public heavy 1280px (5.9s)
+  ✓  7 tests/quality/followup-75.spec.ts:89:7 › followup sample ig 390px (6.0s)
+  ✓  8 tests/quality/followup-75.spec.ts:89:7 › followup sample ig 1280px (6.3s)
+  ✓  9 tests/quality/followup-75.spec.ts:107:5 › one separate public heavy desktop CPU diagnostic (1.2s)
+
+  9 passed (45.5s)

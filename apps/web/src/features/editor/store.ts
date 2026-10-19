@@ -299,8 +299,14 @@ export const useEditorStore = create<EditorState>((set) => ({
     if (!state.document) return {};
     const document = {
       ...state.document,
-      windows: state.document.windows.map((window) => window.id === id ? recipe(window) : window)
+      windows: state.document.windows.map((window) => {
+        if (window.id !== id) return window;
+        const next = recipe(window);
+        if ((window.type === "image" || next.type === "image") && !canCreateWindowType("image") && (window.type !== next.type || !sameDocument(window.content, next.content))) return window;
+        return next;
+      })
     };
+    if (sameDocument(document, state.document)) return {};
     return withHistory(state, document, {}, historyKey);
   }),
   duplicateWindow: (id) => set((state) => {
