@@ -393,6 +393,13 @@
     "theImageSourceDoesntAllow": "圖片來源不允許匯出"
   },
   "guestbook": {
+    "preview": {
+      "notice": "模擬留言簿：只在本次預覽中互動，不讀取真實留言，也不送出投稿、檢舉或審核操作。",
+      "sampleName": "範例訪客（模擬）",
+      "sampleBody": "這是一則模擬的已核准留言。",
+      "sent": "模擬送出待審；未傳送或儲存任何留言，核准前不會加入公開列表。",
+      "reported": "模擬檢舉完成；未傳送任何檢舉。"
+    },
     "couldntLoadMessagesRightNow": "目前無法載入留言，請稍後再試。",
     "theGuestbookIsntOpenYet": "留言簿尚未開放",
     "theSiteOwnerIsntAccepting": "站長目前不接受新留言。",
