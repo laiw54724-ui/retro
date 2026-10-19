@@ -659,6 +659,7 @@
     "resetWindow": "Reset all window colors"
   },
   "documentCompatibility": {
+    "imageReadOnly": "Image content is read-only in this editor.",
     "title": "Editor update required",
     "paused": "Autosave and publishing are paused. Your unsaved edits remain in this tab.",
     "recoveryHelp": "Download your local canonical draft, then check the server. Open a fresh editor in another tab and compare the backup before reapplying edits. This tab will keep its draft and will not retry automatically.",

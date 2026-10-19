@@ -22,6 +22,24 @@ async function fixture(page: Page) {
 }
 
 for (const width of [1440, 390]) {
+  test(`selecting an existing image keeps the editor reader usable at ${width}px without author controls`, async ({ page }) => {
+    const site = await fixture(page), errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.setViewportSize({ width, height: 1000 }); await page.goto("/editor/site-1");
+    const surface = page.locator(width < 768 ? ".m-screen" : ".desktop-canvas");
+    if (width < 768) await surface.getByRole("button", { name: "Portrait.png", exact: true }).click();
+    const dialog = page.getByRole("dialog", { name: "Portrait.png", exact: true });
+    if (width >= 768) {
+      await dialog.locator(".retro-titlebar").click();
+      await expect(page.locator("#editor-right-panel").getByRole("textbox").first()).toHaveValue("Portrait.png");
+    } else {
+      await dialog.getByRole("button", { name: "編輯此視窗", exact: true }).click();
+    }
+    await expect(dialog.getByRole("img", { name: site.image.content.alt })).toBeVisible();
+    await expect(dialog.locator("[data-frame='simple']")).toBeVisible();
+    await expect(dialog.getByRole("button", { name: /上傳|更換/ })).toHaveCount(0);
+    expect(site.writes()).toBe(0); expect(errors).toEqual([]);
+  });
   test(`existing image documents render through the central reader at ${width}px`, async ({ page }) => {
     const site = await fixture(page);
     await page.setViewportSize({ width, height: 900 }); await page.goto("/@demo");

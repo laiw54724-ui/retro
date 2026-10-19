@@ -152,6 +152,12 @@ function MediaUpload({ siteId, label, onUploaded, onMessage }: {
 
 export function InspectorContent({ window, allWindows, siteId, update, onMessage }: Props) {
   const { t: tr } = useTranslation("editor");
+  if (window.type === "image") {
+    return <section className="inspector-section" data-testid="image-reader-inspector">
+      <div className="section-heading"><strong>{window.title}</strong></div>
+      <p>{tr("documentCompatibility.imageReadOnly")}</p>
+    </section>;
+  }
   if (window.type === "document") {
     const blocks = window.content.blocks;
     const updateBlocks = (next: DocumentBlock[]) => update((current) => current.type === "document"
