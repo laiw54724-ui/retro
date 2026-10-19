@@ -97,6 +97,8 @@
     "thisUrlIsAlreadyTaken": "이 URL은 이미 사용 중입니다",
     "thisUrlIsAvailable": "이 URL은 사용할 수 있습니다",
     "checking": "확인 중...",
+    "availabilityFailed": "URL을 확인하지 못했습니다. 네트워크 연결을 확인한 후 다시 시도해 주세요.",
+    "retryAvailability": "다시 확인",
     "desktopName": "데스크톱 이름",
     "chooseAStartingTheme": "시작 테마를 선택하세요",
     "chooseAStartingTemplate": "시작 템플릿을 선택하세요",
