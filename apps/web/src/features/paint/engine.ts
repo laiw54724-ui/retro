@@ -67,7 +67,11 @@ export class PaintEngine {
       (this.gesture ? this.gesture.before.pixels.data.byteLength : 0);
   }
 
-  markSaved(): void { this.savedRevision = this.revision; }
+  get revisionId(): number { return this.revision; }
+  markSaved(revision = this.revision): void {
+    if (!Number.isSafeInteger(revision) || revision < 0 || revision > this.nextRevision) throw new RangeError("Unknown saved revision");
+    this.savedRevision = revision;
+  }
 
   setDisplay(zoom: number, dpr: number): void {
     if (!Number.isFinite(zoom) || zoom < 0.5 || zoom > 4) throw new RangeError("Zoom must be 0.5–4");

@@ -34,6 +34,7 @@ import { IntegrityDialog } from "../features/editor/IntegrityDialog";
 import { stopAllMedia } from "../features/modules/music/mediaSession";
 import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { useLocaleFormatting } from "../i18n/format";
+import { PaintEditorEntry } from "../features/paint/PaintEditorEntry";
 import { useEditorLeaveGuard, useEditorSaveSession } from "../features/editor/editorSession";
 
 
@@ -627,6 +628,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
           <button type="button" aria-pressed={store.device === "mobile"} className={"w98-btn" + (store.device === "mobile" ? " on" : "")} onClick={() => { store.setLayoutMode(false); store.setDevice("mobile"); }}>{t("shell.mobile")}</button>
         </div>
         <RetroButton onClick={() => { stopAllMedia(); setPreview(true); }}>▶ {t("shell.preview")}</RetroButton>
+        <PaintEditorEntry key={siteId} siteId={siteId} disabled={upgradeRequired || !actions.uploadAssets} />
         {actions.manageMembers ? <RetroButton ref={collaborationButtonRef} onClick={() => setCollaborationOpen(true)}>{t("shell.collaborators")}</RetroButton> : null}
         {actions.manageMembers ? <RetroButton onClick={() => setTransferOpen(true)}>{t("shell.transfer")}</RetroButton> : null}
         {store.publishedDocument ? <a className="w98-btn mobile-hide" href={publicSiteUrl(store.username)} target="_blank" rel="noreferrer">{t("shell.openPublished")}</a> : null}

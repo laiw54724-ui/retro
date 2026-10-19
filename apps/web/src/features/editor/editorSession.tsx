@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useBeforeUnload, useBlocker, type BlockerFunction } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { hasUnsavedEditorLocalWork } from "./editorLocalWork";
 import { ModalDialog } from "../../components/ModalDialog";
 import { useEditorStore } from "./store";
 
@@ -23,7 +24,7 @@ function hasUnsavedWork(siteId: string) {
   if (state.siteId !== siteId) return false;
   // The separate theme writer registers a transient preview. Reading it does not Apply it.
   const preview = "themePreview" in state && state.themePreview != null;
-  return preview || state.saveStatus === "dirty" || state.saveStatus === "saving" || state.saveStatus === "error";
+  return hasUnsavedEditorLocalWork(siteId) || preview || state.saveStatus === "dirty" || state.saveStatus === "saving" || state.saveStatus === "error";
 }
 
 type ExitAction = () => void | Promise<void>;

@@ -14,13 +14,15 @@ type Props = {
   /** Close when the dark backdrop is clicked. Defaults to true. */
   dismissOnBackdrop?: boolean;
   width?: number;
+  /** Keep a local tool’s command shortcuts out of document history. */
+  containShortcuts?: boolean;
 };
 
 /**
  * Modal dialog rendered into document.body so a draggable window cannot clip or cover it.
  * Escape closes, Tab stays inside, the page behind is inert, and focus returns to where it was.
  */
-export function ModalDialog({ title, onClose, children, actions, dismissOnBackdrop = true, width = 460 }: Props) {
+export function ModalDialog({ title, onClose, children, actions, dismissOnBackdrop = true, width = 460, containShortcuts = false }: Props) {
   const { t: tr } = useTranslation("editor");
   const root = useRef<HTMLDivElement | null>(null);
   const titleId = useId();
@@ -42,7 +44,10 @@ export function ModalDialog({ title, onClose, children, actions, dismissOnBackdr
   }, []);
 
   useEffect(() => {
+    const doc = globalThis.document;
     function onKey(event: KeyboardEvent) {
+      const top = Array.from(doc.querySelectorAll<HTMLElement>('[role="dialog"][aria-modal="true"]')).filter((element) => element.getClientRects().length).at(-1);
+      if (top !== root.current) return;
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
@@ -70,6 +75,7 @@ export function ModalDialog({ title, onClose, children, actions, dismissOnBackdr
   return createPortal(
     <div
       className="modal-root"
+      onKeyDown={(event) => { if (containShortcuts && (event.ctrlKey || event.metaKey)) event.stopPropagation(); }}
       onPointerDown={contain}
       onMouseDown={contain}
       onDoubleClick={contain}

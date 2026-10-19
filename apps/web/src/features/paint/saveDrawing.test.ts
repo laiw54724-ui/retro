@@ -1,0 +1,64 @@
+import { beforeEach, expect, it, vi } from "vitest";
+import { createStarterDocument, makeWindow } from "@retrodesk/shared";
+import { useEditorStore } from "../editor/store";
+import { createPaintSaveSession } from "./saveDrawing";
+const asset = { asset: { id: "11111111-1111-4111-8111-111111111111", url: "retro-asset:11111111-1111-4111-8111-111111111111", mimeType: "image/png", size: 10, kind: "image" as const, name: "Drawing" } };
+const request = () => ({ blob: new Blob(["PNG"], { type: "image/png" }), width: 640, height: 480, revision: 1, isCurrent: () => true });
+beforeEach(() => useEditorStore.getState().setSite("a", "alice", createStarterDocument("Desk", "classic98", "card"), 1, null, null, "owner"));
+it("uploads a new private PNG and inserts a new gallery in one history step", async () => {
+  const before = useEditorStore.getState().document!;
+  const upload = vi.fn(async () => asset);
+  const save = createPaintSaveSession({ siteId: "a", captureSession: () => () => true, blocked: () => false, upload });
+  await save(request(), "My drawing");
+  const state = useEditorStore.getState();
+  expect(state.past).toHaveLength(1);
+  expect(state.document!.windows.slice(0, -1)).toEqual(before.windows);
+  const gallery = state.document!.windows.at(-1)!;
+  expect(gallery.type).toBe("gallery");
+  if (gallery.type === "gallery") expect(gallery.content.images[0]).toMatchObject({ src: asset.asset.url, srcUrl: "", title: "My drawing" });
+  expect(upload).toHaveBeenCalledTimes(1);
+  expect(upload).toHaveBeenCalledWith("a", expect.any(File), { kind: "image", name: "My drawing" });
+});
+it("a late receipt cannot follow a new site/session", async () => {
+  let finish!: (value: typeof asset) => void;
+  const upload = vi.fn(() => new Promise<typeof asset>((resolve) => { finish = resolve; }));
+  const save = createPaintSaveSession({ siteId: "a", captureSession: () => () => true, blocked: () => false, upload });
+  const pending = save(request(), "A drawing");
+  const beta = createStarterDocument("Beta", "classic98", "card");
+  useEditorStore.getState().setSite("b", "beta", beta, 50, null, null, "owner");
+  finish(asset); await expect(pending).rejects.toThrow("target changed");
+  expect(useEditorStore.getState().document).toBe(beta);
+  expect(useEditorStore.getState().version).toBe(50);
+});
+it("successful upload is reused if the same snapshot could not yet enter the draft", async () => {
+  const original = useEditorStore.getState().document!;
+  let finish!: (value: typeof asset) => void;
+  const upload = vi.fn(() => new Promise<typeof asset>((resolve) => { finish = resolve; }));
+  const save = createPaintSaveSession({ siteId: "a", captureSession: () => () => true, blocked: () => false, upload });
+  const pending = save(request(), "Drawing");
+  useEditorStore.setState({ document: { ...original, windows: Array.from({ length: 100 }, () => makeWindow("about")) } });
+  finish(asset); await expect(pending).rejects.toThrow("Window limit");
+  useEditorStore.setState({ document: original });
+  await save(request(), "Drawing");
+  expect(upload).toHaveBeenCalledTimes(1);
+  expect(useEditorStore.getState().document!.windows).toHaveLength(original.windows.length + 1);
+});
+it("failed upload retains the draft and can be retried", async () => {
+  const before = useEditorStore.getState().document;
+  const upload = vi.fn().mockRejectedValueOnce(new Error("offline")).mockResolvedValueOnce(asset);
+  const save = createPaintSaveSession({ siteId: "a", captureSession: () => () => true, blocked: () => false, upload });
+  await expect(save(request(), "Drawing")).rejects.toThrow("offline");
+  expect(useEditorStore.getState().document).toBe(before);
+  await save(request(), "Drawing"); expect(upload).toHaveBeenCalledTimes(2);
+});
+it("blocked, viewer and ended workspace cannot upload", async () => {
+  const upload = vi.fn(async () => asset);
+  const blocked = createPaintSaveSession({ siteId: "a", captureSession: () => () => true, blocked: () => true, upload });
+  await expect(blocked(request(), "Drawing")).rejects.toThrow();
+  useEditorStore.setState({ accessRole: "viewer" });
+  const save = createPaintSaveSession({ siteId: "a", captureSession: () => () => true, blocked: () => false, upload });
+  await expect(save(request(), "Drawing")).rejects.toThrow();
+  useEditorStore.setState({ accessRole: "owner" });
+  await expect(save({ ...request(), isCurrent: () => false }, "Drawing")).rejects.toThrow();
+  expect(upload).not.toHaveBeenCalled();
+});

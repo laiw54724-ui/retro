@@ -18,15 +18,23 @@ const CANVAS_PRESETS = [
 type EngineStatus = { canUndo: boolean; canRedo: boolean; dirty: boolean; width: number; height: number };
 const initialStatus: EngineStatus = { canUndo: false, canRedo: false, dirty: false, ...DEFAULT_SIZE };
 
+export type PaintSaveRequest = { blob: Blob; width: number; height: number; revision: number; isCurrent: () => boolean };
+export type PaintSaveLabels = { save: string; saving: string; saved: string; failed: string };
 export type PaintWorkspaceProps = {
   labels?: PaintLabels;
+  saveDisabled?: boolean;
+  onSave?: (request: PaintSaveRequest) => Promise<void>;
+  saveLabels?: PaintSaveLabels;
   initialSize?: { width: number; height: number };
   /** The engine remains owned by this host. Useful for later import/save adapters and isolated tests. */
   onEngineReady?: (engine: PaintEngine | null) => void;
 };
 
 /** Local operation UI. No document, asset, or site-save channel is present. */
-export function PaintWorkspace({ labels = englishPaintLabels, initialSize = DEFAULT_SIZE, onEngineReady }: PaintWorkspaceProps) {
+export function PaintWorkspace({ labels = englishPaintLabels, initialSize = DEFAULT_SIZE, onEngineReady, onSave, saveLabels, saveDisabled = false }: PaintWorkspaceProps) {
+  const [saving, setSaving] = useState(false);
+  const saveInFlight = useRef(false);
+  const alive = useRef(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<PaintEngine | null>(null);
   const readyRef = useRef(onEngineReady);
@@ -62,6 +70,7 @@ export function PaintWorkspace({ labels = englishPaintLabels, initialSize = DEFA
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    alive.current = true;
     const engine = new PaintEngine(canvas, initialSize.width, initialSize.height);
     engineRef.current = engine;
     engine.setDisplay(zoomRef.current, window.devicePixelRatio || 1);
@@ -75,6 +84,7 @@ export function PaintWorkspace({ labels = englishPaintLabels, initialSize = DEFA
     readyRef.current?.(engine);
     sync();
     return () => {
+      alive.current = false;
       importRequest.current?.abort();
       importRequest.current = null;
       controller.dispose();
@@ -178,6 +188,27 @@ export function PaintWorkspace({ labels = englishPaintLabels, initialSize = DEFA
     }
   };
 
+  const save = async () => {
+    const engine = engineRef.current;
+    if (saveDisabled || !onSave || !saveLabels || !engine || saveInFlight.current || engine.active || !engine.dirty) return;
+    saveInFlight.current = true; setSaving(true);
+    const revision = engine.revisionId;
+    const isCurrent = () => alive.current && engineRef.current === engine;
+    try {
+      const blob = await engine.exportPng();
+      if (!isCurrent()) return;
+      if (!blob.size || blob.size > 8 * 1024 * 1024) throw new Error("PNG size limit");
+      await onSave({ blob, width: engine.width, height: engine.height, revision, isCurrent });
+      if (!isCurrent()) return;
+      engine.markSaved(revision); sync(); setNotice(saveLabels.saved);
+    } catch {
+      if (isCurrent()) setNotice(saveLabels.failed);
+    } finally {
+      saveInFlight.current = false;
+      if (isCurrent()) setSaving(false);
+    }
+  };
+
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     const target = event.target;
     const editable = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement ||
@@ -185,9 +216,10 @@ export function PaintWorkspace({ labels = englishPaintLabels, initialSize = DEFA
     const command = event.metaKey || event.ctrlKey;
     if (command && !editable) {
       const key = event.key.toLowerCase();
-      if (key === "z") { event.preventDefault(); if (event.shiftKey) redo(); else undo(); return; }
-      if (key === "y") { event.preventDefault(); redo(); return; }
-      if (key === "e") { event.preventDefault(); void exportPng(); return; }
+      if (key === "z") { event.preventDefault(); event.stopPropagation(); if (event.shiftKey) redo(); else undo(); return; }
+      if (key === "y") { event.preventDefault(); event.stopPropagation(); redo(); return; }
+      if (key === "s" && onSave) { event.preventDefault(); event.stopPropagation(); void save(); return; }
+      if (key === "e") { event.preventDefault(); event.stopPropagation(); void exportPng(); return; }
     }
     if (target !== canvasRef.current || command || event.altKey) return;
     const engine = engineRef.current;
@@ -234,7 +266,7 @@ export function PaintWorkspace({ labels = englishPaintLabels, initialSize = DEFA
         {!CANVAS_PRESETS.some((item) => `${item.width}x${item.height}` === preset) ? <option value={preset}>{preset.replace("x", " × ")}</option> : null}
         {CANVAS_PRESETS.map((item) => <option key={`${item.width}x${item.height}`} value={`${item.width}x${item.height}`}>{item.width} × {item.height}</option>)}
       </select></label>
-      <button type="button" onClick={newCanvas}>{labels.newCanvas}</button>
+      <button type="button" onClick={newCanvas} disabled={saving}>{labels.newCanvas}</button>
       <button type="button" onClick={undo} disabled={!status.canUndo} aria-keyshortcuts="Control+Z Meta+Z">{labels.undo}</button>
       <button type="button" onClick={redo} disabled={!status.canRedo} aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z">{labels.redo}</button>
       <button type="button" onClick={clear}>{labels.clear}</button>
@@ -245,6 +277,7 @@ export function PaintWorkspace({ labels = englishPaintLabels, initialSize = DEFA
           if (file) void importFile(file);
         }} /></label>
       <span className={styles.importSlot}>{importing ? <button type="button" onClick={() => cancelImport()}>{labels.cancelImport}</button> : null}</span>
+      {onSave && saveLabels ? <button type="button" onClick={() => void save()} disabled={saveDisabled || saving || importing || !status.dirty} aria-keyshortcuts="Control+S Meta+S">{saving ? saveLabels.saving : saveLabels.save}</button> : null}
       <button type="button" onClick={() => void exportPng()} aria-keyshortcuts="Control+E Meta+E">{labels.exportPng}</button>
     </div>
     <div className={styles.body}>

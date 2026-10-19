@@ -1,0 +1,4 @@
+.body { min-width: 0; }
+.body > p { margin: 0 0 8px; line-height: 1.45; }
+.name { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
+.name input { min-width: 0; flex: 1; }
