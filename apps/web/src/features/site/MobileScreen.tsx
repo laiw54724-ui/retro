@@ -74,6 +74,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const [sheet, setSheet] = useState<Sheet>(null);
   const [inlineEdit, setInlineEdit] = useState(false);
   const iconRefs = useRef(new Map<string, HTMLButtonElement>());
+  const screenRef = useRef<HTMLDivElement | null>(null);
   const music = useMusicPlayback();
   const ordered = useMemo(() => [...document.windows].sort((a, b) => a.layout.mobile.order - b.layout.mobile.order), [document.windows]);
   const visitor = useVisitorNavigation({ document, siteId: navigationSiteId, profileDirectory, profileIdsByWindow, navigation, editing: editor, recordReturns: true, onOpen: (window) => open(window.id, true) });
@@ -82,18 +83,23 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
 
   useEffect(() => () => stopAllMedia(), []);
   const open = (id: string, fromNavigation = false) => { if (!fromNavigation) visitor.clearReturns(); if (openId && openId !== id) stopWindowMedia(openId); if (navigation) navigation.openId = id; setOpenId(id); setInlineEdit(false); if (editor) store.select(id); };
-  const back = () => { const closingId = openId; if (closingId) stopWindowMedia(closingId); const previous = visitor.back(openId); const returning = previous && visitor.windows.some((window) => window.id === previous.windowId) ? previous : null; if (navigation) navigation.openId = returning?.windowId ?? null; setOpenId(returning?.windowId ?? null); setInlineEdit(false); if (returning) restoreNavigationFocus(returning.focusKey); else if (closingId) requestAnimationFrame(() => iconRefs.current.get(closingId)?.focus()); };
+  const back = () => { const closingId = openId; if (closingId) stopWindowMedia(closingId); const previous = visitor.back(openId); const returning = previous && visitor.windows.some((window) => window.id === previous.windowId) ? previous : null; if (navigation) navigation.openId = returning?.windowId ?? null; setOpenId(returning?.windowId ?? null); setInlineEdit(false); if (returning) restoreNavigationFocus(returning.focusKey, screenRef.current); else if (closingId) requestAnimationFrame(() => iconRefs.current.get(closingId)?.focus()); };
   useEffect(() => {
     if (!openId) return;
     // preventDefault marks the key as handled, so a surrounding preview does not also close on the same Escape
-    const escape = (event: KeyboardEvent) => { if (event.key === "Escape" && !event.defaultPrevented) { event.preventDefault(); back(); } };
+    const escape = (event: KeyboardEvent) => {
+      // The author screen stays mounted behind preview; it must not consume
+      // Escape before the active visitor screen receives the same event.
+      if (screenRef.current?.closest("[inert], [hidden], [aria-hidden='true']")) return;
+      if (event.key === "Escape" && !event.defaultPrevented) { event.preventDefault(); back(); }
+    };
     globalThis.document.addEventListener("keydown", escape);
     return () => globalThis.document.removeEventListener("keydown", escape);
   }, [openId]);
   const btn = { background: tv.face, color: tv.text, boxShadow: tv.bevel, fontFamily };
 
   const body = (
-    <div className="m-screen" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: "center", fontFamily: tv.fontFamily, color: tv.text }}>
+    <div ref={screenRef} tabIndex={-1} className="m-screen" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: "center", fontFamily: tv.fontFamily, color: tv.text }}>
       {framed ? <div className="m-status" style={{ background: tv.face, color: tv.text, fontFamily }}><time dateTime={now.toISOString()} title={formatDate(now, { dateStyle: "full" })} aria-label={common("desktop.clockLabel", { time: clock })}>{clock}</time><span>5G ▮▮▮</span></div> : null}
       {/* One return path: while an app is open its own title bar is the only header (site options live in its menu). */}
       {!openWindow ? (
