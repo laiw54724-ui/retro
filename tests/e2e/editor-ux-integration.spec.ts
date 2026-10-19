@@ -48,7 +48,7 @@ for (const width of [320, 390, 1440]) test(`pending image theme guards Stay and 
   const prompt = page.getByRole("dialog", { name: "離開編輯器？", exact: true });
   await expect(prompt).toBeVisible();
   expect(state.saves).toHaveLength(0);
-  await page.screenshot({ path: testInfo.outputPath(`preview-leave-${width}.png`), fullPage: true });
+  await page.screenshot({ path: testInfo.outputPath(`preview-leave-${width}.png`), fullPage: false });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await prompt.getByRole("button", { name: "保留並繼續編輯", exact: true }).click();
   await expect(canvas).toHaveCSS("background-image", `url("${SOURCE}")`);
