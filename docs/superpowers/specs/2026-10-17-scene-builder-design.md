@@ -2,6 +2,8 @@
 
 狀態：**待整合者審核的研究提案；沒有實作 Scene runtime 或 shared schema。**
 
+> 2026-10-19 整合註記：本文件保留 PR [#58](https://github.com/laiw54724-ui/retro/pull/58) 在 `5f1bad114219aaba283b3b84c5b631343a015d83` 的原始研究與 `aa8b75a8a0b90ffc530b3b2d109804070f35d9d2` 稽核引用；下方 §2 的「調查時」狀態不是現在的進度。這份整合以已合入 main 的 [#89](https://github.com/laiw54724-ui/retro/pull/89) head `7070296b231a021f5e8cad77013abadbab305956` 為程式基準，依 [#55 最新執行表](https://github.com/laiw54724-ui/retro/issues/55) 更新依賴。精簡的待審決策見 [#58/#83 整合檢查表](../../SCENE_MEDIA_RECONCILIATION.md)。D-01～D-08、v3 reader／projection／rollback 都是提案，尚未核准或實作；SC-01～SC-40 尚未執行。
+
 - 調查日期：2026-10-17（Asia/Singapore）。
 - 程式基準：`aa8b75a8a0b90ffc530b3b2d109804070f35d9d2`，已先 `git fetch origin`。
 - 工作分支：`docs/retro-scene-builder-plan`，獨立 git worktree。
@@ -31,15 +33,15 @@
 
 ### 2.1 Issue／PR 快照
 
-已讀 #54、直接依賴 #49／#50／#51 及其留言（調查時四張皆無留言），並讀 #29／#35／#36／#41。
+以下是 2026-10-17 原始研究快照，保留供稽核；現況以 [#55 最新執行表](https://github.com/laiw54724-ui/retro/issues/55) 與上方整合註記為準。當時已讀 #54、直接依賴 #49／#50／#51 及其留言，並讀 #29／#35／#36／#41。
 
 | 項目 | 調查時狀態 | 對本案的影響 |
 | --- | --- | --- |
-| [#49 WindowChrome](https://github.com/laiw54724-ui/retro/issues/49) | Open；W1a/W1b/W1c 為待做階段 | slots、拖曳手柄、frame metrics、控制 capability 穩定後再接 Scene |
+| [#49 WindowChrome](https://github.com/laiw54724-ui/retro/issues/49) | 當時 Open；W1a/W1b/W1c 為待做階段。現有 WindowChrome 已經由 #65 整合，#49 仍需逐項驗收 | 復用現有外框；Scene 所需 slots、拖曳手柄、frame metrics、控制 capability 尚須核對契約 |
 | [#50 UiAction](https://github.com/laiw54724-ui/retro/issues/50) | Open | session dispatcher、modal、typed failure 是共同邊界 |
 | [#51 Image](https://github.com/laiw54724-ui/retro/issues/51) | Open | 圖片資料只存於 image module，不建立 Scene 專用圖片 schema |
-| [PR #38](https://github.com/laiw54724-ui/retro/pull/38) | Open Draft；head `d47e798bd6cc5bff8f8776748be663b32b058332` | 共用 title appearance resolver，尚未包含於本次 main |
-| [PR #47](https://github.com/laiw54724-ui/retro/pull/47) | Open Draft；head `653357373e28dac518d7cb522b497c70cc2e2bc3` | Gallery 焦點返回、OC 輸入穩定性、Moodboard／手機掃雷修正；不能被 Scene 事件層覆蓋 |
+| [PR #38](https://github.com/laiw54724-ui/retro/pull/38) | 當時 Open Draft；其實作內容已由 [#65](https://github.com/laiw54724-ui/retro/pull/65) 整合進 main | 復用共用 title appearance resolver；不要重做 |
+| [PR #47](https://github.com/laiw54724-ui/retro/pull/47) | 當時 Open Draft；其實作內容已由 [#65](https://github.com/laiw54724-ui/retro/pull/65) 整合進 main | 保留 Gallery 焦點返回、OC 輸入穩定性、Moodboard／手機掃雷修正 |
 | [PR #48](https://github.com/laiw54724-ui/retro/pull/48) | 已合併，merge 即本次基準 | focus scrim、catalog 捲動要保留；不沿用它的巨大 z 數字當 Scene 契約 |
 | [#41 presentation](https://github.com/laiw54724-ui/retro/issues/41) | Open | 補齊草稿／公開 OC presentation parity；Scene 的各路徑須消費這份 model |
 | [#29 navigation](https://github.com/laiw54724-ui/retro/issues/29) | Open | window／profile／post／music 目標與 stable IDs |
@@ -49,7 +51,7 @@ PR 中的測試數字是作者回報；本研究自己的實測見配套文件�
 
 ### 2.2 現況與風險
 
-下表的 repo 連結固定到已稽核 commit；「含義」是本次分析。
+下表的 repo 連結固定到原始稽核 commit；「已確認行為」只描述當時的程式，不代表 #89 現況。例如 preview 的來源／投影契約已由 [#84](https://github.com/laiw54724-ui/retro/pull/84) 提供，不能沿用 S08–S10 的舊缺口敘述作現況判斷。「含義」是設計分析，仍待實作時重新核對。
 
 | 來源 | 已確認行為 | Scene 設計含義 |
 | --- | --- | --- |
@@ -487,18 +489,18 @@ W6a採取了部分visitor behavior基础，以免之後把focus/store再次重�
 | `packages/shared/src/site.ts`, `site-versioning.ts`, `index.ts` | 高 | #49/#50/#51/#29/#35；只由整合者排contract順序，#54不先占schema |
 | `public-projection.ts`, `publish-checks.ts`, `site-transfer.ts`, `public-metadata.ts` | 高 | #41/#50/#51、資產／SEO；一同更新v3與ref graph |
 | `apps/web/src/features/editor/store.ts`, `pages/EditorPage.tsx` | 高 | #43 async、#44 OC、#32 i18n與#54 command/history；分開可review commits |
-| `components/RetroWindow.tsx`, 未來 `WindowChrome` | 高 | #49 owner；以props/handles adapter接入，等PR#38 resolver |
+| `components/RetroWindow.tsx`, 現有 `WindowChrome` | 高 | #49 owner；復用 #65/#38 已整合 resolver，以 props/handles adapter 接入 |
 | `features/modules/registry.ts`, `types.ts`, `features/site/WindowRenderer.tsx` | 高 | #49/#50/#51/#44；統一capability，避免Scene專用第二registry |
 | `DesktopCanvas.tsx`, `VisitorDesktop.tsx`, `DesktopTaskbar.tsx` | 高 | #50 session與#54geometry；保留#48scroll/scrim修正 |
 | `MobileScreen.tsx`, `VisitorPreview.tsx`, `MobilePreview.tsx`, `DraftViewer.tsx`, `PublicSitePage.tsx` | 高 | #41presentation、#38appearance、#50navigation；明確一個active surface |
 | `styles/w98.css`, `styles/global.css` | 高 | #49/#35/#32及既有layout；新Scene用scoped樣式，刪舊規則另review |
-| `features/modules/*`，尤其image/gallery/music/instagram | 中～高 | #51/#43/#44/#52、PR#47；以既有module contract接，不批次改業務UI |
+| `features/modules/*`，尤其image/gallery/music/instagram | 中～高 | #51/#43/#44/#52、#65 已整合的 #47 內容；以既有 module contract 接，不批次改業務 UI |
 | `apps/api/src/routes/sites.ts`, `transfer.ts`, `assets.ts`, `lib/publish.ts` | 高 | CAS降版guard、projection/copy；先API相容再writer |
 | `supabase/migrations/*` | 高（若需要） | 不改已部署migration；JSON scene原則無需新table，但SQL readers要驗 |
 | `tests/e2e/editor-*.spec.ts`, `public*.spec.ts`, `responsive.spec.ts` | 中 | 避免多Agent共改一suite；Scene新增suite，既有endpoint計數修正另提交 |
 | 本次三個docs檔 | 低 | 新檔且不改共享索引；main變動後重新查連結與範圍 |
 
-實作前整合順序：PR#38→#49 W1a；#29/#41目標/model及#50 W2a穩定；#51 W3a穩定；#54 W6a0先把reader/projection/CAS/store契約審完，再接W6a UI。#52/#53不是W6a阻塞，但正式真App fixture需各owner配合。#32/#33只翻譯新增產品UI，不能翻譯作者OC內容。
+實作前依 [#55 最新執行表](https://github.com/laiw54724-ui/retro/issues/55) 排序：復用 #65 的 WindowChrome／#38／#47 與 #84 的 preview 契約，先核對 #29/#50 navigation/actions、#51 image 和 #41 presentation 的剩餘接口；#54 W6a0 的 reader／projection／rollback／CAS/store 決策須審核後才接 W6a UI。#52/#53 不是 W6a 阻塞，但正式真 App fixture 需各 owner 配合。#32/#33 只翻譯新增產品 UI，不能翻譯作者 OC 內容。
 
 ## 16. 驗收索引、限制與審核問題
 

@@ -1,10 +1,10 @@
 /**
- * Documentation checks for the Issue #54 research PR.
- * Run from this isolated review branch with:
+ * Documentation checks for the Issue #54 research and #58/#83 reconciliation.
+ * Run from the docs reconciliation branch with:
  *   node --test docs/research/scene-builder/verify-design.mjs
  *
  * These checks validate evidence and review scope, not a Scene implementation.
- * AUDITED_BASE is intentionally pinned: refresh it only after a new source audit.
+ * AUDITED_BASE pins the original #58 citations; INTEGRATION_BASE pins the #89 docs diff.
  * No application imports, dependencies, network requests, or file writes.
  */
 import assert from "node:assert/strict";
@@ -15,11 +15,14 @@ import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 const AUDITED_BASE = "aa8b75a8a0b90ffc530b3b2d109804070f35d9d2";
+const INTEGRATION_BASE = "7070296b231a021f5e8cad77013abadbab305956";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const designPath = "docs/superpowers/specs/2026-10-17-scene-builder-design.md";
 const planPath = "docs/superpowers/plans/2026-10-17-scene-builder-acceptance.md";
 const scriptPath = "docs/research/scene-builder/verify-design.mjs";
-const allowedPaths = new Set([designPath, planPath, scriptPath]);
+const mediaPath = "docs/MEDIA_M2_M4_DESIGN.md";
+const reconciliationPath = "docs/SCENE_MEDIA_RECONCILIATION.md";
+const allowedPaths = new Set([designPath, planPath, scriptPath, mediaPath, reconciliationPath]);
 const documents = [designPath, planPath].map((path) => ({
   path,
   contents: readFileSync(resolve(root, path), "utf8"),
@@ -60,7 +63,10 @@ test("Markdown code fences are balanced and close without a language suffix", ()
 
 test("relative document and checker links resolve inside this repository", () => {
   let checked = 0;
-  for (const document of documents) {
+  for (const document of [...documents, ...[mediaPath, reconciliationPath].map((path) => ({
+    path,
+    contents: readFileSync(resolve(root, path), "utf8"),
+  }))]) {
     for (const href of links(document.contents)) {
       if (/^[a-z][a-z\d+.-]*:/i.test(href) || href.startsWith("#")) continue;
       const path = href.split("#")[0];
@@ -133,11 +139,12 @@ test("all 12 design invariants map to exactly 40 uniquely defined phased accepta
   for (let i = 1; i <= 40; i += 1) assert.ok(mapped.has(`SC-${String(i).padStart(2, "0")}`));
 });
 
-test("the complete review diff and untracked files stay within the three approved docs paths", () => {
-  const tracked = git("diff", "--name-only", AUDITED_BASE, "--").trim().split("\n").filter(Boolean);
+test("the reconciliation diff and untracked files stay within five docs paths", () => {
+  assert.equal(git("cat-file", "-t", INTEGRATION_BASE).trim(), "commit");
+  const tracked = git("diff", "--name-only", INTEGRATION_BASE, "--").trim().split("\n").filter(Boolean);
   const untracked = git("ls-files", "--others", "--exclude-standard").trim().split("\n").filter(Boolean);
   const changed = new Set([...tracked, ...untracked]);
-  assert.equal(changed.size, 3, "expected exactly the three research deliverables");
+  assert.equal(changed.size, 5, "expected exactly five docs deliverables");
   for (const path of changed) assert.ok(allowedPaths.has(path), `out-of-scope change: ${path}`);
   for (const path of allowedPaths) assert.ok(changed.has(path), `missing research deliverable: ${path}`);
 });

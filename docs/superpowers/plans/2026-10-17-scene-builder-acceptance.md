@@ -2,6 +2,8 @@
 
 狀態：**研究交付；Scene runtime cases 全部待實作／待執行。**
 
+> 2026-10-19 整合註記：保留 PR [#58](https://github.com/laiw54724-ui/retro/pull/58) 原始 `aa8b75a8a0b90ffc530b3b2d109804070f35d9d2` 稽核和當時的驗證收據。現況基準為 [#89](https://github.com/laiw54724-ui/retro/pull/89) `7070296b231a021f5e8cad77013abadbab305956`。[#65](https://github.com/laiw54724-ui/retro/pull/65) 已整合 WindowChrome 與 #38/#47 內容；[#84](https://github.com/laiw54724-ui/retro/pull/84) 已提供 preview 來源／投影契約。下方階段、fixtures、SC-01～SC-40 都是 #54 提案和未來驗收，並非這些既有功能的完成證據；待審決策與依賴見 [整合檢查表](../../SCENE_MEDIA_RECONCILIATION.md)。
+
 - Issue：[Retro #54](https://github.com/laiw54724-ui/retro/issues/54)。
 - 設計：[Scene Builder 技術設計](../specs/2026-10-17-scene-builder-design.md)。
 - 稽核基準：`aa8b75a8a0b90ffc530b3b2d109804070f35d9d2`。
@@ -18,7 +20,7 @@
 
 | 階段 | Deliverable | 進入 gate | Exit gate／證據 |
 | --- | --- | --- | --- |
-| Research（本 PR） | 設計、來源、依賴／衝突表、40個case與文件checker | 最新main/Issues/相關PR已讀 | docs-only diff；來源連結與case對照通過；實測和待測分開 |
+| Research（原 PR #58） | 設計、來源、依賴／衝突表、40個case與文件checker | 當時 main/Issues/相關PR已讀 | docs-only diff；來源連結與case對照通過；實測和待測分開 |
 | W6a0 | v3契約、public/author parser、reader/adapter、migration fixtures、save/降版guard | 整合者核准D-01～D-08；#49 W1a/#50 W2a/#51 W3a接口與#41model已協調 | SC-03/04/24～34的相關unit/integration通過；reader先上，writer關閉 |
 | W6a | App/image單選、拖曳、resize、order、lock/hide；mode邊界；desktop DOM parity | W6a0合併；WindowChrome與Image/View能力可用 | SC-01/02/05/07～15/24～27/35～37；一次gesture一次commit與正確API計數 |
 | W6b | Layers、多選/框選、對齊、分布、snap、群組、visuals、duplicate/clipboard | W6a command/ID/host穩定 | SC-06/16～19及SC-10～15擴充；world frame與ref graph可逆 |
@@ -27,12 +29,14 @@
 
 W6a0是為#54 W6a增加的契約前置子PR，不改Issue的W6a/b/c/d整體方向。W6a需先實作behavior/session骨架，避免拖曳完成後又重做focus/store；W6c才驗完整手機行為。W6a0至W6d每個runtime PR在merge前仍遵守repo的contributor gate，不能引用本次文件檢查跳過必要驗證。
 
-### 相依事項（未視為已完成）
+### 相依事項（現況按 #55 頂部重核；Scene 對接仍待審）
 
-- [ ] **#49 W1a**：穩定Chrome slots、handle props、min size/work-area metrics、role/control capabilities；保留PR#38 appearance resolver。
+- [x] **#49／#38 既有基礎**：#65 已整合 WindowChrome 和 appearance resolver；不重做其實作。
+- [ ] **#49 Scene 對接**：核對既有 Chrome slots、handle props、min size/work-area metrics、role/control capabilities 是否滿足 Scene；#49 整張 issue 仍需驗收。
 - [ ] **#50 W2a**：唯一typed dispatcher，normal-run/barrier、fixed reader navigation、modal focus return、media ownership及有效presentation capability。
 - [ ] **#51 W3a**：image schema／stable asset／alt／crop／fit／無框模式、publication/ref traversal；Scene只引用image window。
-- [ ] **#41**：canonical snapshot的scope-specific presentation；preview-current與publishable區分；全部路徑帶OC directory/theme/targets。
+- [x] **#41／#69 preview 基礎**：#84 已提供 sample／draft／publishable／published 來源與公開投影邊界。
+- [ ] **#41 Scene 對接**：在新 Scene reader／projection 上核對 scope-specific presentation、OC directory/theme/targets；#41 整張 issue 仍需驗收。
 - [ ] **#29**：stable destination IDs、缺target的typed fallback、/oc與/post暫態viewer；不以標題尋找。
 - [ ] **#35/#36**：Appearance tokens／Template邊界，不把Scene座標混入換色模板。
 - [ ] **#43/#44**：upload target generation、原window/node回寫；保留OC canonical/legacy相容，不在Scene重做業務UI。
@@ -145,7 +149,7 @@ Publishable preview用private provider讀已授權stable asset，public是immuta
 
 ## 7. 本次實際執行的驗證
 
-以下只描述本研究分支的實測；不含PR#38/#47/#48作者回報的數字。
+以下只描述 PR #58 原研究分支在 2026-10-17 的實測；不含 PR #38/#47/#48 作者回報的數字，也不表示 #89 或 Scene runtime 通過同一測項。
 
 ### 7.1 環境與安裝
 
