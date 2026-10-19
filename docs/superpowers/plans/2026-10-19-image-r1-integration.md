@@ -25,14 +25,14 @@ Implementation tree at `0dcbb2c` was tested locally on macOS with mocked API/sto
 
 | Check | Result | Evidence |
 | --- | --- | --- |
-| Shared image/public projection | 27 passed, 0 skipped | [shared.log](2026-10-19-image-r1-integration-evidence/shared.log) |
-| API publication/public response/retry | 29 passed, 0 skipped | [api.log](2026-10-19-image-r1-integration-evidence/api.log) |
-| Web Inspector/registry/leaf | 10 passed, 0 skipped | [web-leaf-inspector.log](2026-10-19-image-r1-integration-evidence/web-leaf-inspector.log) |
-| Web creation/compatibility guards | 11 passed, 0 skipped | [web-guards.log](2026-10-19-image-r1-integration-evidence/web-guards.log) |
-| Shared/API/web typecheck | all passed | [typecheck.log](2026-10-19-image-r1-integration-evidence/typecheck.log) |
-| Central Chromium reader | 7 passed, 0 skipped, retries 0 | [central-chromium.log](2026-10-19-image-r1-integration-evidence/central-chromium.log) |
-| W3a isolated Chromium | 5 passed, 0 skipped, retries 0 | [w3a-chromium.log](2026-10-19-image-r1-integration-evidence/w3a-chromium.log) |
-| W3b isolated Chromium | 3 passed, 0 skipped, retries 0 | [w3b-chromium.log](2026-10-19-image-r1-integration-evidence/w3b-chromium.log) |
+| Shared image/public projection | 27 passed, 0 skipped | [shared.txt](2026-10-19-image-r1-integration-evidence/shared.txt) |
+| API publication/public response/retry | 29 passed, 0 skipped | [api.txt](2026-10-19-image-r1-integration-evidence/api.txt) |
+| Web Inspector/registry/leaf | 10 passed, 0 skipped | [web-leaf-inspector.txt](2026-10-19-image-r1-integration-evidence/web-leaf-inspector.txt) |
+| Web creation/compatibility guards | 11 passed, 0 skipped | [web-guards.txt](2026-10-19-image-r1-integration-evidence/web-guards.txt) |
+| Shared/API/web typecheck | all passed | [typecheck.txt](2026-10-19-image-r1-integration-evidence/typecheck.txt) |
+| Central Chromium reader | 7 passed, 0 skipped, retries 0 | [central-chromium.txt](2026-10-19-image-r1-integration-evidence/central-chromium.txt) |
+| W3a isolated Chromium | 5 passed, 0 skipped, retries 0 | [w3a-chromium.txt](2026-10-19-image-r1-integration-evidence/w3a-chromium.txt) |
+| W3b isolated Chromium | 3 passed, 0 skipped, retries 0 | [w3b-chromium.txt](2026-10-19-image-r1-integration-evidence/w3b-chromium.txt) |
 
 The new regression tests first reproduced the bug: two shared projection failures and four API publish/public-response failures. After correction all passed. API proof exercises the actual Hono publish route, atomic RPC payload, immutable artifact JSON, public GET and owner GET against an in-memory Supabase/R2 harness, for both versions. It proves private raw authoring text is absent while the private asset reference becomes the intended public URL and the owner retains the original draft. Historical stored JSON is sanitized at public read and artifact retry without mutating that stored input. Existing immutable artifacts are not overwritten or migrated by this change.
 

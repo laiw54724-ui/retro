@@ -1,0 +1,21 @@
+
+ RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01/apps/web
+
+stderr | src/features/modules/registry.test.ts
+Retro Desktop: Supabase env vars are missing. Auth will not work until configured.
+
+stderr | src/features/editor/InspectorContent.image.test.tsx
+Retro Desktop: Supabase env vars are missing. Auth will not work until configured.
+
+stderr | src/features/modules/image/model.test.ts
+Retro Desktop: Supabase env vars are missing. Auth will not work until configured.
+
+ ✓ src/features/editor/InspectorContent.image.test.tsx (1 test) 12ms
+ ✓ src/features/modules/registry.test.ts (5 tests) 11ms
+ ✓ src/features/modules/image/model.test.ts (4 tests) 17ms
+
+ Test Files  3 passed (3)
+      Tests  10 passed (10)
+   Start at  16:24:51
+   Duration  1.42s (transform 811ms, setup 629ms, collect 2.26s, tests 40ms, environment 0ms, prepare 225ms)
+

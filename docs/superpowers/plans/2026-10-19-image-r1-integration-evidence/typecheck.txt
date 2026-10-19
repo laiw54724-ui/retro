@@ -1,0 +1,11 @@
+
+> retrodesk@ typecheck /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01
+> pnpm -r typecheck
+
+Scope: 3 of 4 workspace projects
+packages/shared typecheck$ tsc -p tsconfig.json --noEmit
+packages/shared typecheck: Done
+apps/api typecheck$ tsc -p tsconfig.json --noEmit
+apps/web typecheck$ tsc -b --pretty false
+apps/api typecheck: Done
+apps/web typecheck: Done

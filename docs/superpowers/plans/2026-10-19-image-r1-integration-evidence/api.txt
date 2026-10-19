@@ -1,0 +1,13 @@
+
+ RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01/apps/api
+
+ ✓ test/publish-route-assets.test.ts (1 test) 13ms
+ ✓ test/public-site.test.ts (1 test) 12ms
+ ✓ test/publish.test.ts (10 tests) 22ms
+ ✓ test/security-publication-flow.test.ts (17 tests) 59ms
+
+ Test Files  4 passed (4)
+      Tests  29 passed (29)
+   Start at  16:24:38
+   Duration  961ms (transform 774ms, setup 0ms, collect 1.89s, tests 105ms, environment 0ms, prepare 387ms)
+
