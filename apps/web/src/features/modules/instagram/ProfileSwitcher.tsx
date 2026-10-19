@@ -33,17 +33,18 @@ export function ProfileSwitcher({ profiles, currentId, onSelect, onAdd, onDuplic
   return <section className="ig-profile-switcher" aria-label={tr("profileSwitcher.characterSwitcher")}>
     <div className={styles.currentRole}>
       <span className="ig-thumb round ph" aria-hidden="true">{current?.avatar ? <AvatarImage src={current.avatar} crop={current.avatarCrop} alt="" /> : null}</span>
-      <label className="w98-field grow"><span>{tr("profileSwitcher.characterBeingEdited")}</span>
+      <label className="w98-field grow"><span>{tr("editorFlow.entryCharacter")}</span>
         <select ref={select} className="w98-input compact" value={current?.id ?? ""} onChange={(event) => choose(event.target.value)}>
           {!current ? <option value="">{tr("profileSwitcher.chooseACharacter")}</option> : null}
           {profiles.map((profile) => <option key={profile.id} value={profile.id}>{(profile.displayName ?? profile.name) || tr("profileSwitcher.unnamedCharacter")} @{profile.handle ?? profile.username}{profile.visibility === "draft" ? tr("profileSwitcher.draft") : ""}</option>)}
         </select>
       </label>
-      <button type="button" className="w98-btn small" onClick={() => { setExpanded(false); onAdd(); }}>{tr("profileSwitcher.addCharacter")}</button>
+
     </div>
-    <p className={styles.roleHint}><strong>{current?.visibility === "draft" ? tr("profileSwitcher.notPublished") : tr("profileEditor.publishable")}</strong> {tr("profileSwitcher.switchingSetsThisWindowsEntry")}</p>
     <details className={styles.directory} open={expanded} onToggle={(event) => setExpanded(event.currentTarget.open)}>
-      <summary>{tr("ig.findManage", { count: profiles.length })}</summary>
+      <summary>{tr("editorFlow.manageCharacters", { count: profiles.length })}</summary>
+    <p className={styles.roleHint}><strong>{current?.visibility === "draft" ? tr("profileSwitcher.notPublished") : tr("profileEditor.publishable")}</strong> {tr("profileSwitcher.switchingSetsThisWindowsEntry")}</p>
+      <button type="button" className="w98-btn small" onClick={() => { setExpanded(false); onAdd(); }}>{tr("profileSwitcher.addCharacter")}</button>
       <div className="ie-row">
         <input type="search" className="w98-input compact grow" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tr("profileSwitcher.searchByNameHandleOr")} aria-label={tr("profileSwitcher.searchCharacters")} />
         <select aria-label={tr("profileSwitcher.characterStatusFilter")} className="w98-input compact" value={status} onChange={(event) => setStatus(event.target.value)}>

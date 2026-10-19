@@ -187,13 +187,13 @@ test("post-count drafts survive collapsing their editor without saving zero", as
   await win.getByRole("tab", { name: "貼文", exact: true }).click();
   const toggle = win.locator(".ig-canonical-posts .ig-post-toggle").first();
   if (await toggle.getAttribute("aria-expanded") !== "true") await toggle.click();
-  const details = win.locator(".ig-post-social-details").first();
+  const details = win.locator(".ig-post-social-details").filter({ has: page.locator(".ig-post-social") }).first();
   await details.locator("summary").click();
   const count = win.getByRole("spinbutton", { name: "其他虛構喜歡人數", exact: true }).first();
   const original = await count.inputValue();
   await count.fill("");
   await toggle.click(); await toggle.click();
-  await win.locator(".ig-post-social-details").first().locator("summary").click();
+
   await expect(count).toHaveValue("");
   await win.getByRole("button", { name: "取消編輯其他虛構喜歡人數", exact: true }).click();
   await expect(count).toHaveValue(original);

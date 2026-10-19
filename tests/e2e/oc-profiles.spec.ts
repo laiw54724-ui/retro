@@ -304,17 +304,18 @@ test("desktop OC editor switches, searches, duplicates, edits and safely retarge
   const switcher = win.getByRole("region", { name: "角色切換器" });
   await expect(switcher).toBeVisible();
 
+  await expandDetails(switcher, "管理角色");
   await switcher.getByRole("button", { name: "＋ 新增角色" }).click();
   await expect.poll(() => saves.at(-1)?.document.entities.profiles.some((profile) => profile.handle === "oc-3")).toBe(true);
   await expect.poll(() => saves.at(-1)?.document.windows.find((window) => window.type === "instagram")?.content.profileRef.id).toBe(saves.at(-1)?.document.entities.profiles.find((profile) => profile.handle === "oc-3")?.id);
 
-  await expandDetails(switcher, "尋找與管理角色");
+  await expandDetails(switcher, "管理角色");
   await switcher.getByLabel("搜尋角色").fill("Bei");
   await expect(switcher.getByRole("button", { name: "Bei Original @bei", exact: true })).toBeVisible();
   await expect(switcher.getByRole("button", { name: "Retro User @retro", exact: true })).toHaveCount(0);
   await switcher.getByRole("button", { name: "Bei Original @bei", exact: true }).click();
   await expect(win.getByRole("textbox", { name: "Handle" })).toHaveValue("bei");
-  await expandDetails(switcher, "尋找與管理角色");
+  await expandDetails(switcher, "管理角色");
   await switcher.getByLabel("搜尋角色").fill("");
   await switcher.getByRole("button", { name: "複製 Bei Original" }).click();
   await expect.poll(() => saves.at(-1)?.document.entities.profiles.some((profile) => profile.handle === "bei-copy")).toBe(true);
@@ -346,15 +347,16 @@ test("mobile OC editor exposes the same profile tools without horizontal overflo
   const win = page.getByRole("dialog", { name: "Instagram.exe" });
   const switcher = win.getByRole("region", { name: "角色切換器" });
   await expect(switcher).toBeVisible();
-  await expandDetails(switcher, "尋找與管理角色");
+  await expandDetails(switcher, "管理角色");
   await switcher.getByLabel("搜尋角色").fill("Bei");
   await switcher.getByRole("button", { name: "Bei Original @bei" }).click();
   await win.getByRole("textbox", { name: "顯示名稱" }).fill("Bei Mobile");
   await win.getByRole("textbox", { name: "顯示名稱" }).press("Enter");
   await expect.poll(() => saves.at(-1)?.document.entities.profiles.find((profile) => profile.handle === "bei")?.displayName).toBe("Bei Mobile");
 
-  await expandDetails(switcher, "尋找與管理角色");
+  await expandDetails(switcher, "管理角色");
   await switcher.getByLabel("搜尋角色").fill("");
+  await expandDetails(switcher, "管理角色");
   await switcher.getByRole("button", { name: "＋ 新增角色" }).click();
   await expect.poll(() => saves.at(-1)?.document.entities.profiles.some((profile) => profile.handle === "oc-3")).toBe(true);
   await openEditorGroup(win, "外觀");
@@ -383,8 +385,8 @@ for (const width of [320, 375, 430]) {
     await page.getByRole("button", { name: "Instagram.exe" }).click();
     await page.getByRole("button", { name: "編輯此視窗" }).click();
     const win = page.getByRole("dialog", { name: "Instagram.exe" });
-    const selection = win.getByRole("combobox", { name: "目前編輯角色" });
-    const add = win.getByRole("button", { name: "＋ 新增角色" });
+    const selection = win.getByRole("combobox", { name: "此視窗入口角色" });
+    const add = win.locator("summary").filter({ hasText: "管理角色" });
     const groups = win.getByRole("tablist", { name: "OC 編輯分組" });
     const scroll = win.locator(".ig-edit-scroll");
     const targets = [
@@ -418,6 +420,7 @@ for (const width of [320, 375, 430]) {
     await expect(groups.getByRole("tab", { name: "角色資料", exact: true })).toHaveAttribute("aria-selected", "true");
 
     await openEditorGroup(win, "貼文");
+    await win.locator(".ig-canonical-posts .ig-post-toggle").first().click();
     await expect.poll(() => scroll.evaluate((node) => node.scrollHeight > node.clientHeight)).toBe(true);
     await scroll.evaluate((node) => { node.scrollTop = 0; });
     await scroll.focus();
@@ -450,9 +453,10 @@ test("canonical post media edits autosave and survive reload", async ({ page }) 
   const saves = await mockEditor(page, document);
   const win = page.getByRole("dialog", { name: "Instagram.exe" });
   await openEditorGroup(win, "貼文");
-  const postToggle = win.getByRole("button", { name: /p1/ });
+  const postToggle = win.locator(".ig-post-toggle").filter({ hasText: "p1" });
   if (await postToggle.getAttribute("aria-expanded") !== "true") await postToggle.click();
   await win.getByRole("textbox", { name: "標題", exact: true }).fill("OC archive");
+  await expandDetails(win, "日期與地點");
   await win.getByRole("textbox", { name: "世界觀日期" }).fill("霜月 12 日");
   await win.getByRole("textbox", { name: "圖片 1 替代文字" }).fill("角色站在雪地裡");
   await win.getByRole("slider", { name: "圖片 1 水平裁切" }).fill("24");
@@ -470,6 +474,7 @@ test("canonical post media edits autosave and survive reload", async ({ page }) 
   await win.getByRole("textbox", { name: "Handle" }).fill("retro-archive");
   await win.getByRole("textbox", { name: "個人連結文字" }).fill("OC archive link");
   await openEditorGroup(win, "精選／合集");
+  await win.locator(".ig-canonical-highlights .ig-post-toggle").first().click();
   await win.getByRole("textbox", { name: "精選標題" }).first().fill("雪國旅程");
   const highlightEditor = win.locator(".ig-canonical-highlights");
   await highlightEditor.getByRole("textbox", { name: "新增精選頁圖片網址" }).fill("https://example.com/highlight-3.png");
@@ -502,8 +507,9 @@ test("canonical post media edits autosave and survive reload", async ({ page }) 
   await page.reload();
   const reloaded = page.getByRole("dialog", { name: "Instagram.exe" });
   await openEditorGroup(reloaded, "貼文");
-  const reloadedToggle = reloaded.getByRole("button", { name: /OC archive/ });
+  const reloadedToggle = reloaded.locator(".ig-post-toggle").filter({ hasText: "OC archive" });
   if (await reloadedToggle.getAttribute("aria-expanded") !== "true") await reloadedToggle.click();
+  await expandDetails(reloaded, "日期與地點");
   await expect(reloaded.getByRole("textbox", { name: "世界觀日期" })).toHaveValue("霜月 12 日");
   await expect(reloaded.getByRole("textbox", { name: "圖片 3 替代文字" })).toHaveValue("第四張作品");
   await expect(reloaded.getByRole("slider", { name: "圖片 1 水平裁切" })).toHaveValue("24");
@@ -513,6 +519,7 @@ test("canonical post media edits autosave and survive reload", async ({ page }) 
   await expect(reloaded.getByRole("textbox", { name: "Handle" })).toHaveValue("retro-archive");
   await expect(reloaded.getByRole("textbox", { name: "個人連結文字" })).toHaveValue("OC archive link");
   await openEditorGroup(reloaded, "精選／合集");
+  await reloaded.locator(".ig-canonical-highlights .ig-post-toggle").first().click();
   await expect(reloaded.getByRole("textbox", { name: "精選標題" }).first()).toHaveValue("雪國旅程");
   await expect(reloaded.getByRole("textbox", { name: "精選第 3 頁替代文字" })).toHaveValue("旅程第三幕");
 });
@@ -533,6 +540,7 @@ test("collection authoring autosaves ordered post membership and survives reload
   const win = page.getByRole("dialog", { name: "Instagram.exe" });
 
   await openEditorGroup(win, "精選／合集");
+  await win.getByRole("button", { name: "貼文合集", exact: true }).click();
   await win.getByRole("button", { name: "＋ 新增合集" }).click();
   await win.getByRole("textbox", { name: "合集標題" }).fill("雪國作品集");
   await win.getByRole("textbox", { name: "合集說明" }).fill("角色在雪國旅行的作品");
@@ -555,6 +563,8 @@ test("collection authoring autosaves ordered post membership and survives reload
   await page.reload();
   const reloaded = page.getByRole("dialog", { name: "Instagram.exe" });
   await openEditorGroup(reloaded, "精選／合集");
+  await reloaded.getByRole("button", { name: "貼文合集", exact: true }).click();
+  await reloaded.locator(".ig-canonical-collections .ig-post-toggle").first().click();
   await expect(reloaded.getByRole("textbox", { name: "合集標題" })).toHaveValue("雪國作品集");
   await expect(reloaded.getByRole("textbox", { name: "合集說明" })).toHaveValue("角色在雪國旅行的作品");
   await expect(reloaded.getByRole("checkbox", { name: "公開合集" })).toBeChecked();
@@ -595,53 +605,43 @@ test("OC post filters and pending URLs stay local to each character while switch
   await expect(groups.getByRole("tab", { name: "貼文", exact: true })).toHaveAttribute("aria-selected", "true");
 
   const editor = win.locator(".ig-canonical-posts");
-  await expect(editor.locator(".ig-post-toggle")).toHaveCount(2);
+  const rows = editor.locator(".ig-post-toggle:visible");
+  const search = editor.getByRole("searchbox", { name: "貼文搜尋" });
+  const back = editor.getByRole("button", { name: "← 返回貼文", exact: true });
+  await expect(rows).toHaveCount(2);
   await testInfo.attach("desktop-oc-posts", { body: await page.screenshot(), contentType: "image/png" });
-  await editor.getByRole("searchbox", { name: "貼文搜尋" }).fill("霜月 雪地");
+  await search.fill("霜月 雪地");
+  await expandDetails(editor, "篩選");
   await editor.getByRole("combobox", { name: "貼文狀態篩選" }).selectOption("published");
   await editor.getByRole("checkbox", { name: "只看置頂貼文" }).check();
-  await expect(editor.locator(".ig-post-toggle")).toHaveCount(1);
-  await expect(editor.locator(".ig-post-toggle")).toContainText("Moon diary");
-  await expect(editor.getByRole("status")).toContainText("顯示 1 / 2 篇");
-  await expect(editor.getByRole("button", { name: "貼文往前", exact: true })).toBeDisabled();
-  await expect(editor.getByRole("button", { name: "貼文往後", exact: true })).toBeDisabled();
+  await expect(rows).toHaveCount(1); await expect(rows).toContainText("Moon diary");
+  await expect(editor.getByRole("button", { name: /^貼文往前：/ })).toBeDisabled();
   await editor.getByRole("combobox", { name: "貼文狀態篩選" }).selectOption("draft");
-  await expect(editor.locator(".ig-post-toggle")).toHaveCount(0);
-  await expect(editor.getByRole("status")).toContainText("顯示 0 / 2 篇");
+  await expect(rows).toHaveCount(0);
   await editor.getByRole("button", { name: "清除貼文篩選" }).click();
-  await expect(editor.locator(".ig-post-toggle")).toHaveCount(2);
-  await expect(editor.getByRole("button", { name: "貼文往後", exact: true }).first()).toBeEnabled();
-
-  await editor.getByRole("searchbox", { name: "貼文搜尋" }).fill("Sunset");
+  await expect(rows).toHaveCount(2);
+  await search.fill("Sunset");
   await editor.getByRole("combobox", { name: "貼文狀態篩選" }).selectOption("draft");
-  await editor.getByRole("textbox", { name: "新貼文圖片網址" }).fill("https://example.com/retro-pending.png");
-  await openEditorGroup(win, "精選／合集");
-  await openEditorGroup(win, "貼文");
-  await expect(editor.getByRole("searchbox", { name: "貼文搜尋" })).toHaveValue("Sunset");
-
-  const selection = win.getByRole("combobox", { name: "目前編輯角色" });
-  await selection.selectOption("profile:bei");
-  await expect(groups.getByRole("tab", { name: "角色資料", exact: true })).toHaveAttribute("aria-selected", "true");
-  await openEditorGroup(win, "貼文");
-  await expect(editor.getByRole("searchbox", { name: "貼文搜尋" })).toHaveValue("");
+  await rows.click();
+  await editor.getByRole("textbox", { name: "新增輪播圖片網址" }).fill("https://example.com/retro-pending.png");
+  await back.click();
+  await openEditorGroup(win, "精選／合集"); await openEditorGroup(win, "貼文");
+  await expect(search).toHaveValue("Sunset");
+  const selection = win.getByRole("combobox", { name: "此視窗入口角色" });
+  await selection.selectOption("profile:bei"); await openEditorGroup(win, "貼文");
+  await expect(search).toHaveValue("");
   await expect(editor.getByRole("combobox", { name: "貼文狀態篩選" })).toHaveValue("all");
-  await expect(editor.getByRole("checkbox", { name: "只看置頂貼文" })).not.toBeChecked();
-  await expect(editor.getByRole("textbox", { name: "新貼文圖片網址" })).toHaveValue("");
-  await expect(editor.locator(".ig-post-toggle")).toHaveCount(1);
-  await expect(editor.locator(".ig-post-toggle")).toContainText("Bei private");
-  await editor.getByRole("searchbox", { name: "貼文搜尋" }).fill("Bei");
-  await editor.getByRole("textbox", { name: "新貼文圖片網址" }).fill("https://example.com/bei-pending.png");
-
+  await expect(rows).toHaveCount(1); await rows.click();
+  await expect(editor.getByRole("textbox", { name: "新增輪播圖片網址" })).toHaveValue("");
+  await editor.getByRole("textbox", { name: "新增輪播圖片網址" }).fill("https://example.com/bei-pending.png");
+  await back.click(); await search.fill("Bei");
   await expect.poll(() => saves.at(-1)?.document.windows.find((window) => window.type === "instagram")?.content.profileRef.id).toBe("profile:bei");
-  const savesBeforeReturn = saves.length;
   await selection.selectOption("profile:ig");
-  await expect(groups.getByRole("tab", { name: "貼文", exact: true })).toHaveAttribute("aria-selected", "true");
-  await expect(editor.getByRole("searchbox", { name: "貼文搜尋" })).toHaveValue("Sunset");
+  await expect(search).toHaveValue("Sunset");
   await expect(editor.getByRole("combobox", { name: "貼文狀態篩選" })).toHaveValue("draft");
-  await expect(editor.getByRole("textbox", { name: "新貼文圖片網址" })).toHaveValue("https://example.com/retro-pending.png");
-  await expect(editor.locator(".ig-post-toggle")).toHaveCount(1);
-  await expect(editor.locator(".ig-post-toggle")).toContainText("Sunset sketch");
-  await expect.poll(() => saves.length).toBeGreaterThan(savesBeforeReturn);
+  await rows.click();
+  await expect(editor.getByRole("textbox", { name: "新增輪播圖片網址" })).toHaveValue("https://example.com/retro-pending.png");
+  await expect.poll(() => saves.at(-1)?.document.windows.find((window) => window.type === "instagram")?.content.profileRef.id).toBe("profile:ig");
   expect(saves.at(-1)?.document.entities).toEqual(document.entities);
   expect(JSON.stringify(saves.at(-1)?.document)).not.toContain("-pending.png");
 });
@@ -659,20 +659,21 @@ test("editing a filtered draft keeps its fields mounted and its public visibilit
   await openEditorGroup(win, "貼文");
   const editor = win.locator(".ig-canonical-posts");
   await editor.getByRole("searchbox", { name: "貼文搜尋" }).fill("Private sunset");
+  await expandDetails(editor, "篩選");
   await editor.getByRole("combobox", { name: "貼文狀態篩選" }).selectOption("draft");
-  await editor.locator(".ig-post-toggle").click();
+  await editor.locator(".ig-post-toggle:visible").click();
   await editor.getByRole("textbox", { name: "標題", exact: true }).fill("Later sketch");
   await expect(editor.getByRole("textbox", { name: "標題", exact: true })).toBeFocused();
   await expect(editor.getByRole("textbox", { name: "標題", exact: true })).toHaveValue("Later sketch");
-  await expect(editor.getByRole("status")).toContainText("另保留 1 篇正在編輯的貼文");
+  await expect(editor.locator(".ig-post-retained-note:visible")).toBeVisible();
   await editor.getByRole("textbox", { name: "貼文內容", exact: true }).fill("PRIVATE WORK AFTER EDIT");
   await expect(editor.getByRole("checkbox", { name: "公開顯示", exact: true })).not.toBeChecked();
   await expect.poll(() => saves.at(-1)?.document.entities.posts.find((post) => post.id === draft.id)?.caption).toBe("PRIVATE WORK AFTER EDIT");
   const saved = saves.at(-1)?.document;
   if (!saved) throw new Error("draft changes were not saved");
   expect(saved.entities.posts.find((post) => post.id === draft.id)).toMatchObject({ title: "Later sketch", visibility: "draft" });
-  await editor.locator(".ig-post-toggle").click();
-  await expect(editor.locator(".ig-post-toggle")).toHaveCount(0);
+  await editor.locator(".ig-post-toggle:visible").click();
+  await expect(editor.locator(".ig-post-toggle:visible")).toHaveCount(0);
 
   // The same canonical draft goes through the public client boundary; search must
   // never turn its visibility into permission to expose this post.
@@ -710,6 +711,7 @@ test("collection search preserves hidden selections and canonical order without 
   const saves = await mockEditor(page, document);
   const win = page.getByRole("dialog", { name: "Instagram.exe" });
   await openEditorGroup(win, "精選／合集");
+  await win.getByRole("button", { name: "貼文合集", exact: true }).click();
   const collections = win.locator(".ig-canonical-collections");
   await collections.getByRole("searchbox", { name: "搜尋合集", exact: true }).fill("Travel");
   await collections.locator(".ig-post-toggle").click();
@@ -741,6 +743,8 @@ test("collection search preserves hidden selections and canonical order without 
 
   await page.reload();
   await openEditorGroup(page.getByRole("dialog", { name: "Instagram.exe" }), "精選／合集");
+  await page.getByRole("button", { name: "貼文合集", exact: true }).click();
+  await page.locator(".ig-canonical-collections .ig-post-toggle").first().click();
   await expect(page.getByRole("checkbox", { name: "收錄 Beta draft" })).toBeChecked();
   await expect(page.getByRole("checkbox", { name: "收錄 Alpha cover" })).toBeChecked();
   await mockPublic(page, saved);
@@ -756,6 +760,7 @@ test("collection search preserves hidden selections and canonical order without 
 test("a delayed post upload stays with its original OC after the editor switches characters", async ({ page }) => {
   await page.setViewportSize({ width: 1400, height: 1000 });
   const document = ocDocument();
+  document.entities.posts.push({ ...structuredClone(document.entities.posts[0]), id: "post:bei:existing", authorProfileId: "profile:bei", title: "Bei existing", collectionIds: [], media: [] });
   const saves = await mockEditor(page, document);
   const uploadId = "22222222-2222-4222-8222-222222222222";
   const assetRef = `retro-asset:${uploadId}`;
@@ -771,18 +776,22 @@ test("a delayed post upload stays with its original OC after the editor switches
   });
   await page.route(`**/api/sites/site-1/assets/${uploadId}/content`, (route) => route.fulfill({ contentType: "image/png", body: png }));
   const win = page.getByRole("dialog", { name: "Instagram.exe" });
-  const selection = win.getByRole("combobox", { name: "目前編輯角色" });
+  const selection = win.getByRole("combobox", { name: "此視窗入口角色" });
   const editor = win.locator(".ig-canonical-posts");
   try {
     await openEditorGroup(win, "貼文");
+    await editor.getByRole("button", { name: "新增貼文", exact: true }).click();
+    await editor.getByLabel("標題", { exact: true }).fill("original-upload");
     await editor.locator('input[type="file"]').first().setInputFiles({ name: "original-upload.png", mimeType: "image/png", buffer: png });
     await expect.poll(() => uploadRequests).toBe(1);
-    await expect(editor.getByText("上傳中…", { exact: true })).toBeVisible();
+    await expect(editor.locator('[data-upload-state="uploading"]')).toBeVisible();
     await selection.selectOption("profile:bei");
     await openEditorGroup(win, "貼文");
+    await editor.locator(".ig-post-toggle:visible").first().click();
+    await editor.getByRole("textbox", { name: "新增輪播圖片網址" }).fill("https://example.com/bei-kept.png");
+    await editor.getByRole("button", { name: "← 返回貼文", exact: true }).click();
     await editor.getByRole("searchbox", { name: "貼文搜尋" }).fill("Bei search in progress");
-    await editor.getByRole("textbox", { name: "新貼文圖片網址" }).fill("https://example.com/bei-kept.png");
-    await expect(editor.getByText("上傳中…", { exact: true })).toHaveCount(0);
+    await expect(editor.locator('[data-upload-state="uploading"]')).toHaveCount(0);
 
     releaseUpload();
     await expect.poll(() => saves.at(-1)?.document.entities.posts.filter((post) => post.media.some((media) => media.src === assetRef)).length).toBe(1);
@@ -793,12 +802,12 @@ test("a delayed post upload stays with its original OC after the editor switches
     expect(saved?.windows.find((window) => window.type === "instagram")?.content.profileRef.id).toBe("profile:bei");
     await expect(selection).toHaveValue("profile:bei");
     await expect(editor.getByRole("searchbox", { name: "貼文搜尋" })).toHaveValue("Bei search in progress");
-    await expect(editor.getByRole("textbox", { name: "新貼文圖片網址" })).toHaveValue("https://example.com/bei-kept.png");
-    await expect(editor.locator(".ig-post-toggle")).toHaveCount(0);
+    await expect(editor.locator('input[aria-label="新增輪播圖片網址"]')).toHaveValue("https://example.com/bei-kept.png");
+    await expect(editor.locator(".ig-post-toggle:visible")).toHaveCount(0);
 
     await selection.selectOption("profile:ig");
     await expect(editor.getByRole("textbox", { name: "標題", exact: true })).toHaveValue("original-upload");
-    await expect(editor.getByText("上傳中…", { exact: true })).toHaveCount(0);
+    await expect(editor.locator('[data-upload-state="uploading"]')).toHaveCount(0);
     await expect(editor.getByRole("checkbox", { name: "公開顯示", exact: true })).not.toBeChecked();
   } finally {
     releaseUpload();
@@ -826,12 +835,13 @@ test("a delayed highlight upload cannot append a page after its original OC is d
   });
   await page.route(`**/api/sites/site-1/assets/${uploadId}/content`, (route) => route.fulfill({ contentType: "image/png", body: png }));
   const win = page.getByRole("dialog", { name: "Instagram.exe" });
-  const selection = win.getByRole("combobox", { name: "目前編輯角色" });
+  const selection = win.getByRole("combobox", { name: "此視窗入口角色" });
   const editor = win.locator(".ig-canonical-highlights");
   const row = editor.locator("article.ig-canonical-post").first();
   try {
     await openEditorGroup(win, "精選／合集");
     await expect(row.locator(".ig-post-toggle")).toContainText(highlight.title);
+    await row.locator(".ig-post-toggle").click();
     const uploadControl = row.getByRole("group", { name: "精選圖片上傳" });
     await uploadControl.locator('input[type="file"]').setInputFiles({ name: "retargeted-highlight-upload.png", mimeType: "image/png", buffer: png });
     await expect.poll(() => uploadRequests).toBe(1);

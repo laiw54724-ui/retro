@@ -425,5 +425,22 @@
     "omitted": "{{count}} file(s) were not queued because this post or highlight has no free image slots. Cancel or dismiss pending/failed tasks, or remove an image, then choose the files again.",
     "draftHint": "Uploading creates an editable draft immediately. Successful images are kept; retry or cancel each file below. You can delete an empty draft if you cancel all files.",
     "uploadPages": "Upload pages (multiple allowed)"
+  },
+  "editorFlow": {
+    "entryCharacter": "This window’s entry character",
+    "manageCharacters": "Manage characters ({{count}})",
+    "newPost": "New post",
+    "backPosts": "← Back to posts",
+    "filters": "Filters",
+    "edit": "Edit",
+    "datePlace": "Date and location",
+    "highlights": "Highlights",
+    "collections": "Post collections",
+    "organizeContent": "Content type",
+    "backHighlights": "← Back to highlights",
+    "backCollections": "← Back to collections",
+    "backEditing": "← Back to editing",
+    "pendingStatus": "Unfinished IG input is not saved; it is retained only in this tab.",
+    "retainedDrafts": "Unfinished fields stay in this browser tab until it is reloaded."
   }
 }

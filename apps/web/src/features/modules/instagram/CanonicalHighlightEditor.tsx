@@ -1,5 +1,8 @@
+import { IgImageUrlField as ImageUrlField } from "./IgImageUrlField";
+import { useIgSessionValue } from "./useIgSessionValue";
 import { useId } from "react";
 import sourceStyles from "./ImageSourceFields.module.css";
+import { useIgEntityEditor } from "./useIgEntityEditor";
 import { translateSystemMessage } from "../../../i18n/systemMessages";
 import { useTranslation } from "react-i18next";
 import {
@@ -15,7 +18,7 @@ import {
   type SiteDocumentV2Input,
 } from "@retrodesk/shared";
 import type { ModuleProps } from "../types";
-import { FilePick, ImageUrlField, SafeImg } from "../ui";
+import { FilePick, SafeImg } from "../ui";
 import { useIgMedia } from "./useIgMedia";
 import { igEditorScope, useIgEditorState } from "./useIgEditorState";
 
@@ -29,9 +32,9 @@ export function CanonicalHighlightEditor({ props }: Props) {
   const highlights = ctx.profileDirectory?.find((entry) => entry.id === profileId)?.highlights ?? [];
   const scope = `${igEditorScope(props)}:highlights`;
   const editorId = useId();
-  const [openId, setOpenId] = useIgEditorState<string | null>(scope, highlights[0]?.id ?? null);
+  const { root, openId, setOpenId, wasOpened } = useIgEntityEditor(scope, highlights.map((item) => item.id));
   const [query, setQuery] = useIgEditorState(scope, "");
-  const [urls, setUrls] = useIgEditorState<Record<string, string>>(scope, {});
+  const [urls, setUrls] = useIgSessionValue<Record<string, string>>(`${scope}:frame-urls`, {});
   const [error, setError] = useIgEditorState(scope, "");
   const media = useIgMedia(props);
   const search = query.normalize("NFKC").trim().toLowerCase();
@@ -67,7 +70,9 @@ export function CanonicalHighlightEditor({ props }: Props) {
     }, { siteId }), document);
   });
 
-  return <fieldset className="w98-fieldset ig-canonical-highlights"><legend>{tr("ig.highlightsCount", { count: highlights.length })}</legend>
+  return <fieldset ref={root} className="w98-fieldset ig-canonical-highlights"><legend>{tr("ig.highlightsCount", { count: highlights.length })}</legend>
+      {openId ? <button data-ig-back type="button" className="w98-btn small" onClick={() => setOpenId(null)}>{tr("editorFlow.backHighlights")}</button> : null}
+      <div hidden={!!openId} className="ig-list-tools">
     <div className="ie-row">
       <button type="button" className="w98-btn small" onClick={() => {
         const id = `highlight:${crypto.randomUUID()}`;
@@ -87,22 +92,25 @@ export function CanonicalHighlightEditor({ props }: Props) {
     <p className="ig-editor-summary" role="status">{tr("ig.highlightSummary", { matching: matchingHighlights.length, total: highlights.length, published: publishedCount, drafts: highlights.length - publishedCount })}{retainedEditor ? tr("ig.highlightRetained") : ""}</p>
     {query ? <button type="button" className="w98-btn small" onClick={() => setQuery("")}>{tr("canonicalHighlightEditor.clearHighlightSearch")}</button> : null}
     {search ? <p className="w98-hint" id={`${editorId}-order-hint`}>{tr("canonicalHighlightEditor.clearTheSearchToReorder")}</p> : null}
+      </div>
     {error ? <div role="alert" className="ie-error">{error}</div> : null}
     {!highlights.length ? <p className="ig-editor-empty">{tr("canonicalHighlightEditor.noHighlightsYetAddOne")}</p> : !visibleHighlights.length ? <p className="ig-editor-empty">{tr("canonicalHighlightEditor.noHighlightsMatchTheSearch")}</p> : null}
-    {visibleHighlights.map((highlight) => {
+    {highlights.map((highlight) => {
       const highlightIndex = highlights.findIndex((candidate) => candidate.id === highlight.id);
       const expanded = openId === highlight.id;
       const bodyId = `${editorId}-${highlight.id}`;
-      return <article key={highlight.id} className="ig-canonical-post">
+      return <article key={highlight.id} className="ig-canonical-post" hidden={openId ? !expanded : !visibleHighlights.includes(highlight)}>
         <div className="ig-post-row">
           <span className="ig-thumb round ph">{highlight.coverSrc ? <SafeImg src={highlight.coverSrc} alt={highlight.coverAlt} compact style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : null}</span>
-          <button type="button" className="ig-post-toggle" aria-expanded={expanded} aria-controls={expanded ? bodyId : undefined} onClick={() => setOpenId(expanded ? null : highlight.id)}><span>{expanded ? "▾" : "▸"} {highlight.title || tr("canonicalHighlightEditor.untitledHighlight")}</span><small>{tr("ig.highlightMeta", { count: highlight.frames.length, status: highlight.visibility === "published" ? tr("canonicalCollectionEditor.public") : tr("canonicalCollectionEditor.draft") })}</small></button>
-          <button type="button" className="mini-btn" aria-label={tr("canonicalHighlightEditor.moveHighlightUp")} aria-describedby={search ? `${editorId}-order-hint` : undefined} disabled={!!search || highlightIndex === 0} onClick={() => mutate((document) => run(reorderHighlight(document, highlight.id, -1, { siteId }), document))}>▲</button>
-          <button type="button" className="mini-btn" aria-label={tr("canonicalHighlightEditor.moveHighlightDown")} aria-describedby={search ? `${editorId}-order-hint` : undefined} disabled={!!search || highlightIndex === highlights.length - 1} onClick={() => mutate((document) => run(reorderHighlight(document, highlight.id, 1, { siteId }), document))}>▼</button>
+          <button type="button" className="ig-post-toggle" data-ig-edit={highlight.id} aria-expanded={expanded} aria-controls={expanded ? bodyId : undefined} onClick={() => setOpenId(expanded ? null : highlight.id)}><span>{tr("editorFlow.edit")} · {highlight.title || tr("canonicalHighlightEditor.untitledHighlight")}</span><small>{tr("ig.highlightMeta", { count: highlight.frames.length, status: highlight.visibility === "published" ? tr("canonicalCollectionEditor.public") : tr("canonicalCollectionEditor.draft") })}</small></button>
+          <div className="ig-item-actions">
+          <button type="button" className="mini-btn" aria-label={`${tr("canonicalHighlightEditor.moveHighlightUp")}：${highlight.title || tr("canonicalHighlightEditor.untitledHighlight")}`} aria-describedby={search ? `${editorId}-order-hint` : undefined} disabled={!!search || highlightIndex === 0} onClick={() => mutate((document) => run(reorderHighlight(document, highlight.id, -1, { siteId }), document))}>▲</button>
+          <button type="button" className="mini-btn" aria-label={`${tr("canonicalHighlightEditor.moveHighlightDown")}：${highlight.title || tr("canonicalHighlightEditor.untitledHighlight")}`} aria-describedby={search ? `${editorId}-order-hint` : undefined} disabled={!!search || highlightIndex === highlights.length - 1} onClick={() => mutate((document) => run(reorderHighlight(document, highlight.id, 1, { siteId }), document))}>▼</button>
           <button type="button" className="mini-btn danger" aria-label={tr("ig.deleteHighlight", { title: highlight.title || tr("ig.untitledHighlightShort") })} onClick={() => mutate((document) => run(deleteHighlight(document, highlight.id, { siteId }), document))}>×</button>
+          </div>
         </div>
         {media.taskList("highlight", highlight.id)}
-        {expanded ? <div id={bodyId} className="ig-post-body ig-canonical-post-fields">
+        {wasOpened(highlight.id) ? <div hidden={!expanded} id={bodyId} className="ig-post-body ig-canonical-post-fields">
           <label className="w98-field"><span className="w98-hint">{tr("canonicalHighlightEditor.highlightTitle")}</span><input className="w98-input compact" maxLength={40} value={highlight.title} onChange={(event) => mutate((document) => run(updateHighlight(document, highlight.id, { title: event.target.value }, { siteId }), document), `highlight-title-${highlight.id}`)} /></label>
           <label className="check-row"><input type="checkbox" checked={highlight.visibility === "published"} onChange={(event) => mutate((document) => run(updateHighlight(document, highlight.id, { visibility: event.target.checked ? "published" : "draft" }, { siteId }), document))} />{tr("canonicalHighlightEditor.showPublicly")}</label>
           {!highlight.frames.length ? <p className="ig-editor-empty">{tr("canonicalHighlightEditor.noHighlightPagesYetAdd")}</p> : null}
@@ -110,7 +118,7 @@ export function CanonicalHighlightEditor({ props }: Props) {
             <span className="ig-thumb sq48 ph">{frame.src ? <SafeImg src={frame.src} alt={frame.alt} compact style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : null}</span>
             <div className="ig-col grow">
               <strong>{tr("ig.frameHeading", { n: frameIndex + 1, cover: frameIndex === 0 ? tr("canonicalHighlightEditor.cover") : "" })}</strong>
-              <ImageUrlField visibleLabel raw={frame.srcUrl} label={tr("imageControls.highlightPageUrl", { n: frameIndex + 1 })} placeholder={tr("canonicalHighlightEditor.orPasteAnImageUrl")} className="w98-input compact" onCommit={(raw, src) => mutate((document) => run(updateHighlightFrame(document, highlight.id, frame.id, { src, srcUrl: raw }, { siteId }), document))} />
+              <ImageUrlField draftKey={`${scope}:${highlight.id}:${frame.id}:source`} visibleLabel raw={frame.srcUrl} label={tr("imageControls.highlightPageUrl", { n: frameIndex + 1 })} placeholder={tr("canonicalHighlightEditor.orPasteAnImageUrl")} className="w98-input compact" onCommit={(raw, src) => mutate((document) => run(updateHighlightFrame(document, highlight.id, frame.id, { src, srcUrl: raw }, { siteId }), document))} />
               <input className="w98-input compact" aria-label={tr("canonicalHighlightEditor.altTextForHighlightPage", { v1: frameIndex + 1 })} value={frame.alt} placeholder={tr("canonicalHighlightEditor.altText")} onChange={(event) => mutate((document) => run(updateHighlightFrame(document, highlight.id, frame.id, { alt: event.target.value }, { siteId }), document), `highlight-alt-${frame.id}`)} />
               <textarea className="w98-textarea" rows={2} aria-label={tr("canonicalHighlightEditor.textForHighlightPage", { v1: frameIndex + 1 })} value={frame.text} placeholder={tr("canonicalHighlightEditor.optionalShortText")} onChange={(event) => mutate((document) => run(updateHighlightFrame(document, highlight.id, frame.id, { text: event.target.value }, { siteId }), document), `highlight-text-${frame.id}`)} />
             </div>

@@ -1,9 +1,10 @@
-import { useId, useState, type KeyboardEvent } from "react";
+import { useId, useState, useRef, useLayoutEffect, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import type { ModuleProps } from "../types";
 import { IgEditorWorkspace, IgSkinPicker } from "./IgEditorWorkspace";
 import { IgEditForm } from "./IgEditForm";
 import { IgPreview } from "./IgPreview";
+import { useIgHasPendingDrafts } from "./useIgSessionValue";
 import styles from "./ocEditor.module.css";
 
 export function IgView({ window, ctx }: ModuleProps<"instagram">) {
@@ -13,8 +14,26 @@ export function IgView({ window, ctx }: ModuleProps<"instagram">) {
 
 export function IgInlineEditor(props: ModuleProps<"instagram">) {
   const { t: tr } = useTranslation("instagram");
+  const hasPendingDrafts = useIgHasPendingDrafts();
+  const showedPending = useRef(false);
+  if (hasPendingDrafts) showedPending.current = true;
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   const id = useId();
+  const editPanel = useRef<HTMLDivElement>(null);
+  const lastInput = useRef<HTMLElement | null>(null);
+  const savedScroll = useRef(0);
+  const wasPreview = useRef(false);
+  useLayoutEffect(() => {
+    if (tab === "edit" && wasPreview.current) {
+      const scroll = editPanel.current?.querySelector<HTMLElement>(".ig-edit-scroll");
+      if (scroll) scroll.scrollTop = savedScroll.current;
+    }
+    wasPreview.current = tab === "preview";
+  }, [tab]);
+  const changeMode = (next: "edit" | "preview") => {
+    if (next === "preview") savedScroll.current = editPanel.current?.querySelector<HTMLElement>(".ig-edit-scroll")?.scrollTop ?? 0;
+    setTab(next);
+  };
   const canonical = !!(props.ctx.updateContent && props.ctx.onProfileChange && props.ctx.profiles?.some((profile) => profile.id === props.ctx.profileId));
   const tabs = [["edit", tr("instagram.editContent")], ["preview", tr("instagram.previewInteractions")]] as const;
   const onModeKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
@@ -22,7 +41,7 @@ export function IgInlineEditor(props: ModuleProps<"instagram">) {
       : event.key === "ArrowLeft" || event.key === "ArrowRight" ? 1 - index : null;
     if (next === null) return;
     event.preventDefault();
-    setTab(tabs[next][0]);
+    changeMode(tabs[next][0]);
     event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next]?.focus();
   };
 
@@ -30,16 +49,23 @@ export function IgInlineEditor(props: ModuleProps<"instagram">) {
     <div role="tablist" aria-label={tr("instagram.instagramEditMode")} className="w98-tabs ig-modes">
       {tabs.map(([key, label], index) => <button key={key} id={`${id}-${key}-tab`} type="button" role="tab" className="w98-tab"
         aria-selected={tab === key} aria-controls={`${id}-${key}-panel`} tabIndex={tab === key ? 0 : -1}
-        onKeyDown={(event) => onModeKeyDown(event, index)} onClick={() => setTab(key)}>{label}</button>)}
-      <span className="ig-mode-hint">{tab === "edit" ? tr("instagram.whenYoureDoneSwitchTo") : tr("instagram.draftPreviewIncludingUnpublishedContent")}</span>
+        onKeyDown={(event) => onModeKeyDown(event, index)} onClick={() => changeMode(key)}>{label}</button>)}
+      {tab === "preview" ? <span className="ig-mode-hint">{tr("instagram.draftPreviewIncludingUnpublishedContent")}</span> : null}
     </div>
-    <div role="tabpanel" id={`${id}-edit-panel`} aria-labelledby={`${id}-edit-tab`} hidden={tab !== "edit"} className={styles.modePanel}>
+    {showedPending.current ? <small className="w98-hint" role={hasPendingDrafts ? "status" : undefined} style={{ visibility: hasPendingDrafts ? "visible" : "hidden" }} data-ig-pending-drafts>{tr("editorFlow.pendingStatus")}</small> : null}
+    <div ref={editPanel} onFocusCapture={(event) => { lastInput.current = event.target as HTMLElement; }} role="tabpanel" id={`${id}-edit-panel`} aria-labelledby={`${id}-edit-tab`} hidden={tab !== "edit"} className={styles.modePanel}>
       {canonical ? <IgEditorWorkspace {...props} /> : <>
         <IgSkinPicker {...props} />
         <div className="ig-edit-scroll w98-scroll" tabIndex={0} aria-label={tr("igEditorWorkspace.instagramContentEditor")}><IgEditForm {...props} /></div>
       </>}
     </div>
     <div role="tabpanel" id={`${id}-preview-panel`} aria-labelledby={`${id}-preview-tab`} hidden={tab !== "preview"} className={`ig-frame-inner ${styles.modePanel}`}>
+      <button type="button" className="w98-btn small" onClick={() => {
+        changeMode("edit");
+        requestAnimationFrame(() => {
+          if (lastInput.current?.isConnected && !lastInput.current.closest("[hidden]")) lastInput.current.focus({ preventScroll: true });
+        });
+      }}>{tr("editorFlow.backEditing")}</button>
       {tab === "preview" ? <IgPreview window={props.window} ctx={props.ctx} /> : null}
     </div>
   </div>;

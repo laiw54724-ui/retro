@@ -1,4 +1,5 @@
-import { useRef, useState } from "react";
+import { useIgSessionValue } from "./useIgSessionValue";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ProfileEntityV2 } from "@retrodesk/shared";
 import { ProfileAvatarEditor } from "./ProfileAvatarEditor";
@@ -23,11 +24,9 @@ export function ProfileEditor({ siteId, windowId, profile, profiles = [], draftS
   const [advanced, setAdvanced] = useState(false);
   // Custom fields have no persisted ID. Keep row identity local to this editor
   // so changing a field name does not remount its input during typing/IME.
-  const rowsByProfile = useRef(new Map<string, string[]>());
-  const rowIds = rowsByProfile.current.get(draftScope) ?? [];
+  const [rowIds] = useIgSessionValue<string[]>(`${draftScope}:custom-row-ids`, []);
   while (rowIds.length < profile.customFields.length) rowIds.push(crypto.randomUUID());
   rowIds.length = profile.customFields.length;
-  rowsByProfile.current.set(draftScope, rowIds);
   const set = (key: string, value: unknown, historyKey?: string) => onChange({ [key]: value }, historyKey);
   return (
     <div className="ig-profile-editor">
