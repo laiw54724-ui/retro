@@ -54,6 +54,10 @@ function loadedLegacyDocument(loaded: ReturnType<typeof loadVersionedSiteDocumen
 const SIDEBAR_PREFERENCES_KEY = "retrodesk:editor-sidebars";
 
 type SidebarPreferences = { leftExpanded: boolean; rightExpanded: boolean };
+type ErrorFallback = "editor.saveFailed" | "editor.publishingFailed" | "editor.anUpdateFromAnotherTab" |
+  "editor.reloadFailed" | "page.assetMigrationFailed" | "editor.failedToDeleteTheAsset" |
+  "editor.thisAssetStillHasA" | "editor.couldntReScanAssets" | "editor.syncRetryFailed";
+type EditorMessage = string | { code?: string; fallback: ErrorFallback; assetName?: string };
 
 function loadSidebarPreferences(): SidebarPreferences {
   const fallback = { leftExpanded: true, rightExpanded: true };
@@ -82,7 +86,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   const saveInFlight = useRef(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
-  const [message, setMessage] = useState<string | { code?: string; fallback: "editor.saveFailed" | "editor.publishingFailed" }>("");
+  const [message, setMessage] = useState<EditorMessage>("");
   const [conflict, setConflict] = useState(false);
   // IME composition in progress anywhere on the page: autosave waits so a half-composed fragment is never written.
   const [composing, setComposing] = useState(false);
@@ -276,7 +280,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
           navigate(`/auth?notice=${encodeURIComponent(t("page.lostEditAccess"))}`, { replace: true });
         } else if (error instanceof ApiError && error.code === "version_conflict") {
           setConflict(true);
-          setMessage(t("editor.anUpdateFromAnotherTab"));
+          setMessage({ fallback: "editor.anUpdateFromAnotherTab" });
         } else {
           setMessage({ code: error instanceof ApiError ? error.code : undefined, fallback: "editor.saveFailed" });
         }
@@ -438,7 +442,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       setConflict(false);
       setMessage(t("editor.reloadedTheLatestCloudDraft"));
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : t("editor.reloadFailed"));
+      setMessage({ code: error instanceof ApiError ? error.code : undefined, fallback: "editor.reloadFailed" });
     } finally {
       setLoading(false);
     }
@@ -494,7 +498,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     } catch (error) {
       const assetId = error instanceof ApiError && error.details && typeof error.details === "object" && "assetId" in error.details ? String((error.details as { assetId: unknown }).assetId) : "";
       const asset = assetInventory.find((item) => item.id === assetId);
-      setMessage(`${error instanceof Error ? error.message : t("page.assetMigrationFailed")}${asset ? t("page.assetSuffix", { name: asset.name || asset.id }) : ""}`);
+      setMessage({ code: error instanceof ApiError ? error.code : undefined, fallback: "page.assetMigrationFailed", assetName: asset ? asset.name || asset.id : undefined });
       setAssetInventoryOpen(true);
     }
     finally { setMigratingAssets(false); }
@@ -510,8 +514,8 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     } catch (error) {
       const code = error instanceof ApiError ? error.code : "";
       setMessage(code === "asset_public_copy_pending"
-        ? t("editor.thisAssetStillHasA")
-        : error instanceof Error ? error.message : t("editor.failedToDeleteTheAsset"));
+        ? { fallback: "editor.thisAssetStillHasA" }
+        : { code: error instanceof ApiError ? error.code : undefined, fallback: "editor.failedToDeleteTheAsset" });
     } finally {
       setDeletingAssetId(null);
     }
@@ -580,7 +584,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
       {message ? (
         <div className="editor-message" role="alert">
-          <span>{typeof message === "string" ? message : translateError(message, errorT, t(message.fallback))}</span>
+          <span>{typeof message === "string" ? message : <>{translateError(message, errorT, t(message.fallback))}{message.assetName ? t("page.assetSuffix", { name: message.assetName }) : null}</>}</span>
           {store.saveStatus === "error" && !conflict ? <button onClick={store.retrySave}>{t("shell.retrySave")}</button> : null}
           <button aria-label={t("shell.closeNotice")} onClick={() => setMessage("")}>×</button>
         </div>
@@ -616,7 +620,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
               </li>)}
             </ul> : <p role="status">{t("editor.noLegacyAssetsNeedMigration")}</p>}
             <div className="button-row end">
-              <RetroButton onClick={() => void refreshAssetInventory().catch((error) => setMessage(error instanceof Error ? error.message : t("editor.couldntReScanAssets")))}>{t("editor.reScan")}</RetroButton>
+              <RetroButton onClick={() => void refreshAssetInventory().catch((error) => setMessage({ code: error instanceof ApiError ? error.code : undefined, fallback: "editor.couldntReScanAssets" }))}>{t("editor.reScan")}</RetroButton>
               {legacyAssets.length && actions.migrateAssets ? <RetroButton className="primary" disabled={migratingAssets || store.saveStatus === "saving" || store.saveStatus === "error" || conflict} onClick={migrateLegacyAssets}>{migratingAssets ? t("editor.migrating") : t("editor.convertToPrivate", { length: legacyAssets.length })}</RetroButton> : null}
               <RetroButton onClick={() => setAssetInventoryOpen(false)}>{t("editor.close")}</RetroButton>
             </div>
@@ -749,7 +753,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
                   try {
                     const result = await api.retryPublish(siteId);
                     setPublishSuccess((current) => current ? { ...current, artifactStatus: result.artifactStatus, retryable: result.retryable } : current);
-                  } catch (error) { setMessage(error instanceof Error ? error.message : t("editor.syncRetryFailed")); }
+                  } catch (error) { setMessage({ code: error instanceof ApiError ? error.code : undefined, fallback: "editor.syncRetryFailed" }); }
                 }}>{t("editor.retrySync")}</RetroButton> : null}
                 <a className="retro-link" href={publishSuccess.url} target="_blank" rel="noreferrer">{t("editor.openSite")}</a>
                 <RetroButton className="primary" onClick={() => setPublishSuccess(null)}>{t("editor.done")}</RetroButton>
