@@ -1,0 +1,19 @@
+{
+  "basePR": 128,
+  "baseHead": "976c217d76eb792e9f1bb270a664af7f65f00f32",
+  "runtime": "9dded7664e58f76a1e1afa6fc4addea16f985402",
+  "runtimeTree": "f2b5eb5b19dc6921eee18cad6f483e7fe8fb1ca4",
+  "branch": "codex/image-staging-rollout-51",
+  "webTests": 35,
+  "apiTests": 21,
+  "nodeBuildMatrixTests": 3,
+  "chromiumCases": 10,
+  "skips": 0,
+  "retries": 0,
+  "committedEnabled": false,
+  "activated": false,
+  "deployed": false,
+  "userApproval": "conditional staging-only basic activation after compatibility/privacy acceptance; parent receipt2026-10-19T18:06:08Z",
+  "independentReview": "NODE_ENV/DEV P1 source finding corrected and cleared; reviewer ran no tests",
+  "liveAcceptance": "not run; release owner after127; normal-session403stop retained"
+}

@@ -1,5 +1,10 @@
 /// <reference types="vite/client" />
 
+declare const __RETRO_IMAGE_STAGING_ROLLOUT__: {
+  enabled: boolean; webOrigin: string | null; apiOrigin: string | null;
+};
+declare const __RETRO_IMAGE_DEV_SERVER__: boolean;
+
 interface ImportMetaEnv {
   readonly VITE_API_URL: string;
   readonly VITE_SUPABASE_URL: string;
