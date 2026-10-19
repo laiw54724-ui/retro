@@ -16,6 +16,7 @@ import {
 } from "@retrodesk/shared";
 import type { ModuleProps } from "../types";
 import { FilePick, ImageUrlField, SafeImg } from "../ui";
+import { useIgMedia } from "./useIgMedia";
 import { igEditorScope, useIgEditorState } from "./useIgEditorState";
 
 type Props = { props: ModuleProps<"instagram"> };
@@ -32,7 +33,7 @@ export function CanonicalHighlightEditor({ props }: Props) {
   const [query, setQuery] = useIgEditorState(scope, "");
   const [urls, setUrls] = useIgEditorState<Record<string, string>>(scope, {});
   const [error, setError] = useIgEditorState(scope, "");
-  const [uploading, setUploading] = useIgEditorState<Record<string, boolean>>(scope, {});
+  const media = useIgMedia(props);
   const search = query.normalize("NFKC").trim().toLowerCase();
   const matches = (title: string) => title.normalize("NFKC").toLowerCase().includes(search);
   const matchingHighlights = highlights.filter((highlight) => matches(highlight.title));
@@ -65,18 +66,6 @@ export function CanonicalHighlightEditor({ props }: Props) {
       id: `frame:${crypto.randomUUID()}`, src, srcUrl, alt: "", text: "",
     }, { siteId }), document);
   });
-  const uploadFrame = async (highlightId: string, file: File) => {
-    if (uploading[highlightId]) return;
-    setError("");
-    setUploading((current) => ({ ...current, [highlightId]: true }));
-    try {
-      const src = await ctx.upload?.(file, "image");
-      if (src) addFrame(highlightId, src, "");
-      else setError(tr("canonicalHighlightEditor.imageUploadFailedPleaseTry"));
-    } catch {
-      setError(tr("canonicalHighlightEditor.imageUploadFailedPleaseTry"));
-    } finally { setUploading((current) => ({ ...current, [highlightId]: false })); }
-  };
 
   return <fieldset className="w98-fieldset ig-canonical-highlights"><legend>{tr("ig.highlightsCount", { count: highlights.length })}</legend>
     <div className="ie-row">
@@ -112,6 +101,7 @@ export function CanonicalHighlightEditor({ props }: Props) {
           <button type="button" className="mini-btn" aria-label={tr("canonicalHighlightEditor.moveHighlightDown")} aria-describedby={search ? `${editorId}-order-hint` : undefined} disabled={!!search || highlightIndex === highlights.length - 1} onClick={() => mutate((document) => run(reorderHighlight(document, highlight.id, 1, { siteId }), document))}>▼</button>
           <button type="button" className="mini-btn danger" aria-label={tr("ig.deleteHighlight", { title: highlight.title || tr("ig.untitledHighlightShort") })} onClick={() => mutate((document) => run(deleteHighlight(document, highlight.id, { siteId }), document))}>×</button>
         </div>
+        {media.taskList("highlight", highlight.id)}
         {expanded ? <div id={bodyId} className="ig-post-body ig-canonical-post-fields">
           <label className="w98-field"><span className="w98-hint">{tr("canonicalHighlightEditor.highlightTitle")}</span><input className="w98-input compact" maxLength={40} value={highlight.title} onChange={(event) => mutate((document) => run(updateHighlight(document, highlight.id, { title: event.target.value }, { siteId }), document), `highlight-title-${highlight.id}`)} /></label>
           <label className="check-row"><input type="checkbox" checked={highlight.visibility === "published"} onChange={(event) => mutate((document) => run(updateHighlight(document, highlight.id, { visibility: event.target.checked ? "published" : "draft" }, { siteId }), document))} />{tr("canonicalHighlightEditor.showPublicly")}</label>
@@ -129,8 +119,12 @@ export function CanonicalHighlightEditor({ props }: Props) {
             <button type="button" className="mini-btn danger" aria-label={tr("canonicalHighlightEditor.deleteHighlightPage", { v1: frameIndex + 1 })} onClick={() => mutate((document) => run(deleteHighlightFrame(document, highlight.id, frame.id, { siteId }), document))}>×</button>
           </div>)}
           {highlight.frames.length < 50 ? <div className="ie-row">
-            <fieldset className="ig-upload-control" aria-label={tr("canonicalHighlightEditor.uploadHighlightImages")} disabled={!!uploading[highlight.id] || !ctx.upload} aria-busy={!!uploading[highlight.id]}>
-              <FilePick className="w98-btn small" onFiles={(files) => { const file = files[0]; if (file) void uploadFrame(highlight.id, file); }}>{uploading[highlight.id] ? tr("canonicalHighlightEditor.uploading") : tr("canonicalHighlightEditor.uploadANewPage")}</FilePick>
+            <fieldset className="ig-upload-control" aria-label={tr("canonicalHighlightEditor.uploadHighlightImages")} disabled={!media.canUpload} aria-busy={media.isPending("highlight", highlight.id)}>
+            <FilePick multiple disabled={!media.canUpload} className="w98-btn small" onFiles={(files) => {
+              setError("");
+              const omitted = media.upload("highlight", highlight.id, files);
+              if (omitted) setError(tr("batchMedia.omitted", { count: omitted }));
+            }}>{tr("batchMedia.uploadPages")}</FilePick>
             </fieldset>
             <label className={`ig-col grow ${sourceStyles.url}`}><span className="w98-hint">{tr("canonicalHighlightEditor.addHighlightPageImageUrl")}</span><input className="w98-input compact" aria-label={tr("canonicalHighlightEditor.addHighlightPageImageUrl")} value={urls[highlight.id] ?? ""} placeholder={tr("canonicalHighlightEditor.orPasteAnImageUrl")} onChange={(event) => setUrls((current) => ({ ...current, [highlight.id]: event.target.value }))} /></label>
             <button type="button" className="w98-btn small" onClick={() => {

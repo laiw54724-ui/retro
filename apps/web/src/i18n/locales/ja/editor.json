@@ -540,6 +540,8 @@
     "theAvatarCouldntBeLoaded": "アイコン画像を読み込めません"
   },
   "editorMedia": {
+    "cancelFile": "{{name}} をキャンセル",
+    "cancelUpload": "アップロードをキャンセル",
     "youLeftTheEditorThe": "エディターを離れたため、未完了のアップロードは適用されませんでした。",
     "queued": "待機中",
     "uploading": "アップロード中",

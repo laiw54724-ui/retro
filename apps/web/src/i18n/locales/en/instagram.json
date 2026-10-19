@@ -419,5 +419,11 @@
     "removeAvatar": "Remove avatar",
     "sourceChanged": "Avatar source changed or upload cancelled. The previous image is kept.",
     "highlightPageUrl": "Highlight page {{n}} image URL"
+  },
+  "batchMedia": {
+    "cancelled": "Upload cancelled. Successful images are kept.",
+    "omitted": "{{count}} file(s) were not queued because this post or highlight has no free image slots. Cancel or dismiss pending/failed tasks, or remove an image, then choose the files again.",
+    "draftHint": "Uploading creates an editable draft immediately. Successful images are kept; retry or cancel each file below. You can delete an empty draft if you cancel all files.",
+    "uploadPages": "Upload pages (multiple allowed)"
   }
 }
