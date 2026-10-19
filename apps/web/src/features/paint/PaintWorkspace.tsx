@@ -3,6 +3,7 @@ import { DEFAULT_SIZE, PaintEngine, type PaintOptions, type PaintPoint, type Pai
 import { PaintPointerController } from "./pointer";
 import { nextKeyboardCursor } from "./keyboardCursor";
 import { englishPaintLabels, type PaintLabels } from "./operationLabels";
+import { decodeLocalImage, importFailure, PaintImportError } from "./localImageImport";
 import styles from "./PaintWorkspace.module.css";
 
 const TOOLS: PaintTool[] = ["pencil", "eraser", "line", "rectangle", "ellipse", "picker"];
@@ -40,6 +41,8 @@ export function PaintWorkspace({ labels = englishPaintLabels, initialSize = DEFA
   const [preset, setPreset] = useState(`${initialSize.width}x${initialSize.height}`);
   const [status, setStatus] = useState<EngineStatus>(initialStatus);
   const [notice, setNotice] = useState(labels.ready);
+  const [importing, setImporting] = useState(false);
+  const importRequest = useRef<AbortController | null>(null);
   const [keyboardCursor, setKeyboardCursor] = useState<PaintPoint | null>(null);
   const cursorRef = useRef<PaintPoint>({ x: 0, y: 0 });
   const keyboardDrawing = useRef(false);
@@ -72,6 +75,8 @@ export function PaintWorkspace({ labels = englishPaintLabels, initialSize = DEFA
     readyRef.current?.(engine);
     sync();
     return () => {
+      importRequest.current?.abort();
+      importRequest.current = null;
       controller.dispose();
       window.removeEventListener("resize", resize);
       readyRef.current?.(null);
@@ -89,12 +94,55 @@ export function PaintWorkspace({ labels = englishPaintLabels, initialSize = DEFA
     sync();
   };
 
-  const undo = () => { finishKeyboardStroke(true); engineRef.current?.undo(); sync(); };
-  const redo = () => { finishKeyboardStroke(true); engineRef.current?.redo(); sync(); };
+  const cancelImport = (announce = true) => {
+    if (!importRequest.current) return;
+    importRequest.current.abort();
+    importRequest.current = null;
+    setImporting(false);
+    if (announce) setNotice(labels.importCancelled);
+  };
+
+  const importFile = async (file: File) => {
+    cancelImport(false);
+    finishKeyboardStroke(true);
+    const request = new AbortController();
+    importRequest.current = request;
+    setImporting(true);
+    setNotice(labels.importing);
+    try {
+      const bitmap = await decodeLocalImage(file, request.signal);
+      try {
+        if (request.signal.aborted || importRequest.current !== request) return;
+        const engine = engineRef.current;
+        if (!engine) return;
+        if (!engine.importImage(bitmap, bitmap.width, bitmap.height)) {
+          setNotice(labels.importDuringStroke);
+          return;
+        }
+        sync();
+        setNotice(labels.imported);
+      } finally {
+        bitmap.close();
+      }
+    } catch (error) {
+      if (!request.signal.aborted && !(error instanceof PaintImportError && error.reason === "cancelled")) {
+        setNotice(labels.importError[importFailure(error)]);
+      }
+    } finally {
+      if (importRequest.current === request) {
+        importRequest.current = null;
+        setImporting(false);
+      }
+    }
+  };
+
+  const undo = () => { cancelImport(); finishKeyboardStroke(true); engineRef.current?.undo(); sync(); };
+  const redo = () => { cancelImport(); finishKeyboardStroke(true); engineRef.current?.redo(); sync(); };
   const clear = () => {
     const engine = engineRef.current;
     if (!engine) return;
     if ((engine.dirty || engine.active) && !window.confirm(labels.clearConfirm)) return;
+    cancelImport();
     finishKeyboardStroke(true);
     if (engine.clear()) setNotice(labels.cleared);
     sync();
@@ -103,6 +151,7 @@ export function PaintWorkspace({ labels = englishPaintLabels, initialSize = DEFA
     const engine = engineRef.current;
     if (!engine) return;
     if ((engine.dirty || engine.active) && !window.confirm(labels.newConfirm)) return;
+    cancelImport();
     const [width, height] = preset.split("x").map(Number);
     finishKeyboardStroke(true);
     engine.newCanvas(width, height);
@@ -169,6 +218,7 @@ export function PaintWorkspace({ labels = englishPaintLabels, initialSize = DEFA
     } else if (keyboardDrawing.current) {
       finishKeyboardStroke(false);
     } else {
+      cancelImport();
       engine.begin(current, optionsRef.current);
       keyboardDrawing.current = engine.active;
     }
@@ -188,6 +238,13 @@ export function PaintWorkspace({ labels = englishPaintLabels, initialSize = DEFA
       <button type="button" onClick={undo} disabled={!status.canUndo} aria-keyshortcuts="Control+Z Meta+Z">{labels.undo}</button>
       <button type="button" onClick={redo} disabled={!status.canRedo} aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z">{labels.redo}</button>
       <button type="button" onClick={clear}>{labels.clear}</button>
+      <label className={styles.importControl}>{labels.importImage}<input type="file" accept="image/png,image/jpeg,image/webp" aria-label={labels.importImage}
+        onChange={(event) => {
+          const file = event.currentTarget.files?.[0];
+          event.currentTarget.value = "";
+          if (file) void importFile(file);
+        }} /></label>
+      <span className={styles.importSlot}>{importing ? <button type="button" onClick={() => cancelImport()}>{labels.cancelImport}</button> : null}</span>
       <button type="button" onClick={() => void exportPng()} aria-keyshortcuts="Control+E Meta+E">{labels.exportPng}</button>
     </div>
     <div className={styles.body}>
@@ -225,6 +282,7 @@ export function PaintWorkspace({ labels = englishPaintLabels, initialSize = DEFA
               onBlur={() => { finishKeyboardStroke(true); setKeyboardCursor(null); }}
               onPointerDownCapture={(event) => {
                 if (!event.isPrimary || event.pointerType === "mouse" && event.button !== 0) return;
+                cancelImport();
                 finishKeyboardStroke(true);
                 setKeyboardCursor(null);
               }} />
