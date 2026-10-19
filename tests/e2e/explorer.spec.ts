@@ -488,10 +488,15 @@ test("320px author redirects an OC shortcut to an exact post, then tests it in v
   await page.locator(".m-tool", { hasText: "預覽" }).first().click();
   const preview = page.locator(".preview-overlay");
   await preview.locator(".m-icon").getByText("World.exe", { exact: true }).click();
-  await preview.getByRole("button", { name: "主角", exact: true }).click();
+  const trigger = preview.getByRole("button", { name: "主角", exact: true });
+  await trigger.click();
   await expect(preview.locator(".ig-card")).toContainText(post.caption);
   await preview.locator(".m-back").click();
-  await expect(preview.getByRole("button", { name: "主角", exact: true })).toBeVisible();
+  await expect(trigger).toBeFocused();
+  await page.keyboard.press("Space"); await expect(preview.locator(".ig-card")).toContainText(post.caption);
+  await page.keyboard.press("Escape"); await expect(trigger).toBeFocused();
+  await preview.getByRole("button", { name: /回到編輯器/ }).click();
+  await expect(page.locator("#root").getByRole("dialog", { name: "World.exe", exact: true })).toBeVisible();
   await page.waitForTimeout(1200); expect(saves).toHaveLength(savedCount);
 });
 
