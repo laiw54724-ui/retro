@@ -1,0 +1,18 @@
+[WebServer] (node:19390) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:19392) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 7 tests using 1 worker
+
+(node:19425) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/e2e/paint-w5a.spec.ts:23:5 › mouse pencil, transparent eraser, picker and one-gesture undo/redo (1.0s)
+  ✓  2 tests/e2e/paint-w5a.spec.ts:44:5 › line, rectangle and ellipse preview then commit (512ms)
+  ✓  3 tests/e2e/paint-w5a.spec.ts:59:5 › pointer cancellation rolls back, including lost capture (200ms)
+  ✓  4 tests/e2e/paint-w5a.spec.ts:80:5 › secondary pointer cancellation and capture loss preserve the primary stroke (193ms)
+  ✓  5 tests/e2e/paint-w5a.spec.ts:103:5 › leaving and returning to the canvas does not bridge a stroke (162ms)
+  ✓  6 tests/e2e/paint-w5a.spec.ts:116:5 › clear/new confirmations, bounds, zoom and transparent logical PNG (580ms)
+  ✓  7 tests/e2e/paint-w5a.spec.ts:165:5 › eight snapshot limit and touch input (327ms)
+
+  7 passed (4.8s)

@@ -1,0 +1,49 @@
+[WebServer] (node:13171) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:13185) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 5 tests using 1 worker
+
+(node:13222) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › tests/e2e/paint-editor-save.spec.ts:77:5 › formal entry saves a new PNG/Gallery, retains original, supports document undo and reload (5.6s)
+  ✓  2 [chromium] › tests/e2e/paint-editor-save.spec.ts:96:5 › failed upload preserves the canvas and Retry saves once; newer strokes stay dirty (1.9s)
+  ✘  3 [chromium] › tests/e2e/paint-editor-save.spec.ts:110:5 › dirty Paint guards nested Back/Stay, Escape and native reload; late upload cannot follow B (30.2s)
+Testing stopped early after 1 maximum allowed failures.
+
+
+  1) [chromium] › tests/e2e/paint-editor-save.spec.ts:110:5 › dirty Paint guards nested Back/Stay, Escape and native reload; late upload cannot follow B
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Target page, context or browser has been closed
+
+      120 |   await page.reload().catch(() => undefined); expect(warned).toBe(2);
+      121 |   page.off("dialog", dismiss);
+    > 122 |   state.hold(); await state.dialog.getByRole("button", { name: saveName, exact: true }).click();
+          |                                                                                         ^
+      123 |   await expect.poll(state.pending).toBe(true);
+      124 |   await page.goBack(); await leave.getByRole("button", { name: "仍要離開", exact: true }).click();
+      125 |   await expect(page).toHaveURL(/\/auth$/); await page.locator('a[href="/editor/site-2"]').click();
+        at /Users/wen/Documents/Codex/2026-10-19/task-9/retro-paint-editor-save-53/tests/e2e/paint-editor-save.spec.ts:122:89
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/paint-editor-save-dirty-Pa-ffc17-late-upload-cannot-follow-B-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/paint-editor-save-dirty-Pa-ffc17-late-upload-cannot-follow-B-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/paint-editor-save-dirty-Pa-ffc17-late-upload-cannot-follow-B-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/paint-editor-save-dirty-Pa-ffc17-late-upload-cannot-follow-B-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/e2e/paint-editor-save.spec.ts:110:5 › dirty Paint guards nested Back/Stay, Escape and native reload; late upload cannot follow B
+  2 did not run
+  2 passed (40.2s)
+  1 error was not a part of any test, see above for details

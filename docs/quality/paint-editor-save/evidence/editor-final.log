@@ -1,0 +1,17 @@
+[WebServer] (node:18701) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:18715) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:18735) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › tests/e2e/paint-editor-save.spec.ts:77:5 › formal entry saves a new PNG/Gallery, retains original, supports document undo and reload (5.4s)
+  ✓  2 [chromium] › tests/e2e/paint-editor-save.spec.ts:96:5 › failed upload preserves the canvas and Retry saves once; newer strokes stay dirty (2.0s)
+  ✓  3 [chromium] › tests/e2e/paint-editor-save.spec.ts:110:5 › dirty Paint guards nested Back/Stay, Escape and native reload; late upload cannot follow B (1.2s)
+  ✓  4 [chromium] › tests/e2e/paint-editor-save.spec.ts:132:37 › phone-visible draw/export/save at 320px (1.8s)
+  ✓  5 [chromium] › tests/e2e/paint-editor-save.spec.ts:132:37 › phone-visible draw/export/save at 390px (1.7s)
+  ✓  6 [chromium] › tests/e2e/paint-editor-save.spec.ts:154:5 › Paint command Undo never rewinds the editor document history (3.4s)
+
+  6 passed (17.6s)
