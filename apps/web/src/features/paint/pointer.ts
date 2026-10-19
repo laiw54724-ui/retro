@@ -68,8 +68,8 @@ export class PaintPointerController {
     event.preventDefault();
   };
 
-  private cancel = (): void => {
-    if (this.pointerId === null) return;
+  private cancel = (event?: PointerEvent): void => {
+    if (this.pointerId === null || (event && event.pointerId !== this.pointerId)) return;
     const id = this.pointerId;
     this.pointerId = null;
     this.outside = false;

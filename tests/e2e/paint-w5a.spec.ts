@@ -77,6 +77,29 @@ test("pointer cancellation rolls back, including lost capture", async ({ page })
   expect((await pixel(page, 20, 10))[3]).toBe(0);
 });
 
+test("secondary pointer cancellation and capture loss preserve the primary stroke", async ({ page }) => {
+  const box = (await page.locator("#canvas").boundingBox())!;
+  await page.mouse.move(box.x + 10, box.y + 70);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 30, box.y + 70);
+  expect((await pixel(page, 20, 70))[3]).toBe(255);
+
+  await page.locator("#canvas").evaluate(canvas => {
+    canvas.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerId: 77, pointerType: "touch", isPrimary: false }));
+    canvas.dispatchEvent(new PointerEvent("pointercancel", { bubbles: true, pointerId: 77, pointerType: "touch", isPrimary: false }));
+    canvas.dispatchEvent(new PointerEvent("lostpointercapture", { bubbles: true, pointerId: 77, pointerType: "touch", isPrimary: false }));
+  });
+  expect((await pixel(page, 20, 70))[3]).toBe(255);
+  expect(await page.evaluate(() => (window as any).paintDebug.engine.active)).toBe(true);
+
+  await page.mouse.move(box.x + 40, box.y + 70);
+  await page.mouse.up();
+  expect((await pixel(page, 35, 70))[3]).toBe(255);
+  await page.getByRole("button", { name: "Undo" }).click();
+  expect((await pixel(page, 20, 70))[3]).toBe(0);
+  expect((await pixel(page, 35, 70))[3]).toBe(0);
+});
+
 test("leaving and returning to the canvas does not bridge a stroke", async ({ page }) => {
   const box = (await page.locator("#canvas").boundingBox())!;
   await page.mouse.move(box.x + 10, box.y + 60);
