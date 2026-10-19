@@ -1,3 +1,4 @@
+import { APPEARANCE_UPGRADE_MESSAGE, APPEARANCE_WRITE_CONTRACT } from "../lib/appearanceCompatibility";
 import { Hono, type Context } from "hono";
 import { createRetroExport, EXPORT_SITE_ID, inspectRetroImport, MAX_IMPORT_BYTES, remapDocumentSiteId, UsernameSchema } from "@retrodesk/shared";
 import type { Env } from "../env";
@@ -64,6 +65,8 @@ transfer.get("/sites/:siteId/export", async (c) => {
 transfer.post("/imports/preview", async (c) => {
   const user = await requireUser(c);
   if (user instanceof Response) return user;
+  // Require every import client: a legacy parser may already have removed P2 keys.
+  if (c.req.query("clientAppearanceContract") !== String(APPEARANCE_WRITE_CONTRACT)) return jsonError(c, 426, "client_upgrade_required", APPEARANCE_UPGRADE_MESSAGE);
   const body = await boundedJson(c);
   if (!body.ok) return body.response;
   const inspected = inspectRetroImport(body.value);
@@ -74,6 +77,8 @@ transfer.post("/imports/preview", async (c) => {
 transfer.post("/imports/confirm", async (c) => {
   const user = await requireUser(c);
   if (user instanceof Response) return user;
+  // Require every import client: a legacy parser may already have removed P2 keys.
+  if (c.req.query("clientAppearanceContract") !== String(APPEARANCE_WRITE_CONTRACT)) return jsonError(c, 426, "client_upgrade_required", APPEARANCE_UPGRADE_MESSAGE);
   const body = await boundedJson(c);
   if (!body.ok) return body.response;
   const inspected = inspectRetroImport(body.value);

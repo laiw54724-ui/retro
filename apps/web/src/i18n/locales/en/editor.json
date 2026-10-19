@@ -657,5 +657,17 @@
     "apply": "Apply window colors",
     "cancel": "Cancel color preview",
     "resetWindow": "Reset all window colors"
+  },
+  "appearanceCompatibility": {
+    "title": "Editor update required",
+    "paused": "Autosave and publishing are paused. Your unsaved edits remain in this tab.",
+    "recoveryHelp": "Download your local canonical draft, then check the server. Open a fresh editor in another tab and compare the backup before reapplying edits. This tab will keep its draft and will not retry automatically.",
+    "download": "Download local recovery JSON",
+    "check": "Check updated server",
+    "openFresh": "Open fresh editor in new tab",
+    "keepLocal": "Keep editing locally",
+    "notReady": "The server has not advertised the supported appearance contract or its cloud draft cannot be loaded. Local edits remain unchanged.",
+    "checkFailed": "Could not check the server. Your local edits are unchanged.",
+    "ready": "The latest server response is compatible. A new editor tab will load the current cloud draft; this tab keeps your unsaved edits."
   }
 }

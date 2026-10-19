@@ -30,3 +30,8 @@ This belongs in a small separately reviewed API/client code PR, stacked after th
 - After new writes, never roll API/readers below the preservation guard or P2 readers. Disable author controls while retaining compatible readers/guard, preserve backups and fix forward. An old-reader rollback/data downgrade requires separate reviewed data work.
 
 Until this code and deployment evidence exist, #94 remains **not production-enableable**. Local mocked tests establish functional behavior, not server enforcement or deployment compatibility.
+
+
+## Implementation successor
+
+The bounded API/client guard is implemented separately on codex/appearance-p2-compat-35, based exactly on #94 956d26d4. The reviewed #91/#94 heads remain unchanged. See the compatibility evidence for executed checks, pending approved browser execution and release blockers. Recovery deliberately retains the old tab and opens a new canonical editor tab instead of replacing the local draft. Production authoring remains hard-disabled. No DB policy/migration is assumed applied and no deployment canaries have run.

@@ -3,7 +3,7 @@ import { makeWindow, SiteDocumentSchema } from "../../packages/shared/src/site";
 import { migrateSiteDocumentV2 } from "../../packages/shared/src/site-versioning";
 import { documentFixture } from "./fixture";
 
-export async function mockColors(page: Page, options: { authoredModules?: boolean } = {}) {
+export async function mockColors(page: Page, options: { authoredModules?: boolean; advertisement?: unknown } = {}) {
   const source = SiteDocumentSchema.parse(structuredClone(documentFixture));
   source.theme.appearance = { titleText: "#ffffcc", frameColor: "#554433", contentBackground: "#ddeeff", contentText: "#112233", desktopLabelText: "#101010", desktopLabelBackground: "#eeeeee" };
   source.windows = [makeWindow("document", 0), makeWindow("links", 1)];
@@ -30,7 +30,7 @@ export async function mockColors(page: Page, options: { authoredModules?: boolea
   let writes = 0;
   const session = { access_token: "a.b.c", refresh_token: "r", expires_at: 4102444800, expires_in: 3600, token_type: "bearer", user: { id: "u", email: "x@y.z", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01" } };
   await page.addInitScript((value) => localStorage.setItem("sb-example-auth-token", JSON.stringify(value)), session);
-  await page.route("**/api/sites/site-1", (route) => route.fulfill({ json: { site: { id: "site-1", username: "demo", site_name: "Demo", draft_document: saved, draft_version: writes + 1, published_document: null, published_version: null, published_at: null, access_role: "owner" } } }));
+  await page.route("**/api/sites/site-1", (route) => route.fulfill({ json: { site: { id: "site-1", username: "demo", site_name: "Demo", draft_document: saved, draft_version: writes + 1, published_document: null, published_version: null, published_at: null, access_role: "owner", writeCompatibility: Object.hasOwn(options, "advertisement") ? options.advertisement : { appearanceP2: 1 } } } }));
   await page.route("**/api/sites/site-1/assets**", (route) => route.fulfill({ json: { assets: [] } }));
   await page.route("**/api/sites/site-1/draft", (route) => { saved = route.request().postDataJSON().document; writes++; return route.fulfill({ json: { version: writes + 1, updatedAt: "2026-10-19T00:00:00Z" } }); });
   await page.route("**/api/public/sites/demo", (route) => route.fulfill({ json: { site: { username: "demo", site_name: "Demo", published_document: saved, published_version: 1, published_at: "2026-10-19T00:00:00Z" } } }));
