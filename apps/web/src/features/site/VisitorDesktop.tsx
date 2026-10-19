@@ -95,7 +95,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
   }
 
   function close(id: string) {
-    if (navigation?.openId === id) navigation.openId = null;
+    visitor.resetWindow(id);
     stopWindowMedia(id);
     setRuntime((current) => current[id] ? { ...current, [id]: { ...current[id], status: "closed", maximized: false } } : current);
   }

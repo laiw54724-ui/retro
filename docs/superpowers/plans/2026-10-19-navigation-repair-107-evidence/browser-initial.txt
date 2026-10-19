@@ -1,0 +1,156 @@
+[WebServer] (node:55874) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:55887) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 40 tests using 1 worker
+
+(node:55903) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › tests/e2e/link-targets.spec.ts:56:7 › public 320px exact post uses temporary viewer; Back restores trigger; no private target or writes (1.3s)
+  ✓   2 [chromium] › tests/e2e/link-targets.spec.ts:56:7 › public 390px exact post uses temporary viewer; Back restores trigger; no private target or writes (801ms)
+  ✓   3 [chromium] › tests/e2e/link-targets.spec.ts:56:7 › public 430px exact post uses temporary viewer; Back restores trigger; no private target or writes (706ms)
+  ✓   4 [chromium] › tests/e2e/link-targets.spec.ts:71:5 › desktop restores a minimized host and repeated post activation relocates its local route (809ms)
+  ✓   5 [chromium] › tests/e2e/link-targets.spec.ts:85:5 › owner draft can navigate private refs; publishable excludes them and visitor use never saves (2.0s)
+  ✓   6 [chromium] › tests/e2e/link-targets.spec.ts:97:5 › desktop owner action creates no undo entry or autosave and transient viewers disappear on reopen (2.1s)
+  ✓   7 [chromium] › tests/e2e/link-targets.spec.ts:109:5 › 320px shared Links picker stages unsafe URL/cancel without a save; keyboard Apply keeps legacy fields (3.0s)
+  ✓   8 [chromium] › tests/e2e/link-targets.spec.ts:132:5 › temporary desktop post viewer retains a usable task after minimize and reopens without writing (2.0s)
+  ✓   9 [chromium] › tests/e2e/link-targets.spec.ts:151:5 › mobile to desktop rotation keeps the temporary exact post, author and Back path without writing (2.1s)
+  ✓  10 [chromium] › tests/e2e/oc-profiles.spec.ts:187:5 › author configures fictional follows, named likes and actor comments with autosave (4.9s)
+  ✓  11 [chromium] › tests/e2e/oc-profiles.spec.ts:256:5 › visitor browses truthful fictional people lists and nested actor navigation (897ms)
+  ✓  12 [chromium] › tests/e2e/oc-profiles.spec.ts:290:5 › desktop OC editor switches, searches, duplicates, edits and safely retargets profiles (4.8s)
+  ✓  13 [chromium] › tests/e2e/oc-profiles.spec.ts:329:5 › mobile OC editor exposes the same profile tools without horizontal overflow (4.8s)
+  ✓  14 [chromium] › tests/e2e/oc-profiles.spec.ts:367:7 › mobile OC editing groups and role actions remain reachable at 320px (1.9s)
+  ✓  15 [chromium] › tests/e2e/oc-profiles.spec.ts:367:7 › mobile OC editing groups and role actions remain reachable at 375px (1.9s)
+  ✓  16 [chromium] › tests/e2e/oc-profiles.spec.ts:367:7 › mobile OC editing groups and role actions remain reachable at 430px (1.9s)
+  ✓  17 [chromium] › tests/e2e/oc-profiles.spec.ts:423:5 › canonical post media edits autosave and survive reload (2.9s)
+  ✓  18 [chromium] › tests/e2e/oc-profiles.spec.ts:509:5 › collection authoring autosaves ordered post membership and survives reload (2.4s)
+  ✓  19 [chromium] › tests/e2e/oc-profiles.spec.ts:556:5 › OC post filters and pending URLs stay local to each character while switching groups (3.0s)
+  ✓  20 [chromium] › tests/e2e/oc-profiles.spec.ts:638:5 › editing a filtered draft keeps its fields mounted and its public visibility unchanged (2.1s)
+  ✓  21 [chromium] › tests/e2e/oc-profiles.spec.ts:676:5 › collection search preserves hidden selections and canonical order without exposing draft members (4.7s)
+  ✓  22 [chromium] › tests/e2e/oc-profiles.spec.ts:745:5 › a delayed post upload stays with its original OC after the editor switches characters (1.8s)
+  ✓  23 [chromium] › tests/e2e/oc-profiles.spec.ts:797:5 › a delayed highlight upload cannot append a page after its original OC is deleted and retargeted (2.8s)
+  ✓  24 [chromium] › tests/e2e/oc-profiles.spec.ts:865:5 › public OC details follow the active character and reset across sites (1.6s)
+  ✓  25 [chromium] › tests/e2e/oc-profiles.spec.ts:921:7 › published pinned posts, collections and natural-ratio details work at 1280px (682ms)
+  ✓  26 [chromium] › tests/e2e/oc-profiles.spec.ts:921:7 › published pinned posts, collections and natural-ratio details work at 390px (828ms)
+  ✓  27 [chromium] › tests/e2e/oc-profiles.spec.ts:953:5 › collections tab stays hidden when published collections contain no public posts (413ms)
+  ✓  28 [chromium] › tests/e2e/oc-profiles.spec.ts:963:7 › published OC theme stays inside Instagram at 1280px (452ms)
+  ✓  29 [chromium] › tests/e2e/oc-profiles.spec.ts:963:7 › published OC theme stays inside Instagram at 390px (529ms)
+  ✓  30 [chromium] › tests/e2e/oc-profiles.spec.ts:977:5 › published multi-page highlight pauses, supports keyboard navigation and restores scroll (621ms)
+  ✘  31 [chromium] › tests/e2e/oc-profiles.spec.ts:1004:5 › desktop visitor navigates OC directory and posts with layered back and scroll restore (30.2s)
+(node:56986) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  32 [chromium] › tests/e2e/oc-profiles.spec.ts:1069:5 › mobile visitor can browse the published OC directory without draft leakage or overflow (842ms)
+  ✓  33 [chromium] › tests/e2e/oc-profiles.spec.ts:1092:5 › mobile visitor keeps Instagram interactions isolated per window (666ms)
+  ✓  34 [chromium] › tests/e2e/oc-profiles.spec.ts:1111:5 › single-profile legacy visitor stats do not open an empty directory (449ms)
+  ✓  35 [chromium] › tests/e2e/public-sharing.spec.ts:17:5 › desktop OC and post deep links survive reload and open published content (1.1s)
+  ✓  36 [chromium] › tests/e2e/public-sharing.spec.ts:33:5 › mobile post deep link opens the requested post without horizontal overflow (460ms)
+  ✓  37 [chromium] › tests/e2e/public-sharing.spec.ts:43:5 › missing or draft entity links use a generic public not-found response (407ms)
+  ✓  38 [chromium] › tests/e2e/public-sharing.spec.ts:52:5 › clipboard rejection shows the real URL for manual copy instead of fake success (532ms)
+  ✘  39 [chromium] › tests/e2e/public-sharing.spec.ts:69:7 › published Explorer opens exact profile/post in memory with navigation focus and no persistence at 1280px (5.7s)
+(node:57113) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  40 [chromium] › tests/e2e/public-sharing.spec.ts:69:7 › published Explorer opens exact profile/post in memory with navigation focus and no persistence at 390px (5.9s)
+
+
+  1) [chromium] › tests/e2e/oc-profiles.spec.ts:1004:5 › desktop visitor navigates OC directory and posts with layered back and scroll restore 
+
+    Test timeout of 30000ms exceeded.
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/oc-profiles-desktop-visito-9b676-red-back-and-scroll-restore-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/oc-profiles-desktop-visito-9b676-red-back-and-scroll-restore-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/oc-profiles-desktop-visito-9b676-red-back-and-scroll-restore-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/oc-profiles-desktop-visito-9b676-red-back-and-scroll-restore-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/e2e/public-sharing.spec.ts:69:7 › published Explorer opens exact profile/post in memory with navigation focus and no persistence at 1280px 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  locator('.visitor-desktop').getByRole('dialog', { name: 'Instagram.exe', exact: true }).locator('.ig-pre')
+    Expected: "second sunset"
+    Received: "retro second sunset"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveText" locator('.visitor-desktop').getByRole('dialog', { name: 'Instagram.exe', exact: true }).locator('.ig-pre') with timeout 5000ms
+      - waiting for locator('.visitor-desktop').getByRole('dialog', { name: 'Instagram.exe', exact: true }).locator('.ig-pre')
+        14 × locator resolved to <span class="ig-pre">…</span>
+           - unexpected value "retro second sunset"
+
+
+      106 |     await expect(ig.locator(".ig-title strong")).toHaveText("貼文");
+      107 |     await expect(ig.locator(".ig-card-head strong").first()).toHaveText("retro");
+    > 108 |     await expect(ig.locator(".ig-pre")).toHaveText("second sunset");
+          |                                         ^
+      109 |     await expect(ig.locator(".ig-pre")).not.toContainText("caption p1");
+      110 |     await ig.locator(".ig-card").getByRole("button", { name: "分享", exact: true }).click();
+      111 |     await expect(fallback.getByRole("textbox", { name: "分享網址" })).toHaveValue(new URL(`/@demo/post/${encodeURIComponent(post.id)}`, url).href);
+        at /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01/tests/e2e/public-sharing.spec.ts:108:41
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/public-sharing-published-E-64e67-nd-no-persistence-at-1280px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/public-sharing-published-E-64e67-nd-no-persistence-at-1280px-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/public-sharing-published-E-64e67-nd-no-persistence-at-1280px-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/public-sharing-published-E-64e67-nd-no-persistence-at-1280px-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests/e2e/public-sharing.spec.ts:69:7 › published Explorer opens exact profile/post in memory with navigation focus and no persistence at 390px 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  locator('.visitor-mobile').getByRole('dialog', { name: 'Instagram.exe', exact: true }).locator('.ig-pre')
+    Expected: "second sunset"
+    Received: "retro second sunset"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveText" locator('.visitor-mobile').getByRole('dialog', { name: 'Instagram.exe', exact: true }).locator('.ig-pre') with timeout 5000ms
+      - waiting for locator('.visitor-mobile').getByRole('dialog', { name: 'Instagram.exe', exact: true }).locator('.ig-pre')
+        14 × locator resolved to <span class="ig-pre">…</span>
+           - unexpected value "retro second sunset"
+
+
+      106 |     await expect(ig.locator(".ig-title strong")).toHaveText("貼文");
+      107 |     await expect(ig.locator(".ig-card-head strong").first()).toHaveText("retro");
+    > 108 |     await expect(ig.locator(".ig-pre")).toHaveText("second sunset");
+          |                                         ^
+      109 |     await expect(ig.locator(".ig-pre")).not.toContainText("caption p1");
+      110 |     await ig.locator(".ig-card").getByRole("button", { name: "分享", exact: true }).click();
+      111 |     await expect(fallback.getByRole("textbox", { name: "分享網址" })).toHaveValue(new URL(`/@demo/post/${encodeURIComponent(post.id)}`, url).href);
+        at /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01/tests/e2e/public-sharing.spec.ts:108:41
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/public-sharing-published-E-75782-and-no-persistence-at-390px-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/public-sharing-published-E-75782-and-no-persistence-at-390px-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/public-sharing-published-E-75782-and-no-persistence-at-390px-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/public-sharing-published-E-75782-and-no-persistence-at-390px-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chromium] › tests/e2e/oc-profiles.spec.ts:1004:5 › desktop visitor navigates OC directory and posts with layered back and scroll restore 
+    [chromium] › tests/e2e/public-sharing.spec.ts:69:7 › published Explorer opens exact profile/post in memory with navigation focus and no persistence at 1280px 
+    [chromium] › tests/e2e/public-sharing.spec.ts:69:7 › published Explorer opens exact profile/post in memory with navigation focus and no persistence at 390px 
+  37 passed (1.8m)

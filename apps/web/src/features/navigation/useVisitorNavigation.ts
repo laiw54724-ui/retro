@@ -8,6 +8,15 @@ import { createEntityViewer } from "./createEntityViewer";
 export type ReturnFrame = { windowId: string; openedWindowId: string; focusKey: string | null };
 export type VisitorSession = { source: SiteDocument | null; windows: DesktopWindow[]; requests: Record<string, NavigationRequest>; nextRequest: number; explorer: Record<string, { folderId: string | null; query: string }>; returns: ReturnFrame[] };
 export const createVisitorSession = (): VisitorSession => ({ source: null, windows: [], requests: {}, nextRequest: 0, explorer: {}, returns: [] });
+/** Explicit Close drops only this window's navigation; minimize and layout swaps keep it. */
+export function resetVisitorWindow(session: VisitorSession, id: string, navigation?: PreviewNavigation) {
+  delete session.requests[id];
+  session.returns = session.returns.filter((frame) => frame.windowId !== id && frame.openedWindowId !== id);
+  if (navigation) {
+    delete navigation.ig[id];
+    if (navigation.openId === id) navigation.openId = null;
+  }
+}
 export function useVisitorNavigation(options: { document: SiteDocument; siteId?: string | null; profileDirectory?: ProfileDirectoryEntry[]; profileIdsByWindow?: Record<string, string>; navigation?: PreviewNavigation; editing?: boolean; recordReturns?: boolean; onOpen: (window: DesktopWindow) => void }) {
   const local = useRef(createVisitorSession()).current;
   const saved = options.navigation ? (options.navigation.visitor ??= createVisitorSession()) : local;
@@ -31,7 +40,7 @@ export function useVisitorNavigation(options: { document: SiteDocument; siteId?:
       options.onOpen(window);
     }
   });
-  return { windows, requests: saved.requests, navigate, hasReturn: saved.returns.length > 0, clearReturns: () => { saved.returns = []; }, back: (currentId: string | null) => saved.returns.at(-1)?.openedWindowId === currentId ? saved.returns.pop()! : null };
+  return { windows, requests: saved.requests, navigate, resetWindow: (id: string) => resetVisitorWindow(saved, id, options.navigation), hasReturn: saved.returns.length > 0, clearReturns: () => { saved.returns = []; }, back: (currentId: string | null) => saved.returns.at(-1)?.openedWindowId === currentId ? saved.returns.pop()! : null };
 }
 export function restoreNavigationFocus(key: string | null) {
   if (!key) return;

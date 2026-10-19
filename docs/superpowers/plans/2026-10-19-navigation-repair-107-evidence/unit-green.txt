@@ -1,0 +1,12 @@
+
+ RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01/apps/web
+
+ ✓ src/features/navigation/useVisitorNavigation.test.ts (3 tests) 4ms
+ ✓ src/features/navigation/resolveLinkDestination.test.ts (7 tests) 5ms
+ ✓ src/features/editor/previewModel.test.ts (10 tests) 47ms
+
+ Test Files  3 passed (3)
+      Tests  20 passed (20)
+   Start at  17:03:00
+   Duration  816ms (transform 269ms, setup 523ms, collect 784ms, tests 55ms, environment 0ms, prepare 229ms)
+
