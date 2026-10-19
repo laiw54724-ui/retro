@@ -307,7 +307,7 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
             </div>
             <div className="music-cover-editor">
               <div className="music-cover small w98-sunken">{track.cover ? <SafeImg src={track.cover} alt="" compact /> : <span aria-hidden="true">♫</span>}</div>
-              <div><FilePick className="w98-btn small" onFiles={(files) => files[0] && upload(track, files[0], "cover")}>{tr("music.uploadCover")}</FilePick><MusicCoverUrlField draftKey={`${window.id}:${track.id}`} drafts={coverDrafts.current} onEdit={() => cancelUpload(track.id, "cover")} raw={track.coverUrl} label={tr("music.coverImageUrl")} placeholder="https://…" onCommit={(raw, cover) => patchTrack(track.id, { coverUrl: raw, cover })} /></div>
+              <div className="music-cover-source"><FilePick className="w98-btn small" onFiles={(files) => files[0] && upload(track, files[0], "cover")}>{tr("music.uploadCover")}</FilePick><MusicCoverUrlField draftKey={`${window.id}:${track.id}`} drafts={coverDrafts.current} onEdit={() => cancelUpload(track.id, "cover")} raw={track.coverUrl} label={tr("music.coverImageUrl")} placeholder="https://…" onCommit={(raw, cover) => patchTrack(track.id, { coverUrl: raw, cover })} /></div>
             </div>
 
             <TrackSourceField

@@ -80,7 +80,7 @@ test("gated desktop site defaults cancel/apply once, undo, preserve window overr
   await page.waitForTimeout(800);
   expect(site.writes()).toBe(0);
   await panel.getByRole("textbox", { name: "視窗框體色碼", exact: true }).fill("#224466");
-  await panel.getByRole("button", { name: "套用主題", exact: true }).click();
+  await panel.getByRole("button", { name: "套用至草稿", exact: true }).click();
   await expect.poll(() => site.writes()).toBe(1);
   await expect(page.getByRole("dialog", { name: "Second.exe", exact: true })).toHaveCSS("background-color", "rgb(34, 68, 102)");
   await expect(page.getByRole("dialog", { name: "First.exe", exact: true })).toHaveCSS("background-color", "rgb(51, 68, 85)");
@@ -92,7 +92,7 @@ test("gated desktop site defaults cancel/apply once, undo, preserve window overr
   await expect.poll(() => site.saved().theme.appearance?.frameColor).toBe("#224466");
   expect(site.saved().windows[0].appearance).toEqual(retained);
   await panel.getByRole("button", { name: "粉紅 98", exact: true }).click();
-  await panel.getByRole("button", { name: "套用主題", exact: true }).click();
+  await panel.getByRole("button", { name: "套用至草稿", exact: true }).click();
   await expect.poll(() => site.saved().theme.id).toBe("pink98");
   expect(site.saved().windows[0].appearance).toEqual(retained);
 });

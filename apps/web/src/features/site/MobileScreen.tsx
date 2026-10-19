@@ -68,7 +68,8 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const editor = mode === "editor";
   const imageWriter = useImageWriter();
   const store = useEditorStore();
-  const tv = useThemeView(document.theme);
+  const theme = (editor ? store.themePreview : null) ?? document.theme;
+  const tv = useThemeView(theme);
   const [openId, setOpenId] = useState<string | null>(() => initialOpenId ?? (navigation?.openId && [...document.windows, ...(navigation.visitor?.source === document ? navigation.visitor.windows : [])].some((window) => window.id === navigation.openId) ? navigation.openId : null) ?? (mode === "visitor" ? document.windows.find((window) => window.type === "character-dialog" && window.content.autoShow)?.id ?? null : null));
   const [sheet, setSheet] = useState<Sheet>(null);
   const [inlineEdit, setInlineEdit] = useState(false);
@@ -109,7 +110,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
             {ordered.map((window) => (
               <button key={window.id} ref={(node) => { if (node) iconRefs.current.set(window.id, node); else iconRefs.current.delete(window.id); }} type="button" className="m-icon" data-window-id={window.id} aria-label={window.title} style={{ outline: editor && store.selectedId === window.id ? `2px dotted ${tv.text}` : "none" }} onClick={() => open(window.id)}>
                 <span className="m-tile" style={{ background: tv.tileBg, boxShadow: tv.tileShadow }}><Icon name={window.icon} size={40} /></span>
-                <span className="m-label" style={resolveDesktopLabelAppearance(document.theme, window.appearance)}>{window.title}</span>
+                <span className="m-label" style={resolveDesktopLabelAppearance(theme, window.appearance)}>{window.title}</span>
               </button>
             ))}
           </div>
@@ -123,7 +124,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
             <ImageWindowShell window={openWindow} editor={editor}
               title={openWindow.title}
               icon={openWindow.icon}
-              theme={document.theme}
+              theme={theme}
               appearance={openWindow.appearance}
               chrome={openWindow.chrome}
               presentation="mobile"
@@ -137,7 +138,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
             >
               <WindowRenderer
                 window={openWindow}
-                theme={document.theme}
+                theme={theme}
                 mobile
                 editing={editor && inlineEdit}
                 allWindows={visitor.windows}
@@ -198,9 +199,9 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
                   <span className="add-card-text"><strong>{t(`modules.${module.type}.label`, { defaultValue: module.label })}</strong><span>{t(`modules.${module.type}.description`, { defaultValue: module.description })}</span></span>
                 </button>
               )) : null}
-              {sheet === "theme" ? <ThemeAppearanceEditor theme={document.theme} onTheme={store.setTheme} upload={upload} /> : null}
+              {sheet === "theme" ? <ThemeAppearanceEditor theme={document.theme} previewTheme={store.themePreview} onPreviewTheme={store.setThemePreview} onTheme={store.setTheme} upload={upload} /> : null}
               {sheet === "edit" ? (
-                selected ? <MobileEdit key={selected.id} theme={document.theme} window={selected} count={ordered.length} siteId={siteId} upload={upload} /> : <span className="m-note">{t("mobileScreen.clickAnIconOnThe")}</span>
+                selected ? <MobileEdit key={selected.id} theme={theme} window={selected} count={ordered.length} siteId={siteId} upload={upload} /> : <span className="m-note">{t("mobileScreen.clickAnIconOnThe")}</span>
               ) : null}
               {sheet === "edit" ? (
                 <>

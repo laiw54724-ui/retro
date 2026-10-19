@@ -2,7 +2,8 @@ import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react"
 import { i18n } from "../../../i18n";
 import { useTranslation } from "react-i18next";
 import type { MoodboardElement } from "@retrodesk/shared";
-import { FilePick, SafeImg } from "../ui";
+import { FilePick, ImageUrlField, SafeImg } from "../ui";
+import { UploadTaskList, useWindowMedia } from "../../media/editorMedia";
 import type { ModuleProps } from "../types";
 import { downloadMoodboardPng, exportMoodboardPng } from "./export";
 import { boundedGeometry, clamp, geometryRange, orderedElements, reorderElement, type GeometryField } from "./editing";
@@ -48,8 +49,10 @@ export function MoodboardInlineEditor({ window, ctx, update }: ModuleProps<"mood
   const stageRef = useRef<HTMLDivElement | null>(null);
   const geometryRef = useRef<HTMLFieldSetElement | null>(null);
   const [exportStatus, setExportStatus] = useState("");
+  const [newUrlRevision, setNewUrlRevision] = useState(0);
   const [limitStatus, setLimitStatus] = useState("");
   const content = window.content;
+  const media = useWindowMedia(window, ctx);
   const selected = content.elements.find((element) => element.id === selectedId) ?? null;
   const setElements = (recipe: (elements: MoodboardElement[]) => MoodboardElement[], historyKey?: string) => update((current) => ({ ...current, content: { ...current.content, elements: recipe(current.content.elements) } }), historyKey);
   const patch = (id: string, change: Partial<MoodboardElement>, key?: string) => setElements((elements) => elements.map((element) => element.id === id ? { ...element, ...change } as MoodboardElement : element), key);
@@ -73,13 +76,25 @@ export function MoodboardInlineEditor({ window, ctx, update }: ModuleProps<"mood
       : { ...base, kind, src: null, srcUrl: "", alt: "" };
     setElements((elements) => [...elements, element]); setSelectedId(element.id);
   }
-  async function addImage(file: File) {
+  function addUrl(srcUrl: string, src: string | null) {
+    if (!src) return;
+    if (content.elements.length >= 100) { setLimitStatus(tr("moodboard.theMoodboardHasReachedIts")); return; }
+    const element: MoodboardElement = { id: newId(), kind: "image", x: 80, y: 70, width: 280, height: 210, zOrder: topZ + 1, locked: false, src, srcUrl, alt: "" };
+    setElements((elements) => elements.length < 100 ? [...elements, element] : elements);
+    setSelectedId(element.id); setNewUrlRevision((value) => value + 1); setLimitStatus("");
+  }
+  function addImage(file: File) {
     if (content.elements.length >= 100) { setLimitStatus(tr("moodboard.theMoodboardHasReachedIts")); return; }
     setLimitStatus("");
-    const stored = await ctx.upload?.(file, "image");
-    if (!stored) return;
-    const element: MoodboardElement = { id: newId(), kind: "image", x: 80, y: 70, width: 280, height: 210, zOrder: topZ + 1, locked: false, src: stored, srcUrl: "", alt: file.name.replace(/\.[^.]+$/, "") };
-    setElements((elements) => [...elements, element]); setSelectedId(element.id);
+    const element: MoodboardElement = { id: newId(), kind: "image", x: 80, y: 70, width: 280, height: 210, zOrder: topZ + 1, locked: false, src: null, srcUrl: "", alt: file.name.replace(/\.[^.]+$/, "") };
+    // Reserve an editable target immediately; URL typing invalidates its pending upload.
+    setElements((elements) => elements.length < 100 ? [...elements, element] : elements);
+    setSelectedId(element.id);
+    media.upload(file, {
+      kind: "image", slot: `image:${element.id}`,
+      isCurrent: (current) => current.content.elements.some((item) => item.id === element.id && item.kind === "image" && item.src === null && !item.srcUrl),
+      apply: (current, src) => ({ ...current, content: { ...current.content, elements: current.content.elements.map((item) => item.id === element.id && item.kind === "image" ? { ...item, src } : item) } })
+    });
   }
   function pointerDown(event: ReactPointerEvent<HTMLButtonElement>, element: MoodboardElement) {
     event.stopPropagation(); setSelectedId(element.id);
@@ -126,13 +141,16 @@ export function MoodboardInlineEditor({ window, ctx, update }: ModuleProps<"mood
       <div className="moodboard-toolbar" aria-label={tr("moodboard.moodboardToolbar")}>
         <button type="button" className="w98-btn" onClick={() => add("text")}>{tr("moodboard.text")}</button>
         <button type="button" className="w98-btn" onClick={() => add("color")}>{tr("moodboard.colorBlock2")}</button>
-        <FilePick className="w98-btn" onFiles={(files) => void addImage(files[0])}>{tr("moodboard.image2")}</FilePick>
+        <div className="moodboard-image-source"><FilePick className="w98-btn" onFiles={(files) => addImage(files[0])}>{tr("moodboard.image2")}</FilePick>
+          <ImageUrlField key={newUrlRevision} visibleLabel raw="" label={tr("imageInput.addUrlImage")} placeholder="https://" onCommit={addUrl} />
+        </div>
         <label>{tr("moodboard.background")} <input aria-label={tr("moodboard.canvasBackgroundColor")} type="color" value={content.background} onChange={(event) => update((current) => ({ ...current, content: { ...current.content, background: event.target.value } }))} /></label>
         <button type="button" className="w98-btn" onClick={() => void exportPng()}>{tr("moodboard.exportPng")}</button>
         <span>{content.elements.length}/100</span>
         {limitStatus ? <span role="status" className="moodboard-limit-status">{limitStatus}</span> : null}
         {exportStatus ? <span role="status" className="moodboard-export-status">{exportStatus}</span> : null}
       </div>
+      <UploadTaskList tasks={media.tasks} onRetry={media.retry} onDismiss={media.dismiss} />
       <div className="moodboard-workspace">
         <div ref={stageRef} className="moodboard-stage editing" style={{ aspectRatio: `${content.width}/${content.height}`, background: content.background }} onPointerDownCapture={() => {
           // Pointer selection can unmount the keyed inspector before the browser's normal blur.
@@ -167,7 +185,7 @@ export function MoodboardInlineEditor({ window, ctx, update }: ModuleProps<"mood
                 {(["left", "center", "right"] as const).map((align) => <button type="button" key={align} className="w98-btn" aria-label={tr(align === "left" ? "document.alignLeft" : align === "center" ? "document.center" : "document.alignRight")} aria-pressed={selected.align === align} onClick={() => patch(selected.id, { align })}>{align === "left" ? "⇤" : align === "center" ? "↔" : "⇥"}</button>)}
               </div> : null}
               {selected.kind === "color" ? <label>{tr("moodboard.blockColor")}<input type="color" value={selected.color} onChange={(event) => patch(selected.id, { color: event.target.value })} /></label> : null}
-              {selected.kind === "image" ? <label>{tr("moodboard.imageDescription")}<input value={selected.alt} onChange={(event) => patch(selected.id, { alt: event.target.value }, `moodboard-alt-${selected.id}`)} /></label> : null}
+              {selected.kind === "image" ? <><ImageUrlField key={selected.id} visibleLabel raw={selected.srcUrl} label={tr("document.imageUrl")} placeholder="https://" onEdit={() => media.cancel(`image:${selected.id}`)} onCommit={(srcUrl, src) => patch(selected.id, { srcUrl, src })} /><label>{tr("moodboard.imageDescription")}<input value={selected.alt} onChange={(event) => patch(selected.id, { alt: event.target.value }, `moodboard-alt-${selected.id}`)} /></label></> : null}
               <div className="moodboard-nudge"><button type="button" className="w98-btn" disabled={selected.locked} onClick={() => nudge(0, -8)}>↑</button><button type="button" className="w98-btn" disabled={selected.locked} onClick={() => nudge(-8, 0)}>←</button><button type="button" className="w98-btn" disabled={selected.locked} onClick={() => nudge(8, 0)}>→</button><button type="button" className="w98-btn" disabled={selected.locked} onClick={() => nudge(0, 8)}>↓</button></div>
               <div className="moodboard-actions"><button type="button" className="w98-btn" disabled={selected.locked} onClick={() => size(-16)}>{tr("moodboard.shrink")}</button><button type="button" className="w98-btn" disabled={selected.locked} onClick={() => size(16)}>{tr("moodboard.enlarge")}</button><button type="button" className="w98-btn" disabled={orderedElements(content.elements)[0]?.id === selected.id} onClick={() => reorder("backward")}>{tr("moodboard.sendBackward")}</button><button type="button" className="w98-btn" disabled={orderedElements(content.elements).at(-1)?.id === selected.id} onClick={() => reorder("front")}>{tr("moodboard.bringToFront")}</button><button type="button" className="w98-btn" aria-pressed={selected.locked} onClick={() => patch(selected.id, { locked: !selected.locked })}>{selected.locked ? tr("moodboard.unlock") : tr("moodboard.lock")}</button><button type="button" className="w98-btn" onClick={() => duplicate(selected)}>{tr("moodboard.duplicate")}</button><button type="button" className="w98-btn danger" onClick={() => { setElements((elements) => elements.filter((element) => element.id !== selected.id)); setSelectedId(null); }}>{tr("links.delete")}</button></div>
             </> : <p>{tr("moodboard.clickAnObjectOnThe")}</p>}
