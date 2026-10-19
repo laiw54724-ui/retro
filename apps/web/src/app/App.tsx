@@ -1,4 +1,4 @@
-import { Component, lazy, Suspense, type ReactNode } from "react";
+import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
@@ -8,28 +8,26 @@ import { OnboardingPage } from "../pages/OnboardingPage";
 import { PublicSitePage } from "../pages/PublicSitePage";
 import { InvitePage } from "../pages/InvitePage";
 
-const CollaborativeSitePage = lazy(() => import("../pages/CollaborativeSitePage").then(module => ({ default: module.CollaborativeSitePage })));
-
-class EditorRouteBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
-  static getDerivedStateFromError() { return { failed: true }; }
-  render() { return this.state.failed ? this.props.fallback : this.props.children; }
-}
-
 function EditorRoute() {
   const { t } = useTranslation(["common", "collab"]);
-  return (
-    <EditorRouteBoundary fallback={
-      <main className="not-found"><div role="alert">
-        <h1>{t("collaborativeSite.cantOpenThisDesktop", { ns: "collab" })}</h1>
-        <button type="button" onClick={() => window.location.reload()}>{t("desktopHub.retry")}</button>
-      </div></main>
-    }>
-      <Suspense fallback={<div className="boot-screen" role="status">{t("app.loadingSite")}</div>}>
-        <CollaborativeSitePage />
-      </Suspense>
-    </EditorRouteBoundary>
+  const [Editor, setEditor] = useState<ComponentType | null>(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    let active = true;
+    // Resolve the module before rendering it; a Suspense reveal delayed editor readiness.
+    import("../pages/CollaborativeSitePage")
+      .then(module => { if (active) setEditor(() => module.CollaborativeSitePage); })
+      .catch(() => { if (active) setFailed(true); });
+    return () => { active = false; };
+  }, []);
+  if (failed) return (
+    <main className="not-found"><div role="alert">
+      <h1>{t("collaborativeSite.cantOpenThisDesktop", { ns: "collab" })}</h1>
+      <button type="button" onClick={() => window.location.reload()}>{t("desktopHub.retry")}</button>
+    </div></main>
   );
+  if (!Editor) return <div className="boot-screen" role="status">{t("app.loadingSite")}</div>;
+  return <Editor />;
 }
 
 function RequireAuth({ children }: { children: ReactNode }) {
