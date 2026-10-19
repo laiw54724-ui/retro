@@ -1,0 +1,9 @@
+
+> @retrodesk/web@0.0.1 typecheck /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-staging-rollout-51/apps/web
+> tsc -b --pretty false
+
+vite.config.ts(6,35): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+vite.config.ts(7,75): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+/Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-staging-rollout-51/apps/web:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @retrodesk/web@0.0.1 typecheck: `tsc -b --pretty false`
+Exit status 2
