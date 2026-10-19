@@ -1,0 +1,703 @@
+{
+  "main": "8e2e54241ecca4c79cb5d6190e7b4b0beb804075",
+  "modules": [
+    {
+      "type": "image",
+      "label": "圖片",
+      "registryLine": 31,
+      "view": "ImageView",
+      "editor": "ImageInlineEditor"
+    },
+    {
+      "type": "document",
+      "label": "文件視窗",
+      "registryLine": 32,
+      "view": "DocumentView",
+      "editor": "DocumentInlineEditor"
+    },
+    {
+      "type": "gallery",
+      "label": "相簿視窗",
+      "registryLine": 33,
+      "view": "GalleryView",
+      "editor": "GalleryInlineEditor"
+    },
+    {
+      "type": "links",
+      "label": "連結視窗",
+      "registryLine": 34,
+      "view": "LinksView",
+      "editor": "LinksInlineEditor"
+    },
+    {
+      "type": "about",
+      "label": "名片／關於我",
+      "registryLine": 35,
+      "view": "AboutView",
+      "editor": "AboutInlineEditor"
+    },
+    {
+      "type": "instagram",
+      "label": "復古 IG 個人頁",
+      "registryLine": 36,
+      "view": "IgView",
+      "editor": "IgInlineEditor"
+    },
+    {
+      "type": "music",
+      "label": "音樂播放器",
+      "registryLine": 37,
+      "view": "MusicView",
+      "editor": "MusicInlineEditor"
+    },
+    {
+      "type": "moodboard",
+      "label": "Moodboard 畫板",
+      "registryLine": 38,
+      "view": "MoodboardView",
+      "editor": "MoodboardInlineEditor"
+    },
+    {
+      "type": "explorer",
+      "label": "世界觀資料夾",
+      "registryLine": 39,
+      "view": "ExplorerView",
+      "editor": "ExplorerInlineEditor"
+    },
+    {
+      "type": "minesweeper",
+      "label": "掃雷",
+      "registryLine": 40,
+      "view": "MinesweeperView",
+      "editor": "MinesweeperInlineEditor"
+    },
+    {
+      "type": "character-dialog",
+      "label": "角色彈窗",
+      "registryLine": 41,
+      "view": "CharacterDialogView",
+      "editor": "CharacterDialogInlineEditor"
+    },
+    {
+      "type": "guestbook",
+      "label": "訪客留言簿",
+      "registryLine": 42,
+      "view": "GuestbookView",
+      "editor": "GuestbookInlineEditor"
+    }
+  ],
+  "routes": [
+    {
+      "pattern": "/",
+      "line": 45
+    },
+    {
+      "pattern": "/auth",
+      "line": 46
+    },
+    {
+      "pattern": "/invite",
+      "line": 47
+    },
+    {
+      "pattern": "/onboarding",
+      "line": 48
+    },
+    {
+      "pattern": "/editor/:siteId",
+      "line": 49
+    },
+    {
+      "pattern": "/:handle/oc/:profileId",
+      "line": 50
+    },
+    {
+      "pattern": "/:handle/post/:postId",
+      "line": 51
+    },
+    {
+      "pattern": "/:handle",
+      "line": 52
+    },
+    {
+      "pattern": "*",
+      "line": 53
+    }
+  ],
+  "exportedComponentImplementations": [
+    {
+      "file": "apps/web/src/app/App.tsx",
+      "exports": [
+        "App"
+      ]
+    },
+    {
+      "file": "apps/web/src/app/AuthProvider.tsx",
+      "exports": [
+        "AuthProvider",
+        "useAuth"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/AvatarImage.tsx",
+      "exports": [
+        "AvatarImage"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/Icon.tsx",
+      "exports": [
+        "Icon"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/LanguageSwitcher.tsx",
+      "exports": [
+        "LanguageSwitcher"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/ModalDialog.tsx",
+      "exports": [
+        "ModalDialog"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/RetroWindow.tsx",
+      "exports": [
+        "RetroWindow"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/window-chrome/WindowChrome.tsx",
+      "exports": [
+        "WindowChromeSlot",
+        "WindowChrome"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/window-chrome/WindowMenuBar.tsx",
+      "exports": [
+        "WindowMenuBar"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/window-chrome/WindowTitleBar.tsx",
+      "exports": [
+        "WindowTitleBar"
+      ]
+    },
+    {
+      "file": "apps/web/src/dev/WindowChromeShowcase.tsx",
+      "exports": [
+        "WindowChromeShowcase"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/collaboration/CollaborationDialog.tsx",
+      "exports": [
+        "CollaborationDialog"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/collaboration/DraftViewer.tsx",
+      "exports": [
+        "DraftViewer"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/editor/AppearanceColorControls.tsx",
+      "exports": [
+        "AppearanceColorControls",
+        "AppearanceColorPreview"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/editor/AppearanceColorInput.tsx",
+      "exports": [
+        "AppearanceColorInput"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/editor/AppearanceWriteContext.tsx",
+      "exports": [
+        "AppearanceWriteProvider"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/editor/CropEditor.tsx",
+      "exports": [
+        "CropEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/editor/DesktopCanvas.tsx",
+      "exports": [
+        "DesktopCanvas"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/editor/DocumentUpgradeRecovery.tsx",
+      "exports": [
+        "DocumentUpgradeRecovery"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/editor/ImageWriteContext.tsx",
+      "exports": [
+        "ImageWriteProvider"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/editor/InspectorContent.tsx",
+      "exports": [
+        "InspectorContent"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/editor/IntegrityDialog.tsx",
+      "exports": [
+        "IntegrityDialog"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/editor/LeftPanel.tsx",
+      "exports": [
+        "LeftPanel"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/editor/MobileEditor.tsx",
+      "exports": [
+        "MobileEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/editor/MobilePreview.tsx",
+      "exports": [
+        "MobilePreview"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/editor/RightPanel.tsx",
+      "exports": [
+        "RightPanel"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/editor/SidebarToggle.tsx",
+      "exports": [
+        "SidebarToggle"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/editor/ThemeAppearanceEditor.tsx",
+      "exports": [
+        "ThemeAppearanceEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/editor/VisitorPreview.tsx",
+      "exports": [
+        "VisitorPreview"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/editor/WindowAppearanceEditor.tsx",
+      "exports": [
+        "WindowAppearanceEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/editor/WindowChromeEditor.tsx",
+      "exports": [
+        "WindowChromeEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/editor/WindowColorAppearanceEditor.tsx",
+      "exports": [
+        "WindowColorAppearanceEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/editor/editorSession.tsx",
+      "exports": [
+        "useEditorSaveSession",
+        "useEditorLeaveGuard"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/media/editorMedia.tsx",
+      "exports": [
+        "EditorMediaProvider",
+        "useMediaQueue",
+        "useWindowMedia",
+        "UploadTaskList"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/about/index.tsx",
+      "exports": [
+        "AboutView",
+        "AboutInlineEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/character-dialog/index.tsx",
+      "exports": [
+        "CharacterDialogView",
+        "CharacterDialogInlineEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/document/index.tsx",
+      "exports": [
+        "DocumentView",
+        "DocumentInlineEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/explorer/ExplorerDialogs.tsx",
+      "exports": [
+        "TargetPickerDialog",
+        "MoveDialog",
+        "DeleteFolderDialog"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/explorer/index.tsx",
+      "exports": [
+        "ExplorerView",
+        "ExplorerInlineEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/gallery/Lightbox.tsx",
+      "exports": [
+        "Lightbox"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/gallery/index.tsx",
+      "exports": [
+        "GalleryView",
+        "GalleryInlineEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/guestbook/PreviewGuestbook.tsx",
+      "exports": [
+        "PreviewGuestbook"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/guestbook/index.tsx",
+      "exports": [
+        "GuestbookView",
+        "GuestbookInlineEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/guestbook/previewContext.tsx",
+      "exports": [
+        "GuestbookPreviewProvider"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/image/index.tsx",
+      "exports": [
+        "ImageView",
+        "ImageInlineEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/image/presentation/ImagePresentation.tsx",
+      "exports": [
+        "ImagePresentation"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/instagram/CanonicalCollectionEditor.tsx",
+      "exports": [
+        "CanonicalCollectionEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/instagram/CanonicalHighlightEditor.tsx",
+      "exports": [
+        "CanonicalHighlightEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/instagram/CanonicalPostEditor.tsx",
+      "exports": [
+        "CanonicalPostEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/instagram/CanonicalSocialEditor.tsx",
+      "exports": [
+        "CanonicalSocialEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/instagram/IgDraftInput.tsx",
+      "exports": [
+        "IgDraftProvider",
+        "IgDraftInput"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/instagram/IgEditForm.tsx",
+      "exports": [
+        "IgEditForm"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/instagram/IgEditorWorkspace.tsx",
+      "exports": [
+        "IgSkinPicker",
+        "IgEditorWorkspace"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/instagram/IgPreview.tsx",
+      "exports": [
+        "IgPreview"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/instagram/ProfileDetails.tsx",
+      "exports": [
+        "ProfileDetails"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/instagram/ProfileEditor.tsx",
+      "exports": [
+        "ProfileEditor",
+        "ProfileAppearanceEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/instagram/ProfileSwitcher.tsx",
+      "exports": [
+        "ProfileSwitcher"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/instagram/index.tsx",
+      "exports": [
+        "IgView",
+        "IgInlineEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/links/IconPicker.tsx",
+      "exports": [
+        "describeIcon",
+        "IconPicker",
+        "IconPickerAction",
+        "IconPickerButton"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/links/index.tsx",
+      "exports": [
+        "LinksView",
+        "LinksInlineEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/minesweeper/index.tsx",
+      "exports": [
+        "MinesweeperView",
+        "MinesweeperInlineEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/moodboard/GeometryInput.tsx",
+      "exports": [
+        "GeometryInput"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/moodboard/index.tsx",
+      "exports": [
+        "MoodboardView",
+        "MoodboardInlineEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/music/MusicCoverUrlField.tsx",
+      "exports": [
+        "MusicCoverUrlField"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/music/ProviderPlayer.tsx",
+      "exports": [
+        "ProviderPlayer"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/music/TrackSourceField.tsx",
+      "exports": [
+        "TrackSourceField"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/music/VideoPlayer.tsx",
+      "exports": [
+        "VideoPlayer"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/music/index.tsx",
+      "exports": [
+        "MusicView",
+        "MusicInlineEditor"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/modules/ui.tsx",
+      "exports": [
+        "MiniBtn",
+        "FilePick",
+        "SafeImg",
+        "ImageUrlField"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/navigation/LegacyLinkTargetButton.tsx",
+      "exports": [
+        "LegacyLinkTargetButton"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/navigation/LinkTargetPicker.tsx",
+      "exports": [
+        "LinkTargetPicker"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/paint/PaintWorkspace.tsx",
+      "exports": [
+        "PaintWorkspace"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/preview/DesktopPreviewViewport.tsx",
+      "exports": [
+        "DesktopPreviewViewport"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/site/DesktopTaskbar.tsx",
+      "exports": [
+        "DesktopTaskbar"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/site/ImageWindowShell.tsx",
+      "exports": [
+        "ImageWindowShell"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/site/MobileScreen.tsx",
+      "exports": [
+        "MobileScreen"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/site/VisitorDesktop.tsx",
+      "exports": [
+        "VisitorDesktop"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/site/WindowRenderer.tsx",
+      "exports": [
+        "WindowRenderer"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/sites/DesktopHub.tsx",
+      "exports": [
+        "DesktopHub"
+      ]
+    },
+    {
+      "file": "apps/web/src/features/transfer/TransferDialog.tsx",
+      "exports": [
+        "TransferDialog"
+      ]
+    },
+    {
+      "file": "apps/web/src/lib/assetSource.tsx",
+      "exports": [
+        "initialAssetSourceValue",
+        "createAssetResolver",
+        "useAssetResolver",
+        "AssetSourceProvider",
+        "useAssetSourceState",
+        "useAssetSource"
+      ]
+    },
+    {
+      "file": "apps/web/src/pages/AuthPage.tsx",
+      "exports": [
+        "AuthPage"
+      ]
+    },
+    {
+      "file": "apps/web/src/pages/CollaborativeSitePage.tsx",
+      "exports": [
+        "CollaborativeSitePage"
+      ]
+    },
+    {
+      "file": "apps/web/src/pages/EditorPage.tsx",
+      "exports": [
+        "EditorPage"
+      ]
+    },
+    {
+      "file": "apps/web/src/pages/InvitePage.tsx",
+      "exports": [
+        "InvitePage"
+      ]
+    },
+    {
+      "file": "apps/web/src/pages/LandingPage.tsx",
+      "exports": [
+        "LandingPage"
+      ]
+    },
+    {
+      "file": "apps/web/src/pages/OnboardingPage.tsx",
+      "exports": [
+        "OnboardingPage"
+      ]
+    },
+    {
+      "file": "apps/web/src/pages/PublicSitePage.tsx",
+      "exports": [
+        "PublicSitePage"
+      ]
+    }
+  ],
+  "note": "Implementation exports are not all active user-facing routes. MobileEditor is dormant; active phone surface is MobileScreen. Registry and App routes are authoritative.",
+  "latestVerification": {
+    "main": "f11ad8d5cb869d47849834cdd8a692a5059d8021",
+    "registryUnchanged": true,
+    "routesUnchanged": true,
+    "addedUserFacingSourceFiles": [
+      "apps/web/src/features/paint/PaintEditorEntry.tsx",
+      "apps/web/src/features/paint/PaintEditorDialog.tsx",
+      "apps/web/src/features/modules/instagram/ProfileAvatarEditor.tsx"
+    ]
+  }
+}
