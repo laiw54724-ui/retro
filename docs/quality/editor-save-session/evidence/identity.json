@@ -1,0 +1,41 @@
+{
+  "base": "92d8e0294e99dbdf0a99ac183ca04cd78004f4ec",
+  "measuredRuntime": "2adb08e1fba33884f0a87647064733ed250349c3",
+  "buildApiOrigin": "http://127.0.0.1:5197",
+  "browserDevPort": 5312,
+  "targetedBrowserCases": 23,
+  "productionRouteCases": 2,
+  "localeResourceTests": 13,
+  "assets": [
+    {
+      "file": "CollaborativeSitePage-Cl3LRjVS.css",
+      "bytes": 67,
+      "sha256": "26b935c242125cf21cb08e7cbfc3d0010652be29838ac850cd3107d9177d408e"
+    },
+    {
+      "file": "CollaborativeSitePage-BLW1nhlV.js",
+      "bytes": 93287,
+      "sha256": "a2cdd6e37deb5125c0c54f09363f7f39d3e8606f773f52318145909c7e0574f4"
+    },
+    {
+      "file": "catalog.generated-Bz3d29Gr.js",
+      "bytes": 68192,
+      "sha256": "7140553b6bd33f5537e7efa8e8a7798841840df806d3888c9d6f4e47bd13bc69"
+    },
+    {
+      "file": "index-DJOqMNnC.js",
+      "bytes": 1590174,
+      "sha256": "78e8abc87e95a5e8ec16843748f8d5fab5d0071c870f9f267a466534f9b81bd3"
+    },
+    {
+      "file": "index-CwMizsTX.css",
+      "bytes": 148784,
+      "sha256": "0666c84d11a90bd481766604092da6262042d8a1f82ebb7b0cf20028ca54490a"
+    },
+    {
+      "file": "windowsIconManifest-BSvZw_z7.js",
+      "bytes": 168345,
+      "sha256": "7cb7906174fef3ce7a5d0673d7f8b97f08d9b2f043a52b5fef96b3fe4d4fc0dd"
+    }
+  ]
+}
