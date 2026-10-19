@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { THEME_PRESETS, type DesktopWindow, type RetroTheme, type SiteDocument } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
-import { COMING_SOON, moduleDefinitions, registry } from "../modules/registry";
+import { COMING_SOON, creatableModuleDefinitions, registry } from "../modules/registry";
 import { ThemeAppearanceEditor } from "./ThemeAppearanceEditor";
 import { FilePick } from "../modules/ui";
 import { useLocaleFormatting } from "../../i18n/format";
@@ -50,7 +50,7 @@ function AddTab({ onAdd }: { onAdd: Props["onAdd"] }) {
     <>
       <strong>{t("add.heading")}</strong>
       <span className="w98-hint">{t("add.hint")}</span>
-      {moduleDefinitions.map((module) => (
+      {creatableModuleDefinitions.map((module) => (
         <button key={module.type} type="button" className="w98-btn add-card" onClick={() => onAdd(module.type)}>
           <Icon name={module.icon} size={32} />
           <span className="add-card-text"><strong>{t(`modules.${module.type}.label`, { defaultValue: module.label })}</strong><span>{t(`modules.${module.type}.description`, { defaultValue: module.description })}</span></span>

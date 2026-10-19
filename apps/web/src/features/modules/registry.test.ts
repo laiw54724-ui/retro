@@ -5,8 +5,8 @@ import { createWindow, getModule, moduleDefinitions, registry, renderModule, WIN
 
 describe("module registry contract", () => {
   it("keeps one stable ordered definition for all registered v1 modules", () => {
-    expect(WINDOW_TYPES).toEqual(["document", "gallery", "links", "about", "instagram", "music", "moodboard", "explorer", "minesweeper", "character-dialog", "guestbook"]);
-    expect(new Set(moduleDefinitions.map((module) => module.type)).size).toBe(11);
+    expect(WINDOW_TYPES).toEqual(["image", "document", "gallery", "links", "about", "instagram", "music", "moodboard", "explorer", "minesweeper", "character-dialog", "guestbook"]);
+    expect(new Set(moduleDefinitions.map((module) => module.type)).size).toBe(12);
     expect(moduleDefinitions.map((module) => module.type)).toEqual(Object.keys(registry));
   });
 
@@ -15,7 +15,7 @@ describe("module registry contract", () => {
       expect(module.schemaVersion).toBe(1);
       expect(module.type).toBeTruthy();
       expect(module.icon).toBeTruthy();
-      expect(module.capabilities).toMatchObject({ editor: true, visitor: true, mobile: true });
+      expect(module.capabilities).toMatchObject({ editor: module.type !== "image", visitor: true, mobile: true });
       expect(module.mobile).toEqual({ mode: "window", icon: module.icon });
       expect(typeof module.View).toBe("function");
       expect(typeof module.InlineEditor).toBe("function");

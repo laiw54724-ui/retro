@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { i18n } from "../../i18n";
 import { danglingExplorerShortcuts, describeShortcutTargetParts, mergeLegacyDocumentIntoV2, newlyDanglingShortcuts, projectPublicSiteDocument, removeExplorerShortcuts, type DanglingShortcut, type DesktopWindow, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { createWindow } from "../modules/registry";
+import { canCreateWindowType } from "../../lib/imageWindowCreation";
 import type { SiteAccessRole } from "../../lib/collaboration";
 
 export type SaveStatus = "idle" | "dirty" | "saving" | "saved" | "error";
@@ -286,7 +287,7 @@ export const useEditorStore = create<EditorState>((set) => ({
     ? withHistory(state, { ...state.document, theme })
     : {}),
   addWindow: (type) => set((state) => {
-    if (!state.document) return {};
+    if (!state.document || !canCreateWindowType(type)) return {};
     const window = createWindow(type, state.document.windows.length);
     return withHistory(
       state,
@@ -305,7 +306,7 @@ export const useEditorStore = create<EditorState>((set) => ({
   duplicateWindow: (id) => set((state) => {
     if (!state.document) return {};
     const source = state.document.windows.find((window) => window.id === id);
-    if (!source) return {};
+    if (!source || !canCreateWindowType(source.type)) return {};
     const copyId = crypto.randomUUID();
     const maxZ = Math.max(0, ...state.document.windows.map((window) => window.layout.desktop.z));
     const copy = JSON.parse(JSON.stringify(source)) as DesktopWindow;

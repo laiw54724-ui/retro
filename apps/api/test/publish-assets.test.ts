@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { makeWindow } from "@retrodesk/shared";
 import { copyReferencedAssets } from "../src/lib/publish";
 
 const id = "11111111-1111-4111-8111-111111111111";
@@ -8,6 +9,23 @@ function withRef() { return { ...document, windows: [{ id: "w", title: "w", icon
 function withAudioRef() { return { ...document, windows: [{ id: "music", title: "Music", icon: "music", layout: { desktop: { x: 0, y: 0, w: 390, h: 430, z: 1 }, mobile: { order: 0 } }, defaultOpen: true, type: "music", content: { tracks: [{ id: "track", title: "Theme", artist: "OC", cover: null, coverUrl: "", source: { kind: "uploadedAudio", asset: `retro-asset:${id}` }, lyrics: "", rightsNote: "Original" }], playlist: { id: "playlist", title: "Themes", trackIds: ["track"] } } }] }; }
 
 describe("publish asset preparation", () => {
+  it.each([["png", "image/png"], ["webp", "image/webp"], ["gif", "image/gif"]])("uses the existing private image pipeline for %s without re-encoding or mutating the source", async (extension, mimeType) => {
+    const image = makeWindow("image"); if (image.type !== "image") throw new Error("image");
+    image.content.src = `retro-asset:${id}`;
+    const source = { ...document, windows: [image] };
+    const body = new ReadableStream(), put = vi.fn(async () => ({}));
+    const row = { id, owner_id: "user-a", site_id: "site-a", object_key: `draft/users/user-a/sites/site-a/${id}.${extension}`, storage_scope: "draft_private", mime_type: mimeType };
+    const supabase = { from: () => ({ select: () => ({ in: async () => ({ data: [row], error: null }) }) }) } as any;
+    const env = { PUBLIC_ASSET_BASE_URL: "https://assets.example", ASSETS: { head: async () => null, get: async () => ({ body, httpEtag: "x" }), put } } as any;
+    const result = await copyReferencedAssets(env, supabase, { ownerId: "user-a", siteId: "site-a", username: "demo", document: source });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.document.windows[0].content.src).toBe(`https://assets.example/published/demo/assets/${id}.${extension}`);
+    expect(put).toHaveBeenCalledWith(`draft/publication-assets/site-a/${id}.${extension}`, body, expect.objectContaining({ httpMetadata: expect.objectContaining({ contentType: mimeType, cacheControl: "private, no-store" }) }));
+    expect(image.content.src).toBe(`retro-asset:${id}`);
+    row.site_id = "other-site"; put.mockClear();
+    expect(await copyReferencedAssets(env, supabase, { ownerId: "user-a", siteId: "site-a", username: "demo", document: source })).toMatchObject({ ok: false, code: "foreign" });
+    expect(put).not.toHaveBeenCalled();
+  });
   it("stages private assets while preparing unchanged immutable public URLs", async () => {
     const put = vi.fn(async (key: string, _body: ReadableStream, _options: R2PutOptions) => ({ key }));
     const supabase = { from: () => ({ select: () => ({ in: async () => ({ data: [{ id, owner_id: "user-a", site_id: "site-a", object_key: `draft/users/user-a/sites/site-a/${id}.png`, storage_scope: "draft_private", mime_type: "image/png" }], error: null }) }) }) } as any;

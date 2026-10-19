@@ -51,12 +51,15 @@ describe("strict image window reader contract", () => {
     expect(oldDiscriminant.safeParse(makeWindow("image")).success).toBe(false);
   });
   it("retains images in public projection without releasing unrelated private entities", () => {
-    const document = canonical(), before = structuredClone(document);
+    const legacy = createStarterDocument("Private profile", "classic98", "instagram"); legacy.windows.push(makeWindow("image"));
+    const document = canonical(legacy);
+    expect(document.entities.profiles.length).toBeGreaterThan(0);
     document.entities.profiles.forEach((profile) => { profile.visibility = "draft"; });
+    const before = structuredClone(document);
     const result = projectPublicSiteDocument(document, "site-a"); if (!result.ok || result.version !== 2) throw new Error("public projection");
     expect(result.document.windows.at(-1)).toEqual(document.windows.at(-1));
     expect(result.document.entities.profiles).toEqual([]);
-    expect(before.windows).toEqual(document.windows);
+    expect(document).toEqual(before);
   });
   it("warns for content images without alt but accepts explicitly decorative empty alt", () => {
     const document = imageDocument(), image = document.windows.at(-1)!;

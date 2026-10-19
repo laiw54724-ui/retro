@@ -1,4 +1,5 @@
 import { CLIENT_APPEARANCE_CONTRACT } from "./appearanceCompatibility";
+import { CLIENT_IMAGE_WINDOW_CONTRACT } from "./imageCompatibility";
 import type { ImportPreview, RetroExportPackage, SiteDocument, VersionedSiteDocument, VersionedSiteDocumentInput } from "@retrodesk/shared";
 import { supabase } from "./supabase";
 import type { CollaboratorRole, CreatedSiteInvite, SiteAccessRole, SiteInvite, SiteMember } from "./collaboration";
@@ -87,7 +88,7 @@ export const api = {
     return request<{ sites: SiteListRecord[] }>("/api/sites");
   },
   createSite(input: { username: string; siteName: string; document: SiteDocument }) {
-    return request<{ site: Omit<SiteRecord, "access_role"> }>("/api/sites", { method: "POST", body: JSON.stringify({ ...input, clientAppearanceContract: CLIENT_APPEARANCE_CONTRACT }) });
+    return request<{ site: Omit<SiteRecord, "access_role"> }>("/api/sites", { method: "POST", body: JSON.stringify({ ...input, clientAppearanceContract: CLIENT_APPEARANCE_CONTRACT, clientImageWindowContract: CLIENT_IMAGE_WINDOW_CONTRACT }) });
   },
   getSite(siteId: string) {
     return request<{ site: SiteRecord }>("/api/sites/" + siteId, { cache: "no-store" })
@@ -96,7 +97,7 @@ export const api = {
   saveDraft(siteId: string, expectedVersion: number, document: VersionedSiteDocumentInput) {
     return request<{ version: number; updatedAt: string }>("/api/sites/" + siteId + "/draft", {
       method: "PUT",
-      body: JSON.stringify({ expectedVersion, document, clientAppearanceContract: CLIENT_APPEARANCE_CONTRACT })
+      body: JSON.stringify({ expectedVersion, document, clientAppearanceContract: CLIENT_APPEARANCE_CONTRACT, clientImageWindowContract: CLIENT_IMAGE_WINDOW_CONTRACT })
     });
   },
   publish(siteId: string, expectedVersion: number) {
@@ -119,10 +120,10 @@ export const api = {
     return download(`/api/sites/${encodeURIComponent(siteId)}/export?scope=${scope}`);
   },
   previewImport(value: unknown) {
-    return request<{ preview: ImportPreview; digest: string }>(`/api/imports/preview?clientAppearanceContract=${CLIENT_APPEARANCE_CONTRACT}`, { method: "POST", body: JSON.stringify(value) });
+    return request<{ preview: ImportPreview; digest: string }>(`/api/imports/preview?clientAppearanceContract=${CLIENT_APPEARANCE_CONTRACT}&clientImageWindowContract=${CLIENT_IMAGE_WINDOW_CONTRACT}`, { method: "POST", body: JSON.stringify(value) });
   },
   confirmImport(value: RetroExportPackage, input: { digest: string; username: string; siteName: string; allowMissingMedia: boolean }) {
-    const query = new URLSearchParams({ clientAppearanceContract: String(CLIENT_APPEARANCE_CONTRACT), digest: input.digest, username: input.username, siteName: input.siteName, allowMissingMedia: String(input.allowMissingMedia) });
+    const query = new URLSearchParams({ clientAppearanceContract: String(CLIENT_APPEARANCE_CONTRACT), clientImageWindowContract: String(CLIENT_IMAGE_WINDOW_CONTRACT), digest: input.digest, username: input.username, siteName: input.siteName, allowMissingMedia: String(input.allowMissingMedia) });
     return request<{ site: { id: string; username: string; site_name: string; draft_version: number }; missingMedia: ImportPreview["missingMedia"] }>(`/api/imports/confirm?${query}`, { method: "POST", body: JSON.stringify(value) });
   },
   publicGuestbook(username: string) {

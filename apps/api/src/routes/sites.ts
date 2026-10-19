@@ -1,4 +1,5 @@
 import { APPEARANCE_UPGRADE_MESSAGE, appearanceWriteBlocked } from "../lib/appearanceCompatibility";
+import { IMAGE_UPGRADE_MESSAGE, IMAGE_WINDOW_WRITE_CONTRACT, imageWriteBlocked } from "../lib/imageCompatibility";
 import { Hono, type Context } from "hono";
 import { buildPublicMetadata, projectPublicSiteDocument, UsernameSchema, validateSiteDocumentScope } from "@retrodesk/shared";
 import type { Env } from "../env";
@@ -99,6 +100,7 @@ sites.post("/sites", async (c) => {
   if (user instanceof Response) return user;
   const raw = await c.req.json().catch(() => null);
   if (appearanceWriteBlocked(raw?.document, undefined, raw?.clientAppearanceContract)) return jsonError(c, 426, "client_upgrade_required", APPEARANCE_UPGRADE_MESSAGE);
+  if (imageWriteBlocked(raw?.document, undefined, raw?.clientImageWindowContract)) return jsonError(c, 426, "client_upgrade_required", IMAGE_UPGRADE_MESSAGE);
   const body = CreateSiteSchema.safeParse(raw);
   if (!body.success) return jsonError(c, 400, "invalid_site", "Invalid site payload", body.error.flatten());
 
@@ -137,7 +139,7 @@ sites.get("/sites/:siteId", async (c) => {
   if (error) return jsonError(c, 500, "db_error", "Could not load site");
   if (!data) return jsonError(c, 404, "not_found", "Site not found");
   c.header("Cache-Control", "private, no-store");
-  return c.json({ site: { ...data, access_role: access.role, writeCompatibility: { appearanceP2: 1 } } });
+  return c.json({ site: { ...data, access_role: access.role, writeCompatibility: { appearanceP2: 1, imageWindow: IMAGE_WINDOW_WRITE_CONTRACT } } });
 });
 
 sites.put("/sites/:siteId/draft", async (c) => {
@@ -157,6 +159,7 @@ sites.put("/sites/:siteId/draft", async (c) => {
   // This is the same snapshot whose version is retained in the conditional update.
   // Incoming-only detection would allow an old current-version client to strip fields.
   if (appearanceWriteBlocked(raw?.document, current.draft_document, raw?.clientAppearanceContract)) return jsonError(c, 426, "client_upgrade_required", APPEARANCE_UPGRADE_MESSAGE);
+  if (imageWriteBlocked(raw?.document, current.draft_document, raw?.clientImageWindowContract)) return jsonError(c, 426, "client_upgrade_required", IMAGE_UPGRADE_MESSAGE);
   const payload = SaveDraftSchema.safeParse(raw);
   if (!payload.success) return jsonError(c, 400, "invalid_draft", "Invalid draft payload", payload.error.flatten());
   const scopeDiagnostics = validateSiteDocumentScope(payload.data.document, current.id);
