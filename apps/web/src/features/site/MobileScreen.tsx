@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { makeWindow, THEME_PRESETS, type CollectionEntityV2, type DesktopWindow, type PostEntityV2, type ProfileEntityV2, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
+import { ModalDialog } from "../../components/ModalDialog";
 import { IconPicker } from "../modules/links/IconPicker";
 import { useThemeView } from "../../lib/themeView";
 import { ImageWindowShell } from "./ImageWindowShell";
@@ -194,33 +195,27 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
       )}
 
       {editor && sheet ? (
-        <>
-          <div className="m-scrim" onClick={() => setSheet(null)} />
-          <div role="dialog" aria-label={t(({ add: "mobile.addWindow", edit: "mobile.editWindowTitle", theme: "mobile.theme" } as const)[sheet])} className="m-sheet w98-window" style={{ fontFamily }}>
-            <div className="m-sheet-title"><strong>{t(({ add: "mobile.addWindow", edit: "mobile.editWindowTitle", theme: "mobile.theme" } as const)[sheet])}</strong><button type="button" className="m-btn sq" aria-label={common("actions.close")} onClick={() => setSheet(null)}>×</button></div>
-            <div className="m-sheet-body">
-              {sheet === "add" ? creatableModuleDefinitions.filter((module) => module.type !== "image" || imageWriter).map((module) => (
-                <button key={module.type} type="button" className="w98-btn m-add" onClick={() => { store.addWindow(module.type); setSheet(null); }}>
-                  <Icon name={module.mobile.icon} size={32} />
-                  <span className="add-card-text"><strong>{t(`modules.${module.type}.label`, { defaultValue: module.label })}</strong><span>{t(`modules.${module.type}.description`, { defaultValue: module.description })}</span></span>
-                </button>
-              )) : null}
-              {sheet === "theme" ? <ThemeAppearanceEditor theme={document.theme} previewTheme={store.themePreview} onPreviewTheme={store.setThemePreview} onTheme={store.setTheme} upload={upload} /> : null}
-              {sheet === "edit" ? (
-                selected ? <MobileEdit key={selected.id} theme={theme} window={selected} count={ordered.length} siteId={siteId} upload={upload} /> : <span className="m-note">{t("mobileScreen.clickAnIconOnThe")}</span>
-              ) : null}
-              {sheet === "edit" ? (
-                <>
-                  <div className="w98-field"><span className="w98-hint">{t("mobileEditor.iconColumns")}</span>
-                    <div className="seg">{([3, 4] as const).map((count) => <button key={count} type="button" className={"w98-btn grow" + (document.mobileColumns === count ? " on" : "")} onClick={() => store.setMobileColumns(count)}>{t("layout.columnCount", { count })}</button>)}</div>
-                  </div>
-                  <label className="check-row m-check"><input type="checkbox" checked={store.versionedDocument?.seo?.indexing ?? true} onChange={(event) => store.setSeoIndexing(event.target.checked)} />{t("rightPanel.allowSearchEnginesToIndex")}</label>
-                  <span className="w98-hint">{t("mobileScreen.turningThisOffOnlyOutputs")}</span>
-                </>
-              ) : null}
-            </div>
-          </div>
-        </>
+        <ModalDialog title={t(({ add: "mobile.addWindow", edit: "mobile.editWindowTitle", theme: "mobile.theme" } as const)[sheet])} className="m-sheet" bodyClassName="m-sheet-body" width={520} onClose={() => setSheet(null)}>
+          {sheet === "add" ? creatableModuleDefinitions.filter((module) => module.type !== "image" || imageWriter).map((module) => (
+            <button key={module.type} type="button" className="w98-btn m-add" onClick={() => { store.addWindow(module.type); setSheet(null); }}>
+              <Icon name={module.mobile.icon} size={32} />
+              <span className="add-card-text"><strong>{t(`modules.${module.type}.label`, { defaultValue: module.label })}</strong><span>{t(`modules.${module.type}.description`, { defaultValue: module.description })}</span></span>
+            </button>
+          )) : null}
+          {sheet === "theme" ? <ThemeAppearanceEditor theme={document.theme} previewTheme={store.themePreview} onPreviewTheme={store.setThemePreview} onTheme={store.setTheme} upload={upload} /> : null}
+          {sheet === "edit" ? (
+            selected ? <MobileEdit key={selected.id} theme={theme} window={selected} count={ordered.length} siteId={siteId} upload={upload} /> : <span className="m-note">{t("mobileScreen.clickAnIconOnThe")}</span>
+          ) : null}
+          {sheet === "edit" ? (
+            <>
+              <div className="w98-field"><span className="w98-hint">{t("mobileEditor.iconColumns")}</span>
+                <div className="seg">{([3, 4] as const).map((count) => <button key={count} type="button" className={"w98-btn grow" + (document.mobileColumns === count ? " on" : "")} onClick={() => store.setMobileColumns(count)}>{t("layout.columnCount", { count })}</button>)}</div>
+              </div>
+              <label className="check-row m-check"><input type="checkbox" checked={store.versionedDocument?.seo?.indexing ?? true} onChange={(event) => store.setSeoIndexing(event.target.checked)} />{t("rightPanel.allowSearchEnginesToIndex")}</label>
+              <span className="w98-hint">{t("mobileScreen.turningThisOffOnlyOutputs")}</span>
+            </>
+          ) : null}
+        </ModalDialog>
       ) : null}
     </div>
   );

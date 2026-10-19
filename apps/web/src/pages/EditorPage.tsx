@@ -21,6 +21,7 @@ import { VisitorPreview } from "../features/editor/VisitorPreview";
 import { publicSiteLabel, publicSiteUrl } from "../lib/publicSiteUrl";
 import { Icon } from "../components/Icon";
 import { RetroButton } from "../components/RetroButton";
+import { ModalDialog } from "../components/ModalDialog";
 import { useAuth } from "../app/AuthProvider";
 import { AssetSourceProvider } from "../lib/assetSource";
 import { buildProfileDirectory } from "../features/modules/instagram/profileDirectory";
@@ -780,24 +781,20 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       ) : null}
 
       {publishPrompt ? (
-        <div className="modal-backdrop" role="presentation">
-          <section className="retro-panel editor-dialog" role="dialog" aria-modal="true" aria-labelledby="publish-title">
-            <header className="landing-titlebar" id="publish-title">{t("editor.publishRetroDesktop")}</header>
-            <div className="dialog-body">
-              <h2>{t("editor.prePublishCheck")}</h2>
-              <p>{t("editor.publicUrl")}<strong>{publicSiteLabel(store.username)}</strong></p>
-              <ul className="publish-checks" aria-label={t("editor.prePublishCheckResults")}>
-                {publishChecks.map((check, index) => <li key={index} className={check.level}><span aria-hidden="true">{check.level === "ok" ? "✓" : check.level === "warn" ? "!" : "×"}</span>{translateSystemMessage(check.text)}</li>)}
-              </ul>
-              <p>{hasBlockingCheck(publishChecks) ? t("editor.fixTheRedItemsFirst") : t("editor.yellowItemsAreSuggestionsAnd")}</p>
-              {publishing ? <div className="publish-progress" role="progressbar" aria-label={t("editor.publishing")}><i /></div> : null}
-              <div className="button-row end">
-                <RetroButton disabled={publishing} onClick={() => setPublishPrompt(false)}>{t("editor.cancel")}</RetroButton>
-                <RetroButton className="primary" disabled={publishing || hasBlockingCheck(publishChecks)} onClick={confirmPublish}>{publishing ? t("editor.publishing2") : t("editor.confirmAndPublish")}</RetroButton>
-              </div>
-            </div>
-          </section>
-        </div>
+        <ModalDialog title={t("editor.publishRetroDesktop")} className="publish-preflight" width={520} closeDisabled={publishing} onClose={() => setPublishPrompt(false)} actions={
+          <>
+            <RetroButton data-autofocus disabled={publishing} onClick={() => setPublishPrompt(false)}>{t("editor.cancel")}</RetroButton>
+            <RetroButton className="primary" disabled={publishing || hasBlockingCheck(publishChecks)} onClick={confirmPublish}>{publishing ? t("editor.publishing2") : t("editor.confirmAndPublish")}</RetroButton>
+          </>
+        }>
+          <h2>{t("editor.prePublishCheck")}</h2>
+          <p>{t("editor.publicUrl")}<strong>{publicSiteLabel(store.username)}</strong></p>
+          <ul className="publish-checks" aria-label={t("editor.prePublishCheckResults")}>
+            {publishChecks.map((check, index) => <li key={index} className={check.level}><span aria-hidden="true">{check.level === "ok" ? "✓" : check.level === "warn" ? "!" : "×"}</span>{translateSystemMessage(check.text)}</li>)}
+          </ul>
+          <p>{hasBlockingCheck(publishChecks) ? t("editor.fixTheRedItemsFirst") : t("editor.yellowItemsAreSuggestionsAnd")}</p>
+          {publishing ? <div className="publish-progress" role="progressbar" aria-label={t("editor.publishing")}><i /></div> : null}
+        </ModalDialog>
       ) : null}
 
       {publishSuccess ? (
