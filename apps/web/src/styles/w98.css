@@ -662,3 +662,16 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 .integrity-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; max-height: 40vh; overflow-y: auto; }
 .integrity-list li { display: flex; flex-direction: column; gap: 2px; padding: 6px 8px; background: #fff; box-shadow: var(--w98-sunken); overflow-wrap: anywhere; }
 .integrity-list small { font-size: 12px; color: #333; }
+
+/* P2 controls live in owner panels; only the sample receives author colors. */
+.p2-color-controls { min-width: 0; }
+.p2-color-row { margin: 10px 0; min-width: 0; }
+.p2-swatches { display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap; }
+.p2-swatches .swatch { min-width: 32px; min-height: 32px; }
+.p2-preview { padding: 10px; margin: 8px 0; min-width: 0; }
+.p2-preview-label { display: inline-block; padding: 2px 5px; margin-bottom: 8px; max-width: 100%; overflow-wrap: anywhere; }
+.p2-preview-frame { padding: 3px; min-width: 0; }
+.p2-preview-frame .titlebar-preview { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.p2-preview-content { padding: 10px; overflow-wrap: anywhere; }
+.p2-contrast-warning { padding: 6px; background: #fffbe7; color: #5c3600; border: 1px solid #9a8500; font-size: 12px; overflow-wrap: anywhere; }
+.p2-reset-actions { display: grid; gap: 8px; margin-top: 10px; }

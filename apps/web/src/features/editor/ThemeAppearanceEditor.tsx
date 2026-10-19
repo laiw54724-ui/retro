@@ -1,3 +1,5 @@
+import { APPEARANCE_P2_WRITER_ENABLED } from "../../lib/appearanceP2Writer";
+import { AppearanceColorControls, AppearanceColorPreview } from "./AppearanceColorControls";
 import { useEffect, useState } from "react";
 import { themeLabel } from "../../i18n/themeNames";
 import { i18n } from "../../i18n";
@@ -55,10 +57,14 @@ export function ThemeAppearanceEditor({ theme, onTheme, upload }: { theme: Retro
       <fieldset className="w98-fieldset"><legend>{tr("themeAppearanceEditor.windowTitleBars")}</legend>
         <div className="color-fields">
           <AppearanceColorInput label={tr("themeAppearanceEditor.themeTitleStartColor")} value={draft.titleFrom} onChange={(titleFrom) => patch({ titleFrom })} />
-          <AppearanceColorInput label={tr("themeAppearanceEditor.themeTitleEndColor")} value={draft.titleTo} onChange={(titleTo) => patch({ titleTo })} />
+          <AppearanceColorInput label={tr("themeAppearanceEditor.themeTitleEndColor")} disabled={draft.appearance?.titleGradient === false} value={draft.titleTo} onChange={(titleTo) => patch({ titleTo })} />
         </div>
         <div className="title-swatches">{TITLES.map(([from, to]) => <button key={from + to} type="button" aria-label={tr("themeAppearanceEditor.titleBarColors")} aria-pressed={draft.titleFrom === from && draft.titleTo === to} className="swatch h20" style={{ background: `linear-gradient(90deg, ${from}, ${to})`, outline: draft.titleFrom === from && draft.titleTo === to ? "2px solid #000080" : "none" }} onClick={() => patch({ titleFrom: from, titleTo: to })} />)}</div>
       </fieldset>
+      {APPEARANCE_P2_WRITER_ENABLED ? <fieldset className="w98-fieldset" data-appearance-p2-writer><legend>{tr("p2Appearance.siteColors")}</legend>
+        <AppearanceColorPreview theme={draft} />
+        <AppearanceColorControls theme={draft} appearance={draft.appearance} onChange={(appearance) => patch({ appearance })} />
+      </fieldset> : null}
       <fieldset className="w98-fieldset"><legend>{tr("themeAppearanceEditor.taskbar")}</legend>
         <div className="swatches">{TASKBARS.map((color) => <button key={color} type="button" aria-label={tr("themeAppearanceEditor.taskbarColor", { color })} aria-pressed={draft.taskbar === color} className="swatch sq26" style={{ background: color, outline: draft.taskbar === color ? "2px solid #000080" : "none" }} onClick={() => patch({ taskbar: color })} />)}</div>
       </fieldset>
