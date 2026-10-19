@@ -40,3 +40,16 @@ No deployed compatibility is established. Reader/guard API and compatible web bu
 ## Earlier delivery pause and preserved patch
 
 The earlier required commit/push command was not executed: automatic approval review failed while running its remote compact task because the selected model was at capacity. This is an approval-service failure, not an unsafe-action determination. No bypass was attempted. At that pause HEAD remained the exact source 956d26d4 with the implemented, validated changes in the dedicated worktree. A complete patch (tracked and new files) is saved at ../appearance-compat-35.patch for review/apply against that base. On resume, the saved patch was verified against the unchanged worktree and the Chromium last-run record confirmed passed with no failures. Publishing is retried through the normal approved path; the PR metadata and delivery report record its resulting head or remaining blocker. #91/#94 and every other worktree remain unchanged.
+
+## Independent review fix: asset migration must respect the upgrade pause
+
+Follow-up to #98 head 5d8807625f30cb104162d2e87175258eb9b91b9d. The migration action now checks the persistent pause before entry, after its dirty-draft save, before dispatching migration, after migration returns and after inventory refresh. Both migration controls include upgradeRequired independently of saveStatus, so further local editing cannot re-enable them. Migration errors route 426 through stopForUpgrade, which closes the inventory dialog so recovery is visible. Late responses after pause do not mark saved, start the next migration step, replace canonical/legacy state, reset history or overwrite recovery feedback. Requests already dispatched may finish server-side; this does not claim remote cancellation or rollback.
+
+Five focused browser regressions cover disabled controls after continued editing, 426 from each migration action request, and delayed save/migration successes after an independent autosave 426. They verify retained canonical recovery JSON, window appearance, undo/redo history and no further requests. Existing migration success and 426 recovery/publish checks also pass: **10 Chromium tests passed, 4 opt-in writer-advertisement tests intentionally skipped**. Web lint/types and git diff --check pass. An initial test-only setup click was intercepted by the legacy warning banner; selecting the already-selected window was unnecessary and was removed before the passing run.
+
+```
+pnpm --filter @retrodesk/web lint
+PLAYWRIGHT_PORT=5198 pnpm exec playwright test tests/e2e/appearance-migration-upgrade.spec.ts tests/e2e/asset-migration.spec.ts tests/e2e/appearance-compatibility.spec.ts --workers=1 --output=test-results/migration-upgrade-fix
+```
+
+This follow-up changes only EditorPage, the focused migration regression suite and this evidence. Production writer exclusion, API contracts, reviewed #91/#94 heads and deployment state are unchanged. No remote migration, merge, deployment or unrelated aggregate gate was performed.

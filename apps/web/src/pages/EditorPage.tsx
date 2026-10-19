@@ -99,6 +99,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     setConflict(false); setMessage("");
     setPublishPrompt(false);
     setPublishSuccess(null);
+    setAssetInventoryOpen(false);
     store.setSaveStatus("error");
     return true;
   }
@@ -488,6 +489,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   }
 
   async function migrateLegacyAssets() {
+    if (upgradePaused.current) { setUpgradeRecoveryOpen(true); return; }
     if (!store.document || migratingAssets) return;
     setMigratingAssets(true);
     try {
@@ -495,10 +497,15 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       if (store.saveStatus === "dirty") {
         const documentToSave = store.versionedDocument ?? versionedDraftRef.current ?? store.document;
         const saved = await api.saveDraft(siteId, version, documentToSave);
+        // Another request may have paused this editor while the save was pending.
+        if (upgradePaused.current) return;
         store.markSaved(saved.version, store.document);
         version = saved.version;
       }
+      if (upgradePaused.current) return;
       const result = await api.migrateLegacyAssets(siteId, version);
+      // A late migration response must never replace the retained local draft.
+      if (upgradePaused.current) return;
       const loaded = loadVersionedSiteDocument(result.document, { siteId, migrateV1: true });
       if (!loaded.ok) throw new Error(loaded.diagnostics[0]?.message ?? t("editor.theMigratedDraftsFormatIs"));
       const legacy = loadedLegacyDocument(loaded);
@@ -508,6 +515,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       setVersionedDraft(canonical);
       store.setVersionedDocument(canonical);
       const refreshed = await refreshAssetInventory();
+      if (upgradePaused.current) return;
       const stillLegacy = refreshed.filter((asset) => asset.storageScope === "legacy_public");
       setMessage(stillLegacy.length
         ? t("editor.migratedButLegacyAssetsAre", { migratedCount: result.migratedCount, length: stillLegacy.length })
@@ -516,6 +524,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
           : t("editor.convertedLegacyAssetsToPrivate", { migratedCount: result.migratedCount }));
       if (stillLegacy.length || result.cleanupWarnings.length) setAssetInventoryOpen(true);
     } catch (error) {
+      if (stopForUpgrade(error) || upgradePaused.current) return;
       const assetId = error instanceof ApiError && error.details && typeof error.details === "object" && "assetId" in error.details ? String((error.details as { assetId: unknown }).assetId) : "";
       const asset = assetInventory.find((item) => item.id === assetId);
       setMessage(`${error instanceof Error ? error.message : t("page.assetMigrationFailed")}${asset ? t("page.assetSuffix", { name: asset.name || asset.id }) : ""}`);
@@ -622,7 +631,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
           </span> : null}
         </div>
         <button type="button" onClick={() => setAssetInventoryOpen(true)}>{t("editor.seeWhichOnes")}</button>
-        {legacyAssets.length > 0 && actions.migrateAssets ? <button disabled={migratingAssets || store.saveStatus === "saving" || store.saveStatus === "error" || conflict} onClick={migrateLegacyAssets}>{migratingAssets ? t("editor.migrating") : t("editor.convertToPrivateAssets")}</button> : null}
+        {legacyAssets.length > 0 && actions.migrateAssets ? <button disabled={upgradeRequired || migratingAssets || store.saveStatus === "saving" || store.saveStatus === "error" || conflict} onClick={migrateLegacyAssets}>{migratingAssets ? t("editor.migrating") : t("editor.convertToPrivateAssets")}</button> : null}
       </div> : null}
 
       {assetInventoryOpen ? <div className="modal-backdrop" role="presentation">
@@ -645,7 +654,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
             </ul> : <p role="status">{t("editor.noLegacyAssetsNeedMigration")}</p>}
             <div className="button-row end">
               <RetroButton onClick={() => void refreshAssetInventory().catch((error) => setMessage(error instanceof Error ? error.message : t("editor.couldntReScanAssets")))}>{t("editor.reScan")}</RetroButton>
-              {legacyAssets.length && actions.migrateAssets ? <RetroButton className="primary" disabled={migratingAssets || store.saveStatus === "saving" || store.saveStatus === "error" || conflict} onClick={migrateLegacyAssets}>{migratingAssets ? t("editor.migrating") : t("editor.convertToPrivate", { length: legacyAssets.length })}</RetroButton> : null}
+              {legacyAssets.length && actions.migrateAssets ? <RetroButton className="primary" disabled={upgradeRequired || migratingAssets || store.saveStatus === "saving" || store.saveStatus === "error" || conflict} onClick={migrateLegacyAssets}>{migratingAssets ? t("editor.migrating") : t("editor.convertToPrivate", { length: legacyAssets.length })}</RetroButton> : null}
               <RetroButton onClick={() => setAssetInventoryOpen(false)}>{t("editor.close")}</RetroButton>
             </div>
           </div>
