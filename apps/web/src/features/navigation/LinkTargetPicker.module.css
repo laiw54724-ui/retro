@@ -3,3 +3,4 @@
 .option[aria-selected="true"] { outline: 2px solid #000080; outline-offset: -3px; font-weight: bold; }
 .types { display: flex; gap: 6px; flex-wrap: wrap; }
 .types button { min-height: 44px; }
+.selection { height: 3em; overflow: auto; overflow-wrap: anywhere; }

@@ -345,6 +345,9 @@
     "makePublic": "設為公開",
     "makeDraft": "設為草稿",
     "theShortcutWillBePlaced": "捷徑會放在「{{v1}}」，點選要指向的內容。",
+    "changeTarget": "變更目標",
+    "changeShortcutTarget": "變更捷徑「{{label}}」的目標",
+    "changeTargetHint": "選擇新的目標，捷徑的名稱、圖示與位置都會保留。",
     "repairShortcut": "修復捷徑「{{label}}」",
     "theOriginalTargetNoLonger": "原本指向的內容已經不存在。選一個新的目標，捷徑名稱會保留。",
     "pointToThis": "改指向這個",
@@ -525,6 +528,7 @@
     "untitledWindow": "未命名視窗"
   },
   "navigationTargets": {
+    "selected": "目前選擇：{{group}}：{{label}}",
     "choose": "選擇目的地…",
     "apply": "套用",
     "removeTarget": "移除目的地",

@@ -345,6 +345,9 @@
     "makePublic": "Make public",
     "makeDraft": "Make draft",
     "theShortcutWillBePlaced": "The shortcut will be placed in \"{{v1}}\". Choose what it should point to.",
+    "changeTarget": "Change target",
+    "changeShortcutTarget": "Change target for \"{{label}}\"",
+    "changeTargetHint": "Choose a new target. The shortcut’s name, icon and location will be kept.",
     "repairShortcut": "Repair shortcut \"{{label}}\"",
     "theOriginalTargetNoLonger": "The original target no longer exists. Choose a new target; the shortcut's name will be kept.",
     "pointToThis": "Point to this",
@@ -525,6 +528,7 @@
     "untitledWindow": "Untitled window"
   },
   "navigationTargets": {
+    "selected": "Selected: {{group}}: {{label}}",
     "choose": "Choose destination…",
     "apply": "Apply",
     "removeTarget": "Remove destination",

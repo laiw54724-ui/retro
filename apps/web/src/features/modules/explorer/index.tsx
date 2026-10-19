@@ -12,7 +12,7 @@ import {
 } from "./explorerModel";
 
 type Item = { kind: "folder"; id: string } | { kind: "shortcut"; id: string };
-type DialogState = { type: "create-shortcut" } | { type: "repair"; shortcutId: string } | { type: "move"; item: Item } | { type: "delete"; folderId: string } | null;
+type DialogState = { type: "create-shortcut" } | { type: "retarget"; shortcutId: string } | { type: "move"; item: Item } | { type: "delete"; folderId: string } | null;
 
 const newId = () => globalThis.crypto?.randomUUID?.() ?? `explorer-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const GLYPH = { window: "▣", profile: "☺", post: "▧" } as const;
@@ -68,6 +68,7 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
   const [dragging, setDragging] = useState<Item | null>(null);
   const [dropOver, setDropOver] = useState<string | null>(null);
   const actionBar = useRef<HTMLDivElement | null>(null);
+  const targetButton = useRef<HTMLButtonElement | null>(null);
   const idPrefix = useId();
   const coarse = useCoarsePointer(ctx.mobile);
   const content = window.content;
@@ -132,10 +133,17 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
     setRenamingId(copy.id);
     setStatus(tr("explorer.duplicateShortcutCreatedItPoints"));
   }
-  function repairShortcut(shortcutId: string, option: TargetOption) {
-    if (!ctx.siteId) return;
-    setContent({ ...content, shortcuts: content.shortcuts.map((shortcut) => shortcut.id === shortcutId ? { ...shortcut, target: { siteId: ctx.siteId!, id: option.id, kind: option.kind } } : shortcut) });
+  function closeTargetPicker() {
     setDialog(null);
+    requestAnimationFrame(() => targetButton.current?.focus());
+  }
+  function changeShortcutTarget(shortcutId: string, option: TargetOption) {
+    if (!ctx.siteId) return;
+    const current = content.shortcuts.find((shortcut) => shortcut.id === shortcutId);
+    if (!current) { closeTargetPicker(); return; }
+    if (current.target.siteId === ctx.siteId && current.target.kind === option.kind && current.target.id === option.id) { closeTargetPicker(); return; }
+    setContent({ ...content, shortcuts: content.shortcuts.map((shortcut) => shortcut.id === shortcutId ? { ...shortcut, target: { siteId: ctx.siteId!, id: option.id, kind: option.kind } } : shortcut) });
+    closeTargetPicker();
     setStatus(tr("explorer.theShortcutNowPointsTo", { label: option.label }));
   }
   function commitRename(item: Item, value: string) {
@@ -224,7 +232,8 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
   const selectedFolder = selected?.kind === "folder" ? foldersById.get(selected.id) : undefined;
   const selectedShortcut = selected?.kind === "shortcut" ? content.shortcuts.find((shortcut) => shortcut.id === selected.id) : undefined;
   const selectedStatus = selectedShortcut ? statusOf(selectedShortcut) : null;
-  const repairing = dialog?.type === "repair" ? content.shortcuts.find((shortcut) => shortcut.id === dialog.shortcutId) : undefined;
+  const retargeting = dialog?.type === "retarget" ? content.shortcuts.find((shortcut) => shortcut.id === dialog.shortcutId) : undefined;
+  const repairing = retargeting && statusOf(retargeting).status === "missing";
   const moving = dialog?.type === "move" ? dialog.item : null;
   const movingName = moving ? (moving.kind === "folder" ? foldersById.get(moving.id)?.name : content.shortcuts.find((shortcut) => shortcut.id === moving.id)?.label) ?? "" : "";
 
@@ -308,7 +317,7 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
                 <IconPickerAction key={`${window.id}:${selected.kind}:${selected.id}`} mediaTarget={{ windowId: window.id, windowType: "explorer", itemId: selected.id, itemKind: selected.kind }} siteId={ctx.siteId} upload={ctx.upload} value={(selectedFolder ?? selectedShortcut)?.icon ?? ""} defaultValue="" defaultPreview={selectedFolder ? "folder" : "link"} label={selectedFolder?.name ?? selectedShortcut?.label} onChange={(icon) => setIcon(selected, icon)} />
                 <button type="button" className="w98-btn" onClick={() => setDialog({ type: "move", item: selected })}>{tr("explorer.moveTo")}</button>
                 {selectedShortcut ? <button type="button" className="w98-btn" onClick={() => duplicateShortcut(selectedShortcut)}>{tr("explorer.duplicateShortcut")}</button> : null}
-                {selectedShortcut && selectedStatus?.status === "missing" ? <button type="button" className="w98-btn primary" onClick={() => setDialog({ type: "repair", shortcutId: selectedShortcut.id })}>{tr("explorer.repairTarget")}</button> : null}
+                {selectedShortcut ? <button ref={targetButton} type="button" className={`w98-btn${selectedStatus?.status === "missing" ? " primary" : ""}`} onClick={() => setDialog({ type: "retarget", shortcutId: selectedShortcut.id })}>{tr(selectedStatus?.status === "missing" ? "explorer.repairTarget" : "explorer.changeTarget")}</button> : null}
                 <button type="button" className="w98-btn" onClick={() => setVisibility(selected, (selectedFolder ?? selectedShortcut)?.visibility === "draft" ? "published" : "draft")}>{(selectedFolder ?? selectedShortcut)?.visibility === "draft" ? tr("explorer.makePublic") : tr("explorer.makeDraft")}</button>
                 <button type="button" className="w98-btn danger" onClick={() => requestDelete(selected)}>{tr("links.delete")}</button>
               </div>
@@ -318,7 +327,7 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
       </div>
 
       {dialog?.type === "create-shortcut" ? <TargetPickerDialog title={tr("explorer.createShortcut")} hint={tr("explorer.theShortcutWillBePlaced", { v1: pathLabel(content.folders, folderId) })} confirmLabel={tr("explorer.createShortcut")} options={targetOptions} onPick={createShortcut} onClose={() => setDialog(null)} /> : null}
-      {dialog?.type === "repair" && repairing ? <TargetPickerDialog title={tr("explorer.repairShortcut", { label: repairing.label })} hint={tr("explorer.theOriginalTargetNoLonger")} confirmLabel={tr("explorer.pointToThis")} options={targetOptions} onPick={(option) => repairShortcut(repairing.id, option)} onClose={() => setDialog(null)} /> : null}
+      {retargeting ? <TargetPickerDialog title={tr(repairing ? "explorer.repairShortcut" : "explorer.changeShortcutTarget", { label: retargeting.label })} hint={tr(repairing ? "explorer.theOriginalTargetNoLonger" : "explorer.changeTargetHint")} confirmLabel={tr("explorer.pointToThis")} options={targetOptions} initialTarget={retargeting.target} onPick={(option) => changeShortcutTarget(retargeting.id, option)} onClose={closeTargetPicker} /> : null}
       {moving ? <MoveDialog itemName={movingName} kindLabel={moving.kind === "folder" ? tr("explorer.folder") : tr("explorer.shortcut2")} options={moveOptions(content, moving)} onPick={(parentId) => move(moving, parentId)} onClose={() => setDialog(null)} /> : null}
       {dialog?.type === "delete" && foldersById.get(dialog.folderId) ? (
         <DeleteFolderDialog
