@@ -1,3 +1,5 @@
+import { DesktopPreviewViewport } from "../preview/DesktopPreviewViewport";
+import { createDesktopPreviewSession } from "../preview/desktopPreviewGeometry";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
@@ -42,7 +44,8 @@ const FOCUSABLE = "button:not(:disabled), a[href], input:not(:disabled), select:
 export function VisitorPreview({ publishable, draft, sample, username = "", siteUrl = null, publishState = "never", shareable = null, onClose }: Props) {
   const { t: tr } = useTranslation("editor");
   const [source, setSource] = useState<"publishable" | "draft" | "sample">(sample ? "sample" : publishable ? "publishable" : "draft");
-  const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
+  const [device, setDevice] = useState<"desktop" | "mobile" | null>(null);
+  const desktopSessions = useRef({ sample: createDesktopPreviewSession(), publishable: createDesktopPreviewSession(), draft: createDesktopPreviewSession() }).current;
   const phone = useIsPhoneViewport();
   // Position (open app, character) survives layout switches and rotation; it is dropped when the preview closes.
   const navigation = useRef(createPreviewNavigation()).current;
@@ -50,7 +53,7 @@ export function VisitorPreview({ publishable, draft, sample, username = "", site
   const latestClose = useRef(onClose);
   latestClose.current = onClose;
   const model = (source === "sample" ? sample : source === "publishable" ? publishable : draft) ?? sample ?? publishable ?? draft;
-  const view = phone ? "mobile" : device;
+  const view = device ?? (phone ? "mobile" : "desktop");
   const tv = useThemeView(model?.document.theme ?? ({} as never));
 
   useEffect(() => lockBackground(), []);
@@ -134,20 +137,20 @@ export function VisitorPreview({ publishable, draft, sample, username = "", site
           </div>
         ) : null}
         <span className="preview-label" role="status" data-testid="preview-label">{label}</span>
-        {phone ? null : (
-          <div role="group" aria-label={tr("visitorPreview.device")} className="device-toggle">
+        <div role="group" aria-label={tr("visitorPreview.device")} className="device-toggle">
             <button type="button" aria-pressed={view === "desktop"} className={"w98-btn" + (view === "desktop" ? " on" : "")} onClick={() => setDevice("desktop")}>{tr("visitorPreview.desktop")}</button>
             <button type="button" aria-pressed={view === "mobile"} className={"w98-btn" + (view === "mobile" ? " on" : "")} onClick={() => setDevice("mobile")}>{tr("visitorPreview.mobile")}</button>
-          </div>
-        )}
+        </div>
         <button type="button" className="w98-btn primary" onClick={onClose} data-autofocus>{source === "sample" ? tr("visitorPreview.backToSamples") : tr("visitorPreview.backToEditor")}</button>
       </div>
       <GuestbookPreviewProvider>
       <div className="preview-body">
         {view === "desktop" ? (
-          <main key="desktop" className="visitor-page preview-page" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: imageWallpaper ? "center" : "0 0", backgroundRepeat: imageWallpaper ? "no-repeat" : "repeat" }}>
-            <VisitorDesktop key={source} document={model.document} profiles={model.profiles} profileIdsByWindow={model.profileIdsByWindow} profileDirectory={model.profileDirectory} navigation={navigation} {...sharing} />
+          <DesktopPreviewViewport key={source} windows={model.document.windows} session={desktopSessions[source]}>{(scale) => (
+          <main className="visitor-page preview-page" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: imageWallpaper ? "center" : "0 0", backgroundRepeat: imageWallpaper ? "no-repeat" : "repeat" }}>
+            <VisitorDesktop key={source} interactionScale={scale} document={model.document} profiles={model.profiles} profileIdsByWindow={model.profileIdsByWindow} profileDirectory={model.profileDirectory} navigation={navigation} {...sharing} />
           </main>
+          )}</DesktopPreviewViewport>
         ) : (
           <div key={phone ? "phone-plain" : "phone-simulated"} className={phone ? "preview-phone-real" : "preview-phone"}>
             <MobileScreen key={source} document={model.document} mode="visitor" framed={!phone} profiles={model.profiles} profileIdsByWindow={model.profileIdsByWindow} profileDirectory={model.profileDirectory} navigation={navigation} {...sharing} />

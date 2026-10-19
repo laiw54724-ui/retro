@@ -1,0 +1,11 @@
+.root { box-sizing: border-box; display: flex; flex-direction: column; position: relative; margin: 0; width: 100%; height: 100%; min-width: 0; min-height: 0; }
+.none { padding: 0; border: 0; background: transparent; }
+.simple { padding: 8px; border: 1px solid #717982; background: #e4e7ea; }
+.pointerThrough { pointer-events: none; }
+.stage { position: relative; flex: 1 1 auto; min-width: 0; min-height: 0; overflow: hidden; background-color: transparent; }
+.checker { background-image: linear-gradient(45deg, #d9dde1 25%, transparent 25%), linear-gradient(-45deg, #d9dde1 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #d9dde1 75%), linear-gradient(-45deg, transparent 75%, #d9dde1 75%); background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0; }
+.image { position: absolute; display: block; max-width: none; max-height: none; user-select: none; }
+.state { position: absolute; inset: 0; display: grid; place-items: center; padding: 8px; text-align: center; font: 13px system-ui, sans-serif; color: #333; }
+.caption { flex: 0 0 auto; padding: 6px 2px 2px; overflow-wrap: anywhere; font: 13px system-ui, sans-serif; color: #26313a; }
+.selection { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 2px dashed transparent; background: transparent; cursor: move; }
+.selection:focus-visible { border-color: #1765a0; outline: none; }

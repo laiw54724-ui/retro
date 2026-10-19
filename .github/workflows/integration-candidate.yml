@@ -16,6 +16,7 @@ on:
       - integration/retro-followup-bc-01
       - integration/retro-reader-polish-01
       - integration/retro-guard-paint-01
+      - integration/retro-viewport-image-01
   workflow_dispatch:
 
 permissions:
@@ -83,6 +84,11 @@ jobs:
         run: |
           set -euo pipefail
           pnpm exec playwright test --config=playwright.chrome.config.ts --project=chrome-webkit --workers=1 2>&1 | tee .candidate-evidence/chrome-webkit.log
+
+      - name: Image W3a isolated Chromium fixtures
+        run: |
+          set -euo pipefail
+          pnpm exec playwright test --config=playwright.image-w3a.config.ts 2>&1 | tee .candidate-evidence/image-w3a.log
 
       - name: Confirm unchanged source
         env:
