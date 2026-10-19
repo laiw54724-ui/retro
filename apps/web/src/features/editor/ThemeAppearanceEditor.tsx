@@ -1,4 +1,5 @@
 import { APPEARANCE_P2_WRITER_ENABLED } from "../../lib/appearanceP2Writer";
+import { useAppearanceP2Writer } from "./AppearanceWriteContext";
 import { AppearanceColorControls, AppearanceColorPreview } from "./AppearanceColorControls";
 import { useEffect, useState } from "react";
 import { themeLabel } from "../../i18n/themeNames";
@@ -17,6 +18,7 @@ const iconStyleOptions = (): Array<[RetroTheme["iconStyle"], string]> => [["clas
 
 export function ThemeAppearanceEditor({ theme, onTheme, upload }: { theme: RetroTheme; onTheme: (theme: RetroTheme) => void; upload?: (file: File, kind?: "image" | "icon" | "audio") => Promise<string | null> }) {
   const { t: tr } = useTranslation("editor");
+  const writerEnabled = useAppearanceP2Writer();
   const [draft, setDraft] = useState(theme);
   useEffect(() => setDraft(theme), [theme]);
   const patch = (change: Partial<RetroTheme>) => setDraft((current) => ({ ...current, ...change }));
@@ -61,7 +63,7 @@ export function ThemeAppearanceEditor({ theme, onTheme, upload }: { theme: Retro
         </div>
         <div className="title-swatches">{TITLES.map(([from, to]) => <button key={from + to} type="button" aria-label={tr("themeAppearanceEditor.titleBarColors")} aria-pressed={draft.titleFrom === from && draft.titleTo === to} className="swatch h20" style={{ background: `linear-gradient(90deg, ${from}, ${to})`, outline: draft.titleFrom === from && draft.titleTo === to ? "2px solid #000080" : "none" }} onClick={() => patch({ titleFrom: from, titleTo: to })} />)}</div>
       </fieldset>
-      {APPEARANCE_P2_WRITER_ENABLED ? <fieldset className="w98-fieldset" data-appearance-p2-writer><legend>{tr("p2Appearance.siteColors")}</legend>
+      {APPEARANCE_P2_WRITER_ENABLED && writerEnabled ? <fieldset className="w98-fieldset" data-appearance-p2-writer><legend>{tr("p2Appearance.siteColors")}</legend>
         <AppearanceColorPreview theme={draft} />
         <AppearanceColorControls theme={draft} appearance={draft.appearance} onChange={(appearance) => patch({ appearance })} />
       </fieldset> : null}

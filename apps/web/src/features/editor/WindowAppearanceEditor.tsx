@@ -1,4 +1,5 @@
 import { APPEARANCE_P2_WRITER_ENABLED } from "../../lib/appearanceP2Writer";
+import { useAppearanceP2Writer } from "./AppearanceWriteContext";
 import { WindowColorAppearanceEditor } from "./WindowColorAppearanceEditor";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,7 +14,8 @@ type Props = {
 };
 
 export function WindowAppearanceEditor(props: Props) {
-  return APPEARANCE_P2_WRITER_ENABLED ? <WindowColorAppearanceEditor {...props} /> : <LegacyWindowAppearanceEditor {...props} />;
+  const writerEnabled = useAppearanceP2Writer();
+  return APPEARANCE_P2_WRITER_ENABLED && writerEnabled ? <WindowColorAppearanceEditor {...props} /> : <LegacyWindowAppearanceEditor {...props} />;
 }
 
 function LegacyWindowAppearanceEditor({ theme, window, onChange }: Props) {

@@ -1,3 +1,6 @@
+import { AppearanceWriteProvider } from "../features/editor/AppearanceWriteContext";
+import { AppearanceUpgradeRecovery } from "../features/editor/AppearanceUpgradeRecovery";
+import type { AppearanceApiLoad } from "../lib/appearanceCompatibility";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { trustedPublicAssetBaseUrls } from "../lib/publicAssets";
 import { translateSystemMessage } from "../i18n/systemMessages";
@@ -6,7 +9,7 @@ import { i18n } from "../i18n";
 import { buildPublishChecks, CollectionEntityV2Schema, createProfile, deleteOrRetargetProfile, duplicateProfile, hasBlockingCheck, hasUnpublishedChanges as hasUnpublishedDraftChanges, loadVersionedSiteDocument, normalizeDocument, parseSiteDocument, PostEntityV2Schema, ProfileEntityV2Schema, projectV2ToLegacyDocument, updateProfile, type DesktopWindow, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { api, ApiError, type AssetRecord, type SiteRecord } from "../lib/api";
+import { api, API_URL, ApiError, type AssetRecord, type SiteRecord } from "../lib/api";
 import { useEditorStore } from "../features/editor/store";
 import { DesktopCanvas } from "../features/editor/DesktopCanvas";
 import { MobileScreen } from "../features/site/MobileScreen";
@@ -84,6 +87,21 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   const [loadError, setLoadError] = useState("");
   const [message, setMessage] = useState<string | { code?: string; fallback: "editor.saveFailed" | "editor.publishingFailed" }>("");
   const [conflict, setConflict] = useState(false);
+  const upgradePaused = useRef(false);
+  const [upgradeRequired, setUpgradeRequired] = useState(false);
+  const [upgradeRecoveryOpen, setUpgradeRecoveryOpen] = useState(false);
+  const [appearanceLoad, setAppearanceLoad] = useState<AppearanceApiLoad | null>(null);
+
+  function stopForUpgrade(error: unknown): boolean {
+    if (!(error instanceof ApiError) || (error.status !== 426 && error.code !== "client_upgrade_required")) return false;
+    upgradePaused.current = true;
+    setUpgradeRequired(true); setUpgradeRecoveryOpen(true); setAppearanceLoad(null);
+    setConflict(false); setMessage("");
+    setPublishPrompt(false);
+    setPublishSuccess(null);
+    store.setSaveStatus("error");
+    return true;
+  }
   // IME composition in progress anywhere on the page: autosave waits so a half-composed fragment is never written.
   const [composing, setComposing] = useState(false);
   useEffect(() => {
@@ -120,7 +138,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     }
   }, [sidebarPreferences]);
 
-  function applyLoadedSite(site: Awaited<ReturnType<typeof api.getSite>>["site"]) {
+  function applyLoadedSite(site: SiteRecord) {
     const loadedDraft = loadVersionedSiteDocument(site.draft_document, { siteId: site.id, migrateV1: true });
     if (!loadedDraft.ok) throw new Error(loadedDraft.diagnostics[0]?.message ?? t("editor.theDraftFormatIsInvalid"));
     const loadedPublished = site.published_document ? loadVersionedSiteDocument(site.published_document, { siteId: site.id }) : null;
@@ -139,6 +157,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     setVersionedDraft(loadedDraft.version === 2 ? loadedDraft.document : null);
     store.setVersionedDocument(loadedDraft.version === 2 ? loadedDraft.document : null);
     store.setPublishedRaw(site.published_document ?? null);
+    setAppearanceLoad({ siteId: site.id, apiOrigin: site.clientApiOrigin ?? "", writeCompatibility: site.writeCompatibility });
     if (loadedDraft.migrated) store.setSaveStatus("dirty");
   }
 
@@ -246,9 +265,10 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   useEffect(() => { void refreshAssetInventory().catch(() => undefined); }, [siteId]);
 
   useEffect(() => {
-    if (!store.document || store.saveStatus !== "dirty" || !store.siteId || saveInFlight.current || conflict || composing) return;
+    if (upgradePaused.current || !store.document || store.saveStatus !== "dirty" || !store.siteId || saveInFlight.current || conflict || composing) return;
 
     const timer = window.setTimeout(async () => {
+      if (upgradePaused.current) return;
       const legacyDocumentToSave = store.document!;
       const documentToSave = store.versionedDocument ?? versionedDraft ?? store.document!;
       const versionToSave = store.version;
@@ -268,10 +288,11 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         // dirty and the resulting render must be allowed to schedule the next
         // autosave immediately.
         saveInFlight.current = false;
-        store.markSaved(result.version, legacyDocumentToSave);
+        if (!upgradePaused.current) store.markSaved(result.version, legacyDocumentToSave);
       } catch (error) {
         saveInFlight.current = false;
         store.setSaveStatus("error");
+        if (stopForUpgrade(error)) return;
         if (error instanceof ApiError && (error.status === 403 || error.status === 404)) {
           navigate(`/auth?notice=${encodeURIComponent(t("page.lostEditAccess"))}`, { replace: true });
         } else if (error instanceof ApiError && error.code === "version_conflict") {
@@ -284,7 +305,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     }, 650);
 
     return () => window.clearTimeout(timer);
-  }, [store.document, store.versionedDocument, versionedDraft, store.saveStatus, store.siteId, store.version, conflict, composing]);
+  }, [store.document, store.versionedDocument, versionedDraft, store.saveStatus, store.siteId, store.version, conflict, composing, upgradeRequired]);
 
   useEffect(() => {
     function keydown(event: KeyboardEvent) {
@@ -390,6 +411,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   }
 
   function requestPublish() {
+    if (upgradePaused.current) { setUpgradeRecoveryOpen(true); return; }
     const invalid = validationMessage(store.document);
     if (invalid) {
       setMessage(invalid);
@@ -407,6 +429,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   }
 
   async function confirmPublish() {
+    if (upgradePaused.current) { setUpgradeRecoveryOpen(true); return; }
     setPublishing(true);
     setMessage("");
     try {
@@ -417,6 +440,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       setPublishSuccess({ version: result.publishedVersion, url: absoluteUrl, artifactStatus: result.artifactStatus, retryable: result.retryable });
       await refreshAssetInventory();
     } catch (error) {
+      if (stopForUpgrade(error)) return;
       if (error instanceof ApiError && error.code === "version_conflict") {
         setConflict(true);
       }
@@ -446,7 +470,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
   async function copyLocalJson() {
     try {
-      await navigator.clipboard.writeText(JSON.stringify(store.document, null, 2));
+      await navigator.clipboard.writeText(JSON.stringify(store.versionedDocument ?? versionedDraft ?? store.document, null, 2));
       setMessage(t("editor.theCurrentLocalDraftJson"));
     } catch {
       setMessage(t("editor.theClipboardIsntAvailablePlease"));
@@ -546,6 +570,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   }
 
   return (
+    <AppearanceWriteProvider siteId={siteId} apiOrigin={API_URL} load={appearanceLoad} blocked={upgradeRequired}>
     <AssetSourceProvider siteId={siteId}>
     <EditorMediaProvider key={siteId} siteId={siteId}>
     <main className="editor-app">
@@ -571,7 +596,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         {actions.manageMembers ? <RetroButton ref={collaborationButtonRef} onClick={() => setCollaborationOpen(true)}>{t("shell.collaborators")}</RetroButton> : null}
         {actions.manageMembers ? <RetroButton onClick={() => setTransferOpen(true)}>{t("shell.transfer")}</RetroButton> : null}
         {store.publishedDocument ? <a className="w98-btn mobile-hide" href={publicSiteUrl(store.username)} target="_blank" rel="noreferrer">{t("shell.openPublished")}</a> : null}
-        {actions.publish ? <RetroButton className="primary" onClick={requestPublish} disabled={publishing || (!!store.publishedDocument && !hasUnpublishedChanges)}>
+        {actions.publish ? <RetroButton className="primary" onClick={requestPublish} disabled={upgradeRequired || publishing || (!!store.publishedDocument && !hasUnpublishedChanges)}>
           {t(store.publishedDocument ? "shell.republish" : "shell.publish")}
         </RetroButton> : null}
         <Link className="retro-link mobile-hide" to="/">{t("shell.home")}</Link>
@@ -581,10 +606,13 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       {message ? (
         <div className="editor-message" role="alert">
           <span>{typeof message === "string" ? message : translateError(message, errorT, t(message.fallback))}</span>
-          {store.saveStatus === "error" && !conflict ? <button onClick={store.retrySave}>{t("shell.retrySave")}</button> : null}
+          {store.saveStatus === "error" && !conflict && !upgradeRequired ? <button onClick={store.retrySave}>{t("shell.retrySave")}</button> : null}
           <button aria-label={t("shell.closeNotice")} onClick={() => setMessage("")}>×</button>
         </div>
       ) : null}
+
+      {upgradeRequired ? <div className="editor-message" role="status"><span>{t("appearanceCompatibility.paused")}</span><button onClick={() => setUpgradeRecoveryOpen(true)}>{t("appearanceCompatibility.title")}</button></div> : null}
+      {upgradeRequired && upgradeRecoveryOpen && store.document ? <AppearanceUpgradeRecovery key={siteId} siteId={siteId} localDocument={store.versionedDocument ?? versionedDraft ?? store.document} onClose={() => setUpgradeRecoveryOpen(false)} /> : null}
 
       {legacyAssets.length > 0 || pendingPublicCopyAssets.length > 0 ? <div className="editor-message asset-migration-message" role="status">
         <div className="asset-migration-summary">
@@ -745,11 +773,12 @@ export function EditorPage({ site }: { site: SiteRecord }) {
               <input className="share-url" readOnly value={publishSuccess.url} onFocus={(event) => event.currentTarget.select()} />
               <div className="button-row end">
                 <RetroButton onClick={copyPublishedUrl}>{t("editor.copyUrl")}</RetroButton>
-                {publishSuccess.retryable ? <RetroButton onClick={async () => {
+                {publishSuccess.retryable && !upgradeRequired ? <RetroButton onClick={async () => {
+                  if (upgradePaused.current) return;
                   try {
                     const result = await api.retryPublish(siteId);
                     setPublishSuccess((current) => current ? { ...current, artifactStatus: result.artifactStatus, retryable: result.retryable } : current);
-                  } catch (error) { setMessage(error instanceof Error ? error.message : t("editor.syncRetryFailed")); }
+                  } catch (error) { if (!stopForUpgrade(error)) setMessage(error instanceof Error ? error.message : t("editor.syncRetryFailed")); }
                 }}>{t("editor.retrySync")}</RetroButton> : null}
                 <a className="retro-link" href={publishSuccess.url} target="_blank" rel="noreferrer">{t("editor.openSite")}</a>
                 <RetroButton className="primary" onClick={() => setPublishSuccess(null)}>{t("editor.done")}</RetroButton>
@@ -761,5 +790,6 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     </main>
     </EditorMediaProvider>
     </AssetSourceProvider>
+    </AppearanceWriteProvider>
   );
 }

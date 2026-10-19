@@ -34,12 +34,21 @@ vi.mock("../src/lib/access", () => ({
 
 const { transfer } = await import("../src/routes/transfer");
 const env = {} as never;
-const jsonRequest = (path: string, body: unknown) => transfer.request(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }, env);
+const jsonRequest = (path: string, body: unknown) => transfer.request(path + (path.includes("?") ? "&" : "?") + "clientAppearanceContract=1", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }, env);
 
 describe("export and controlled import routes", () => {
   beforeEach(() => {
     inserted = null;
     selectedRow = { id: "site-a", username: "demo", site_name: "Demo", draft_document: migrated.document, published_document: migrated.document };
+  });
+
+  it.each(["preview", "confirm"])("rejects an unverified import %s even after all appearance fields were stripped", async (endpoint) => {
+    for (const marker of ["", "?clientAppearanceContract=2", "?clientAppearanceContract=01"]) {
+      const response = await transfer.request(`/imports/${endpoint}${marker}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(exported.value) }, env);
+      expect(response.status).toBe(426);
+      expect(await response.json()).toMatchObject({ error: { code: "client_upgrade_required" } });
+      expect(inserted).toBeNull();
+    }
   });
 
   it("separates public export from clearly named owner backup", async () => {
@@ -112,9 +121,9 @@ describe("export and controlled import routes", () => {
   });
 
   it("rejects archives and declared oversized bodies before parsing", async () => {
-    const archive = await transfer.request("/imports/preview", { method: "POST", headers: { "Content-Type": "application/zip" }, body: "PK" }, env);
+    const archive = await transfer.request("/imports/preview?clientAppearanceContract=1", { method: "POST", headers: { "Content-Type": "application/zip" }, body: "PK" }, env);
     expect(archive.status).toBe(415);
-    const oversized = await transfer.request("/imports/preview", { method: "POST", headers: { "Content-Type": "application/json", "Content-Length": String(2 * 1024 * 1024 + 1) }, body: "{}" }, env);
+    const oversized = await transfer.request("/imports/preview?clientAppearanceContract=1", { method: "POST", headers: { "Content-Type": "application/json", "Content-Length": String(2 * 1024 * 1024 + 1) }, body: "{}" }, env);
     expect(oversized.status).toBe(413);
   });
 });

@@ -4,12 +4,14 @@ import { z } from "zod";
 export const CreateSiteSchema = z.object({
   username: UsernameSchema,
   siteName: z.string().trim().min(1).max(120),
-  document: SiteDocumentSchema
+  document: SiteDocumentSchema,
+  clientAppearanceContract: z.literal(1).optional()
 });
 
 export const SaveDraftSchema = z.object({
   expectedVersion: z.number().int().min(0),
-  document: VersionedSiteDocumentSchema
+  document: VersionedSiteDocumentSchema,
+  clientAppearanceContract: z.literal(1).optional()
 }).superRefine((value, ctx) => {
   const parsed = parseSiteDocument(value.document);
   if (parsed.ok) return;
