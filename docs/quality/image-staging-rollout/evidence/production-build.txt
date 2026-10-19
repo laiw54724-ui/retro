@@ -1,0 +1,36 @@
+
+> @retrodesk/web@0.0.1 build /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-staging-rollout-51/apps/web
+> tsc -b && vite build && node scripts/build-pages-worker.mjs
+
+vite v7.3.7 building client environment for production...
+transforming...
+../../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/util.js (400:0): A comment
+
+"// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle."
+
+in "../../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/util.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+../../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/regexes.js (74:0): A comment
+
+"/** Anchors a pattern source. The interpolation lives here rather than at the call site because
+ * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it
+ * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */"
+
+in "../../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/regexes.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+✓ 431 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/image-rollout.json                             0.08 kB │ gzip:   0.09 kB
+dist/index.html                                     0.68 kB │ gzip:   0.43 kB
+dist/assets/CollaborativeSitePage-Cl3LRjVS.css      0.07 kB │ gzip:   0.08 kB
+dist/assets/index-DiVWn_A4.css                    149.90 kB │ gzip:  28.11 kB
+dist/assets/catalog.generated-Bz3d29Gr.js          68.19 kB │ gzip:  17.37 kB │ map:   137.11 kB
+dist/assets/CollaborativeSitePage-Ca4__3ia.js      94.80 kB │ gzip:  26.39 kB │ map:   287.84 kB
+dist/assets/windowsIconManifest-BSvZw_z7.js       168.35 kB │ gzip:  20.66 kB │ map:   307.10 kB
+dist/assets/index-llgU6ty2.js                   1,608.31 kB │ gzip: 483.03 kB │ map: 5,065.09 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 2.91s
+pages-worker: built with API origin https://retrodesk-api-staging.beibeiz.workers.dev

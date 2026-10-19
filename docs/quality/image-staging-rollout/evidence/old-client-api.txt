@@ -1,0 +1,10 @@
+
+ RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-staging-rollout-51/apps/api
+
+ ✓ test/transfer-routes.test.ts (10 tests) 38ms
+ ✓ test/image-compatibility.test.ts (11 tests) 35ms
+
+ Test Files  2 passed (2)
+      Tests  21 passed (21)
+   Start at  02:09:31
+   Duration  606ms (transform 273ms, setup 0ms, collect 698ms, tests 74ms, environment 0ms, prepare 111ms)

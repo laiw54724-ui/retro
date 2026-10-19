@@ -1,0 +1,41 @@
+[WebServer] (node:35562) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:35774) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ../../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/regexes.js (74:0): A comment
+[WebServer]
+[WebServer] "/** Anchors a pattern source. The interpolation lives here rather than at the call site because
+[WebServer]  * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it
+[WebServer]  * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */"
+[WebServer]
+[WebServer] in "../../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/regexes.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[WebServer] ../../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/util.js (400:0): A comment
+[WebServer]
+[WebServer] "// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle."
+[WebServer]
+[WebServer] in "../../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/util.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+[WebServer]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[WebServer] (node:35839) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:35850) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:35851) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 7 tests using 1 worker
+
+(node:35896) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [webkit] › tests/e2e/image-reader-compatibility.spec.ts:25:7 › selecting an existing image keeps the editor reader usable at 1440px without author controls (1.2s)
+  ✓  2 [webkit] › tests/e2e/image-reader-compatibility.spec.ts:43:7 › existing image documents render through the central reader at 1440px (440ms)
+  ✓  3 [webkit] › tests/e2e/image-reader-compatibility.spec.ts:25:7 › selecting an existing image keeps the editor reader usable at 390px without author controls (516ms)
+  ✓  4 [webkit] › tests/e2e/image-reader-compatibility.spec.ts:43:7 › existing image documents render through the central reader at 390px (448ms)
+  ✓  5 [webkit] › tests/e2e/image-reader-compatibility.spec.ts:56:5 › ordinary edits preserve the image and send independent transport contracts while creation is hidden (1.7s)
+  ✓  6 [webkit] › tests/e2e/image-reader-compatibility.spec.ts:73:5 › phone Add sheet excludes the registered reader and creates no image (477ms)
+  ✓  7 [webkit] › tests/e2e/image-reader-compatibility.spec.ts:82:5 › neutral 426 recovery retains images and local edits, requires image advertisement, and never resumes this tab (2.6s)
+
+  7 passed (24.3s)
