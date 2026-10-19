@@ -439,6 +439,12 @@
     "rejected": "拒否済み"
   },
   "minesweeper": {
+    "difficulties": "よく使う難易度",
+    "beginner": "初級",
+    "intermediate": "中級",
+    "advanced": "上級",
+    "wonAnnouncement": "安全なマスをすべて開きました。クリアです。",
+    "lostAnnouncement": "地雷を踏みました。ゲーム終了です。",
     "restartThisMinesweeperGame": "このマインスイーパーをやり直しますか？",
     "cleared": "🎉 クリア",
     "boom": "💥 地雷を踏みました",
@@ -459,6 +465,7 @@
     "stateUnopened": "、未開封"
   },
   "characterDialog": {
+    "removeCharacterImage": "キャラクター画像を削除",
     "character": "キャラクター",
     "characterPopUp": "キャラクターのポップアップ",
     "characterName": "キャラクター名",

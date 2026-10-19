@@ -439,6 +439,12 @@
     "rejected": "Rejected"
   },
   "minesweeper": {
+    "difficulties": "Common difficulties",
+    "beginner": "Beginner difficulty",
+    "intermediate": "Intermediate difficulty",
+    "advanced": "Advanced difficulty",
+    "wonAnnouncement": "All safe cells cleared. You won Minesweeper.",
+    "lostAnnouncement": "You hit a mine. Game over.",
     "restartThisMinesweeperGame": "Restart this Minesweeper game?",
     "cleared": "🎉 Cleared",
     "boom": "💥 Boom",
@@ -459,6 +465,7 @@
     "stateUnopened": ", unopened"
   },
   "characterDialog": {
+    "removeCharacterImage": "Remove character image",
     "character": "Character",
     "characterPopUp": "Character pop-up",
     "characterName": "Character name",
