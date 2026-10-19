@@ -12,7 +12,7 @@
 - Only `command=build`, `mode=staging`, enabled release config and an exact matching build API origin can emit enabled release metadata. An ordinary writer env flag never enables a production/staging release by itself.
 - Runtime additionally requires production staging mode, the emitted release metadata, and exact current Web/API origins. Development's existing opt-in remains independent. Preview deployment URLs, localhost, production origins, missing location and spoofed origins fail closed.
 - Existing `ImageWriteProvider` still requires current site/API advertisement and no 426 pause; server raw stored/incoming guards and CAS remain unchanged. The marker is not authorization.
-- Config stays false in the committed PR. Approval is pending. No merge, flag activation or deployment occurs here.
+- Config stays false in the committed PR. Parent later supplied trusted user approval at18:06:08 UTC for staging-only basic availability after compatibility/privacy acceptance. Those live gates remain pending; this preparation task performs no merge, flag activation or deployment.
 
 ## Tasks
 
