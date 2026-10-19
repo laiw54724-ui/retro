@@ -46,7 +46,7 @@ The reviewer reproduced `409 version_conflict` leaving preflight open while reco
 - Close preflight on a current-session publication conflict and render recovery using ModalDialog with its existing `alertdialog` semantics. Topmost key handling now recognizes both dialog roles.
 - Copy initially receives focus. Cancel, close and Escape dismiss only recovery presentation; the existing conflict flag continues to pause autosave. A persistent 44px recovery opener remains available, and Publish reopens recovery instead of sending another stale version.
 - Only explicit Reload replaces local data. A phone test modifies the draft after Cancel, observes no autosave beyond the debounce, and copies that retained local edit before explicitly reloading.
-- Delta verification: **21 focused publish/recovery browser checks passed (30.8s)**. Includes desktop/phone 409, 500 dismissal, Copy/Cancel/reopen/Reload focus, paused saves, ordinary reload/access-loss behavior, stale publication and reload receipts, nested picker, and pending publication. After the final touch-target rule, both 409 checks passed again (8.4s); these are reruns, not two additional distinct cases.
+- Delta verification: **21 focused publish/recovery browser checks passed (30.8s)**. Includes desktop/phone 409, 500 dismissal, Copy/Cancel/reopen/Reload focus, paused saves, ordinary reload/access-loss behavior, stale publication and reload receipts, nested picker, and pending publication. After the final touch-target and inline-notice layout rules, both 409 checks passed again (6.1s); these are reruns, not two additional distinct cases.
 - Final web typecheck and diff check passed. Reviewed the 390px recovery screenshot. F11 changes are not included.
 
 Delta command:

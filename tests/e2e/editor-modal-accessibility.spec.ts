@@ -224,6 +224,10 @@ for (const width of [390, 1280]) {
     await expect(page.locator("#root")).not.toHaveAttribute("inert");
     await expect(opener).toBeFocused();
     expect((await page.getByRole("button", { name: "版本衝突", exact: true }).boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    const notice = page.locator(".conflict-notice");
+    expect(await notice.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+    expect((await notice.boundingBox())!.width).toBeLessThanOrEqual(width);
+    await page.screenshot({ path: test.info().outputPath("publish-conflict-paused.png") });
     expect(backend.draft()).toEqual(before);
     if (width === 390) {
       // An edit after cancel remains local: dismissing recovery must not clear the conflict pause.
