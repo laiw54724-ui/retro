@@ -13,7 +13,7 @@ Running 2 tests using 1 worker
   ✘  2 [chromium] › tests/e2e/editor-save-session.spec.ts:96:52 › late success from A cannot change B's save session (2.9s)
 
 
-  1) [chromium] › tests/e2e/editor-save-session.spec.ts:82:38 › immediate exit at 1280px retains the canonical edit until confirmed 
+  1) [chromium] › tests/e2e/editor-save-session.spec.ts:82:38 › immediate exit at 1280px retains the canonical edit until confirmed
 
     Error: expect(locator).toBeVisible() failed
 
@@ -50,7 +50,7 @@ Running 2 tests using 1 worker
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-  2) [chromium] › tests/e2e/editor-save-session.spec.ts:96:52 › late success from A cannot change B's save session 
+  2) [chromium] › tests/e2e/editor-save-session.spec.ts:96:52 › late success from A cannot change B's save session
 
     Error: expect(received).toHaveLength(expected)
 
@@ -82,5 +82,5 @@ Running 2 tests using 1 worker
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
   2 failed
-    [chromium] › tests/e2e/editor-save-session.spec.ts:82:38 › immediate exit at 1280px retains the canonical edit until confirmed 
-    [chromium] › tests/e2e/editor-save-session.spec.ts:96:52 › late success from A cannot change B's save session 
+    [chromium] › tests/e2e/editor-save-session.spec.ts:82:38 › immediate exit at 1280px retains the canonical edit until confirmed
+    [chromium] › tests/e2e/editor-save-session.spec.ts:96:52 › late success from A cannot change B's save session
