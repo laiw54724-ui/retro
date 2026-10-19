@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { restoreFocusUnlessMoved } from "../../../lib/restoreFocus";
 import type { ModuleProps } from "../types";
 import { FilePick, SafeImg } from "../ui";
 import { safeHref } from "../types";
@@ -17,17 +18,17 @@ function CharacterDialog({ window, ctx, update, editing }: ModuleProps<"characte
     const surface = root?.closest<HTMLElement>(".visitor-desktop, .visitor-mobile");
     if (!root || !dialog || !surface) return;
     const iconClass = surface.classList.contains("visitor-mobile") ? ".m-icon" : ".visitor-icon";
-    const opener = Array.from(surface.querySelectorAll<HTMLButtonElement>(iconClass)).find((icon) => icon.textContent?.trim() === window.title);
+    const opener = Array.from(surface.querySelectorAll<HTMLButtonElement>(iconClass)).find((icon) => icon.dataset.windowId === window.id);
+    const focusBeforeOpen = document.activeElement;
     const focusFrame = requestAnimationFrame(() => {
       // Desktop and phone trees can coexist; only the visible character dialog receives focus.
-      if (dialog.isConnected && dialog.getClientRects().length && !dialog.contains(document.activeElement)) root.focus();
+      if (dialog.isConnected && dialog.getClientRects().length && document.activeElement === focusBeforeOpen && (focusBeforeOpen === document.body || focusBeforeOpen === opener)) root.focus();
     });
     return () => {
       cancelAnimationFrame(focusFrame);
-      if (opener) requestAnimationFrame(() => {
-        // Removing the focused close button can move focus to body before React runs cleanup.
-        if (opener.isConnected && (dialog.contains(document.activeElement) || document.activeElement === document.body)) opener.focus();
-      });
+      if (dialog.contains(document.activeElement) || document.activeElement === document.body) {
+        restoreFocusUnlessMoved(() => !dialog.isConnected ? opener : null);
+      }
     };
   }, [editing, window.id, window.title]);
   const patch = (change: Partial<typeof content>, key?: string) => update((current) => ({ ...current, content: { ...current.content, ...change } }), key);

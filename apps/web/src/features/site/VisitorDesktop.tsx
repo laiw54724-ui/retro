@@ -205,6 +205,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
             key={"desktop-icon-" + window.id}
             type="button"
             className="deskicon visitor-icon"
+            data-window-id={window.id}
             style={{ left: iconX, top: iconY }}
             onClick={() => openWindow(window.id)}
           >

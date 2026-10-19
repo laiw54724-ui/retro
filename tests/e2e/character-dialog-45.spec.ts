@@ -65,3 +65,84 @@ for (const width of [1280, 390]) {
     await expect.poll(() => dialog.evaluate((node) => node.contains(document.activeElement))).toBe(true);
   });
 }
+
+for (const width of [1280, 390]) {
+  test(`duplicate-title character windows restore the exact opener at ${width}px`, async ({ page }) => {
+    const first = makeWindow("character-dialog");
+    const second = makeWindow("character-dialog", 1);
+    first.id = "first";
+    second.id = "second";
+    first.title = second.title = "Welcome.exe";
+    first.defaultOpen = second.defaultOpen = false;
+    first.content.characterName = "First character";
+    second.content.characterName = "Second character";
+    first.content.autoShow = second.content.autoShow = false;
+    const published = { ...structuredClone(documentFixture), windows: [first, second] } as SiteDocument;
+    await page.setViewportSize({ width, height: 800 });
+    await page.route("**/api/public/sites/demo", (route) => route.fulfill({ json: { site: { username: "demo", site_name: "Demo", published_document: published, published_version: 1, published_at: "2026-10-17T00:00:00.000Z" } } }));
+    const surface = page.locator(width < 768 ? ".visitor-mobile" : ".visitor-desktop");
+    await page.goto("/@demo");
+    const icons = width < 768 ? surface.getByRole("button", { name: "Welcome.exe" }) : surface.locator(".visitor-icon", { hasText: "Welcome.exe" });
+    const secondIcon = icons.nth(1);
+    await secondIcon.click();
+    const dialog = surface.getByRole("dialog", { name: "Welcome.exe" });
+    await expect(dialog).toContainText("Second character");
+    await dialog.getByRole("button", { name: "關閉" }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(secondIcon).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(dialog).toContainText("Second character");
+  });
+}
+
+test("a deferred character focus frame respects a newer icon click and a closed dialog", async ({ page }) => {
+  const character = makeWindow("character-dialog");
+  const about = makeWindow("about");
+  character.id = "welcome";
+  character.title = "Welcome.exe";
+  character.defaultOpen = false;
+  character.content.autoShow = false;
+  character.layout.desktop = { ...character.layout.desktop, iconX: 16, iconY: 20, x: 200, y: 40, w: 390, h: 400 };
+  about.id = "other";
+  about.title = "About.exe";
+  about.defaultOpen = false;
+  about.layout.desktop = { ...about.layout.desktop, iconX: 1100, iconY: 20, x: 650, y: 50, w: 340, h: 350 };
+  const published = { ...structuredClone(documentFixture), windows: [character, about] } as SiteDocument;
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.route("**/api/public/sites/demo", (route) => route.fulfill({ json: { site: { username: "demo", site_name: "Demo", published_document: published, published_version: 1, published_at: "2026-10-17T00:00:00.000Z" } } }));
+  await page.goto("/@demo");
+  await page.evaluate(() => {
+    const frames = new Map<number, FrameRequestCallback>();
+    let next = 1;
+    window.requestAnimationFrame = (callback) => { const id = next++; frames.set(id, callback); return id; };
+    window.cancelAnimationFrame = (id) => { frames.delete(id); };
+    Object.assign(window, { flushFocusFrames: () => { const queued = [...frames.values()]; frames.clear(); queued.forEach((callback) => callback(performance.now())); } });
+  });
+  const surface = page.locator(".visitor-desktop");
+  const characterIcon = surface.locator(".visitor-icon", { hasText: "Welcome.exe" });
+  const otherIcon = surface.locator(".visitor-icon", { hasText: "About.exe" });
+  const flush = () => page.evaluate(() => (window as typeof window & { flushFocusFrames: () => void }).flushFocusFrames());
+  await characterIcon.click();
+  const dialog = surface.getByRole("dialog", { name: "Welcome.exe" });
+  await expect(dialog).toBeVisible();
+  await otherIcon.click();
+  await expect(otherIcon).toBeFocused();
+  await flush();
+  await expect(otherIcon).toBeFocused();
+  await dialog.getByRole("button", { name: "關閉" }).click();
+  await otherIcon.click();
+  await flush();
+  await expect(otherIcon).toBeFocused();
+  await characterIcon.click();
+  await expect(dialog).toBeVisible();
+  await flush();
+  await expect.poll(() => dialog.evaluate((node) => node.contains(document.activeElement))).toBe(true);
+  await dialog.getByRole("button", { name: "關閉" }).click();
+  await characterIcon.click();
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("button", { name: "關閉" }).click(); // Unmount before its pending focus frame runs.
+  await otherIcon.click();
+  await flush();
+  await expect(dialog).toHaveCount(0);
+  await expect(otherIcon).toBeFocused();
+});
