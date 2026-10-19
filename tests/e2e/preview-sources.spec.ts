@@ -353,3 +353,23 @@ test("the real public page never shows a draft character's details", async ({ pa
   await openDirectory(win);
   expect(await page.evaluate(() => document.body.textContent ?? "")).not.toMatch(/SECRET_|Secret Draft/);
 });
+
+
+test("320px desktop viewport preserves source privacy and independent zoom sessions without saving", async ({ page }) => {
+  const backend = await openEditor(page, { width: 320 });
+  await page.locator(".m-tool", { hasText: "預覽" }).first().click();
+  await overlay(page).locator(".device-toggle").getByRole("button", { name: /桌面版/ }).click();
+  const viewport = overlay(page).locator("[data-desktop-preview-viewport]");
+  await viewport.getByRole("button", { name: "100%", exact: true }).click();
+  const publishedWindow = overlay(page).getByRole("dialog", { name: "Instagram.exe" });
+  await publishedWindow.getByRole("button", { name: "所有角色" }).click();
+  expect(await overlay(page).textContent()).not.toContain("Secret Draft Character");
+  const before = backend.saves();
+  await overlay(page).getByRole("button", { name: "目前草稿", exact: true }).click();
+  await expect(viewport.getByRole("button", { name: "適合畫面", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(overlay(page).getByText("Secret Draft Character")).toBeVisible();
+  await overlay(page).getByRole("button", { name: "發布後的樣子", exact: true }).click();
+  await expect(viewport.getByRole("button", { name: "100%", exact: true })).toHaveAttribute("aria-pressed", "true");
+  expect(await overlay(page).textContent()).not.toContain("Secret Draft Character");
+  await page.waitForTimeout(1200); expect(backend.saves()).toBe(before);
+});

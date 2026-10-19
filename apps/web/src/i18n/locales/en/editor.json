@@ -669,5 +669,18 @@
     "notReady": "The server has not advertised the supported appearance contract or its cloud draft cannot be loaded. Local edits remain unchanged.",
     "checkFailed": "Could not check the server. Your local edits are unchanged.",
     "ready": "The latest server response is compatible. A new editor tab will load the current cloud draft; this tab keeps your unsaved edits."
+  },
+  "desktopPreviewViewport": {
+    "controls": "Desktop preview view",
+    "fit": "Fit",
+    "actualSize": "100%",
+    "zoomOut": "Zoom out",
+    "zoomIn": "Zoom in",
+    "zoom": "Desktop zoom",
+    "zoomLevel": "{{percent}}%",
+    "pan": "Pan",
+    "panHelp": "Pan on: drag to move the view. Turn off to use apps.",
+    "interactHelp": "Fit is an overview. Use 100% or zoom for app controls; scroll or enable Pan.",
+    "region": "Desktop preview canvas"
   }
 }

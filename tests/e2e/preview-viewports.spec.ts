@@ -80,9 +80,10 @@ for (const entry of entries) {
       expect(screenBottom).toBeGreaterThan(300);
       // no horizontal page scroll
       expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
-      // a real phone has only one honest view; a device toggle must never be able to produce a blank screen
+      // Mobile is the default; explicit desktop uses a fitted viewport, with real content.
       const desktopButton = page.locator(".preview-bar .device-toggle, .draft-viewer-bar .device-toggle").getByRole("button", { name: /桌面版/ });
-      if (await desktopButton.count()) {
+      await expect(desktopButton.first()).toBeVisible();
+      {
         await desktopButton.first().click();
         await expectVisibleContent(page, entry.root, `${entry.name} ${width}px after choosing desktop`);
       }
@@ -204,7 +205,8 @@ test("rotating 390 -> 844 -> 390 with a playing app open: stays on the app, neve
   await page.setViewportSize({ width: 390, height: 844 });
   await expectVisibleContent(page, ".preview-overlay", "after rotating back to 390x844");
   await expect(overlay.locator(".m-bezel, .m-status")).toHaveCount(0);
-  await expect(overlay.locator(".device-toggle")).toHaveCount(0);
+  await expect(overlay.locator(".device-toggle")).toBeVisible();
+  await expect(overlay.locator(".device-toggle").getByRole("button", { name: /手機版/ })).toHaveAttribute("aria-pressed", "true");
   await expect.poll(() => activeMedia(page)).toBe(0);
   await expect(overlay.getByRole("button", { name: /‹ 桌面/ })).toBeVisible();
   await overlay.getByRole("button", { name: "播放", exact: true }).click();
