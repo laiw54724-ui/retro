@@ -253,15 +253,23 @@ test("author configures fictional follows, named likes and actor comments with a
   await expect(reloaded.getByRole("textbox", { name: "留言 1 舊作者名稱" })).toHaveValue("舊角色名");
 });
 
-test("visitor browses truthful fictional people lists and nested actor navigation", async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 900 });
+for (const width of [1280, 390]) {
+test(`visitor browses people without a blanket world label at ${width}px`, async ({ page }, testInfo) => {
+  await page.setViewportSize({ width, height: 900 });
   const document = socialPublicDocument();
   await mockPublic(page, document);
   await page.goto("/@demo");
+  if (width < 768) await page.getByRole("button", { name: "Instagram.exe", exact: true }).click();
   const win = page.getByRole("dialog", { name: "Instagram.exe" });
-  await expect(win.getByText("角色世界觀內容")).toBeVisible();
+  await expect(win.locator(".ig-bio")).toContainText("hello bio");
+  await expect(win.locator(".ig-world-label")).toHaveCount(0);
+  await expect(win.getByText("角色世界觀內容", { exact: true })).toHaveCount(0);
+  await expect(win.locator(".ig-follow-btn")).toHaveAttribute("title", "僅本次瀏覽");
+  await page.screenshot({ path: testInfo.outputPath(`profile-${width}.png`) });
   const followerStat = win.getByRole("button", { name: /3\s*粉絲/ });
   await followerStat.click();
+  await expect(win.getByText("角色世界觀內容", { exact: true })).toHaveCount(0);
+  await page.screenshot({ path: testInfo.outputPath(`people-${width}.png`) });
   await expect(win.getByRole("button", { name: /Bei Original @bei/ })).toBeVisible();
   await expect(win.getByText("另有 2 位虛構角色（未設定名單）")).toBeVisible();
   await win.getByRole("button", { name: /Bei Original @bei/ }).click();
@@ -286,6 +294,7 @@ test("visitor browses truthful fictional people lists and nested actor navigatio
   await expect(win.getByText("PRIVATE SOCIAL ACTOR")).toHaveCount(0);
   await expect(win.getByText("PRIVATE SOCIAL COMMENT")).toHaveCount(0);
 });
+}
 
 test("desktop OC editor switches, searches, duplicates, edits and safely retargets profiles", async ({ page }) => {
   await page.setViewportSize({ width: 1400, height: 1000 });

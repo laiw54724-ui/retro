@@ -295,7 +295,6 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
                 ) : null}
               </div>
               <div className="ig-bio">
-                <span className="ig-world-label">{tr("igPreview.characterWorldContent")}</span>
                 <span><strong>{profile.name}</strong> <span className="ig-gray">{profile.alt}</span></span>
                 {profile.bio ? <span className="ig-pre">{profile.bio}</span> : null}
                 <ProfileDetails profile={profileDetails} />
@@ -351,7 +350,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
         ) : null}
 
         {s.screen === "people" ? (
-          <section className="ig-people" aria-label={String(headTitle)}><p className="ig-note">{tr("igPreview.characterWorldContent")}</p>{peopleEntries.map((entry) => <button type="button" className="ig-directory-row" key={entry.id} onClick={() => s.navigateProfile(entry.id)}><span className="ig-avatar ph" style={{ width: 44, height: 44, ...phStyle }}>{entry.profile.avatar ? <AvatarImage src={entry.profile.avatar} crop={entry.profile.avatarCrop} /> : null}</span><span><strong>{entry.profile.name || entry.profile.username}</strong><small>@{entry.profile.username}</small></span></button>)}{peopleExtra > 0 ? <p>{tr("ig.otherCharacters", { count: peopleExtra })}</p> : null}{legacyPeopleLabel ? <p>{tr("ig.legacyPeople", { label: legacyPeopleLabel })}</p> : null}{peopleEntries.length === 0 && peopleExtra === 0 && !legacyPeopleLabel ? <div className="ig-empty"><strong>{tr("igPreview.noCharacterListHasBeen")}</strong></div> : null}</section>
+          <section className="ig-people" aria-label={String(headTitle)}>{peopleEntries.map((entry) => <button type="button" className="ig-directory-row" key={entry.id} onClick={() => s.navigateProfile(entry.id)}><span className="ig-avatar ph" style={{ width: 44, height: 44, ...phStyle }}>{entry.profile.avatar ? <AvatarImage src={entry.profile.avatar} crop={entry.profile.avatarCrop} /> : null}</span><span><strong>{entry.profile.name || entry.profile.username}</strong><small>@{entry.profile.username}</small></span></button>)}{peopleExtra > 0 ? <p>{tr("ig.otherCharacters", { count: peopleExtra })}</p> : null}{legacyPeopleLabel ? <p>{tr("ig.legacyPeople", { label: legacyPeopleLabel })}</p> : null}{peopleEntries.length === 0 && peopleExtra === 0 && !legacyPeopleLabel ? <div className="ig-empty"><strong>{tr("igPreview.noCharacterListHasBeen")}</strong></div> : null}</section>
         ) : null}
 
         {s.screen === "collection" ? (
