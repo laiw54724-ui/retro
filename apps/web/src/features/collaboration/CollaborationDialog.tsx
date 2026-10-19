@@ -2,11 +2,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { i18n } from "../../i18n";
 import { useTranslation } from "react-i18next";
 import { useLocaleFormatting } from "../../i18n/format";
+import { translateError } from "../../i18n/errors";
 import { RetroButton } from "../../components/RetroButton";
 import { api, ApiError } from "../../lib/api";
 import { inviteStatus, type CollaboratorRole, type SiteInvite, type SiteMember } from "../../lib/collaboration";
 
 type BusyTarget = "load" | "create" | `invite:${string}` | `member:${string}` | null;
+type ErrorFallback = "collaborationDialog.couldntLoadCollaboratorsPleaseTry" | "collaborationDialog.couldntUpdateTheCollaborator" | "collaborationDialog.couldntCreateTheInvitation" | "collaborationDialog.collaboratorDataChangedSoThe";
+type DialogError = { code?: string; fallback: ErrorFallback; changed?: boolean };
 
 const roleCopy = (): Record<CollaboratorRole, string> => ({
   editor: i18n.t("collab:collaborationDialog.canEditDraft"),
@@ -15,6 +18,7 @@ const roleCopy = (): Record<CollaboratorRole, string> => ({
 
 export function CollaborationDialog({ siteId, onClose }: { siteId: string; onClose: () => void }) {
   const { t: tr } = useTranslation("collab");
+  const { t: errorT } = useTranslation("errors");
   const { formatDate } = useLocaleFormatting();
   const dateTime = (value: string) => formatDate(new Date(value), { dateStyle: "medium", timeStyle: "short" });
   const headingRef = useRef<HTMLElement | null>(null);
@@ -22,7 +26,7 @@ export function CollaborationDialog({ siteId, onClose }: { siteId: string; onClo
   const [invites, setInvites] = useState<SiteInvite[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [busy, setBusy] = useState<BusyTarget>("load");
-  const [error, setError] = useState("");
+  const [error, setError] = useState<DialogError | null>(null);
   const [notice, setNotice] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<CollaboratorRole>("editor");
@@ -32,14 +36,14 @@ export function CollaborationDialog({ siteId, onClose }: { siteId: string; onClo
 
   const refresh = useCallback(async (showLoading = false) => {
     if (showLoading) setBusy("load");
-    setError("");
+    setError(null);
     try {
       const [memberResult, inviteResult] = await Promise.all([api.listMembers(siteId), api.listInvites(siteId)]);
       setMembers(memberResult.members);
       setInvites(inviteResult.invites);
       setLoaded(true);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : tr("collaborationDialog.couldntLoadCollaboratorsPleaseTry"));
+      setError({ code: cause instanceof ApiError ? cause.code : undefined, fallback: "collaborationDialog.couldntLoadCollaboratorsPleaseTry" });
     } finally {
       if (showLoading) setBusy(null);
     }
@@ -60,7 +64,9 @@ export function CollaborationDialog({ siteId, onClose }: { siteId: string; onClo
 
   async function recoverAfterMutation(cause: unknown) {
     const changed = cause instanceof ApiError && (cause.status === 404 || cause.status === 409);
-    const nextError = changed ? tr("collaborationDialog.collaboratorDataChangedSoThe") : cause instanceof Error ? cause.message : tr("collaborationDialog.couldntUpdateTheCollaborator");
+    const nextError: DialogError = changed
+      ? { fallback: "collaborationDialog.collaboratorDataChangedSoThe", changed: true }
+      : { code: cause instanceof ApiError ? cause.code : undefined, fallback: "collaborationDialog.couldntUpdateTheCollaborator" };
     await refresh();
     setError(nextError);
   }
@@ -70,7 +76,7 @@ export function CollaborationDialog({ siteId, onClose }: { siteId: string; onClo
     const normalized = email.trim().toLowerCase();
     if (!normalized) return;
     setBusy("create");
-    setError("");
+    setError(null);
     setNotice("");
     setInviteUrl("");
     try {
@@ -80,7 +86,7 @@ export function CollaborationDialog({ siteId, onClose }: { siteId: string; onClo
       setNotice(tr("collaborationDialog.invitationCreatedThisLinkIs"));
       await refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : tr("collaborationDialog.couldntCreateTheInvitation"));
+      setError({ code: cause instanceof ApiError ? cause.code : undefined, fallback: "collaborationDialog.couldntCreateTheInvitation" });
     } finally {
       setBusy(null);
     }
@@ -97,7 +103,7 @@ export function CollaborationDialog({ siteId, onClose }: { siteId: string; onClo
 
   async function revoke(invite: SiteInvite) {
     setBusy(`invite:${invite.id}`);
-    setError("");
+    setError(null);
     try {
       await api.revokeInvite(siteId, invite.id);
       setNotice(tr("collaborationDialog.revokedTheInvitationFor", { email: invite.email }));
@@ -111,7 +117,7 @@ export function CollaborationDialog({ siteId, onClose }: { siteId: string; onClo
 
   async function updateRole(member: SiteMember, nextRole: CollaboratorRole) {
     setBusy(`member:${member.user_id}`);
-    setError("");
+    setError(null);
     try {
       await api.updateMemberRole(siteId, member.user_id, nextRole);
       setNotice(tr("collaborationDialog.isNow", { email: member.email, v2: roleCopy()[nextRole] }));
@@ -127,7 +133,7 @@ export function CollaborationDialog({ siteId, onClose }: { siteId: string; onClo
     if (!removeTarget) return;
     const member = removeTarget;
     setBusy(`member:${member.user_id}`);
-    setError("");
+    setError(null);
     try {
       await api.removeMember(siteId, member.user_id);
       setRemoveTarget(null);
@@ -150,7 +156,7 @@ export function CollaborationDialog({ siteId, onClose }: { siteId: string; onClo
         </header>
         <div className="collaboration-body">
           <p className="collaboration-intro">{tr("collaborationDialog.invitePeopleYouTrustTo")}</p>
-          {error ? <div className="collaboration-alert error" role="alert"><span>{error}</span><RetroButton disabled={busy === "load"} onClick={() => void refresh(true)}>{tr("collaborationDialog.reload")}</RetroButton></div> : null}
+          {error ? <div className="collaboration-alert error" role="alert"><span>{error.changed ? tr(error.fallback) : translateError(error, errorT, tr(error.fallback))}</span><RetroButton disabled={busy === "load"} onClick={() => void refresh(true)}>{tr("collaborationDialog.reload")}</RetroButton></div> : null}
           {notice ? <p className="collaboration-alert notice" role="status" aria-live="polite">{notice}</p> : <span className="sr-only" role="status" aria-live="polite" />}
 
           <section className="collaboration-section" aria-labelledby="members-title">
