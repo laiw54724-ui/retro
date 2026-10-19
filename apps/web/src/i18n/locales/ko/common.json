@@ -114,6 +114,16 @@
     "back": "이전",
     "next": "다음 ›",
     "creating": "만드는 중...",
+    "createError": {
+      "username": "설정하는 동안 이 URL이 사용되었습니다. 다른 URL을 선택하세요. 테마와 템플릿 선택은 유지됩니다.",
+      "validation": "입력한 정보를 사용할 수 없습니다. URL과 데스크톱 이름을 확인한 뒤 다시 시도하세요.",
+      "auth": "로그인 세션이 만료되었습니다. 다시 로그인한 뒤 데스크톱을 만들어 주세요.",
+      "general": "데스크톱을 만들지 못했습니다. 연결을 확인하고 다시 시도하세요. 선택한 내용은 유지됩니다."
+    },
+    "changeUrl": "URL 변경",
+    "reviewDetails": "입력 정보 확인",
+    "signInAgain": "다시 로그인",
+    "retryCreation": "다시 만들기",
     "doneOpenTheEditor": "완료, 편집기로 이동"
   },
   "desktopHub": {
