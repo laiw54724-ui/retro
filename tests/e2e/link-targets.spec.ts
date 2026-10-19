@@ -128,3 +128,41 @@ test("320px shared Links picker stages unsafe URL/cancel without a save; keyboar
   await expect(links).toContainText("開啟視窗：Targets.exe");
   await expect.poll(writes).toBe(1);
 });
+
+test("temporary desktop post viewer retains a usable task after minimize and reopens without writing", async ({ page }) => {
+  const writes = await owner(page, 1280);
+  const preview = overlay(page);
+  await preview.getByRole("dialog", { name: "Targets.exe", exact: true }).getByRole("button", { name: "Open exact post", exact: true }).click();
+  const viewer = preview.getByRole("dialog", { name: "Post Author.exe", exact: true });
+  await expect(viewer.locator(".ig-card")).toContainText("EXACT POST CONTENT");
+  await viewer.getByRole("button", { name: "最小化", exact: true }).click();
+  await expect(viewer).toHaveCount(0);
+  const task = preview.locator(".visitor-taskbar .task-item").filter({ hasText: "Post Author.exe" });
+  await expect(task).toBeVisible();
+  await task.click();
+  await expect(viewer.locator(".ig-card")).toContainText("EXACT POST CONTENT");
+  await expect(viewer.locator(".ig-card-head strong").first()).toHaveText("author");
+  expect(await preview.textContent()).not.toContain("PRIVATE");
+  await preview.getByRole("button", { name: /回到編輯器/ }).click();
+  await expect(page.getByRole("button", { name: "復原", exact: true })).toBeDisabled();
+  await page.waitForTimeout(1200); expect(writes()).toBe(0);
+});
+
+test("mobile to desktop rotation keeps the temporary exact post, author and Back path without writing", async ({ page }) => {
+  const writes = await owner(page, 390);
+  const preview = overlay(page);
+  await openExplorerOnPhone(page);
+  await preview.getByRole("dialog", { name: "Targets.exe", exact: true }).getByRole("button", { name: "Open exact post", exact: true }).click();
+  await expect(preview.locator(".ig-card")).toContainText("EXACT POST CONTENT");
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await expect(preview.locator(".visitor-desktop")).toBeVisible();
+  const viewer = preview.getByRole("dialog", { name: "Post Author.exe", exact: true });
+  await expect(viewer.locator(".ig-card")).toContainText("EXACT POST CONTENT");
+  await expect(viewer.locator(".ig-card-head strong").first()).toHaveText("author");
+  expect(await preview.textContent()).not.toContain("PRIVATE");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(preview.locator(".ig-card")).toContainText("EXACT POST CONTENT");
+  await preview.locator(".m-back").click();
+  await expect(preview.getByRole("button", { name: "Open exact post", exact: true })).toBeFocused();
+  await page.waitForTimeout(1200); expect(writes()).toBe(0);
+});

@@ -49,10 +49,13 @@ function initialRuntime(document: SiteDocument, initialOpenId?: string): Runtime
 
 export function VisitorDesktop({ document, profiles, profileIdsByWindow, profileDirectory, initialOpenId, initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle, navigationSiteId, interactionScale = 1 }: { navigation?: PreviewNavigation; viewDrafts?: boolean; canShareEntity?: (kind: "oc" | "post", id: string) => boolean; document: SiteDocument; profiles?: ProfileEntityV2[]; profileIdsByWindow?: Record<string, string>; profileDirectory?: ProfileDirectoryEntry[]; initialOpenId?: string; initialPostId?: string; publicShareBaseUrl?: string; siteHandle?: string; navigationSiteId?: string | null; interactionScale?: number }) {
   const { t: tr } = useTranslation("editor");
-  const [runtime, setRuntime] = useState<RuntimeMap>(() => initialRuntime({ ...document, windows: [...document.windows, ...(navigation?.visitor?.source === document ? navigation.visitor.windows : [])] }, initialOpenId ?? (navigation?.openId && document.windows.some((window) => window.id === navigation.openId) ? navigation.openId : undefined)));
   const desktopRef = useRef<HTMLDivElement | null>(null);
   const gesture = useRef<Gesture | null>(null);
   const visitor = useVisitorNavigation({ document, siteId: navigationSiteId, profileDirectory, profileIdsByWindow, navigation, onOpen: (window) => { focus(window.id, window); requestAnimationFrame(() => Array.from(globalThis.document.querySelectorAll<HTMLElement>("[data-visitor-window]")).find((node) => node.dataset.visitorWindow === window.id)?.focus()); } });
+  const [runtime, setRuntime] = useState<RuntimeMap>(() => initialRuntime(
+    { ...document, windows: visitor.windows },
+    initialOpenId ?? (navigation?.openId && visitor.windows.some((window) => window.id === navigation.openId) ? navigation.openId : undefined)
+  ));
   const tv = useThemeView(document.theme);
   const music = useMusicPlayback();
 
@@ -265,7 +268,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
       <DesktopTaskbar
         document={{ ...document, windows: visitor.windows }}
         visitor
-        tasks={document.windows.map((desktopWindow) => ({
+        tasks={visitor.windows.map((desktopWindow) => ({
           window: desktopWindow,
           visible: runtime[desktopWindow.id]?.status !== "closed",
           active: runtime[desktopWindow.id]?.status === "open" && runtime[desktopWindow.id]?.z === topZ,

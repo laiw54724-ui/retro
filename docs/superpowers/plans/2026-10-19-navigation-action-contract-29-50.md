@@ -88,3 +88,9 @@ Validation: focused resolver/authorized-catalog tests, existing Links/Explorer m
 The supplied integrator source thread ID was unavailable through the app messaging tool. The proposed web adapters were recorded here before integration; shared schemas/projection/store/EditorPage/registry/API files remain untouched. The image worker confirmed holding Chromium until the navigation window completes.
 
 Results (2026-10-19): web lint/typecheck passed; 42 tests passed across seven unit files. Final focused browser command covered link-targets, about-links-ux, Explorer, preview-sources, preview-viewports and guestbook-preview: 92 passed (2.0m). The strengthened different-post-author fixture then passed all seven R1 browser tests again (12.4s). Visual QA inspected the 320px picker and public temporary post viewer. Isolated outputs: `test-results/navigation-r1-29-50-final` and `test-results/navigation-r1-29-50-author-check`. Full aggregate gate remains with the integrator.
+
+## Review follow-up: temporary desktop viewers
+
+The two new regressions failed on the original R1 head: a minimized temporary viewer had no task button, and switching from mobile to desktop did not reopen the current temporary post viewer. VisitorDesktop now initializes both its runtime map and restored open ID from the same source-authorized `visitor.windows` collection used for rendering, and maps taskbar tasks from that collection too. The two regressions cover minimize/taskbar reopen and mobile→desktop→mobile exact post/author/Back focus restoration, with private-content exclusion and zero saves/undo entries.
+
+Verification: all nine focused `link-targets.spec.ts` cases passed headlessly (18.0s), web lint/TypeScript and whitespace checks passed. No broad gate or interactive browser was used for this follow-up.
