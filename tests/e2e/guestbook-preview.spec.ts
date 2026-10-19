@@ -37,7 +37,10 @@ async function setup(page: Page, width: number, role: "owner" | "viewer" = "owne
   await expect(page.locator(role === "owner" ? ".editor-topbar" : ".draft-viewer-body")).toBeVisible();
   // Let legitimate owner-editor moderation reads finish before measuring preview activity.
   if (role === "owner" && width >= 768) await expect(page.locator(".guestbook-moderation")).toContainText(SECRET);
-  const before = requests;
+  // Only the owner editor may make moderation reads before opening preview.
+  // For collaborators keep the pre-mount zero baseline, including initial viewer effects.
+  const before = role === "owner" ? requests : 0;
+  if (role === "viewer") expect(requests, "Collaborator entry must not read the guestbook").toBe(0);
   if (role === "owner") {
     if (width >= 768) await page.getByRole("button", { name: /訪客預覽/ }).first().click();
     else await page.locator(".m-tool", { hasText: "預覽" }).first().click();
