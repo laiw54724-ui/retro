@@ -161,5 +161,13 @@
     "cannotPlay": "影片無法播放",
     "failure": "影片無法載入或播放。檔案可能已無法存取、來源伺服器可能限制播放，或此瀏覽器不支援其格式或編碼。請重試或開啟原連結。",
     "formatNote": "僅支援 HTTPS 的 .mp4、.webm、.m4v、.mov、.ogv 檔案直連。格式與編碼支援依瀏覽器而異；一般網頁會在外部開啟。"
+  },
+  "authoring": {
+    "trackList": "編輯曲目",
+    "uploadSummary": "排隊 {{queued}} · 上傳中 {{uploading}} · 完成 {{completed}} · 失敗 {{failed}}",
+    "removedTrackUploads": "已刪除曲目的上傳紀錄",
+    "sourceChanged": "來源已編輯，先前的上傳不會覆蓋它。",
+    "prepareFailed": "無法準備上傳的音訊。已儲存的檔案保持不變。",
+    "retryPrepare": "重試準備音訊"
   }
 }

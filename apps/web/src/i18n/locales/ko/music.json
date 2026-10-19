@@ -161,5 +161,13 @@
     "cannotPlay": "동영상을 재생할 수 없습니다",
     "failure": "동영상을 불러오거나 재생할 수 없습니다. 파일을 이용할 수 없거나 서버에서 재생을 제한하거나 이 브라우저가 형식 또는 코덱을 지원하지 않을 수 있습니다. 다시 시도하거나 원본 링크를 여세요.",
     "formatNote": "HTTPS .mp4, .webm, .m4v, .mov, .ogv 파일 직접 링크만 지원합니다. 형식과 코덱 지원은 브라우저에 따라 다릅니다. 일반 웹페이지는 외부에서 열립니다."
+  },
+  "authoring": {
+    "trackList": "곡 편집",
+    "uploadSummary": "대기 {{queued}} · 업로드 중 {{uploading}} · 완료 {{completed}} · 실패 {{failed}}",
+    "removedTrackUploads": "삭제한 곡의 업로드 기록",
+    "sourceChanged": "소스가 수정되었습니다. 이전 업로드로 덮어쓰지 않습니다.",
+    "prepareFailed": "업로드한 오디오를 준비하지 못했습니다. 저장된 파일은 변경되지 않았습니다.",
+    "retryPrepare": "오디오 준비 다시 시도"
   }
 }

@@ -161,5 +161,13 @@
     "cannotPlay": "The video could not be played",
     "failure": "The video could not be loaded or played. The file may be unavailable, the server may restrict playback, or this browser may not support its format or codecs. Retry or open the original link.",
     "formatNote": "Direct HTTPS .mp4, .webm, .m4v, .mov and .ogv files only. Browser format and codec support varies; webpages are opened externally."
+  },
+  "authoring": {
+    "trackList": "Edit tracks",
+    "uploadSummary": "Queued {{queued}} · Uploading {{uploading}} · Done {{completed}} · Failed {{failed}}",
+    "removedTrackUploads": "Uploads for removed tracks",
+    "sourceChanged": "The source was edited. The previous upload will not replace it.",
+    "prepareFailed": "The uploaded audio could not be prepared. The saved file is unchanged.",
+    "retryPrepare": "Retry preparing audio"
   }
 }

@@ -1,17 +1,24 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { i18n } from "../../../i18n";
 import { useTranslation } from "react-i18next";
 import { PLATFORM_LABELS, type MusicTrack } from "@retrodesk/shared";
-import { FilePick, ImageUrlField, MiniBtn, SafeImg } from "../ui";
+import { FilePick, MiniBtn, SafeImg } from "../ui";
 import { moveById, type ModuleProps } from "../types";
 import { musicPlayback, useMusicPlayback } from "./audioCoordinator";
 import { embedSession, playNative, playResolvedNative, useStopMediaOnResize } from "./mediaSession";
 import { VideoPlayer } from "./VideoPlayer";
 import { isVideoFileUrl } from "./sourceClassifier";
 import { ProviderPlayer } from "./ProviderPlayer";
-import { TrackSourceField } from "./TrackSourceField";
+import { TrackSourceField, type SourceDraftCache } from "./TrackSourceField";
 import { explainPlaybackFailure, insightForUrl } from "./sourceInsight";
-import { useAssetResolver, useAssetSource } from "../../../lib/assetSource";
+import { useAssetResolver, useAssetSource, useAssetSourceState } from "../../../lib/assetSource";
+
+import { UploadTaskList, useMediaQueue } from "../../media/editorMedia";
+import { didMediaHistoryChange, enqueueWindowUpload } from "../../media/windowMediaSession";
+import { useEditorStore } from "../../editor/store";
+import { musicUploadOptions, musicUploadScope, type MusicUploadField } from "./musicUploads";
+import { MusicCoverUrlField, type CoverDraftCache } from "./MusicCoverUrlField";
+import "./musicEditor.css";
 
 const newId = () => globalThis.crypto?.randomUUID?.() ?? `track-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const playableUrl = (url: string | null | undefined) => {
@@ -178,16 +185,39 @@ export function MusicView({ window, ctx }: ModuleProps<"music">) {
   );
 }
 
-function UploadedAudioPreview({ windowId, trackId, source, previewing, loading }: { windowId: string; trackId: string; source: string; previewing: boolean; loading: boolean }) {
+type UploadedPreviewProps = { windowId: string; trackId: string; source: string; previewing: boolean; loading: boolean };
+function UploadedAudioPreview(props: UploadedPreviewProps) {
+  const [attempt, setAttempt] = useState(0);
+  return <UploadedAudioPreviewAttempt key={`${props.source}:${attempt}`} {...props} retry={() => setAttempt((value) => value + 1)} />;
+}
+function UploadedAudioPreviewAttempt({ windowId, trackId, source, previewing, loading, retry }: UploadedPreviewProps & { retry: () => void }) {
   const { t: tr } = useTranslation("music");
-  const resolved = useAssetSource(source);
-  return <button type="button" className="w98-btn music-preview" disabled={!playableUrl(resolved) || loading} onClick={() => previewing ? musicPlayback.pause(windowId) : resolved ? void playNative(windowId, trackId, resolved) : undefined}>{previewing ? tr("music.stopPreview") : resolved ? tr("music.previewUploadedFile") : tr("music.preparingAudio")}</button>;
+  const resolved = useAssetSourceState(source);
+  if (resolved.status === "failed") return <div role="alert" className="music-error"><span>{tr("authoring.prepareFailed")}</span><button type="button" className="w98-btn" onClick={retry}>{tr("authoring.retryPrepare")}</button></div>;
+  return <button type="button" className="w98-btn music-preview" disabled={!playableUrl(resolved.source) || loading} onClick={() => previewing ? musicPlayback.pause(windowId) : resolved.source ? void playNative(windowId, trackId, resolved.source) : undefined}>{previewing ? tr("music.stopPreview") : resolved.source ? tr("music.previewUploadedFile") : tr("music.preparingAudio")}</button>;
 }
 
 export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">) {
   const { t: tr } = useTranslation("music");
   useStopMediaOnResize(window.id);
   const tracks = orderedTracks(window);
+  const [selection, setSelection] = useState({ windowId: window.id, trackId: tracks[0]?.id });
+  const selected = tracks.find((track) => selection.windowId === window.id && track.id === selection.trackId) ?? tracks[0];
+  const sourceDrafts = useRef<SourceDraftCache>(new Map());
+  const coverDrafts = useRef<CoverDraftCache>(new Map());
+  const [draftEpoch, setDraftEpoch] = useState(0);
+  useEffect(() => useEditorStore.subscribe((state, previous) => {
+    if (state.siteId !== previous.siteId || didMediaHistoryChange(state, previous)) {
+      sourceDrafts.current.clear();
+      coverDrafts.current.clear();
+      setDraftEpoch((epoch) => epoch + 1);
+    }
+  }), []);
+  const { queue, tasks } = useMediaQueue();
+  const trackTasks = (id: string) => tasks.filter((task) => task.scope === musicUploadScope(window.id, id));
+  const orphanTasks = tasks.filter((task) => task.scope.startsWith(`window:${window.id}:music:`) && !tracks.some((track) => task.scope === musicUploadScope(window.id, track.id)));
+  const cancelUpload = (id: string, field: MusicUploadField) => queue?.invalidate(tr("authoring.sourceChanged"), (entry) => entry.options.scope === musicUploadScope(window.id, id) && entry.options.slot === field);
+  const taskList = (id: string) => <UploadTaskList tasks={trackTasks(id)} onRetry={(taskId) => queue?.retry(taskId)} onDismiss={(taskId) => queue?.dismiss(taskId)} />;
   const playback = useMusicPlayback();
   const setTracks = (recipe: (tracks: MusicTrack[]) => MusicTrack[], key?: string) => update((current) => {
     const next = recipe(orderedTracks(current));
@@ -195,31 +225,40 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
   }, key);
   const patchTrack = (id: string, patch: Partial<MusicTrack>, key?: string) => setTracks((list) => list.map((track) => track.id === id ? { ...track, ...patch } : track), key);
   const stopPreviewForTrack = (id: string) => {
-    if (playback.windowId === window.id && playback.trackId === id) musicPlayback.stopWindow(window.id);
+    const currentPlayback = musicPlayback.getSnapshot();
+    if (currentPlayback.windowId === window.id && currentPlayback.trackId === id) musicPlayback.stopWindow(window.id);
     embedSession.dispose(window.id, id);
   };
   const patchTrackSource = (id: string, source: TrackSource, key?: string) => {
     stopPreviewForTrack(id);
     patchTrack(id, { source }, key);
   };
-  const addTrack = () => setTracks((list) => {
+  const chooseTrack = (id: string) => {
+    if (selected && selected.id !== id) stopPreviewForTrack(selected.id);
+    setSelection({ windowId: window.id, trackId: id });
+  };
+  const addTrack = () => {
     const track: MusicTrack = { id: newId(), title: tr("music.newTrack"), artist: "", cover: null, coverUrl: "", source: { kind: "audioUrl", url: "https://" }, lyrics: "", rightsNote: "" };
-    return [...list, track];
-  });
+    setTracks((list) => [...list, track]);
+    chooseTrack(track.id);
+  };
   const removeTrack = (id: string) => {
     stopPreviewForTrack(id);
+    const index = tracks.findIndex((track) => track.id === id);
+    const next = tracks[index + 1] ?? tracks[index - 1];
     setTracks((list) => list.filter((track) => track.id !== id));
+    if (next) chooseTrack(next.id);
   };
-  const uploadCover = async (trackId: string, file: File) => {
-    const stored = await ctx.upload?.(file, "image");
-    if (stored) patchTrack(trackId, { cover: stored, coverUrl: "" });
-  };
-  const uploadAudio = async (trackId: string, file: File) => {
-    stopPreviewForTrack(trackId);
-    const stored = await ctx.upload?.(file, "audio");
-    if (stored) {
-      patchTrackSource(trackId, { kind: "uploadedAudio", asset: stored });
-    }
+  const upload = (track: MusicTrack, file: File, field: MusicUploadField) => {
+    if (!queue || !ctx.siteId || !ctx.upload || !ctx.editing) return;
+    if (field === "audio") stopPreviewForTrack(track.id);
+    const options = musicUploadOptions(track, field);
+    enqueueWindowUpload(queue, useEditorStore, {
+      siteId: ctx.siteId, windowId: window.id, windowType: "music", scope: musicUploadScope(window.id, track.id),
+    }, file, ctx.upload, { ...options, apply: (current, stored) => {
+      if (field === "audio") stopPreviewForTrack(track.id);
+      return options.apply(current, stored);
+    } });
   };
   const openLink = (url: string | null, label: string) => { if (url) ctx.onLink({ target: "url", url, label }); };
 
@@ -231,7 +270,21 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
       </div>
       <p className="w98-hint">{tr("music.uploadMp3OggWavFiles")}</p>
       {!tracks.length ? <div className="music-editor-empty"><strong>{tr("music.noTracksYet")}</strong><span>{tr("music.addOneFirstThenEnter")}</span><button type="button" className="w98-btn" onClick={addTrack}>{tr("music.addTheFirstTrack")}</button></div> : null}
-      {tracks.map((track, index) => {
+      <div className="music-authoring-list" role="group" aria-label={tr("authoring.trackList")}>
+        {tracks.map((track, index) => {
+          const ownTasks = trackTasks(track.id);
+          const count = (status: string) => ownTasks.filter((task) => task.status === status).length;
+          return <button key={track.id} type="button" className="w98-btn music-authoring-track" aria-pressed={selected?.id === track.id} aria-label={tr("music.selectTrack", { title: track.title || tr("music.untitledTrackLabel") })} onClick={() => chooseTrack(track.id)}>
+            <span>{index + 1}.</span><span><strong>{track.title || tr("music.untitledTrack")}</strong><small>{track.artist || tr("music.noArtist")} · {kindBadge(track.source)}</small>
+              {ownTasks.length ? <small>{tr("authoring.uploadSummary", { queued: count("queued"), uploading: count("uploading"), completed: count("completed"), failed: count("failed") })}</small> : null}
+            </span>
+          </button>;
+        })}
+      </div>
+      {orphanTasks.length ? <div className="music-orphan-tasks"><p>{tr("authoring.removedTrackUploads")}</p><UploadTaskList tasks={orphanTasks} onRetry={(id) => queue?.retry(id)} onDismiss={(id) => queue?.dismiss(id)} /></div> : null}
+      {selected ? [selected].map((track) => {
+        const index = tracks.findIndex((item) => item.id === track.id);
+
         const previewing = playback.windowId === window.id && playback.trackId === track.id && playback.status === "playing";
         const failed = playback.windowId === window.id && playback.trackId === track.id && playback.status === "error";
         const sourceUrl = urlOfSource(track.source);
@@ -240,8 +293,9 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
         const platformBlocked = track.source.kind === "audioUrl" && insight.isPlatformPage;
         const original = openableUrl(track.source);
         return (
-          <fieldset key={track.id} className="w98-fieldset music-track-editor">
+          <fieldset key={`${window.id}:${track.id}:${draftEpoch}`} className="w98-fieldset music-track-editor">
             <legend>{index + 1}. {track.title || tr("music.untitledTrack")}</legend>
+            {taskList(track.id)}
             <div className="music-editor-tools">
               <MiniBtn label={tr("music.moveUp")} disabled={index === 0} onClick={() => setTracks((list) => moveById(list, track.id, -1))}>▲</MiniBtn>
               <MiniBtn label={tr("music.moveDown")} disabled={index === tracks.length - 1} onClick={() => setTracks((list) => moveById(list, track.id, 1))}>▼</MiniBtn>
@@ -253,14 +307,16 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
             </div>
             <div className="music-cover-editor">
               <div className="music-cover small w98-sunken">{track.cover ? <SafeImg src={track.cover} alt="" compact /> : <span aria-hidden="true">♫</span>}</div>
-              <div><FilePick className="w98-btn small" onFiles={(files) => void uploadCover(track.id, files[0])}>{tr("music.uploadCover")}</FilePick><ImageUrlField raw={track.coverUrl} label={tr("music.coverImageUrl")} placeholder="https://…" onCommit={(raw, cover) => patchTrack(track.id, { coverUrl: raw, cover })} /></div>
+              <div><FilePick className="w98-btn small" onFiles={(files) => files[0] && upload(track, files[0], "cover")}>{tr("music.uploadCover")}</FilePick><MusicCoverUrlField draftKey={`${window.id}:${track.id}`} drafts={coverDrafts.current} onEdit={() => cancelUpload(track.id, "cover")} raw={track.coverUrl} label={tr("music.coverImageUrl")} placeholder="https://…" onCommit={(raw, cover) => patchTrack(track.id, { coverUrl: raw, cover })} /></div>
             </div>
 
             <TrackSourceField
+              draftCache={sourceDrafts.current}
+              onEdit={() => cancelUpload(track.id, "audio")}
               track={track}
               windowId={window.id}
               patchSource={(source, key) => patchTrackSource(track.id, source, key)}
-              uploadAudio={(file) => void uploadAudio(track.id, file)}
+              uploadAudio={(file) => upload(track, file, "audio")}
               onOpenOriginal={() => openLink(original, track.title)}
               resourceName={(type) => resourceLabel()[type]}
             />
@@ -279,7 +335,7 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
             <label><span>{tr("music.lyricsTextOptional")}</span><textarea className="w98-textarea" rows={4} value={track.lyrics} onChange={(event) => patchTrack(track.id, { lyrics: event.target.value }, `music-lyrics-${track.id}`)} /></label>
           </fieldset>
         );
-      })}
+      }) : null}
     </div>
   );
 }
