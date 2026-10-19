@@ -148,7 +148,7 @@ test.describe("author: paste a link, Retro works out what it is", () => {
     expect(JSON.stringify(saves.at(-1))).not.toContain('"providerEmbed"');
   });
 
-  test("a direct audio file URL plays natively; a web page or video file is never handed to the audio player", async ({ page }) => {
+  test("direct audio and video file URLs use native players; web pages stay external", async ({ page }) => {
     await stubPlatforms(page);
     const { player, saves } = await openEditor(page, doc(musicWindow("Music.exe", [track("t1", "Pasted", { kind: "audioUrl", url: "https://" })])));
     const editor = player.locator(".music-track-editor").first();
@@ -165,7 +165,7 @@ test.describe("author: paste a link, Retro works out what it is", () => {
 
     await field.fill("https://media.example.com/clip.mp4");
     await expect(editor.getByTestId("source-explanation")).toContainText("影片檔網址");
-    await expect.poll(() => lastTrackSource(saves)).toMatchObject({ kind: "externalLink", url: "https://media.example.com/clip.mp4" });
+    await expect.poll(() => lastTrackSource(saves)).toMatchObject({ kind: "audioUrl", url: "https://media.example.com/clip.mp4" });
   });
 
   test("choosing the external link for a supported URL is respected until a different link is pasted", async ({ page }) => {
@@ -449,7 +449,8 @@ for (const width of [320, 390, 430]) {
 const PREVIEW_LOCALES = process.env.VITE_I18N_PREVIEW_LOCALES === "true";
 for (const locale of (PREVIEW_LOCALES ? ["en", "ja", "ko"] : ["en"]) as Array<"en" | "ja" | "ko">) {
   test(`the source field explains what it recognised in ${locale}`, async ({ page }) => {
-    const music = JSON.parse(readFileSync(join(__dirname, `../../apps/web/src/i18n/locales/${locale}/music.json`), "utf8")).music as { source: Record<string, string>; video: string; uploadAudio: string };
+    const copy = JSON.parse(readFileSync(join(__dirname, `../../apps/web/src/i18n/locales/${locale}/music.json`), "utf8"));
+    const music = copy.music as { source: Record<string, string>; video: string; uploadAudio: string };
     const fill = (template: string, values: Record<string, string>) => template.replace(/\{\{(\w+)\}\}/g, (_m, key: string) => values[key] ?? "");
     await page.addInitScript((value) => localStorage.setItem("retrodesk:locale", value), locale);
     await stubPlatforms(page);
@@ -463,7 +464,7 @@ for (const locale of (PREVIEW_LOCALES ? ["en", "ja", "ko"] : ["en"]) as Array<"e
     await field.fill("https://example.com/some-page");
     await expect(editor.getByTestId("source-explanation")).toHaveText(music.source.recognizedPage);
     await field.fill("https://media.example.com/clip.mp4");
-    await expect(editor.getByTestId("source-explanation")).toHaveText(music.source.recognizedVideoFile);
+    await expect(editor.getByTestId("source-explanation")).toHaveText(copy.m3.recognizedVideo);
     await field.fill("htp:/broken");
     await expect(editor.getByTestId("source-explanation")).toHaveText(music.source.invalid);
   });

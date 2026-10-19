@@ -2,6 +2,7 @@ import { useEffect, useId, useState } from "react";
 import { i18n } from "../../../i18n";
 import { useTranslation } from "react-i18next";
 import { PLATFORM_LABELS, embedUrlFor, type MusicTrack } from "@retrodesk/shared";
+import "./musicPlayback.css";
 import { embedSession, useActiveEmbed } from "./mediaSession";
 
 type EmbedSource = Extract<MusicTrack["source"], { kind: "providerEmbed" }>;
@@ -42,14 +43,18 @@ export function ProviderPlayer({ source, title, windowId, trackId, onOpenOrigina
   const frameSrc = src && isActive && source.provider === "youtube" ? `${src}${src.includes("?") ? "&" : "?"}autoplay=1` : src;
   const [loaded, setLoaded] = useState(false);
   const [slow, setSlow] = useState(false);
+  const [help, setHelp] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const helpId = useId();
 
   useEffect(() => {
     setLoaded(false);
     setSlow(false);
+    setHelp(false);
     if (!isActive) return;
     const timer = setTimeout(() => setSlow(true), SLOW_MS);
     return () => clearTimeout(timer);
-  }, [isActive, src]);
+  }, [isActive, src, attempt]);
 
   // Unmounting the frame is the only reliable way to stop a platform player, so tie it to this view's lifetime.
   useEffect(() => () => embedSession.dispose(windowId, trackId, instanceId), [windowId, trackId, instanceId]);
@@ -64,7 +69,7 @@ export function ProviderPlayer({ source, title, windowId, trackId, onOpenOrigina
       {isActive && frameSrc ? (
         <div className="music-embed-frame" style={{ minWidth: 200 }}>
           <iframe
-            key={src}
+            key={`${src}-${attempt}`}
             title={tr("music.playerTitle", { label, title: title || tr("music.untitledTrackLabel") })}
             src={frameSrc ?? undefined}
             sandbox={SANDBOX}
@@ -73,7 +78,8 @@ export function ProviderPlayer({ source, title, windowId, trackId, onOpenOrigina
             referrerPolicy="strict-origin-when-cross-origin"
             loading="eager"
             style={{ width: "100%", border: 0, display: "block", ...frameStyle }}
-            onLoad={() => setLoaded(true)}
+            onLoad={(event) => { if (event.currentTarget.isConnected) setLoaded(true); }}
+            onError={(event) => { if (event.currentTarget.isConnected) setHelp(true); }}
           />
         </div>
       ) : (
@@ -87,9 +93,19 @@ export function ProviderPlayer({ source, title, windowId, trackId, onOpenOrigina
           ? <button type="button" className="w98-btn" onClick={() => embedSession.dispose(windowId, trackId, instanceId)}>{tr("providerPlayer.closePlayer")}</button>
           : <button type="button" className="w98-btn primary" disabled={!src} onClick={() => embedSession.activate(windowId, trackId, instanceId)}>{tr("music.loadPlayer", { label })}</button>}
         <button type="button" className="w98-btn music-open" onClick={onOpenOriginal}>{tr("music.openOn", { label })}</button>
+        {isActive ? <button type="button" className="w98-btn" aria-expanded={help || slow && !loaded} aria-controls={helpId} onClick={() => setHelp(true)}>{tr("m2.needHelp")}</button> : null}
       </div>
+      {isActive && (help || slow && !loaded) ? (
+        <div id={helpId} className="music-notice music-playback-help" role="status">
+          <strong>{tr("m2.heading")}</strong>
+          {slow && !loaded ? <span>{tr("music.slowNotice", { label })}</span> : null}
+          <span>{tr("m2.guidance", { label })}</span>
+          <div className="music-embed-actions">
+            <button type="button" className="w98-btn" onClick={() => setAttempt((value) => value + 1)}>{tr("m2.retry")}</button>
+          </div>
+        </div>
+      ) : null}
       <small className="music-embed-note">{providerNote()[source.provider]}</small>
-      {isActive && slow && !loaded ? <div role="status" className="music-embed-slow">{tr("music.slowNotice", { label })}</div> : null}
     </section>
   );
 }

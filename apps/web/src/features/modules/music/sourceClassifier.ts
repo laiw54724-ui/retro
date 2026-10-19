@@ -2,8 +2,8 @@ import { PLATFORM_LABELS, detectPlatformFromUrl, resolveEmbedUrl, type KnownPlat
 
 type EmbedSource = Extract<MusicTrack["source"], { kind: "providerEmbed" }>;
 
-const AUDIO_FILE = /\.(mp3|ogg|oga|opus|wav|m4a|aac|flac|webm)$/i;
-const VIDEO_FILE = /\.(mp4|m4v|mov|ogv|mkv|avi)$/i;
+const AUDIO_FILE = /\.(mp3|ogg|oga|opus|wav|m4a|aac|flac)$/i;
+const VIDEO_FILE = /\.(mp4|m4v|mov|ogv|webm)$/i;
 
 /** What a pasted link is, decided without asking the author to pick a source type. */
 export type PastedSource =
@@ -13,7 +13,7 @@ export type PastedSource =
   | { type: "embed"; source: EmbedSource; platformLabel: string }
   /** A direct audio file: played by Retro's own audio player. */
   | { type: "audio-file"; url: string }
-  /** A direct video file: recognised, but there is no in-page video player yet, so it is kept as an external link. */
+  /** A candidate direct video file; the browser still decides whether its format/codecs are playable. */
   | { type: "video-file"; url: string }
   /** Anything else on the web: kept as an external link. A web page is never handed to an audio/video element. */
   | { type: "web-page"; url: string; platform: KnownPlatform | null; platformLabel: string | null; reason: "short-link" | "unsupported-resource" | "unsupported-platform" | "page" };
@@ -47,10 +47,10 @@ export function classifyPastedUrl(raw: string): PastedSource {
 
   let pathname = "";
   try { pathname = new URL(text).pathname; } catch { /* unreachable: resolveEmbedUrl parsed it */ }
-  if (AUDIO_FILE.test(pathname)) return { type: "audio-file", url: text };
-  if (VIDEO_FILE.test(pathname)) return { type: "video-file", url: text };
-
   const platform = resolved.platform ?? detectPlatformFromUrl(text);
+  if (!platform && AUDIO_FILE.test(pathname)) return { type: "audio-file", url: text };
+  if (!platform && VIDEO_FILE.test(pathname)) return { type: "video-file", url: text };
+
   if (platform) {
     return {
       type: "web-page", url: text, platform, platformLabel: PLATFORM_LABELS[platform],
@@ -59,3 +59,6 @@ export function classifyPastedUrl(raw: string): PastedSource {
   }
   return { type: "web-page", url: text, platform: null, platformLabel: null, reason: "page" };
 }
+
+/** Same bounded hint for saved audioUrl values and newly pasted sources. No fetch or MIME promise. */
+export const isVideoFileUrl = (url: string): boolean => classifyPastedUrl(url).type === "video-file";

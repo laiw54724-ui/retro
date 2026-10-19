@@ -167,3 +167,89 @@ describe("integrated protected-media lifecycle", () => {
     expect(audio.play).not.toHaveBeenCalled();
   });
 });
+
+describe("visible video shares native ownership", () => {
+  it("stops and clears audio before video, then clears video before a new audio source", async () => {
+    const audio = new FakeAudio();
+    const video = new FakeAudio();
+    const coordinator = createAudioCoordinator({ createAudio: () => audio });
+    await coordinator.play("audio-window", "audio", "https://media.example.com/a.mp3");
+    await coordinator.play("video-window", "video", "https://media.example.com/a.mp4", video);
+    expect(audio.src).toBe("");
+    expect(audio.paused).toBe(true);
+    expect(video.paused).toBe(false);
+    await coordinator.play("audio-window", "audio", "https://media.example.com/b.mp3");
+    expect(video.src).toBe("");
+    expect(video.paused).toBe(true);
+    // The detached element's events must never poison the newer source.
+    for (const type of ["playing", "pause", "ended", "error", "loadedmetadata"]) video.dispatchEvent(new Event(type));
+    expect(coordinator.getSnapshot()).toMatchObject({ status: "playing", trackId: "audio" });
+    coordinator.stopAll();
+  });
+
+  it("ignores stale video play rejection and cleanup from another mounted copy", async () => {
+    const audio = new FakeAudio();
+    const video = new FakeAudio();
+    const stale = pending<void>();
+    video.play = vi.fn(() => stale.promise);
+    const coordinator = createAudioCoordinator({ createAudio: () => audio });
+    const first = coordinator.play("same-window", "same-track", "https://media.example.com/a.mp4", video);
+    await coordinator.play("same-window", "same-track", "https://media.example.com/a.mp4", audio);
+    coordinator.stopElement(video);
+    stale.reject(new Error("old video"));
+    expect(await first).toBe(false);
+    expect(coordinator.getSnapshot()).toMatchObject({ status: "playing", trackId: "same-track" });
+    coordinator.stopElement(audio);
+    expect(coordinator.getSnapshot().status).toBe("idle");
+  });
+
+  it("clears failed video, supports retry and native control pause/resume", async () => {
+    const video = new FakeAudio();
+    const coordinator = createAudioCoordinator({ createAudio: () => new FakeAudio() });
+    video.rejectNext = true;
+    expect(await coordinator.play("w", "v", "https://media.example.com/a.mp4", video)).toBe(false);
+    expect(video.src).toBe("");
+    expect(coordinator.getSnapshot()).toMatchObject({ status: "error" });
+    expect(await coordinator.play("w", "v", "https://media.example.com/a.mp4", video)).toBe(true);
+    video.pause();
+    expect(coordinator.getSnapshot().status).toBe("paused");
+    await video.play();
+    expect(coordinator.getSnapshot().status).toBe("playing");
+    coordinator.stopWindow("w");
+    expect(video.paused).toBe(true);
+    expect(video.src).toBe("");
+  });
+});
+
+describe("native session event boundaries", () => {
+  it("does not let an already queued timeout fail a replacement source with the same ids", async () => {
+    const callbacks: (() => void)[] = [];
+    const video = new FakeAudio();
+    const waiting = pending<void>();
+    video.play = vi.fn(() => waiting.promise);
+    const coordinator = createAudioCoordinator({ createAudio: () => new FakeAudio(), setTimer: (fn) => { callbacks.push(fn); return callbacks.length; }, clearTimer: () => {} });
+    const first = coordinator.play("w", "v", "https://media.example.com/old.mp4", video);
+    const replacement = new FakeAudio();
+    const replacementReady = pending<void>();
+    replacement.play = vi.fn(() => replacementReady.promise);
+    const second = coordinator.play("w", "v", "https://media.example.com/new.mp4", replacement);
+    callbacks[0]();
+    expect(coordinator.getSnapshot()).toMatchObject({ trackId: "v", url: "https://media.example.com/new.mp4", status: "loading" });
+    replacementReady.resolve();
+    waiting.resolve();
+    expect(await first).toBe(false);
+    expect(await second).toBe(true);
+    coordinator.stopAll();
+  });
+  it("retains real native-control volume when switching to another media source", async () => {
+    const video = new FakeAudio();
+    const audio = new FakeAudio();
+    const coordinator = createAudioCoordinator({ createAudio: () => audio });
+    await coordinator.play("w", "v", "https://media.example.com/a.mp4", video);
+    video.volume = 0.3;
+    video.dispatchEvent(new Event("volumechange"));
+    await coordinator.play("w", "a", "https://media.example.com/a.wav");
+    expect(audio.volume).toBe(0.3);
+    coordinator.stopAll();
+  });
+});

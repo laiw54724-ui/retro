@@ -1,4 +1,5 @@
 import { PLATFORM_LABELS, detectPlatformFromUrl, resolveEmbedUrl, type EmbedResource, type KnownPlatform } from "@retrodesk/shared";
+import { isVideoFileUrl } from "./sourceClassifier";
 import { i18n } from "../../../i18n";
 
 const AUDIO_FILE = /\.(mp3|ogg|oga|opus|wav|m4a|aac|flac|webm)$/i;
@@ -46,6 +47,7 @@ export function insightForUrl(url: string): UrlInsight {
 
 /** Turns a raw playback error into a reason the author or visitor can act on. */
 export function explainPlaybackFailure(url: string, rawMessage: string): string {
+  if (isVideoFileUrl(url)) return i18n.t("music:m3.failure");
   const insight = insightForUrl(url);
   if (insight.isPlatformPage && insight.platformLabel) {
     return i18n.t("music:sourceInsight.thisIsAWebPage", { platformLabel: insight.platformLabel });

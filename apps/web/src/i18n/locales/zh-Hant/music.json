@@ -146,5 +146,20 @@
     "thisIsAWebPage": "這是 {{platformLabel}} 的網頁連結，不是音訊檔，瀏覽器無法直接播放。請把來源改成「外部連結」或「平台播放器」。",
     "thisUrlDoesntLookLike": "{{rawMessage}} 這個網址看起來不是音訊檔（.mp3、.ogg、.wav…）。",
     "theFileMayHaveBeen": "{{rawMessage}} 可能是檔案已移除、網站不允許外站使用，或格式不受支援。"
+  },
+  "m2": {
+    "needHelp": "無法播放？",
+    "heading": "播放協助",
+    "guidance": "如果這個 {{label}} 播放器無法播放，Retro 無法確認原因。內容存取權、瀏覽器隱私設定或網路狀況都可能影響播放。請重試，或開啟原站確認內容是否可用。",
+    "retry": "重新嘗試"
+  },
+  "m3": {
+    "recognizedVideo": "已辨識為影片檔網址：訪客可以在此載入。副檔名僅供判斷，能否播放取決於實際檔案與瀏覽器。",
+    "externalFile": "此檔案目前保留為外部連結。你可以維持原選擇，或按下方按鈕改用站內播放器。",
+    "player": "影片播放器：{{title}}",
+    "playVideo": "載入／播放影片",
+    "cannotPlay": "影片無法播放",
+    "failure": "影片無法載入或播放。檔案可能已無法存取、來源伺服器可能限制播放，或此瀏覽器不支援其格式或編碼。請重試或開啟原連結。",
+    "formatNote": "僅支援 HTTPS 的 .mp4、.webm、.m4v、.mov、.ogv 檔案直連。格式與編碼支援依瀏覽器而異；一般網頁會在外部開啟。"
   }
 }
