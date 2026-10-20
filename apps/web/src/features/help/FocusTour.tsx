@@ -80,7 +80,8 @@ export function FocusTour({ topic, onClose, returnFocusTo }: Props) {
   const placed = cardBox !== null;
   // The menu that started the tour restores focus to its opener while it unmounts; claim focus again if that lands after us.
   useEffect(() => {
-    if (!placed) return;
+    // A card that is still hidden (not placed yet, or paused behind a modal) cannot take focus: run again when it becomes visible.
+    if (!placed || paused) return;
     const focusPrimary = () => {
       const element = card.current;
       if (!element || element.contains(globalThis.document.activeElement)) return;
@@ -101,7 +102,7 @@ export function FocusTour({ topic, onClose, returnFocusTo }: Props) {
     globalThis.document.addEventListener("focusin", onFocusIn);
     const timers = [globalThis.setTimeout(focusPrimary, 60), globalThis.setTimeout(focusPrimary, 250), globalThis.setTimeout(() => globalThis.document.removeEventListener("focusin", onFocusIn), 1500)];
     return () => { timers.forEach((timer) => globalThis.clearTimeout(timer)); globalThis.document.removeEventListener("focusin", onFocusIn); };
-  }, [index, placed]);
+  }, [index, placed, paused]);
 
   // Escape ends the tour — it is the topmost thing on screen — unless a modal dialog is open: that dialog owns the key.
   // Capture phase, so it is not first consumed by a phone app's own "Escape leaves the app".
