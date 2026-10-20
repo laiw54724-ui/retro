@@ -702,9 +702,10 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 
 
 /* A transient notice must never cover the top bar controls (Publish, Preview, ...): CI at 390px showed the "JSON copied"
-   notice sitting over the Publish button. On a phone it floats above the bottom toolbar instead. */
+   notice sitting over the Publish button, and the top bar wraps to several rows at desktop widths too once it holds more controls. The notice now floats above the bottom bar (status bar on desktop, toolbar on a phone) at every width. */
+.editor-message:not(.conflict-notice) { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 44px); }
 @media (max-width: 767px) {
-  .editor-message:not(.conflict-notice) { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 72px); }
+  .editor-message:not(.conflict-notice) { bottom: calc(env(safe-area-inset-bottom, 0px) + 72px); }
 }
 /* ---- help menu and focused tour (opt-in, never automatic) ---- */
 .help-topics { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 10px; }
