@@ -247,6 +247,17 @@ for (const width of [390, 1280]) {
     await page.keyboard.press("Escape");
     await expect(recovery).toBeHidden();
     await expect(page.getByRole("button", { name: "版本衝突", exact: true })).toBeFocused();
+    // The "JSON copied" notice that is still showing must not cover any top bar control (it did on the Linux CI layout).
+    const toast = page.locator(".editor-message[role='alert']");
+    if (await toast.count()) {
+      const toastBox = (await toast.first().boundingBox())!;
+      for (const control of await page.locator(".editor-topbar button, .editor-topbar a").all()) {
+        const box = await control.boundingBox();
+        if (!box) continue;
+        const overlaps = toastBox.x < box.x + box.width && toastBox.x + toastBox.width > box.x && toastBox.y < box.y + box.height && toastBox.y + toastBox.height > box.y;
+        expect(overlaps, `notice covers top bar control at ${Math.round(box.x)},${Math.round(box.y)}`).toBe(false);
+      }
+    }
     // Publish reopens recovery rather than resubmitting the stale expected version.
     await opener.click();
     await expect(recovery).toBeVisible();

@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   exact-ux-candidate:
-    if: github.head_ref == 'integrate/ux-cleared-2026-10-19'
+    if: github.head_ref == 'integrate/ux-cleared-2026-10-19' || github.head_ref == 'claude/ux137-fix'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -34,20 +34,20 @@ jobs:
           EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
-          mkdir -p ../evidence
-          { git rev-parse HEAD; git rev-parse HEAD^{tree}; sha256sum pnpm-lock.yaml; node --version; pnpm --version; } | tee ../evidence/identity.txt
+          mkdir -p evidence
+          { git rev-parse HEAD; git rev-parse HEAD^{tree}; sha256sum pnpm-lock.yaml; node --version; pnpm --version; } | tee evidence/identity.txt
       - name: Focused UX units
         run: |
           set -o pipefail
-          pnpm --filter @retrodesk/web test:unit src/features/editor/store.test.ts src/features/editor/editorLocalWork.test.ts src/features/modules/minesweeper src/features/modules/instagram src/i18n/resources.test.ts 2>&1 | tee ../evidence/units.log
+          pnpm --filter @retrodesk/web test:unit src/features/editor/store.test.ts src/features/editor/editorLocalWork.test.ts src/features/modules/minesweeper src/features/modules/instagram src/i18n/resources.test.ts 2>&1 | tee evidence/units.log
       - name: One combined build
         run: |
           set -o pipefail
-          pnpm build 2>&1 | tee ../evidence/build.log
+          pnpm build 2>&1 | tee evidence/build.log
       - name: Bounded cross-batch Chromium verification
         run: |
           set -o pipefail
-          pnpm exec playwright test -c playwright.ux-integration.config.ts tests/e2e/ux-integration.spec.ts tests/e2e/editor-modal-accessibility.spec.ts tests/e2e/mobile-history-status.spec.ts tests/e2e/ig-shell-save-status.spec.ts tests/e2e/ig-editor-flow.spec.ts tests/e2e/mobile-content-settings.spec.ts tests/e2e/audit-f09-f10.spec.ts --grep-invert '^.*image: content and window settings' 2>&1 | tee ../evidence/browser.log
+          pnpm exec playwright test -c playwright.ux-integration.config.ts tests/e2e/ux-integration.spec.ts tests/e2e/editor-modal-accessibility.spec.ts tests/e2e/mobile-history-status.spec.ts tests/e2e/ig-shell-save-status.spec.ts tests/e2e/ig-editor-flow.spec.ts tests/e2e/mobile-content-settings.spec.ts tests/e2e/audit-f09-f10.spec.ts --grep-invert '^.*image: content and window settings' 2>&1 | tee evidence/browser.log
       - name: Confirm unchanged candidate
         run: |
           git diff --exit-code
@@ -56,6 +56,6 @@ jobs:
         if: always()
         with:
           name: ux-candidate-${{ github.event.pull_request.head.sha }}
-          path: ../evidence
+          path: evidence
           if-no-files-found: error
           retention-days: 7
