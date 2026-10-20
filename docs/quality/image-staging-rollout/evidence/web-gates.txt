@@ -1,0 +1,12 @@
+
+ RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-staging-rollout-51/apps/web
+
+ ✓ src/lib/imageAuthoringGate.test.ts (16 tests) 3ms
+ ✓ src/lib/imageWindowCreation.test.ts (4 tests) 11ms
+ ✓ src/lib/imageCompatibility.test.ts (9 tests) 3ms
+ ✓ src/features/editor/ImageWriteContext.test.tsx (6 tests) 7ms
+
+ Test Files  4 passed (4)
+      Tests  35 passed (35)
+   Start at  02:10:56
+   Duration  478ms (transform 150ms, setup 684ms, collect 122ms, tests 24ms, environment 1ms, prepare 292ms)

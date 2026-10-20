@@ -9,7 +9,7 @@ VITE_IMAGE_WINDOW_WRITER=true corepack pnpm --filter @retrodesk/web dev
 corepack pnpm exec playwright test --config playwright.image-authoring.config.ts
 ```
 
-The local API must advertise `writeCompatibility.imageWindow: 1` for the loaded site and API origin. Add Image and author controls stay hidden without that advertisement or while upgrade recovery is paused. Production builds remain disabled even if the variable is set. Appearance writers keep their separate existing gate. No schema version, transport marker or privacy projection changed.
+The local API must advertise `writeCompatibility.imageWindow: 1` for the loaded site and API origin. Add Image and author controls stay hidden without that advertisement or while upgrade recovery is paused. Ordinary production builds remain disabled even if the variable is set. A separate default-off staging release contract requires an explicit release file, staging build mode and the exact approved Web/API origins; see `docs/quality/image-staging-rollout/RELEASE.md`. Appearance writers keep their separate existing gate. No schema version, transport marker or privacy projection changed.
 
 Sources use `ImageUrlField` and the existing image upload pipeline (JPEG/PNG/WebP/GIF, 8 MB limit). The media queue owns a single source slot: another upload supersedes the previous request; URL/source edits, undo/redo, reload, site switch or deletion invalidate stale work. Only current stable asset references enter the canonical draft; preview blob URLs never do.
 
