@@ -261,6 +261,7 @@
     "opensInANewTab": "Opens in a new tab."
   },
   "about": {
+    "avatarSettings": "Avatar settings",
     "sAvatar": "{{nickname}}'s avatar",
     "editTheCardContentExpand": "Edit the card content; expand the sections you want to change.",
     "basicInfo": "Basic info",
@@ -510,6 +511,7 @@
     "stateUnopened": ", unopened"
   },
   "characterDialog": {
+    "preview": "Preview character pop-up",
     "removeCharacterImage": "Remove character image",
     "character": "Character",
     "characterPopUp": "Character pop-up",

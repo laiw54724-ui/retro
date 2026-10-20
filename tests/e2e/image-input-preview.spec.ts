@@ -129,6 +129,7 @@ for (const type of ["about", "document", "gallery", "character-dialog", "moodboa
   const site = await fixture(page, [window]);
   await page.setViewportSize({ width: 1440, height: 950 }); await page.goto("/editor/site-1");
   const module = page.locator(".canvas-window");
+  if (type === "about") await module.locator(".about-avatar-settings > summary").click();
   if (type === "document") await module.locator(".doc-block").first().click();
   if (type === "gallery") await module.locator("[data-image-id]").first().click();
   await module.locator('input[type="file"]').last().setInputFiles(FILE);
