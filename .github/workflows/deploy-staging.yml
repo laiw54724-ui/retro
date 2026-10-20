@@ -8,7 +8,7 @@ on:
         required: false
         default: ""
       image_qa_site_ids:
-        description: "Optional. Comma-separated site IDs allowed to show the Image entry. Empty keeps Image off for everyone."
+        description: "Optional. Comma-separated site IDs allowed to show the Image entry, or * for every staging site. Empty keeps Image off for everyone."
         required: false
         default: ""
   push:

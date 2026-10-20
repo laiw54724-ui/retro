@@ -16,5 +16,6 @@ export const IMAGE_UPGRADE_MESSAGE = "This editor must be upgraded before saving
 /** Entry restriction only: whether the Image authoring UI may be offered for this site. Write guards above never depend on it. */
 export function imageEntryAdvertised(allowlist: string | undefined, siteId: string): boolean {
   if (allowlist === undefined) return true;
-  return allowlist.split(",").map((id) => id.trim()).filter(Boolean).includes(siteId);
+  const ids = allowlist.split(",").map((id) => id.trim()).filter(Boolean);
+  return ids.includes("*") || ids.includes(siteId);
 }

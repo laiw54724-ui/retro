@@ -98,6 +98,9 @@ describe("image entry restriction", () => {
     expect((await get({ IMAGE_QA_SITE_IDS: "other, site-a" })).site.writeCompatibility.imageWindow).toBe(1);
     expect((await get({ IMAGE_QA_SITE_IDS: "other" })).site.writeCompatibility.imageWindow).toBeUndefined();
   });
+  it("advertises to every site when the allowlist contains *", async () => {
+    expect((await get({ IMAGE_QA_SITE_IDS: "*" })).site.writeCompatibility.imageWindow).toBe(1);
+  });
   it("does not weaken the write guard when the entry is hidden", async () => {
     const response = await save(canonical(true), undefined);
     expect(response.status).toBe(426);
