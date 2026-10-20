@@ -85,20 +85,21 @@
 
 .about-editor-basics {
   display: grid;
-  grid-template-columns: minmax(112px, 30%) minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
 }
 
 .about-editor .about-avatar {
-  width: min(160px, 100%);
-  align-self: center;
+  width: 56px;
+  height: 56px;
+  align-self: start;
   display: grid;
   place-items: center;
 }
 
 .about-avatar-empty {
-  padding: 8px;
-  font-size: 12px;
+  padding: 3px;
+  font-size: 10px;
   text-align: center;
   background: #ffffffcc;
 }
@@ -177,4 +178,31 @@
   .about-editor-section > summary {
     min-height: 44px;
   }
+}
+
+/* Authoring only: the primary fields remain first at the saved window size. */
+.about-editor-heading {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.about-avatar-settings > summary {
+  min-height: 44px;
+  padding: 10px 6px;
+  cursor: pointer;
+  border: 1px solid #aaa;
+  background: #dfdfdf;
+  font-weight: 700;
+}
+
+.about-avatar-settings > summary:focus-visible {
+  outline: 2px solid #000080;
+  outline-offset: -3px;
+}
+
+.about-avatar-settings > .about-edit-avatar {
+  padding-top: 8px;
 }

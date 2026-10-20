@@ -33,6 +33,7 @@ test("author removes a character image, undoes, then saves removal across reload
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/editor/site-1");
   const dialog = page.getByRole("dialog", { name: "Welcome.exe" });
+  await dialog.locator(".character-editor-preview > summary").click();
   await expect(dialog.locator(".character-dialog-image")).toBeVisible();
   await dialog.getByRole("button", { name: "移除角色圖片" }).click();
   await expect(dialog.locator(".character-dialog-image")).toHaveCount(0);
@@ -44,6 +45,7 @@ test("author removes a character image, undoes, then saves removal across reload
     return saved?.type === "character-dialog" ? { image: saved.content.image, imageUrl: saved.content.imageUrl, message: saved.content.message } : null;
   }).toEqual({ image: null, imageUrl: "", message: "Welcome" });
   await page.reload();
+  await page.getByRole("dialog", { name: "Welcome.exe" }).locator(".character-editor-preview > summary").click();
   await expect(page.getByRole("dialog", { name: "Welcome.exe" }).locator(".character-dialog-placeholder")).toBeVisible();
 });
 

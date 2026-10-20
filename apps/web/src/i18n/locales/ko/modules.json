@@ -261,6 +261,7 @@
     "opensInANewTab": "새 탭에서 열립니다."
   },
   "about": {
+    "avatarSettings": "아바타 설정",
     "sAvatar": "{{nickname}}의 아바타",
     "editTheCardContentExpand": "카드 내용을 편집합니다. 수정할 구역을 펼치세요.",
     "basicInfo": "기본 정보",
@@ -510,6 +511,7 @@
     "stateUnopened": "미공개"
   },
   "characterDialog": {
+    "preview": "캐릭터 팝업 미리 보기",
     "removeCharacterImage": "캐릭터 이미지 제거",
     "character": "캐릭터",
     "characterPopUp": "캐릭터 팝업",
