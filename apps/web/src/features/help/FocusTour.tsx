@@ -92,8 +92,15 @@ export function FocusTour({ topic, onClose, returnFocusTo }: Props) {
       element.querySelector<HTMLElement>("[data-tour-primary]")?.focus();
     };
     focusPrimary();
-    const timers = [globalThis.setTimeout(focusPrimary, 60), globalThis.setTimeout(focusPrimary, 250)];
-    return () => timers.forEach((timer) => globalThis.clearTimeout(timer));
+    // The restore can land late on a slow machine (CI WebKit took longer than any fixed delay): for a moment after the
+    // card appears, whenever focus falls back onto the opener or the page, hand it to the card again.
+    const onFocusIn = (event: FocusEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target === opener.current || target === globalThis.document.body) focusPrimary();
+    };
+    globalThis.document.addEventListener("focusin", onFocusIn);
+    const timers = [globalThis.setTimeout(focusPrimary, 60), globalThis.setTimeout(focusPrimary, 250), globalThis.setTimeout(() => globalThis.document.removeEventListener("focusin", onFocusIn), 1500)];
+    return () => { timers.forEach((timer) => globalThis.clearTimeout(timer)); globalThis.document.removeEventListener("focusin", onFocusIn); };
   }, [index, placed]);
 
   // Escape ends the tour — it is the topmost thing on screen — unless a modal dialog is open: that dialog owns the key.
