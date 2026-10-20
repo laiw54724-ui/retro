@@ -82,26 +82,24 @@ export function FocusTour({ topic, onClose, returnFocusTo }: Props) {
   useEffect(() => {
     // A card that is still hidden (not placed yet, or paused behind a modal) cannot take focus: run again when it becomes visible.
     if (!placed || paused) return;
-    const focusPrimary = () => {
+    const doc = globalThis.document;
+    // The tour was started on purpose, so the card takes focus. Until the person types or points at something else, keep
+    // handing focus back for a moment: the menu that started the tour restores focus to its opener while it unmounts, and on
+    // a slow machine (Linux WebKit in CI) that can land after the card's first attempt, or the first attempt can miss.
+    let touched = false;
+    let frame = 0;
+    const started = Date.now();
+    const onInput = () => { touched = true; };
+    const claim = () => {
       const element = card.current;
-      if (!element || element.contains(globalThis.document.activeElement)) return;
-      const active = globalThis.document.activeElement;
-      // Leave focus alone only if the person has put it on a real control of their own; the opener, <body> and plain
-      // containers (what Chromium, Safari and Linux WebKit each leave after the menu closes) are not that.
-      const onOwnControl = !!active && active !== opener.current && active.matches("button, input, select, textarea, a[href], [contenteditable]");
-      if (onOwnControl) return;
-      element.querySelector<HTMLElement>("[data-tour-primary]")?.focus();
+      if (!element || touched) return;
+      if (!element.contains(doc.activeElement)) element.querySelector<HTMLElement>("[data-tour-primary]")?.focus();
+      if (Date.now() - started < 1500) frame = globalThis.requestAnimationFrame(claim);
     };
-    focusPrimary();
-    // The restore can land late on a slow machine (CI WebKit took longer than any fixed delay): for a moment after the
-    // card appears, whenever focus falls back onto the opener or the page, hand it to the card again.
-    const onFocusIn = (event: FocusEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (target === opener.current || target === globalThis.document.body) focusPrimary();
-    };
-    globalThis.document.addEventListener("focusin", onFocusIn);
-    const timers = [globalThis.setTimeout(focusPrimary, 60), globalThis.setTimeout(focusPrimary, 250), globalThis.setTimeout(() => globalThis.document.removeEventListener("focusin", onFocusIn), 1500)];
-    return () => { timers.forEach((timer) => globalThis.clearTimeout(timer)); globalThis.document.removeEventListener("focusin", onFocusIn); };
+    doc.addEventListener("keydown", onInput, true);
+    doc.addEventListener("pointerdown", onInput, true);
+    claim();
+    return () => { globalThis.cancelAnimationFrame(frame); doc.removeEventListener("keydown", onInput, true); doc.removeEventListener("pointerdown", onInput, true); };
   }, [index, placed, paused]);
 
   // Escape ends the tour — it is the topmost thing on screen — unless a modal dialog is open: that dialog owns the key.
