@@ -157,7 +157,7 @@ for (const width of [320, 390, 430]) {
     await nickname.fill("LongNickname".repeat(12));
     await expect(nickname).toBeFocused();
     await editor.getByLabel("簡介", { exact: true }).fill("About text\n".repeat(40));
-    await editor.locator("summary").nth(1).tap();
+    await editor.locator(".about-editor-section > summary").filter({ hasText: "自訂欄位" }).tap();
     await editor.getByRole("button", { name: "＋ 新增欄位", exact: true }).tap();
     const key = editor.getByLabel("欄位名稱", { exact: true }).last();
     await key.fill("自訂欄位".repeat(20));
@@ -170,7 +170,7 @@ for (const width of [320, 390, 430]) {
     await reopenMobile(page, "about.exe");
     await expect(nickname).toHaveValue("LongNickname".repeat(12));
     await expect(editor.getByLabel("簡介", { exact: true })).toHaveValue("About text\n".repeat(40));
-    await editor.locator("summary").nth(1).tap();
+    await editor.locator(".about-editor-section > summary").filter({ hasText: "自訂欄位" }).tap();
     await expect(editor.getByLabel("欄位名稱", { exact: true }).last()).toHaveValue("自訂欄位".repeat(20));
     await expect(editor.getByLabel("欄位內容", { exact: true }).last()).toHaveValue("LongValue".repeat(50));
   });
