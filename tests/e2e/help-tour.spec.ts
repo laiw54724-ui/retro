@@ -167,6 +167,12 @@ for (const width of [320, 390, 430]) {
 test("reduced-motion and keyboard: the tour follows focus and Skip is reachable by Tab", async ({ page, browserName }) => {
   test.skip(browserName === "webkit" && process.platform === "darwin", "macOS WebKit/Safari does not Tab to buttons unless Full Keyboard Access is on; the Tab order is verified in Chromium and in Linux WebKit (CI)");
   await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.addInitScript(() => {
+    const log: string[] = []; (window as unknown as { __focusLog: string[] }).__focusLog = log;
+    const describe = (n: EventTarget | null) => { const e = n as HTMLElement | null; return e && e.tagName ? `${e.tagName}.${(e.className || "").toString().slice(0, 24)}"${(e.textContent || "").slice(0, 12)}"` : "null"; };
+    document.addEventListener("focusin", (event) => log.push(`${Math.round(performance.now())}ms focusin ${describe(event.target)}`), true);
+    document.addEventListener("focusout", (event) => log.push(`${Math.round(performance.now())}ms focusout ${describe(event.target)} -> ${describe((event as FocusEvent).relatedTarget)}`), true);
+  });
   await openEditor(page, 1440);
   await helpButton(page).focus();
   await page.keyboard.press("Enter");
@@ -177,7 +183,7 @@ test("reduced-motion and keyboard: the tour follows focus and Skip is reachable 
   // Same assertion as before; on failure it also reports where focus actually was, so an engine-specific miss is diagnosable from the CI log.
   try { await expect(card(page).getByRole("button", { name: "下一步" })).toBeFocused(); } catch (error) {
     const where = await page.evaluate(() => { const a = document.activeElement as HTMLElement | null; return a ? `${a.tagName}.${a.className}#${a.id} text="${(a.textContent || "").slice(0, 30)}" inert-root=${document.getElementById("root")?.hasAttribute("inert")}` : "null"; });
-    throw new Error(`tour primary button not focused; activeElement = ${where}\n${(error as Error).message}`);
+    throw new Error(`tour primary button not focused; activeElement = ${where}\nfocus log:\n${(await page.evaluate(() => (window as unknown as { __focusLog: string[] }).__focusLog.slice(-14).join("\n")))}\n${(error as Error).message}`);
   }
   await page.keyboard.press("Shift+Tab"); // "Back" is disabled on step 1, so the previous stop is Skip
   await expect(card(page).getByRole("button", { name: "略過導覽" })).toBeFocused();
