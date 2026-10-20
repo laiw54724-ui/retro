@@ -22,3 +22,4 @@ supabase/.temp/
 apps/web/public/windows-icons/
 apps/web/public/win98-icons/
 tests/tmp/
+/evidence/
