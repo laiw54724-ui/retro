@@ -164,7 +164,8 @@ for (const width of [320, 390, 430]) {
   });
 }
 
-test("reduced-motion and keyboard: the tour follows focus and Skip is reachable by Tab", async ({ page }) => {
+test("reduced-motion and keyboard: the tour follows focus and Skip is reachable by Tab", async ({ page, browserName }) => {
+  test.skip(browserName === "webkit" && process.platform === "darwin", "macOS WebKit/Safari does not Tab to buttons unless Full Keyboard Access is on; the Tab order is verified in Chromium and in Linux WebKit (CI)");
   await page.emulateMedia({ reducedMotion: "reduce" });
   await openEditor(page, 1440);
   await helpButton(page).focus();

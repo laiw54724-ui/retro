@@ -3,6 +3,7 @@ import { createDesktopPreviewSession } from "../preview/desktopPreviewGeometry";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
+import { currentOpener } from "../../lib/openerFocus";
 import { lockBackground } from "../../lib/backgroundLock";
 import { useThemeView } from "../../lib/themeView";
 import { useIsPhoneViewport } from "../../lib/useViewport";
@@ -61,7 +62,7 @@ export function VisitorPreview({ publishable, draft, sample, username = "", site
   // Focus: move into the preview, give it back to the opener on close.
   useEffect(() => {
     const doc = globalThis.document;
-    const previous = doc.activeElement as HTMLElement | null;
+    const previous = currentOpener();
     root.current?.querySelector<HTMLElement>("[data-autofocus]")?.focus();
     return () => { if (previous?.isConnected) previous.focus(); };
   }, []);

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ModalDialog } from "../../components/ModalDialog";
 import { RetroButton } from "../../components/RetroButton";
@@ -13,12 +13,13 @@ export function HelpMenu() {
   const { t } = useTranslation("editor");
   const [open, setOpen] = useState(false);
   const [tour, setTour] = useState<HelpTopic | null>(null);
+  const button = useRef<HTMLButtonElement | null>(null);
   const [seen, setSeen] = useState<Record<string, boolean>>({});
   const available = (topic: HelpTopic) => !topic.requires || !!globalThis.document.querySelector(topic.requires.selector);
 
   return (
     <>
-      <RetroButton data-help="help-button" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>{t("help.button")}</RetroButton>
+      <RetroButton ref={button} data-help="help-button" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>{t("help.button")}</RetroButton>
       {open ? (
         <ModalDialog title={t("help.title")} onClose={() => setOpen(false)} width={520} actions={<RetroButton className="primary" onClick={() => setOpen(false)}>{t("help.close")}</RetroButton>}>
           <p className="w98-hint">{t("help.intro")}</p>
@@ -40,7 +41,7 @@ export function HelpMenu() {
           </ul>
         </ModalDialog>
       ) : null}
-      {tour ? <FocusTour key={tour.id} topic={tour} onClose={() => setTour(null)} /> : null}
+      {tour ? <FocusTour key={tour.id} topic={tour} returnFocusTo={button.current} onClose={() => setTour(null)} /> : null}
     </>
   );
 }

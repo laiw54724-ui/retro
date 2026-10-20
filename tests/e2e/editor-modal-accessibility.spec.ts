@@ -202,7 +202,8 @@ test.describe("phone touch dismissal", () => {
 });
 
 for (const width of [390, 1280]) {
-  test(`publish 409 recovery remains actionable and preserves local data at ${width}px`, async ({ page, context }) => {
+  test(`publish 409 recovery remains actionable and preserves local data at ${width}px`, async ({ page, context, browserName }) => {
+    test.skip(browserName === "webkit", "Playwright WebKit has no clipboard-read/write permission, so copying the local JSON cannot be verified there");
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
     await page.setViewportSize({ width, height: 844 });
     const backend = await openEditor(page, { publishError: "version_conflict" });

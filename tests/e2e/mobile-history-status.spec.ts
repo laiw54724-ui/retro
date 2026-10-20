@@ -86,7 +86,8 @@ for (const [width, height] of [[320, 568], [390, 844], [430, 932]] as const) {
       await shot(page, `deleted-saved-${width}`);
     });
 
-    test('pending save, edit during request, failure and keyboard retry', async ({ page }) => {
+    test('pending save, edit during request, failure and keyboard retry', async ({ page, browserName }) => {
+      test.skip(browserName === 'webkit' && process.platform === 'darwin', 'macOS WebKit/Safari does not Tab to buttons unless Full Keyboard Access is on; the Tab order is verified in Chromium and in Linux WebKit (CI)');
       const state = await fixture(page); state.hold();
       const input = page.locator('.link-input'), status = page.locator('.save-text');
       await input.fill('First change');

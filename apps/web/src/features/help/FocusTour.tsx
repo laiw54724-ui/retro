@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
+import { currentOpener } from "../../lib/openerFocus";
 import type { HelpTopic } from "./helpTopics";
 import { placeCard, resolveTarget, type Box, type TargetResult } from "./tourTargets";
 
-type Props = { topic: HelpTopic; onClose: () => void };
+type Props = { topic: HelpTopic; onClose: () => void; /** Where focus goes when the tour ends (the Help button); falls back to whatever opened the tour. */ returnFocusTo?: HTMLElement | null };
 
 /**
  * Optional, skippable, replayable walkthrough. It is a non-modal card plus a ring around the real control: the page
@@ -12,7 +13,7 @@ type Props = { topic: HelpTopic; onClose: () => void };
  * returns focus to the control that opened it. A step whose control is missing, hidden or disabled explains why and
  * lets the person go back or leave; it never points at nothing and never opens a feature to make the step work.
  */
-export function FocusTour({ topic, onClose }: Props) {
+export function FocusTour({ topic, onClose, returnFocusTo }: Props) {
   const { t } = useTranslation("editor");
   const [index, setIndex] = useState(0);
   const [target, setTarget] = useState<TargetResult>({ status: "missing", element: null });
@@ -26,7 +27,7 @@ export function FocusTour({ topic, onClose }: Props) {
   const last = index === topic.steps.length - 1;
 
   useEffect(() => {
-    opener.current ??= globalThis.document.activeElement as HTMLElement | null;
+    opener.current ??= returnFocusTo ?? currentOpener();
     return () => { if (opener.current?.isConnected) opener.current.focus(); };
   }, []);
 

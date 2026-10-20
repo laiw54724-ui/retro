@@ -45,11 +45,19 @@ for (const width of [1400, 320, 390, 430]) test(`list-first posts, focused editi
   await url.fill("https:"); await url.press("Enter");
   await expect(url).toHaveAttribute("aria-invalid", "true");
   const scroll = win.locator(".ig-edit-scroll");
-  const before = await scroll.evaluate((node) => node.scrollTop);
+  // Read the baseline once scrolling has settled: WebKit animates the scroll that focus triggers, Chromium does not.
+  let before = -1;
+  await expect.poll(async () => { const value = await scroll.evaluate((node) => node.scrollTop); const settled = value === before; before = value; return settled; }).toBe(true);
   await win.getByRole("tab", { name: "▶ 預覽互動", exact: true }).click();
   await win.getByRole("button", { name: "← 返回編輯", exact: true }).click();
   await expect(url).toHaveValue("https:"); await expect(url).toBeFocused();
-  expect(await scroll.evaluate((node) => node.scrollTop)).toBe(before);
+  const after = await scroll.evaluate((node) => node.scrollTop);
+  if (after !== before) {
+    // WebKit reveals a focused field that is below the fold (Chromium had already scrolled to it when it was typed into):
+    // the position may then differ, but only to bring the retained field fully into view.
+    const field = (await url.boundingBox())!; const area = (await scroll.boundingBox())!;
+    expect(field.y >= area.y - 1 && field.y + field.height <= area.y + area.height + 1, "retained field is visible").toBe(true);
+  }
   await posts.getByRole("button", { name: "← 返回貼文", exact: true }).click();
   await expect(first).toBeFocused(); await first.click();
   await expect(url).toHaveValue("https:");

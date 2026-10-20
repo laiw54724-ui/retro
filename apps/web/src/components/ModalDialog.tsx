@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import { lockBackground } from "../lib/backgroundLock";
+import { currentOpener } from "../lib/openerFocus";
 
 const FOCUSABLE = "button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex='-1'])";
 
@@ -39,7 +40,7 @@ export function ModalDialog({ role = "dialog", title, onClose, children, actions
     const doc = globalThis.document;
     // Capture the opener before making its app root inert; unlock before returning focus.
     // Keep the original opener when StrictMode replays the effect with focus already inside.
-    opener.current ??= doc.activeElement as HTMLElement | null;
+    opener.current ??= currentOpener();
     const unlock = lockBackground();
     const first = root.current?.querySelector<HTMLElement>("[data-autofocus]") ?? root.current?.querySelector<HTMLElement>(FOCUSABLE);
     first?.focus();
@@ -47,7 +48,10 @@ export function ModalDialog({ role = "dialog", title, onClose, children, actions
       unlock();
       // Give focus back only if nothing else claimed it (a field the dialog's action just created keeps it).
       const current = doc.activeElement;
-      if (opener.current?.isConnected && (!current || current === doc.body)) opener.current.focus();
+      // WebKit moves focus to the nearest programmatic-focus container (tabindex=-1, e.g. the phone screen) when the focused
+      // dialog control is removed, where Chromium leaves <body>: neither is something the person chose, so both count as unclaimed.
+      const unclaimed = !current || current === doc.body || (current.getAttribute("tabindex") === "-1" && !current.matches("input, textarea, select, button, a[href], [contenteditable]"));
+      if (opener.current?.isConnected && unclaimed) opener.current.focus();
     };
   }, []);
 
