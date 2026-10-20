@@ -174,7 +174,11 @@ test("reduced-motion and keyboard: the tour follows focus and Skip is reachable 
   await page.keyboard.press("Enter");
   await page.getByRole("dialog", { name: "你想了解什麼？" }).waitFor({ state: "hidden" }).catch(() => undefined);
   await expect(card(page)).toBeVisible();
-  await expect(card(page).getByRole("button", { name: "下一步" })).toBeFocused();
+  // Same assertion as before; on failure it also reports where focus actually was, so an engine-specific miss is diagnosable from the CI log.
+  try { await expect(card(page).getByRole("button", { name: "下一步" })).toBeFocused(); } catch (error) {
+    const where = await page.evaluate(() => { const a = document.activeElement as HTMLElement | null; return a ? `${a.tagName}.${a.className}#${a.id} text="${(a.textContent || "").slice(0, 30)}" inert-root=${document.getElementById("root")?.hasAttribute("inert")}` : "null"; });
+    throw new Error(`tour primary button not focused; activeElement = ${where}\n${(error as Error).message}`);
+  }
   await page.keyboard.press("Shift+Tab"); // "Back" is disabled on step 1, so the previous stop is Skip
   await expect(card(page).getByRole("button", { name: "略過導覽" })).toBeFocused();
   await page.keyboard.press("Enter");
