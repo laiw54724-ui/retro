@@ -7,9 +7,10 @@ const baseURL = `http://127.0.0.1:${port}`;
 export default defineConfig({
   ...base,
   retries: 0,
-  workers: 1,
+  workers: Number(process.env.UX_WORKERS ?? 1),
   reporter: "list",
-  outputDir: "../evidence/ux-integration-browser",
+  // Inside the workspace: actions/upload-artifact only collects files under it, so traces of a failure are kept.
+  outputDir: "evidence/ux-integration-browser",
   use: { ...base.use, baseURL },
   webServer: {
     command: `VITE_API_URL=${baseURL} corepack pnpm --filter @retrodesk/web dev --host 127.0.0.1 --port ${port} --strictPort`,
