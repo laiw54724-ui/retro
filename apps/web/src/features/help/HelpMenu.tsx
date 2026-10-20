@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ModalDialog } from "../../components/ModalDialog";
 import { RetroButton } from "../../components/RetroButton";
@@ -13,6 +13,13 @@ export function HelpMenu() {
   const { t } = useTranslation("editor");
   const [open, setOpen] = useState(false);
   const [tour, setTour] = useState<HelpTopic | null>(null);
+  // The tour starts only after the menu has fully closed and given focus back, so the two never fight over focus.
+  const [pending, setPending] = useState<HelpTopic | null>(null);
+  useEffect(() => {
+    if (open || !pending) return;
+    const timer = globalThis.setTimeout(() => { setTour(pending); setPending(null); }, 0);
+    return () => globalThis.clearTimeout(timer);
+  }, [open, pending]);
   const button = useRef<HTMLButtonElement | null>(null);
   const [seen, setSeen] = useState<Record<string, boolean>>({});
   const available = (topic: HelpTopic) => !topic.requires || !!globalThis.document.querySelector(topic.requires.selector);
@@ -32,7 +39,7 @@ export function HelpMenu() {
                   <p>{t(topic.helpKey as never)}</p>
                   {topic.steps.length ? (
                     ready
-                      ? <RetroButton className="small" onClick={() => { setOpen(false); setSeen((current) => ({ ...current, [topic.id]: true })); setTour(topic); }}>{t(seen[topic.id] ? "help.replay" : "help.start")}</RetroButton>
+                      ? <RetroButton className="small" onClick={() => { setOpen(false); setSeen((current) => ({ ...current, [topic.id]: true })); setPending(topic); }}>{t(seen[topic.id] ? "help.replay" : "help.start")}</RetroButton>
                       : <p className="w98-hint" role="note">{t(topic.requires!.reasonKey as never)}</p>
                   ) : null}
                 </li>
