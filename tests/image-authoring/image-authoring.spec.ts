@@ -212,7 +212,7 @@ test(`phone ${width}px Add and inline authoring keep Back reachable after switch
   await page.getByRole("toolbar", { name: "Mobile editor tools" }).getByRole("button", { name: "Add", exact: true }).click();
   await page.locator(".m-sheet .m-add").filter({ hasText: "Upload an image or use an image link" }).click();
   await page.locator(".m-icon").click();
-  await page.getByRole("button", { name: "Edit this window", exact: true }).click();
+  await page.getByRole("button", { name: "Edit content", exact: true }).click();
   await page.getByLabel("Image URL", { exact: true }).fill(SOURCE); await page.getByLabel("Image URL", { exact: true }).press("Enter");
   await page.getByRole("combobox", { name: "Frame", exact: true }).selectOption("none");
   await page.getByLabel("Image role").selectOption("decorative");
@@ -235,7 +235,7 @@ test(`phone ${width}px Add and inline authoring keep Back reachable after switch
   });
   expect(contrast).toBeGreaterThanOrEqual(4.5);
   await page.screenshot({ path: info.outputPath(`image-authoring-${width}.png`), fullPage: false });
-  await page.getByRole("button", { name: "Finish editing", exact: true }).click();
+  await page.getByRole("button", { name: "Done", exact: true }).click();
   await expect(page.locator(".m-screen [data-image-shell='none']")).toBeVisible();
   await page.getByRole("button", { name: "‹ Desktop", exact: true }).click();
   await expect(page.locator(".m-icon")).toBeFocused();
