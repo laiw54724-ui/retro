@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { currentOpener } from "../../lib/openerFocus";
@@ -19,6 +19,8 @@ export function FocusTour({ topic, onClose, returnFocusTo }: Props) {
   const [target, setTarget] = useState<TargetResult>({ status: "missing", element: null });
   const [box, setBox] = useState<Box | null>(null);
   const [cardBox, setCardBox] = useState<Box | null>(null);
+  const [paused, setPaused] = useState(false);
+  const bodyId = useId();
   const card = useRef<HTMLDivElement | null>(null);
   const opener = useRef<HTMLElement | null>(null);
   const latestClose = useRef(onClose);
@@ -34,12 +36,15 @@ export function FocusTour({ topic, onClose, returnFocusTo }: Props) {
   // Keep the ring and the card attached to the real control through scrolling, resizing and re-renders.
   const measure = useCallback(() => {
     if (!step) return;
+    // A modal dialog owns the screen: pause (hide) the tour until it closes instead of floating above it.
+    setPaused((was) => { const now = !!globalThis.document.querySelector('[aria-modal="true"]'); return was === now ? was : now; });
     const resolved = resolveTarget(step.target);
-    setTarget(resolved);
+    setTarget((was) => (was.status === resolved.status && was.element === resolved.element ? was : resolved));
     if (resolved.status === "ok" && resolved.element) {
       const rect = resolved.element.getBoundingClientRect();
-      setBox({ left: rect.left, top: rect.top, width: rect.width, height: rect.height });
-    } else setBox(null);
+      // Only a real change re-renders: this also runs on a timer.
+      setBox((was) => was && Math.abs(was.left - rect.left) < 0.5 && Math.abs(was.top - rect.top) < 0.5 && Math.abs(was.width - rect.width) < 0.5 && Math.abs(was.height - rect.height) < 0.5 ? was : { left: rect.left, top: rect.top, width: rect.width, height: rect.height });
+    } else setBox((was) => (was === null ? was : null));
   }, [step]);
 
   useLayoutEffect(() => {
@@ -61,8 +66,13 @@ export function FocusTour({ topic, onClose, returnFocusTo }: Props) {
     const rect = element.getBoundingClientRect();
     const viewport = { width: globalThis.innerWidth, height: globalThis.innerHeight };
     const anchor = box ?? { left: viewport.width / 2, top: viewport.height / 2, width: 0, height: 0 };
-    const placed = placeCard(anchor, { width: Math.min(360, viewport.width - 16), height: rect.height }, viewport);
-    setCardBox({ left: placed.left, top: placed.top, width: placed.width, height: placed.height });
+    // Other controls in the top bar and the phone toolbar stay usable: the card is placed clear of them too.
+    const obstacles = Array.from(globalThis.document.querySelectorAll<HTMLElement>(".editor-topbar button, .editor-topbar a, .editor-topbar select, .m-toolbar button"))
+      .filter((control) => control !== target.element && !control.closest("[hidden]"))
+      .map((control) => { const r = control.getBoundingClientRect(); return { left: r.left, top: r.top, width: r.width, height: r.height }; })
+      .filter((r) => r.width > 0 && r.height > 0);
+    const placed = placeCard(anchor, { width: Math.min(360, viewport.width - 16), height: rect.height }, viewport, 8, 12, obstacles);
+    setCardBox((was) => was && Math.abs(was.left - placed.left) < 0.5 && Math.abs(was.top - placed.top) < 0.5 && Math.abs(was.width - placed.width) < 0.5 ? was : { left: placed.left, top: placed.top, width: placed.width, height: placed.height });
   }, [box, index, target.status]);
 
   // Move focus to the card on each step so a keyboard or screen reader follows the tour; the person can still Tab out to the page.
@@ -98,12 +108,12 @@ export function FocusTour({ topic, onClose, returnFocusTo }: Props) {
   }, []);
 
   if (!step) return null;
-  const ok = target.status === "ok";
+  const ok = target.status === "ok" && !paused;
   const reason = ok ? null : t(target.status === "disabled" ? "help.missing.disabled" : step.missingKey as never);
 
   return createPortal(
     <>
-      {ok && box ? <div className="tour-ring" aria-hidden="true" style={{ left: box.left - 4, top: box.top - 4, width: box.width + 8, height: box.height + 8 }} /> : null}
+      {ok && box && !paused ? <div className="tour-ring" aria-hidden="true" style={{ left: box.left - 4, top: box.top - 4, width: box.width + 8, height: box.height + 8 }} /> : null}
       <div
         ref={card}
         className="tour-card w98-window"
@@ -112,18 +122,18 @@ export function FocusTour({ topic, onClose, returnFocusTo }: Props) {
         aria-label={t("help.tourLabel", { topic: t(topic.titleKey as never) })}
         data-tour-step={step.id}
         data-tour-status={target.status}
-        style={cardBox ? { left: cardBox.left, top: cardBox.top, width: cardBox.width } : { left: 8, top: 8, visibility: "hidden" }}
+        style={cardBox && !paused ? { left: cardBox.left, top: cardBox.top, width: cardBox.width } : { left: 8, top: 8, visibility: "hidden" }}
       >
         <div className="tour-progress" aria-live="polite">{t("help.step", { current: index + 1, total: topic.steps.length })}</div>
         <strong className="tour-title">{t(step.titleKey as never)}</strong>
-        <p className="tour-body">{reason ?? t(step.bodyKey as never)}</p>
+        <p className="tour-body" id={bodyId}>{reason ?? t(step.bodyKey as never)}</p>
         <div className="tour-actions">
           <button type="button" className="w98-btn" onClick={onClose}>{t("help.skip")}</button>
           <span className="tour-spacer" />
           <button type="button" className="w98-btn" disabled={index === 0} onClick={() => setIndex(index - 1)}>{t("help.back")}</button>
           {last
-            ? <button type="button" className="w98-btn primary" data-tour-primary onClick={onClose}>{t("help.done")}</button>
-            : <button type="button" className="w98-btn primary" data-tour-primary onClick={() => setIndex(index + 1)}>{t("help.next")}</button>}
+            ? <button type="button" className="w98-btn primary" data-tour-primary aria-describedby={bodyId} onClick={onClose}>{t("help.done")}</button>
+            : <button type="button" className="w98-btn primary" data-tour-primary aria-describedby={bodyId} onClick={() => setIndex(index + 1)}>{t("help.next")}</button>}
         </div>
       </div>
     </>,

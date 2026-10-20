@@ -7,12 +7,16 @@
  * it. Keyboard activation keeps working through the normal active element.
  */
 const INTERACTIVE = "button, a[href], summary, input, select, textarea, [role='button'], [role='menuitem'], [tabindex]";
+/** A pointer landing on a control only counts as "the opener" for a moment: dialogs open right after the click. */
+const FRESH_MS = 1500;
 let lastActivated: HTMLElement | null = null;
+let lastActivatedAt = 0;
 
 if (typeof document !== "undefined") {
   const remember = (event: Event) => {
     const element = (event.target as Element | null)?.closest?.(INTERACTIVE) as HTMLElement | null;
-    if (element) lastActivated = element;
+    // A tabindex=-1 container (the phone screen) is a focus fallback, not a control someone activated.
+    if (element && element.getAttribute("tabindex") !== "-1") { lastActivated = element; lastActivatedAt = Date.now(); }
   };
   document.addEventListener("pointerdown", remember, true);
   document.addEventListener("click", remember, true);
@@ -26,5 +30,6 @@ export function currentOpener(): HTMLElement | null {
   // phone screen, tabindex=-1): that is not the control that opened the dialog, so it counts as "no focus" too.
   const container = !!active && active.getAttribute("tabindex") === "-1" && !active.matches("input, textarea, select, button, a[href], [contenteditable]");
   if (active && active !== doc.body && active !== doc.documentElement && !container) return active;
-  return lastActivated?.isConnected ? lastActivated : null;
+  const fresh = Date.now() - lastActivatedAt < FRESH_MS;
+  return fresh && lastActivated?.isConnected && !lastActivated.closest("[inert]") && !lastActivated.hasAttribute("disabled") ? lastActivated : null;
 }
