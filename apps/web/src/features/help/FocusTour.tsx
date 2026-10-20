@@ -85,12 +85,22 @@ export function FocusTour({ topic, onClose, returnFocusTo }: Props) {
       const element = card.current;
       if (!element || element.contains(globalThis.document.activeElement)) return;
       const active = globalThis.document.activeElement;
-      if (active && active !== globalThis.document.body && active !== opener.current) return; // the person moved on: leave it
+      // Leave focus alone only if the person has put it on a real control of their own; the opener, <body> and plain
+      // containers (what Chromium, Safari and Linux WebKit each leave after the menu closes) are not that.
+      const onOwnControl = !!active && active !== opener.current && active.matches("button, input, select, textarea, a[href], [contenteditable]");
+      if (onOwnControl) return;
       element.querySelector<HTMLElement>("[data-tour-primary]")?.focus();
     };
     focusPrimary();
-    const timers = [globalThis.setTimeout(focusPrimary, 60), globalThis.setTimeout(focusPrimary, 250)];
-    return () => timers.forEach((timer) => globalThis.clearTimeout(timer));
+    // The restore can land late on a slow machine (CI WebKit took longer than any fixed delay): for a moment after the
+    // card appears, whenever focus falls back onto the opener or the page, hand it to the card again.
+    const onFocusIn = (event: FocusEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target === opener.current || target === globalThis.document.body) focusPrimary();
+    };
+    globalThis.document.addEventListener("focusin", onFocusIn);
+    const timers = [globalThis.setTimeout(focusPrimary, 60), globalThis.setTimeout(focusPrimary, 250), globalThis.setTimeout(() => globalThis.document.removeEventListener("focusin", onFocusIn), 1500)];
+    return () => { timers.forEach((timer) => globalThis.clearTimeout(timer)); globalThis.document.removeEventListener("focusin", onFocusIn); };
   }, [index, placed]);
 
   // Escape ends the tour — it is the topmost thing on screen — unless a modal dialog is open: that dialog owns the key.
