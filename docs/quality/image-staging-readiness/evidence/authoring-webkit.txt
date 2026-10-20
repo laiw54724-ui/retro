@@ -1,0 +1,21 @@
+[WebServer] (node:34555) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:34568) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 10 tests using 1 worker
+
+(node:34611) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [webkit] › tests/image-authoring/image-authoring.spec.ts:72:5 › desktop Add → protected upload → Inspector → history/move → save/reload → projected public image (6.1s)
+  ✓   2 [webkit] › tests/image-authoring/image-authoring.spec.ts:122:5 › pending upload cannot overwrite a newer URL source (1.7s)
+  ✓   3 [webkit] › tests/image-authoring/image-authoring.spec.ts:138:5 › JPEG source decodes through authoring, save/reload and the projected public reader (2.4s)
+  ✓   4 [webkit] › tests/image-authoring/image-authoring.spec.ts:165:5 › local opt-in without the matching image API advertisement keeps creation and authoring hidden (658ms)
+  ✓   5 [webkit] › tests/image-authoring/image-authoring.spec.ts:177:5 › decorative outer host passes real clicks through in preview and public while editor selection still works (1.4s)
+  ✓   6 [webkit] › tests/image-authoring/image-authoring.spec.ts:209:5 › phone 320px Add and inline authoring keep Back reachable after switching to frameless/decorative (2.3s)
+  ✓   7 [webkit] › tests/image-authoring/image-authoring.spec.ts:209:5 › phone 375px Add and inline authoring keep Back reachable after switching to frameless/decorative (2.3s)
+  ✓   8 [webkit] › tests/image-authoring/image-authoring.spec.ts:209:5 › phone 430px Add and inline authoring keep Back reachable after switching to frameless/decorative (2.4s)
+  ✓   9 [webkit] › tests/image-authoring/image-authoring.spec.ts:233:7 › delayed upload from an existing URL preserves newer uncommitted URL input (1.7s)
+  ✓  10 [webkit] › tests/image-authoring/image-authoring.spec.ts:233:7 › delayed upload from an existing URL commits when source input is untouched (1.6s)
+
+  10 passed (24.4s)

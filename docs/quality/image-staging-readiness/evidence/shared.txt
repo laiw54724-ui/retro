@@ -1,0 +1,9 @@
+
+ RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-staging-readiness-51/packages/shared
+
+ ✓ test/image-window.test.ts (22 tests) 37ms
+
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+   Start at  01:48:39
+   Duration  424ms (transform 141ms, setup 0ms, collect 219ms, tests 37ms, environment 0ms, prepare 37ms)

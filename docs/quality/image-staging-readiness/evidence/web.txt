@@ -1,0 +1,19 @@
+
+ RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-staging-readiness-51/apps/web
+
+ ✓ src/lib/imageWindowCreation.test.ts (4 tests) 11ms
+ ✓ src/lib/imageCompatibility.test.ts (9 tests) 3ms
+ ✓ src/features/editor/ImageWriteContext.test.tsx (6 tests) 10ms
+stderr | src/features/editor/store.image-authoring.test.ts
+Retro Desktop: Supabase env vars are missing. Auth will not work until configured.
+
+stderr | src/features/modules/image/model.test.ts
+Retro Desktop: Supabase env vars are missing. Auth will not work until configured.
+
+ ✓ src/features/editor/store.image-authoring.test.ts (1 test) 15ms
+ ✓ src/features/modules/image/model.test.ts (4 tests) 20ms
+
+ Test Files  5 passed (5)
+      Tests  24 passed (24)
+   Start at  01:49:45
+   Duration  1.91s (transform 1.01s, setup 1.46s, collect 2.71s, tests 59ms, environment 1ms, prepare 518ms)

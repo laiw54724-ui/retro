@@ -1,0 +1,14 @@
+[WebServer] (node:38948) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:38961) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:39010) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › tests/image-authoring/image-authoring.spec.ts:209:5 › phone 320px Add and inline authoring keep Back reachable after switching to frameless/decorative (4.4s)
+  ✓  2 [chromium] › tests/image-authoring/image-authoring.spec.ts:209:5 › phone 375px Add and inline authoring keep Back reachable after switching to frameless/decorative (2.7s)
+  ✓  3 [chromium] › tests/image-authoring/image-authoring.spec.ts:209:5 › phone 430px Add and inline authoring keep Back reachable after switching to frameless/decorative (3.3s)
+
+  3 passed (12.3s)
