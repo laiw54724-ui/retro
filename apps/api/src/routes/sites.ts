@@ -1,5 +1,5 @@
 import { APPEARANCE_UPGRADE_MESSAGE, appearanceWriteBlocked } from "../lib/appearanceCompatibility";
-import { IMAGE_UPGRADE_MESSAGE, IMAGE_WINDOW_WRITE_CONTRACT, imageWriteBlocked } from "../lib/imageCompatibility";
+import { IMAGE_UPGRADE_MESSAGE, IMAGE_WINDOW_WRITE_CONTRACT, imageEntryAdvertised, imageWriteBlocked } from "../lib/imageCompatibility";
 import { Hono, type Context } from "hono";
 import { buildPublicMetadata, projectPublicSiteDocument, UsernameSchema, validateSiteDocumentScope } from "@retrodesk/shared";
 import type { Env } from "../env";
@@ -139,7 +139,7 @@ sites.get("/sites/:siteId", async (c) => {
   if (error) return jsonError(c, 500, "db_error", "Could not load site");
   if (!data) return jsonError(c, 404, "not_found", "Site not found");
   c.header("Cache-Control", "private, no-store");
-  return c.json({ site: { ...data, access_role: access.role, writeCompatibility: { appearanceP2: 1, imageWindow: IMAGE_WINDOW_WRITE_CONTRACT } } });
+  return c.json({ site: { ...data, access_role: access.role, writeCompatibility: { appearanceP2: 1, ...(imageEntryAdvertised(c.env?.IMAGE_QA_SITE_IDS, access.siteId) ? { imageWindow: IMAGE_WINDOW_WRITE_CONTRACT } : {}) } } });
 });
 
 sites.put("/sites/:siteId/draft", async (c) => {

@@ -83,3 +83,23 @@ describe("independent raw image preservation contract", () => {
     expect(await loaded.json()).toMatchObject({ site: { writeCompatibility: { appearanceP2: 1, imageWindow: 1 } } });
   });
 });
+
+describe("image entry restriction", () => {
+  const get = (env: Record<string, unknown>) => sites.request("/sites/site-a", { method: "GET" }, env as never).then((r) => r.json() as Promise<{ site: { writeCompatibility: Record<string, unknown> } }>);
+  it("advertises to every site only when no allowlist is configured", async () => {
+    expect((await get({})).site.writeCompatibility.imageWindow).toBe(1);
+  });
+  it("fails closed with an empty allowlist and still advertises appearance", async () => {
+    const { writeCompatibility } = (await get({ IMAGE_QA_SITE_IDS: "" })).site;
+    expect(writeCompatibility.imageWindow).toBeUndefined();
+    expect(writeCompatibility.appearanceP2).toBe(1);
+  });
+  it("advertises only to listed sites", async () => {
+    expect((await get({ IMAGE_QA_SITE_IDS: "other, site-a" })).site.writeCompatibility.imageWindow).toBe(1);
+    expect((await get({ IMAGE_QA_SITE_IDS: "other" })).site.writeCompatibility.imageWindow).toBeUndefined();
+  });
+  it("does not weaken the write guard when the entry is hidden", async () => {
+    const response = await save(canonical(true), undefined);
+    expect(response.status).toBe(426);
+  });
+});

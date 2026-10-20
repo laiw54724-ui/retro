@@ -2,6 +2,15 @@ name: Deploy staging
 
 on:
   workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: "Optional. Fail unless the checked-out commit is exactly this full SHA."
+        required: false
+        default: ""
+      image_qa_site_ids:
+        description: "Optional. Comma-separated site IDs allowed to show the Image entry. Empty keeps Image off for everyone."
+        required: false
+        default: ""
   push:
     branches: [main]
     paths:
@@ -38,6 +47,14 @@ jobs:
       - name: Enable pnpm
         run: corepack enable && corepack prepare pnpm@10.18.2 --activate
 
+      - name: Verify exact commit
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD | tee deploy-sha.txt
+          if [ -n "${EXPECTED_SHA:-}" ]; then test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"; fi
+
       - name: Install
         run: pnpm install --frozen-lockfile
 
@@ -46,12 +63,22 @@ jobs:
           pnpm typecheck
           pnpm build
 
+      - name: Record rollback targets (before deploying)
+        run: |
+          set +e
+          echo "== API worker deployments" ; (cd apps/api && pnpm exec wrangler deployments list --env staging 2>&1 | tail -n 25)
+          echo "== Pages deployments" ; (cd apps/web && pnpm exec wrangler pages deployment list --project-name=retrodesk-staging 2>&1 | head -n 15)
+          true
+
       - name: Deploy API Worker
         working-directory: apps/api
+        env:
+          QA_SITE_IDS: ${{ inputs.image_qa_site_ids }}
         run: |
           pnpm exec wrangler deploy --env staging \
             --var "ALLOWED_ORIGINS:${{ vars.WEB_ORIGIN }}" \
-            --var "PUBLIC_ASSET_BASE_URL:${{ vars.ASSET_BASE_URL }}"
+            --var "PUBLIC_ASSET_BASE_URL:${{ vars.ASSET_BASE_URL }}" \
+            --var "IMAGE_QA_SITE_IDS:$QA_SITE_IDS"
 
       - name: Build web
         working-directory: apps/web
@@ -59,11 +86,23 @@ jobs:
           VITE_API_URL: ${{ vars.API_URL }}
           VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-        run: pnpm build
+          QA_SITE_IDS: ${{ inputs.image_qa_site_ids }}
+        run: |
+          if [ -n "$QA_SITE_IDS" ]; then
+            RETRO_IMAGE_RELEASE_CONFIG="$PWD/config/image-staging-rollout.qa.json" NODE_ENV=production pnpm build:staging
+          else
+            pnpm build
+          fi
 
       - name: Deploy Pages
         working-directory: apps/web
         run: pnpm deploy:staging
+
+      - name: Record deployed identity
+        run: |
+          echo "source sha: $(cat deploy-sha.txt)"
+          echo "image receipt:"; cat apps/web/dist/image-rollout.json
+          (cd apps/api && pnpm exec wrangler deployments list --env staging 2>&1 | tail -n 6) || true
 
       - name: API smoke test
         if: ${{ vars.API_URL != '' }}

@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   exact-ux-candidate:
-    if: github.head_ref == 'integrate/ux-cleared-2026-10-19' || github.head_ref == 'claude/ux137-fix' || github.head_ref == 'integration/ux-night-2026-10-20'
+    if: github.head_ref == 'integrate/ux-cleared-2026-10-19' || github.head_ref == 'claude/ux137-fix' || github.head_ref == 'integration/ux-night-2026-10-20' || github.head_ref == 'integration/ux-image-candidate'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -47,11 +47,22 @@ jobs:
       - name: Bounded cross-batch Chromium verification
         run: |
           set -o pipefail
-          pnpm exec playwright test -c playwright.ux-integration.config.ts tests/e2e/ux-integration.spec.ts tests/e2e/editor-modal-accessibility.spec.ts tests/e2e/mobile-history-status.spec.ts tests/e2e/ig-shell-save-status.spec.ts tests/e2e/ig-editor-flow.spec.ts tests/e2e/mobile-content-settings.spec.ts tests/e2e/audit-f09-f10.spec.ts tests/e2e/help-tour.spec.ts tests/e2e/ux-review-fixes.spec.ts tests/e2e/audit-f12-compact-editors.spec.ts tests/e2e/editor-save-session.spec.ts tests/e2e/error-localization.spec.ts tests/e2e/appearance-migration-upgrade.spec.ts tests/e2e/window-chrome.visual.spec.ts --grep-invert '^.*image: content and window settings' 2>&1 | tee evidence/browser.log
+          pnpm exec playwright test -c playwright.ux-integration.config.ts tests/e2e/ux-integration.spec.ts tests/e2e/editor-modal-accessibility.spec.ts tests/e2e/mobile-history-status.spec.ts tests/e2e/ig-shell-save-status.spec.ts tests/e2e/ig-editor-flow.spec.ts tests/e2e/mobile-content-settings.spec.ts tests/e2e/audit-f09-f10.spec.ts tests/e2e/help-tour.spec.ts tests/e2e/ux-review-fixes.spec.ts tests/e2e/audit-f12-compact-editors.spec.ts tests/e2e/editor-save-session.spec.ts tests/e2e/error-localization.spec.ts tests/e2e/appearance-migration-upgrade.spec.ts tests/e2e/window-chrome.visual.spec.ts 2>&1 | tee evidence/browser.log
       - name: WebKit pass of the interaction specs
         run: |
           set -o pipefail
           pnpm exec playwright test -c playwright.ux-webkit.config.ts tests/e2e/help-tour.spec.ts tests/e2e/editor-modal-accessibility.spec.ts tests/e2e/mobile-content-settings.spec.ts tests/e2e/mobile-history-status.spec.ts tests/e2e/ig-editor-flow.spec.ts tests/e2e/audit-f12-compact-editors.spec.ts tests/e2e/ux-review-fixes.spec.ts 2>&1 | tee evidence/webkit.log
+      - name: Image suites on the merged candidate (Chromium)
+        if: github.head_ref == 'integration/ux-image-candidate'
+        run: |
+          set -o pipefail
+          pnpm --filter @retrodesk/api test:unit 2>&1 | tee evidence/api-units.log
+          for c in image-authoring image-readiness image-w3a image-w3b image-reader-production; do pnpm exec playwright test -c playwright.$c.config.ts 2>&1 | tee evidence/image-$c.log; done
+      - name: Image authoring on WebKit
+        if: github.head_ref == 'integration/ux-image-candidate'
+        run: |
+          set -o pipefail
+          pnpm exec playwright test -c playwright.image-webkit.config.ts 2>&1 | tee evidence/image-webkit.log
       - name: Confirm unchanged candidate
         run: |
           git diff --exit-code
