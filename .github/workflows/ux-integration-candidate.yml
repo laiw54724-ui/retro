@@ -39,7 +39,7 @@ jobs:
       - name: Focused UX units
         run: |
           set -o pipefail
-          pnpm --filter @retrodesk/web test:unit src/features/editor/store.test.ts src/features/editor/editorLocalWork.test.ts src/features/modules/minesweeper src/features/modules/instagram src/i18n/resources.test.ts 2>&1 | tee evidence/units.log
+          pnpm --filter @retrodesk/web exec vitest run src/features/editor/store.test.ts src/features/editor/editorLocalWork.test.ts src/features/modules/minesweeper src/features/modules/instagram src/i18n/resources.test.ts 2>&1 | tee evidence/units.log
       - name: One combined build
         run: |
           set -o pipefail
