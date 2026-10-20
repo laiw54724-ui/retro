@@ -699,3 +699,10 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 
 /* Image authoring selection handle overlays the visual object and stays reachable at canvas edges. */
 .image-move-handle { position: absolute; left: 0; top: 0; max-width: 100%; min-height: 22px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: move; touch-action: none; }
+
+
+/* A transient notice must never cover the top bar controls (Publish, Preview, ...): CI at 390px showed the "JSON copied"
+   notice sitting over the Publish button. On a phone it floats above the bottom toolbar instead. */
+@media (max-width: 767px) {
+  .editor-message:not(.conflict-notice) { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 72px); }
+}
