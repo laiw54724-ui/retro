@@ -496,8 +496,8 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 .m-window { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; padding: 3px; }
 .m-win-title { height: 46px; flex-shrink: 0; display: flex; align-items: center; gap: 6px; padding: 0 4px; color: #fff; }
 .m-win-name { flex: 1; min-width: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.m-btn { min-height: 38px; padding: 0 10px; border: 0; font: inherit; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-.m-btn.sq { width: 38px; padding: 0; justify-content: center; font-size: 18px; }
+.m-btn { min-height: 44px; padding: 0 10px; border: 0; font: inherit; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.m-btn.sq { min-width: 44px; width: 44px; padding: 0; justify-content: center; font-size: 18px; }
 .m-win-body { flex: 1; min-height: 0; margin-top: 3px; background: #fff; color: #111; padding: 2px; overflow: auto; position: relative; }
 .m-toolbar { height: 62px; flex-shrink: 0; margin-bottom: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; padding: 4px 4px 8px; background: #c0c0c0; box-shadow: inset 0 1px #fff; }
 .m-tool { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border: 0; background: #c0c0c0; color: #000; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; box-shadow: var(--w98-raised); min-height: 44px; }
@@ -701,11 +701,10 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 .image-move-handle { position: absolute; left: 0; top: 0; max-width: 100%; min-height: 22px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: move; touch-action: none; }
 
 
-/* A transient notice must never cover the top bar controls (Publish, Preview, ...): CI at 390px showed the "JSON copied"
-   notice sitting over the Publish button, and the top bar wraps to several rows at desktop widths too once it holds more controls. The transient alert now floats above the bottom bar (status bar on desktop, toolbar on a phone) at every width. */
-.editor-message[role="alert"] { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 44px); }
-@media (max-width: 767px) {
-  .editor-message[role="alert"] { bottom: calc(env(safe-area-inset-bottom, 0px) + 72px); }
+/* Notices are part of the layout, never an overlay. They used to be `position: fixed` near the top and covered the top bar
+   controls (Publish, Help, Undo) or each other; an independent review measured it at every width. Every notice (alert,
+   upgrade pause, asset migration, conflict) now flows between the top bar and the editor, wraps, and takes its own row. */
+.editor-message { position: static; transform: none; z-index: auto; width: auto; max-width: none; margin: 4px 8px; flex-shrink: 0; flex-wrap: wrap; background: #fff7c7; border: 1px solid #7f6c00; padding: 6px 10px; }
 }
 /* ---- help menu and focused tour (opt-in, never automatic) ---- */
 .help-topics { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 10px; }

@@ -335,6 +335,8 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       // A modal can focus its own buttons while the editor behind it is inert.
       // Do not let window-level shortcuts mutate that background document.
       if (document.getElementById("root")?.hasAttribute("inert")) return;
+      // Dialogs that render inside #root cannot make it inert; any open modal still owns the keyboard.
+      if (document.querySelector('[aria-modal="true"]')) return;
       const target = event.target as HTMLElement | null;
       if (target?.matches("input, textarea, select, [contenteditable='true']")) return;
       const modifier = event.metaKey || event.ctrlKey;

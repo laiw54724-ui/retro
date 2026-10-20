@@ -47,11 +47,11 @@ jobs:
       - name: Bounded cross-batch Chromium verification
         run: |
           set -o pipefail
-          pnpm exec playwright test -c playwright.ux-integration.config.ts tests/e2e/ux-integration.spec.ts tests/e2e/editor-modal-accessibility.spec.ts tests/e2e/mobile-history-status.spec.ts tests/e2e/ig-shell-save-status.spec.ts tests/e2e/ig-editor-flow.spec.ts tests/e2e/mobile-content-settings.spec.ts tests/e2e/audit-f09-f10.spec.ts tests/e2e/help-tour.spec.ts tests/e2e/audit-f12-compact-editors.spec.ts tests/e2e/editor-save-session.spec.ts tests/e2e/error-localization.spec.ts tests/e2e/appearance-migration-upgrade.spec.ts tests/e2e/window-chrome.visual.spec.ts --grep-invert '^.*image: content and window settings' 2>&1 | tee evidence/browser.log
+          pnpm exec playwright test -c playwright.ux-integration.config.ts tests/e2e/ux-integration.spec.ts tests/e2e/editor-modal-accessibility.spec.ts tests/e2e/mobile-history-status.spec.ts tests/e2e/ig-shell-save-status.spec.ts tests/e2e/ig-editor-flow.spec.ts tests/e2e/mobile-content-settings.spec.ts tests/e2e/audit-f09-f10.spec.ts tests/e2e/help-tour.spec.ts tests/e2e/ux-review-fixes.spec.ts tests/e2e/audit-f12-compact-editors.spec.ts tests/e2e/editor-save-session.spec.ts tests/e2e/error-localization.spec.ts tests/e2e/appearance-migration-upgrade.spec.ts tests/e2e/window-chrome.visual.spec.ts --grep-invert '^.*image: content and window settings' 2>&1 | tee evidence/browser.log
       - name: WebKit pass of the interaction specs
         run: |
           set -o pipefail
-          pnpm exec playwright test -c playwright.ux-webkit.config.ts tests/e2e/help-tour.spec.ts tests/e2e/editor-modal-accessibility.spec.ts tests/e2e/mobile-content-settings.spec.ts tests/e2e/mobile-history-status.spec.ts tests/e2e/ig-editor-flow.spec.ts tests/e2e/audit-f12-compact-editors.spec.ts 2>&1 | tee evidence/webkit.log
+          pnpm exec playwright test -c playwright.ux-webkit.config.ts tests/e2e/help-tour.spec.ts tests/e2e/editor-modal-accessibility.spec.ts tests/e2e/mobile-content-settings.spec.ts tests/e2e/mobile-history-status.spec.ts tests/e2e/ig-editor-flow.spec.ts tests/e2e/audit-f12-compact-editors.spec.ts tests/e2e/ux-review-fixes.spec.ts 2>&1 | tee evidence/webkit.log
       - name: Confirm unchanged candidate
         run: |
           git diff --exit-code
