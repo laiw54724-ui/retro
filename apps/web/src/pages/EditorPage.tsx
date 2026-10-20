@@ -17,6 +17,7 @@ import { MobileScreen } from "../features/site/MobileScreen";
 import { LeftPanel } from "../features/editor/LeftPanel";
 import { RightPanel } from "../features/editor/RightPanel";
 import { buildPreviewModel, shareableEntities } from "../features/editor/previewModel";
+import { HelpMenu } from "../features/help/HelpMenu";
 import { VisitorPreview } from "../features/editor/VisitorPreview";
 import { publicSiteLabel, publicSiteUrl } from "../lib/publicSiteUrl";
 import { Icon } from "../components/Icon";
@@ -641,14 +642,15 @@ export function EditorPage({ site }: { site: SiteRecord }) {
           <button type="button" aria-pressed={store.device === "desktop"} className={"w98-btn" + (store.device === "desktop" ? " on" : "")} onClick={() => store.setDevice("desktop")}>{t("shell.desktop")}</button>
           <button type="button" aria-pressed={store.device === "mobile"} className={"w98-btn" + (store.device === "mobile" ? " on" : "")} onClick={() => { store.setLayoutMode(false); store.setDevice("mobile"); }}>{t("shell.mobile")}</button>
         </div>
-        <RetroButton onClick={() => { stopAllMedia(); setPreview(true); }}>▶ {t("shell.preview")}</RetroButton>
+        <RetroButton data-help="preview" onClick={() => { stopAllMedia(); setPreview(true); }}>▶ {t("shell.preview")}</RetroButton>
         <PaintEditorEntry key={siteId} siteId={siteId} disabled={upgradeRequired || !actions.uploadAssets} />
         {actions.manageMembers ? <RetroButton ref={collaborationButtonRef} onClick={() => setCollaborationOpen(true)}>{t("shell.collaborators")}</RetroButton> : null}
         {actions.manageMembers ? <RetroButton onClick={() => setTransferOpen(true)}>{t("shell.transfer")}</RetroButton> : null}
         {store.publishedDocument ? <a className="w98-btn mobile-hide" href={publicSiteUrl(store.username)} target="_blank" rel="noreferrer">{t("shell.openPublished")}</a> : null}
-        {actions.publish ? <RetroButton className="primary" onClick={requestPublish} disabled={upgradeRequired || publishing || (!!store.publishedDocument && !hasUnpublishedChanges)}>
+        {actions.publish ? <RetroButton className="primary" data-help="publish" onClick={requestPublish} disabled={upgradeRequired || publishing || (!!store.publishedDocument && !hasUnpublishedChanges)}>
           {t(store.publishedDocument ? "shell.republish" : "shell.publish")}
         </RetroButton> : null}
+        <HelpMenu />
         <Link className="retro-link mobile-hide" to="/">{t("shell.home")}</Link>
         <RetroButton className="mobile-hide" onClick={() => leaveGuard.requestLeave(async () => { await signOut(); await navigate("/"); })}>{t("shell.signOut")}</RetroButton>
       </header>

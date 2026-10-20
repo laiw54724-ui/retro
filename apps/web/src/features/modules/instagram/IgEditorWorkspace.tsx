@@ -78,7 +78,7 @@ function IgEditorWorkspaceContent(props: ModuleProps<"instagram">) {
     </div>
     <div ref={sectionTabs} role="tablist" aria-label={tr("igEditorWorkspace.ocEditingSections")} className={styles.sections}>
       {SECTION_KEYS.map((key, index) => <button
-        key={key} id={`${id}-${key}-tab`} type="button" role="tab" className="w98-btn small"
+        key={key} id={`${id}-${key}-tab`} type="button" role="tab" className="w98-btn small" data-help={key === "collections" ? "ig-tab-collections" : undefined}
         aria-selected={section === key} aria-controls={`${id}-${key}-panel`} tabIndex={section === key ? 0 : -1}
         onKeyDown={(event) => onSectionKeyDown(event, index)} onClick={() => setSection(key)}>{sectionLabels()[key]}</button>)}
     </div>
@@ -106,7 +106,7 @@ function IgEditorWorkspaceContent(props: ModuleProps<"instagram">) {
         <CanonicalPostEditor props={props} />
       </section>
       <section role="tabpanel" id={`${id}-collections-panel`} aria-labelledby={`${id}-collections-tab`} hidden={section !== "collections"} className={styles.panel}>
-        <div className={styles.collectionSwitch} role="group" aria-label={tr("editorFlow.organizeContent")}>
+        <div className={styles.collectionSwitch} role="group" aria-label={tr("editorFlow.organizeContent")} data-help="ig-collection-switch">
           <button type="button" className="w98-btn small" aria-pressed={collectionKind === "highlights"} onClick={() => setCollectionKind("highlights")}>{tr("editorFlow.highlights")}</button>
           <button type="button" className="w98-btn small" aria-pressed={collectionKind === "collections"} onClick={() => setCollectionKind("collections")}>{tr("editorFlow.collections")}</button>
         </div>
