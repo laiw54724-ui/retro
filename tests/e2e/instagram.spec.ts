@@ -135,6 +135,10 @@ test("desktop Instagram editor owns wheel and keyboard scrolling", async ({ page
   const { win } = await openEditor(page);
   await win.getByRole("tablist", { name: "OC 編輯分組" }).getByRole("tab", { name: "貼文", exact: true }).click();
   const scroll = win.locator(".ig-edit-scroll");
+  // The posts tab is list-first now and a two-post fixture fits the default window, so there is nothing to scroll.
+  // The contract under test is that the editor's own scroller owns wheel and keyboard scrolling once content overflows:
+  // constrain the scroller (a small window) instead of relying on fixture size.
+  await scroll.evaluate((node) => { node.style.maxHeight = "220px"; });
   await expect.poll(() => scroll.evaluate((node) => node.scrollHeight > node.clientHeight)).toBe(true);
 
   await scroll.hover();

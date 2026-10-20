@@ -248,7 +248,7 @@ for (const width of [390, 1280]) {
     await expect(recovery).toBeHidden();
     await expect(page.getByRole("button", { name: "版本衝突", exact: true })).toBeFocused();
     // The "JSON copied" notice that is still showing must not cover any top bar control (it did on the Linux CI layout).
-    const toast = page.locator(".editor-message:not(.conflict-notice)");
+    const toast = page.locator(".editor-message[role='alert']");
     if (await toast.count()) {
       const toastBox = (await toast.first().boundingBox())!;
       for (const control of await page.locator(".editor-topbar button, .editor-topbar a").all()) {
