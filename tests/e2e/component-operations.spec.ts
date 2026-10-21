@@ -50,6 +50,8 @@ for (const width of [1440, 320]) {
     await profile.getByRole("button", { name: "刪除自訂欄位 First" }).click();
     await names.first().fill("職業");
     await expect(names.first()).toHaveValue("職業");
+    // Commit the local field draft through the existing blur contract before observing the save.
+    await names.first().blur();
     await expect.poll(() => site.draft_document.entities.profiles[0].customFields).toEqual([{ key: "職業", value: "two" }]);
     await page.reload();
     if (width < 768) {
