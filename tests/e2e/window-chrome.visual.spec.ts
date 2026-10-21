@@ -187,7 +187,8 @@ test("@smoke initially hidden toolbars regain a Tab entry, skip disabled buttons
   const input = toolbar.getByRole("textbox", { name: "Toolbar text", exact: true });
   await expect(input).toBeFocused();
   await input.fill("abc");
-  await page.keyboard.press("Home");
+  // Use the platform line-start key; toolbar navigation must leave text editing alone.
+  await page.keyboard.press(process.platform === "darwin" ? "Meta+ArrowLeft" : "Home");
   await page.keyboard.press("ArrowRight");
   await expect(input).toBeFocused();
   expect(await input.evaluate((element: HTMLInputElement) => element.selectionStart)).toBe(1);
