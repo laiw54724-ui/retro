@@ -442,5 +442,17 @@
     "backEditing": "← 편집으로 돌아가기",
     "pendingStatus": "완료하지 않은 IG 입력은 저장되지 않았으며 이 탭에만 유지됩니다.",
     "retainedDrafts": "완료하지 않은 입력은 이 탭에 유지되며 새로고침하면 사라집니다."
+  },
+  "authoring": {
+    "contentActions": "콘텐츠 작업",
+    "managePosts": "게시물 관리",
+    "manageHighlights": "하이라이트 관리",
+    "done": "편집 완료",
+    "draftHint": "변경 사항은 사이트 초안에 반영됩니다. 완료나 뒤로 가기로 사이트가 게시되지는 않습니다.",
+    "pendingBadge": "미완료 입력 있음",
+    "pendingDetail": "미완료 입력은 이 탭에 유지됩니다. 완료나 뒤로 가기 후에도 이어서 편집할 수 있지만 새로고침하면 지워집니다.",
+    "replaceImage": "이미지 {{n}} 교체",
+    "replacementHint": "업로드가 성공할 때까지 원본 이미지를 유지합니다.",
+    "chooseImages": "이미지 선택 (여러 장 가능)"
   }
 }

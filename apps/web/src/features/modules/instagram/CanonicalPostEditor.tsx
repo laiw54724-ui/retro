@@ -1,7 +1,8 @@
 import { IgImageUrlField as ImageUrlField } from "./IgImageUrlField";
-import { useIgSessionValue } from "./useIgSessionValue";
+import { useIgPendingEntities, useIgSessionValue } from "./useIgSessionValue";
 import { useId } from "react";
 import { useIgEntityEditor } from "./useIgEntityEditor";
+import styles from "./ocEditor.module.css";
 import sourceStyles from "./ImageSourceFields.module.css";
 import { translateSystemMessage } from "../../../i18n/systemMessages";
 import { useTranslation } from "react-i18next";
@@ -46,6 +47,7 @@ export function CanonicalPostEditor({ props }: Props) {
   const posts = (ctx.posts ?? []).filter((post) => post.authorProfileId === authorId);
   const scope = igEditorScope(props);
   const editorId = useId();
+  const { hasPending, discardPending } = useIgPendingEntities(scope, "post-media-urls");
   const [mediaUrls, setMediaUrls] = useIgSessionValue<Record<string, string>>(`${scope}:post-media-urls`, {});
   const { root, openId, setOpenId, wasOpened } = useIgEntityEditor(scope, posts.map((post) => post.id));
   const [error, setError] = useIgEditorState(scope, "");
@@ -86,7 +88,7 @@ export function CanonicalPostEditor({ props }: Props) {
       if (result.ok) {
         created = id;
         setFilters(DEFAULT_POST_EDITOR_FILTERS);
-        setOpenId(id);
+        setOpenId(id, { focusField: true });
       }
       return run(result, document);
     });
@@ -119,7 +121,13 @@ export function CanonicalPostEditor({ props }: Props) {
   const changeComment = (postId: string, comment: ActorCommentV2, key?: string) => social((document) => updateActorComment(document, postId, comment.id, comment, { siteId }), key);
 
   return <fieldset ref={root} className="w98-fieldset ig-canonical-posts"><legend>{tr("ig.postsAndWorks", { count: posts.length })}</legend>
-    {openId ? <button data-ig-back type="button" className="w98-btn small" onClick={() => setOpenId(null)}>{tr("editorFlow.backPosts")}</button> : null}
+    {openId ? <>
+      <div className={styles.taskNavigation}>
+        <button data-ig-back type="button" className="w98-btn small" onClick={() => setOpenId(null)}>{tr("editorFlow.backPosts")}</button>
+        <button type="button" className="w98-btn small" onClick={() => setOpenId(null)}>{tr("authoring.done")}</button>
+      </div>
+      <p className={styles.taskHint} role="status">{tr(hasPending(openId) ? "authoring.pendingDetail" : "authoring.draftHint")}</p>
+    </> : null}
     {error ? <div className="ie-error" role="alert">{error}</div> : null}
     <div hidden={!!openId} className="ig-list-tools">
     <button type="button" className="w98-btn small" onClick={() => addPostFromMedia([])}>{tr("editorFlow.newPost")}</button>
@@ -153,37 +161,50 @@ export function CanonicalPostEditor({ props }: Props) {
           <div className="ig-item-actions">
           <button type="button" className="mini-btn" aria-label={`${tr("canonicalPostEditor.movePostUp")}：${post.title || tr("canonicalCollectionEditor.noTitle")}`} aria-describedby={filtersActive ? `${editorId}-order-hint` : undefined} disabled={filtersActive || authoredIndex === 0} onClick={() => mutate((document) => run(reorderPost(document, post.id, -1, { siteId }), document))}>▲</button>
           <button type="button" className="mini-btn" aria-label={`${tr("canonicalPostEditor.movePostDown")}：${post.title || tr("canonicalCollectionEditor.noTitle")}`} aria-describedby={filtersActive ? `${editorId}-order-hint` : undefined} disabled={filtersActive || authoredIndex === posts.length - 1} onClick={() => mutate((document) => run(reorderPost(document, post.id, 1, { siteId }), document))}>▼</button>
-          <button type="button" className="mini-btn danger" aria-label={`${tr("canonicalPostEditor.deletePost")}：${post.title || tr("canonicalCollectionEditor.noTitle")}`} onClick={() => mutate((document) => run(deletePost(document, post.id, { siteId }), document))}>×</button>
+          <button type="button" className="mini-btn danger" aria-label={`${tr("canonicalPostEditor.deletePost")}：${post.title || tr("canonicalCollectionEditor.noTitle")}`} onClick={() => mutate((document) => {
+            const result = deletePost(document, post.id, { siteId });
+            if (result.ok) discardPending(post.id);
+            return run(result, document);
+          })}>×</button>
           </div>
         </div>
+        {!expanded && hasPending(post.id) ? <p className={styles.pendingBadge}>{tr("authoring.pendingBadge")}</p> : null}
         {media.taskList("post", post.id)}
         {wasOpened(post.id) ? <div hidden={!expanded} className="ig-post-body ig-canonical-post-fields" id={`${editorId}-${post.id}`}>
-          <label className="w98-field"><span className="w98-hint">{tr("canonicalPostEditor.heading")}</span><input className="w98-input compact" value={post.title} onChange={(event) => patchPost(post, { title: event.target.value }, `post-title-${post.id}`)} /></label>
+          <label className="w98-field"><span className="w98-hint">{tr("canonicalPostEditor.heading")}</span><input data-ig-initial-focus className="w98-input compact" value={post.title} onChange={(event) => patchPost(post, { title: event.target.value }, `post-title-${post.id}`)} /></label>
           <label className="w98-field"><span className="w98-hint">{tr("canonicalPostEditor.postContent")}</span><textarea className="w98-textarea" rows={3} value={post.caption} onChange={(event) => patchPost(post, { caption: event.target.value }, `post-caption-${post.id}`)} /></label>
           <div className="ie-row">
             <label className="check-row"><input type="checkbox" checked={post.visibility === "published"} onChange={(event) => patchPost(post, { visibility: event.target.checked ? "published" : "draft" })} />{tr("canonicalHighlightEditor.showPublicly")}</label>
             <label className="check-row"><input type="checkbox" checked={post.pinned} onChange={(event) => patchPost(post, { pinned: event.target.checked })} />{tr("canonicalPostEditor.pin")}</label>
           </div>
           <strong>{tr("ig.imagesOfTen", { count: post.media.length })}</strong>
-          {post.media.map((media, mediaIndex) => <div key={media.id} className="ig-media-edit-row">
-            <span className="ig-thumb sq48 ph">{media.src ? <AvatarImage src={media.src} crop={media.crop} alt={media.alt} /> : null}</span>
+          {post.media.map((item, mediaIndex) => <div key={item.id} className="ig-media-edit-row">
+            <span className="ig-thumb sq48 ph">{item.src ? <AvatarImage src={item.src} crop={item.crop} alt={item.alt} /> : null}</span>
             <div className="ig-col grow">
-              <ImageUrlField draftKey={`${scope}:${post.id}:${media.id}:source`} visibleLabel raw={media.srcUrl} placeholder={tr("canonicalPostEditor.imageUrl")} label={tr("canonicalPostEditor.urlOfImage", { v1: mediaIndex + 1 })} className="w98-input compact" onCommit={(raw, src) => mutate((document) => run(patchPostMedia(document, post.id, media.id, { src, srcUrl: raw }, { siteId }), document))} />
-              <input className="w98-input compact" aria-label={tr("canonicalPostEditor.altTextOfImage", { v1: mediaIndex + 1 })} value={media.alt} placeholder={tr("canonicalPostEditor.altTextMakesTheImage")} onChange={(event) => mutate((document) => run(patchPostMedia(document, post.id, media.id, { alt: event.target.value }, { siteId }), document), `media-alt-${media.id}`)} />
+              <div className={styles.replacement}>
+                <FilePick disabled={!media.canUpload} className="w98-btn small" onFiles={files => media.replacePostImage(post.id, item.id, files[0])}>{tr("authoring.replaceImage", { n: mediaIndex + 1 })}</FilePick>
+                <small className="w98-hint">{tr("authoring.replacementHint")}</small>
+              </div>
+              <ImageUrlField draftKey={`${scope}:${post.id}:${item.id}:source`} visibleLabel raw={item.srcUrl} placeholder={tr("canonicalPostEditor.imageUrl")} label={tr("canonicalPostEditor.urlOfImage", { v1: mediaIndex + 1 })} className="w98-input compact" onEdit={() => media.cancelPostReplacement(post.id, item.id)} onCommit={(raw, src) => mutate((document) => run(patchPostMedia(document, post.id, item.id, { src, srcUrl: raw }, { siteId }), document))} />
+              <input className="w98-input compact" aria-label={tr("canonicalPostEditor.altTextOfImage", { v1: mediaIndex + 1 })} value={item.alt} placeholder={tr("canonicalPostEditor.altTextMakesTheImage")} onChange={(event) => mutate((document) => run(patchPostMedia(document, post.id, item.id, { alt: event.target.value }, { siteId }), document), `media-alt-${item.id}`)} />
               <div className="ig-media-crop-controls" role="group" aria-label={tr("canonicalPostEditor.thumbnailCropOfImage", { v1: mediaIndex + 1 })}>
-                <label><span>{tr("canonicalPostEditor.horizontal")}</span><input type="range" min={0} max={100} value={(media.crop ?? DEFAULT_CROP).x} aria-label={tr("canonicalPostEditor.horizontalCropOfImage", { v1: mediaIndex + 1 })} onChange={(event) => mutate((document) => run(patchPostMedia(document, post.id, media.id, { crop: { ...(media.crop ?? DEFAULT_CROP), x: Number(event.target.value) } }, { siteId }), document), `media-crop-x-${media.id}`)} /></label>
-                <label><span>{tr("canonicalPostEditor.vertical")}</span><input type="range" min={0} max={100} value={(media.crop ?? DEFAULT_CROP).y} aria-label={tr("canonicalPostEditor.verticalCropOfImage", { v1: mediaIndex + 1 })} onChange={(event) => mutate((document) => run(patchPostMedia(document, post.id, media.id, { crop: { ...(media.crop ?? DEFAULT_CROP), y: Number(event.target.value) } }, { siteId }), document), `media-crop-y-${media.id}`)} /></label>
-                <label><span>{tr("canonicalPostEditor.zoom")}</span><input type="range" min={1} max={4} step={0.05} value={(media.crop ?? DEFAULT_CROP).zoom} aria-label={tr("canonicalPostEditor.zoomOfImage", { v1: mediaIndex + 1 })} onChange={(event) => mutate((document) => run(patchPostMedia(document, post.id, media.id, { crop: { ...(media.crop ?? DEFAULT_CROP), zoom: Number(event.target.value) } }, { siteId }), document), `media-crop-zoom-${media.id}`)} /></label>
-                <button type="button" className="w98-btn small" aria-label={tr("canonicalPostEditor.resetCropOfImage", { v1: mediaIndex + 1 })} onClick={() => mutate((document) => run(patchPostMedia(document, post.id, media.id, { crop: DEFAULT_CROP }, { siteId }), document))}>{tr("canonicalPostEditor.reset")}</button>
+                <label><span>{tr("canonicalPostEditor.horizontal")}</span><input type="range" min={0} max={100} value={(item.crop ?? DEFAULT_CROP).x} aria-label={tr("canonicalPostEditor.horizontalCropOfImage", { v1: mediaIndex + 1 })} onChange={(event) => mutate((document) => run(patchPostMedia(document, post.id, item.id, { crop: { ...(item.crop ?? DEFAULT_CROP), x: Number(event.target.value) } }, { siteId }), document), `media-crop-x-${item.id}`)} /></label>
+                <label><span>{tr("canonicalPostEditor.vertical")}</span><input type="range" min={0} max={100} value={(item.crop ?? DEFAULT_CROP).y} aria-label={tr("canonicalPostEditor.verticalCropOfImage", { v1: mediaIndex + 1 })} onChange={(event) => mutate((document) => run(patchPostMedia(document, post.id, item.id, { crop: { ...(item.crop ?? DEFAULT_CROP), y: Number(event.target.value) } }, { siteId }), document), `media-crop-y-${item.id}`)} /></label>
+                <label><span>{tr("canonicalPostEditor.zoom")}</span><input type="range" min={1} max={4} step={0.05} value={(item.crop ?? DEFAULT_CROP).zoom} aria-label={tr("canonicalPostEditor.zoomOfImage", { v1: mediaIndex + 1 })} onChange={(event) => mutate((document) => run(patchPostMedia(document, post.id, item.id, { crop: { ...(item.crop ?? DEFAULT_CROP), zoom: Number(event.target.value) } }, { siteId }), document), `media-crop-zoom-${item.id}`)} /></label>
+                <button type="button" className="w98-btn small" aria-label={tr("canonicalPostEditor.resetCropOfImage", { v1: mediaIndex + 1 })} onClick={() => mutate((document) => run(patchPostMedia(document, post.id, item.id, { crop: DEFAULT_CROP }, { siteId }), document))}>{tr("canonicalPostEditor.reset")}</button>
               </div>
             </div>
-            <button type="button" className="mini-btn" aria-label={tr("canonicalPostEditor.moveImageEarlier", { v1: mediaIndex + 1 })} disabled={mediaIndex === 0} onClick={() => mutate((document) => run(reorderPostMedia(document, post.id, media.id, -1, { siteId }), document))}>▲</button>
-            <button type="button" className="mini-btn" aria-label={tr("canonicalPostEditor.moveImageLater", { v1: mediaIndex + 1 })} disabled={mediaIndex === post.media.length - 1} onClick={() => mutate((document) => run(reorderPostMedia(document, post.id, media.id, 1, { siteId }), document))}>▼</button>
-            <button type="button" className="mini-btn danger" aria-label={tr("canonicalPostEditor.deleteImage", { v1: mediaIndex + 1 })} onClick={() => mutate((document) => run(deletePostMedia(document, post.id, media.id, { siteId }), document))}>×</button>
+            <button type="button" className="mini-btn" aria-label={tr("canonicalPostEditor.moveImageEarlier", { v1: mediaIndex + 1 })} disabled={mediaIndex === 0} onClick={() => mutate((document) => run(reorderPostMedia(document, post.id, item.id, -1, { siteId }), document))}>▲</button>
+            <button type="button" className="mini-btn" aria-label={tr("canonicalPostEditor.moveImageLater", { v1: mediaIndex + 1 })} disabled={mediaIndex === post.media.length - 1} onClick={() => mutate((document) => run(reorderPostMedia(document, post.id, item.id, 1, { siteId }), document))}>▼</button>
+            <button type="button" className="mini-btn danger" aria-label={tr("canonicalPostEditor.deleteImage", { v1: mediaIndex + 1 })} onClick={() => mutate((document) => {
+            const result = deletePostMedia(document, post.id, item.id, { siteId });
+            if (result.ok) discardPending(post.id, item.id);
+            return run(result, document);
+          })}>×</button>
           </div>)}
           {post.media.length < 10 ? <>
             <div className="ie-row">
-              <FilePick multiple disabled={!media.canUpload} className="w98-btn small" onFiles={(files) => uploadFiles(post.id, files)}>{tr("canonicalPostEditor.uploadMoreImages")}</FilePick>
+              <FilePick multiple disabled={!media.canUpload} className="w98-btn small" onFiles={(files) => uploadFiles(post.id, files)}>{post.media.length ? tr("canonicalPostEditor.uploadMoreImages") : tr("authoring.chooseImages")}</FilePick>
               <label className={`ig-col grow ${sourceStyles.url}`}><span className="w98-hint">{tr("canonicalPostEditor.addCarouselImageUrl")}</span><input className="w98-input compact" aria-label={tr("canonicalPostEditor.addCarouselImageUrl")} value={mediaUrls[post.id] ?? ""} onChange={(event) => setMediaUrls((current) => ({ ...current, [post.id]: event.target.value }))} placeholder={tr("canonicalPostEditor.orPasteACarouselImage")} /></label>
               <button type="button" className="w98-btn small" onClick={() => {
                 const raw = mediaUrls[post.id] ?? "";

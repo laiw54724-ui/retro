@@ -7,9 +7,11 @@ export function useIgEntityEditor(scope: string, ids: string[]) {
   const [visited, setVisited] = useIgEditorState<string[]>(scope, []);
   const root = useRef<HTMLFieldSetElement>(null);
   const returnTo = useRef(new Map<string, { id: string; scroll: number }>());
+  const focusField = useRef(false);
   const previous = useRef<{ scope: string; id: string | null }>({ scope, id: null });
   const openId = selected && ids.includes(selected) ? selected : null;
-  const setOpenId = (id: string | null) => {
+  const setOpenId = (id: string | null, options?: { focusField?: boolean }) => {
+    focusField.current = !!options?.focusField;
     if (id) {
       const scroll = root.current?.closest<HTMLElement>(".ig-edit-scroll");
       returnTo.current.set(scope, { id, scroll: scroll?.scrollTop ?? 0 });
@@ -24,7 +26,12 @@ export function useIgEntityEditor(scope: string, ids: string[]) {
     const scroll = root.current.closest<HTMLElement>(".ig-edit-scroll");
     if (openId) {
       if (scroll) scroll.scrollTop = 0;
-      root.current.querySelector<HTMLButtonElement>("[data-ig-back]")?.focus({ preventScroll: true });
+      const target = focusField.current
+        ? root.current.querySelector<HTMLInputElement>("article:not([hidden]) [data-ig-initial-focus]")
+        : root.current.querySelector<HTMLButtonElement>("[data-ig-back]");
+      target?.focus({ preventScroll: true });
+      target?.scrollIntoView({ block: "nearest" });
+      focusField.current = false;
     } else {
       const saved = returnTo.current.get(scope);
       if (scroll) scroll.scrollTop = saved?.scroll ?? 0;

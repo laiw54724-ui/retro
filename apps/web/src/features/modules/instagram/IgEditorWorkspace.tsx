@@ -85,6 +85,16 @@ function IgEditorWorkspaceContent(props: ModuleProps<"instagram">) {
     <div ref={scroll} className={`ig-edit-scroll w98-scroll ${styles.content}`} tabIndex={0} aria-label={tr("igEditorWorkspace.instagramContentEditor")}
       onScroll={(event) => positions.current.set(positionKey, event.currentTarget.scrollTop)}>
       <section role="tabpanel" id={`${id}-profile-panel`} aria-labelledby={`${id}-profile-tab`} hidden={section !== "profile"} className={styles.panel}>
+        <div className={styles.profileActions} role="group" aria-label={tr("authoring.contentActions")}>
+          <button type="button" className="w98-btn small" onClick={() => {
+            setSection("posts");
+            sectionTabs.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[1]?.focus();
+          }}>{tr("authoring.managePosts")}</button>
+          <button type="button" className="w98-btn small" onClick={() => {
+            setCollectionKind("highlights"); setSection("collections");
+            sectionTabs.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[2]?.focus();
+          }}>{tr("authoring.manageHighlights")}</button>
+        </div>
         <ProfileEditor siteId={ctx.siteId ?? ""} windowId={props.window.id} draftScope={scope} profiles={ctx.profiles} profile={current} onChange={changeProfile} showAppearance={false} upload={ctx.upload ? (file) => ctx.upload!(file, "image") : undefined} />
         <IgEditForm {...props} section="profile" />
         {ctx.onProfileDelete ? <details className={styles.management}>
