@@ -1,0 +1,47 @@
+/* Author-only overrides: visitor layouts and desktop phone previews retain their chrome. */
+@media (max-width: 767px) {
+  .app:global(.editor-app) {
+    height: var(--authoring-height, 100dvh);
+    min-height: var(--authoring-height, 100dvh);
+  }
+
+  .app :global(.editor-topbar) :global(.w98-btn) {
+    min-height: 44px;
+    height: auto;
+  }
+
+  /* Real phones already have a system status bar; the simulated one costs input space. */
+  .screen > :global(.m-status) { display: none; }
+
+  .screen:global(.m-screen) :global(.m-window[data-presentation="mobile"]) :global(.m-win-body) {
+    scroll-padding-block: 8px;
+    overscroll-behavior: contain;
+  }
+}
+
+/* Follow the actual author viewport, including visual-only keyboard resizing. */
+@media (max-width: 767px) {
+  .app[data-authoring-short] :global(.editor-topbar) {
+    gap: 4px;
+    padding-block: 2px !important;
+  }
+
+  .app[data-authoring-short] :global(.editor-topbar) :global(.w98-btn) {
+    font-size: 12px;
+    padding-inline: 6px;
+  }
+
+  .app[data-authoring-short] :global(.editor-history-controls) { padding-top: 2px; }
+
+  .app[data-authoring-short] .screen > :global(.m-toolbar) {
+    height: auto;
+    padding: 2px;
+  }
+
+  .app[data-authoring-short] .screen > :global(.m-toolbar) :global(.m-tool) {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 2px;
+    min-height: 44px;
+  }
+}
