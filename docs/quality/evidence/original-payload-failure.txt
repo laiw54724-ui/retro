@@ -25,7 +25,7 @@ Testing stopped early after 1 maximum allowed failures.
       25 | });
       26 |
       27 | test('only the installed Windows tab loads its manifest, then search and apply still work', async ({ page }) => {
-        at /Users/wen/Documents/Codex/2026-10-19/task-2/retro-quality/tests/quality/icon-loading.spec.ts:24:126
+        at <worktree>/tests/quality/icon-loading.spec.ts:24:126
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     test-results/quality/icon-loading-entry-payload-adffd-e-optional-Windows-manifest/test-failed-1.png

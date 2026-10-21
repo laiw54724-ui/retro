@@ -1,5 +1,5 @@
 
- RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-2/retro-quality/apps/web
+ RUN  v3.2.7 <worktree>/apps/web
 
  ✓ src/lib/optionalIconPack.test.ts (2 tests) 5ms
  ✓ src/features/modules/music/audioCoordinator.test.ts (14 tests) 9ms

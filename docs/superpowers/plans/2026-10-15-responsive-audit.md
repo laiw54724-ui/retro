@@ -1,7 +1,5 @@
 # Responsive Audit and IG Scrolling Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Make every web route responsive across the agreed viewport matrix and restore internal scrolling inside desktop Instagram windows.
 
 **Architecture:** Consolidate responsive overrides at the end of the v2 stylesheet so they win the cascade, and give Instagram a single explicit scroll owner through a complete flex/min-height chain. Add browser tests that express the layout contract rather than relying on screenshots alone.
@@ -70,7 +68,9 @@
 **Files:**
 - Modify: `docs/BETA_ACCEPTANCE.md`
 
-- [ ] Run `node /Users/wen/.agents/skills/impeccable/scripts/detect.mjs --json apps/web/src/pages apps/web/src/features apps/web/src/styles` and resolve applicable findings.
+- [ ] Run `node <external-design-lint>/scripts/detect.mjs --json apps/web/src/pages apps/web/src/features apps/web/src/styles` and resolve applicable findings.
 - [ ] Run `pnpm typecheck`, `pnpm test:unit`, `pnpm test:e2e`, and `pnpm build`; expect all commands to pass.
 - [ ] Update the responsive acceptance matrix with verified results.
 - [ ] Commit the fix, push a PR, wait for CI, merge after green, apply staging-only deployment, and verify API health plus current frontend asset hashes.
+
+Historical tooling note: `<external-design-lint>` denotes a local tool that is not distributed with this repository. It is not a contributor prerequisite; use the current checks in [Development](../../DEVELOPMENT.md).

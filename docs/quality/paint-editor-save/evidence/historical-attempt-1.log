@@ -26,7 +26,7 @@ Testing stopped early after 1 maximum allowed failures.
       123 |   await expect.poll(state.pending).toBe(true);
       124 |   await page.goBack(); await leave.getByRole("button", { name: "仍要離開", exact: true }).click();
       125 |   await expect(page).toHaveURL(/\/auth$/); await page.locator('a[href="/editor/site-2"]').click();
-        at /Users/wen/Documents/Codex/2026-10-19/task-9/retro-paint-editor-save-53/tests/e2e/paint-editor-save.spec.ts:122:89
+        at <worktree>/tests/e2e/paint-editor-save.spec.ts:122:89
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     test-results/paint-editor-save-dirty-Pa-ffc17-late-upload-cannot-follow-B-chromium/test-failed-1.png

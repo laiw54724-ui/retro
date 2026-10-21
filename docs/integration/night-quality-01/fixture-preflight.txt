@@ -35,7 +35,7 @@ Testing stopped early after 1 maximum allowed failures.
       42 |     expect(await page.locator('body').innerText()).not.toMatch(/NIGHT_PRIVATE_|Night Private|nightprivate/);
       43 |   });
       44 | }
-        at /Users/wen/Documents/Codex/2026-10-19/task-2/retro-night-quality/tests/e2e/night-integration.spec.ts:41:71
+        at <worktree>/tests/e2e/night-integration.spec.ts:41:71
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     test-results/night-integration-night-in-0ab15-on-320px-stay-out-of-public-chromium/test-failed-1.png

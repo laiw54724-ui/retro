@@ -1,5 +1,5 @@
 
- RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-2/retro-night-quality/apps/web
+ RUN  v3.2.7 <worktree>/apps/web
 
  ✓ src/lib/pagesWorker.test.js (5 tests) 10ms
  ✓ src/features/modules/music/sourceClassifier.test.ts (7 tests) 4ms

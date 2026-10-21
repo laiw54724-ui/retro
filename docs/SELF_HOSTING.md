@@ -43,7 +43,7 @@ to restore a redistributable clean build.
 
 ## Configure services
 
-1. Copy `.env.example` into `apps/web/.env.local` and `apps/api/.dev.vars` with your own development values.
+1. Copy only the `VITE_*` section of `.env.example` into `apps/web/.env.local`, and the API section into `apps/api/.dev.vars`, using your own development values. See [Development](DEVELOPMENT.md).
 2. Apply every SQL file in `supabase/migrations` in filename order. Migrations are forward-only.
 3. Create the R2 buckets named in `apps/api/wrangler.toml`, or update that configuration.
 4. Put Worker secrets with `wrangler secret put`; never prefix a service-role key with `VITE_`.

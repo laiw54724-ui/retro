@@ -1,5 +1,5 @@
 
- RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01/packages/shared
+ RUN  v3.2.7 <worktree>/packages/shared
 
  ✓ test/public-projection.test.ts (5 tests) 32ms
  ✓ test/image-window.test.ts (22 tests) 44ms

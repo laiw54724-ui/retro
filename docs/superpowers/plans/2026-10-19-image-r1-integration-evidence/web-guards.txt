@@ -1,5 +1,5 @@
 
- RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01/apps/web
+ RUN  v3.2.7 <worktree>/apps/web
 
  ✓ src/lib/imageCompatibility.test.ts (9 tests) 3ms
 stderr | src/features/editor/store.image.test.ts

@@ -36,7 +36,7 @@ Running 2 tests using 1 worker
       125 |   await expect(page.getByLabel('簡介', { exact: true })).toHaveValue('Beta saved bio');
       126 |   await expect(page.locator('.editor-message')).toHaveCount(0);
       127 |   await expect(page).toHaveURL(/\/editor\/b$/);
-        at /Users/wen/Documents/Codex/2026-10-19/task-10/retro-editor-save-session/tests/e2e/editor-save-session.spec.ts:124:47
+        at <worktree>/tests/e2e/editor-save-session.spec.ts:124:47
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     test-results/session-review-before/editor-save-session-publis-f38dd--ended-A-leaves-B-unchanged-chromium/test-failed-1.png
@@ -68,7 +68,7 @@ Running 2 tests using 1 worker
       163 |   await page.locator('a[href="/editor/b"]').click(); await openAbout(page);
       164 |   state.releaseReload(); await received(page, '/api/sites/a', 2);
       165 |   await expect(page).toHaveURL(/\/editor\/b$/);
-        at /Users/wen/Documents/Codex/2026-10-19/task-10/retro-editor-save-session/tests/e2e/editor-save-session.spec.ts:162:119
+        at <worktree>/tests/e2e/editor-save-session.spec.ts:162:119
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     test-results/session-review-before/editor-save-session-reload-43711--A-owner-leaves-B-unchanged-chromium/test-failed-1.png

@@ -1,7 +1,5 @@
 # OC Content Presentation Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Finish Issue #20 with canonical collection authoring, collection/pinned visitor views, natural-ratio post details, and responsive 60-post acceptance coverage.
 
 **Architecture:** Add immutable collection operations beside the post/highlight operations, then expose canonical collections through the existing module boundary and profile directory. Keep square `object-fit: cover` thumbnails in the grid, but render post-detail media with stored/intrinsic aspect ratio and `object-fit: contain`. Use the existing single IG scroll container and button ordering controls; do not add a drag library.

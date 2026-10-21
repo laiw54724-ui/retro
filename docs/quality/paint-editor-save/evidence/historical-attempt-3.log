@@ -32,7 +32,7 @@ Testing stopped early after 1 maximum allowed failures.
       162 |   await page.waitForTimeout(750);
       163 |   expect(state.docs["site-1"].windows[0].title).toBe("Keep this title");
       164 |   await leave.getByRole("button", { name: "留在這裡", exact: true }).press("ControlOrMeta+y");
-        at /Users/wen/Documents/Codex/2026-10-19/task-9/retro-paint-editor-save-53/tests/e2e/paint-editor-save.spec.ts:161:66
+        at <worktree>/tests/e2e/paint-editor-save.spec.ts:161:66
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     test-results/paint-editor-save-Paint-co-0914e-the-editor-document-history-chromium/test-failed-1.png
