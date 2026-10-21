@@ -1,6 +1,7 @@
 import { IgImageUrlField as ImageUrlField } from "./IgImageUrlField";
-import { useIgSessionValue } from "./useIgSessionValue";
+import { useIgPendingEntities, useIgSessionValue } from "./useIgSessionValue";
 import { useId } from "react";
+import styles from "./ocEditor.module.css";
 import sourceStyles from "./ImageSourceFields.module.css";
 import { useIgEntityEditor } from "./useIgEntityEditor";
 import { translateSystemMessage } from "../../../i18n/systemMessages";
@@ -32,6 +33,7 @@ export function CanonicalHighlightEditor({ props }: Props) {
   const highlights = ctx.profileDirectory?.find((entry) => entry.id === profileId)?.highlights ?? [];
   const scope = `${igEditorScope(props)}:highlights`;
   const editorId = useId();
+  const { hasPending, discardPending } = useIgPendingEntities(scope, "frame-urls");
   const { root, openId, setOpenId, wasOpened } = useIgEntityEditor(scope, highlights.map((item) => item.id));
   const [query, setQuery] = useIgEditorState(scope, "");
   const [urls, setUrls] = useIgSessionValue<Record<string, string>>(`${scope}:frame-urls`, {});
@@ -71,14 +73,20 @@ export function CanonicalHighlightEditor({ props }: Props) {
   });
 
   return <fieldset ref={root} className="w98-fieldset ig-canonical-highlights"><legend>{tr("ig.highlightsCount", { count: highlights.length })}</legend>
-      {openId ? <button data-ig-back type="button" className="w98-btn small" onClick={() => setOpenId(null)}>{tr("editorFlow.backHighlights")}</button> : null}
+      {openId ? <>
+      <div className={styles.taskNavigation}>
+        <button data-ig-back type="button" className="w98-btn small" onClick={() => setOpenId(null)}>{tr("editorFlow.backHighlights")}</button>
+        <button type="button" className="w98-btn small" onClick={() => setOpenId(null)}>{tr("authoring.done")}</button>
+      </div>
+      <p className={styles.taskHint} role="status">{tr(hasPending(openId) ? "authoring.pendingDetail" : "authoring.draftHint")}</p>
+    </> : null}
       <div hidden={!!openId} className="ig-list-tools">
     <div className="ie-row">
       <button type="button" className="w98-btn small" onClick={() => {
         const id = `highlight:${crypto.randomUUID()}`;
         mutate((document) => run(createHighlight(document, { id, ownerProfileId: profileId, title: tr("canonicalHighlightEditor.newHighlight") }, { siteId }), document));
         setQuery("");
-        setOpenId(id);
+        setOpenId(id, { focusField: true });
       }}>{tr("canonicalHighlightEditor.addHighlight")}</button>
       <span className="w98-hint">{tr("canonicalHighlightEditor.upTo50PagesPer")}</span>
     </div>
@@ -106,12 +114,17 @@ export function CanonicalHighlightEditor({ props }: Props) {
           <div className="ig-item-actions">
           <button type="button" className="mini-btn" aria-label={`${tr("canonicalHighlightEditor.moveHighlightUp")}：${highlight.title || tr("canonicalHighlightEditor.untitledHighlight")}`} aria-describedby={search ? `${editorId}-order-hint` : undefined} disabled={!!search || highlightIndex === 0} onClick={() => mutate((document) => run(reorderHighlight(document, highlight.id, -1, { siteId }), document))}>▲</button>
           <button type="button" className="mini-btn" aria-label={`${tr("canonicalHighlightEditor.moveHighlightDown")}：${highlight.title || tr("canonicalHighlightEditor.untitledHighlight")}`} aria-describedby={search ? `${editorId}-order-hint` : undefined} disabled={!!search || highlightIndex === highlights.length - 1} onClick={() => mutate((document) => run(reorderHighlight(document, highlight.id, 1, { siteId }), document))}>▼</button>
-          <button type="button" className="mini-btn danger" aria-label={tr("ig.deleteHighlight", { title: highlight.title || tr("ig.untitledHighlightShort") })} onClick={() => mutate((document) => run(deleteHighlight(document, highlight.id, { siteId }), document))}>×</button>
+          <button type="button" className="mini-btn danger" aria-label={tr("ig.deleteHighlight", { title: highlight.title || tr("ig.untitledHighlightShort") })} onClick={() => mutate((document) => {
+            const result = deleteHighlight(document, highlight.id, { siteId });
+            if (result.ok) discardPending(highlight.id);
+            return run(result, document);
+          })}>×</button>
           </div>
         </div>
+        {!expanded && hasPending(highlight.id) ? <p className={styles.pendingBadge}>{tr("authoring.pendingBadge")}</p> : null}
         {media.taskList("highlight", highlight.id)}
         {wasOpened(highlight.id) ? <div hidden={!expanded} id={bodyId} className="ig-post-body ig-canonical-post-fields">
-          <label className="w98-field"><span className="w98-hint">{tr("canonicalHighlightEditor.highlightTitle")}</span><input className="w98-input compact" maxLength={40} value={highlight.title} onChange={(event) => mutate((document) => run(updateHighlight(document, highlight.id, { title: event.target.value }, { siteId }), document), `highlight-title-${highlight.id}`)} /></label>
+          <label className="w98-field"><span className="w98-hint">{tr("canonicalHighlightEditor.highlightTitle")}</span><input data-ig-initial-focus className="w98-input compact" maxLength={40} value={highlight.title} onChange={(event) => mutate((document) => run(updateHighlight(document, highlight.id, { title: event.target.value }, { siteId }), document), `highlight-title-${highlight.id}`)} /></label>
           <label className="check-row"><input type="checkbox" checked={highlight.visibility === "published"} onChange={(event) => mutate((document) => run(updateHighlight(document, highlight.id, { visibility: event.target.checked ? "published" : "draft" }, { siteId }), document))} />{tr("canonicalHighlightEditor.showPublicly")}</label>
           {!highlight.frames.length ? <p className="ig-editor-empty">{tr("canonicalHighlightEditor.noHighlightPagesYetAdd")}</p> : null}
           {highlight.frames.map((frame, frameIndex) => <div key={frame.id} className="ig-highlight-frame-row">
@@ -124,7 +137,11 @@ export function CanonicalHighlightEditor({ props }: Props) {
             </div>
             <button type="button" className="mini-btn" aria-label={tr("canonicalHighlightEditor.moveHighlightPageEarlier", { v1: frameIndex + 1 })} disabled={frameIndex === 0} onClick={() => mutate((document) => run(reorderHighlightFrame(document, highlight.id, frame.id, -1, { siteId }), document))}>▲</button>
             <button type="button" className="mini-btn" aria-label={tr("canonicalHighlightEditor.moveHighlightPageLater", { v1: frameIndex + 1 })} disabled={frameIndex === highlight.frames.length - 1} onClick={() => mutate((document) => run(reorderHighlightFrame(document, highlight.id, frame.id, 1, { siteId }), document))}>▼</button>
-            <button type="button" className="mini-btn danger" aria-label={tr("canonicalHighlightEditor.deleteHighlightPage", { v1: frameIndex + 1 })} onClick={() => mutate((document) => run(deleteHighlightFrame(document, highlight.id, frame.id, { siteId }), document))}>×</button>
+            <button type="button" className="mini-btn danger" aria-label={tr("canonicalHighlightEditor.deleteHighlightPage", { v1: frameIndex + 1 })} onClick={() => mutate((document) => {
+            const result = deleteHighlightFrame(document, highlight.id, frame.id, { siteId });
+            if (result.ok) discardPending(highlight.id, frame.id);
+            return run(result, document);
+          })}>×</button>
           </div>)}
           {highlight.frames.length < 50 ? <div className="ie-row">
             <fieldset className="ig-upload-control" aria-label={tr("canonicalHighlightEditor.uploadHighlightImages")} disabled={!media.canUpload} aria-busy={media.isPending("highlight", highlight.id)}>

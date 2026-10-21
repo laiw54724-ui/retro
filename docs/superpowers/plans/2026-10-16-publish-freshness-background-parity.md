@@ -1,7 +1,5 @@
 # Publish Freshness and Background Parity Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Make republished sites immediately fresh and render uploaded wallpapers identically in the editor and public visitor page.
 
 **Architecture:** Remove duplicated public-page wallpaper derivation by using the existing `themeView` adapter. Disable public-document caching at both the Worker response and browser request boundaries so a successful publish becomes visible on the next load.

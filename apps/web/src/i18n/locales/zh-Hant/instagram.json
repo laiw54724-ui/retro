@@ -442,5 +442,17 @@
     "backEditing": "← 返回編輯",
     "pendingStatus": "有未完成的 IG 輸入，尚未儲存；僅保留在此分頁。",
     "retainedDrafts": "未完成的欄位會保留在此分頁；重新載入後不會保留。"
+  },
+  "authoring": {
+    "contentActions": "內容操作",
+    "managePosts": "管理貼文",
+    "manageHighlights": "管理精選",
+    "done": "完成編輯",
+    "draftHint": "內容會套用至網站草稿；完成或返回不會發布網站。",
+    "pendingBadge": "有待續輸入",
+    "pendingDetail": "未完成輸入會保留在此分頁；完成或返回後可繼續編輯，重新載入會清除。",
+    "replaceImage": "替換圖片 {{n}}",
+    "replacementHint": "上傳成功後才替換原圖。",
+    "chooseImages": "選擇圖片（可多選）"
   }
 }

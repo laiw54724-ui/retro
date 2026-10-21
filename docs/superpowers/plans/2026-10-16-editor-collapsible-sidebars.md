@@ -1,7 +1,5 @@
 # Editor Collapsible Sidebars Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Let desktop authors independently collapse and restore the left tool panel and right inspector while the canvas expands into the released space.
 
 **Architecture:** `EditorPage` owns two persisted UI-only booleans and composes the shell. A focused `SidebarToggle` component renders the boundary affordance without coupling panel content to layout state. CSS modifier classes remove panel width while retaining a narrow restore rail; existing responsive breakpoints remain authoritative.

@@ -1,6 +1,7 @@
 import { restoreNavigationFocus, useVisitorNavigation } from "../navigation/useVisitorNavigation";
 import { resolveDesktopLabelAppearance } from "../../lib/windowAppearance";
 import type { PreviewNavigation } from "./previewNavigation";
+import authoring from "./MobileAuthoring.module.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { makeWindow, THEME_PRESETS, type CollectionEntityV2, type DesktopWindow, type PostEntityV2, type ProfileEntityV2, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
@@ -98,10 +99,38 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
     globalThis.document.addEventListener("keydown", escape);
     return () => globalThis.document.removeEventListener("keydown", escape);
   }, [openId]);
-  const btn = { background: tv.face, color: tv.text, boxShadow: tv.bevel, fontFamily };
+  // Resizing a phone viewport must not leave the active field behind an inner
+  // scroll clip. Keep the mounted editor and its draft/focus; scroll only fields
+  // belonging to this author screen, never a modal or the visitor preview.
+  useEffect(() => {
+    const screen = screenRef.current;
+    if (!editor || !screen) return;
+    let frame = 0;
+    const revealInput = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const active = globalThis.document.activeElement;
+        if ((globalThis.visualViewport && globalThis.visualViewport.scale !== 1) ||
+          screen.closest("[inert], [hidden], [aria-hidden='true']") ||
+          !(active instanceof HTMLElement) || !screen.contains(active) ||
+          !active.matches("input, textarea, select, [contenteditable='true']")) return;
+        active.scrollIntoView({ block: "nearest", inline: "nearest" });
+      });
+    };
+    const observer = new ResizeObserver(revealInput);
+    observer.observe(screen);
+    const stage = screen.querySelector(".m-stage");
+    if (stage) observer.observe(stage);
+    globalThis.visualViewport?.addEventListener("resize", revealInput);
+    return () => {
+      observer.disconnect();
+      globalThis.visualViewport?.removeEventListener("resize", revealInput);
+      cancelAnimationFrame(frame);
+    };
+  }, [editor]);
 
   const body = (
-    <div ref={screenRef} tabIndex={-1} className="m-screen" style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: "center", fontFamily: tv.fontFamily, color: tv.text }}>
+    <div ref={screenRef} tabIndex={-1} className={`m-screen${editor ? ` ${authoring.screen}` : ""}`} style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: "center", fontFamily: tv.fontFamily, color: tv.text }}>
       {framed ? <div className="m-status" style={{ background: tv.face, color: tv.text, fontFamily }}><time dateTime={now.toISOString()} title={formatDate(now, { dateStyle: "full" })} aria-label={common("desktop.clockLabel", { time: clock })}>{clock}</time><span>5G ▮▮▮</span></div> : null}
       {/* One return path: while an app is open its own title bar is the only header (site options live in its menu). */}
       {!openWindow ? (

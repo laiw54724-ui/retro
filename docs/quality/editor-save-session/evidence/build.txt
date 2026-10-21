@@ -1,5 +1,5 @@
 
-> @retrodesk/web@0.0.1 build /Users/wen/Documents/Codex/2026-10-19/task-10/retro-editor-save-session/apps/web
+> @retrodesk/web@0.0.1 build <worktree>/apps/web
 > tsc -b && vite build && node scripts/build-pages-worker.mjs
 
 vite v7.3.7 building client environment for production...
