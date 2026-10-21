@@ -442,5 +442,17 @@
     "backEditing": "← 編集に戻る",
     "pendingStatus": "未完成のIG入力は未保存です。このタブ内にのみ保持されます。",
     "retainedDrafts": "未完成の入力はこのタブに保持されます。再読み込みすると消えます。"
+  },
+  "authoring": {
+    "contentActions": "コンテンツ操作",
+    "managePosts": "投稿を管理",
+    "manageHighlights": "ハイライトを管理",
+    "done": "編集を完了",
+    "draftHint": "変更はサイトの下書きに反映されます。完了や戻る操作では公開されません。",
+    "pendingBadge": "未完了の入力あり",
+    "pendingDetail": "未完了の入力はこのタブに保持されます。完了や戻る操作の後も続けられますが、再読み込みすると消去されます。",
+    "replaceImage": "画像 {{n}} を置き換え",
+    "replacementHint": "アップロードが成功するまで元の画像を保持します。",
+    "chooseImages": "画像を選択（複数可）"
   }
 }

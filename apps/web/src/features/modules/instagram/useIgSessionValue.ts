@@ -21,3 +21,13 @@ export function useIgHasPendingDrafts() {
   const session = getIgDraftSession();
   return useSyncExternalStore(session.subscribeControls, session.getHasPendingDrafts);
 }
+
+/** Local pending feedback follows the entity, even after returning to its list. */
+export function useIgPendingEntities(scope: string, additions: "post-media-urls" | "frame-urls") {
+  const session = getIgDraftSession();
+  useSyncExternalStore(session.subscribeControls, session.getRevision);
+  return {
+    hasPending: (entityId: string) => session.hasPendingEntity(scope, entityId, additions),
+    discardPending: (entityId: string, childId?: string) => session.discardEntity(scope, entityId, additions, childId),
+  };
+}
