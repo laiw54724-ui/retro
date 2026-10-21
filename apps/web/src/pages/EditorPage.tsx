@@ -14,6 +14,7 @@ import { api, API_URL, ApiError, type AssetRecord, type SiteRecord } from "../li
 import { useEditorStore } from "../features/editor/store";
 import { DesktopCanvas } from "../features/editor/DesktopCanvas";
 import { MobileScreen } from "../features/site/MobileScreen";
+import mobileAuthoring from "../features/site/MobileAuthoring.module.css";
 import { LeftPanel } from "../features/editor/LeftPanel";
 import { RightPanel } from "../features/editor/RightPanel";
 import { buildPreviewModel, shareableEntities } from "../features/editor/previewModel";
@@ -97,6 +98,37 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   const leaveGuard = useEditorLeaveGuard(siteId);
   const saveInFlight = useRef(false);
   const [loading, setLoading] = useState(true);
+  const editorAppRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    const app = editorAppRef.current;
+    const viewport = window.visualViewport;
+    if (!app) return;
+    const phone = window.matchMedia("(max-width: 767px)");
+    const resize = () => {
+      if (!phone.matches) {
+        app.style.removeProperty("--authoring-height");
+        app.removeAttribute("data-authoring-short");
+        return;
+      }
+      // Keep the last unzoomed height while pinching; removing it would expand
+      // the editor behind a keyboard that only resized the visual viewport.
+      if (viewport && viewport.scale !== 1) return;
+      const height = viewport?.height ?? window.innerHeight;
+      app.style.setProperty("--authoring-height", `${height}px`);
+      app.toggleAttribute("data-authoring-short", height <= 500);
+    };
+    resize();
+    viewport?.addEventListener("resize", resize);
+    window.addEventListener("resize", resize);
+    phone.addEventListener("change", resize);
+    return () => {
+      viewport?.removeEventListener("resize", resize);
+      window.removeEventListener("resize", resize);
+      phone.removeEventListener("change", resize);
+      app.style.removeProperty("--authoring-height");
+      app.removeAttribute("data-authoring-short");
+    };
+  }, [loading]);
   const [loadError, setLoadError] = useState("");
   const [message, setMessage] = useState<EditorMessage>("");
   const [conflict, setConflict] = useState(false);
@@ -622,7 +654,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     <AppearanceWriteProvider siteId={siteId} apiOrigin={API_URL} load={appearanceLoad} blocked={upgradeRequired}>
     <AssetSourceProvider siteId={siteId}>
     <EditorMediaProvider key={siteId} siteId={siteId}>
-    <main className="editor-app">
+    <main ref={editorAppRef} className={`editor-app ${mobileAuthoring.app}`}>
       <header className="editor-topbar" style={{ height: "auto", minHeight: 46, flexWrap: "wrap", overflow: "visible", paddingBlock: 6, fontFamily }}>
         <Link to="/auth" className="brand" title={t("shell.backToDesktops")} style={{ fontFamily, flex: "0 0 auto" }}><Icon name="computer" size={22} />Retro Desktop</Link>
         <LanguageSwitcher compact />
