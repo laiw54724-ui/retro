@@ -44,4 +44,17 @@
     gap: 2px;
     min-height: 44px;
   }
+
+  /* IG's tabs plus its 110px content floor can exceed the space above a
+     keyboard. Let the whole editor scroll, including those tabs, so its
+     focused field is not clipped by the module's normal overflow:hidden. */
+  .app[data-authoring-short] .screen :global(.module-instagram:has(.ig-modes)) {
+    overflow-y: auto;
+    scroll-padding-block: 8px;
+  }
+
+  .app[data-authoring-short] .screen :global(.module-instagram:has(.ig-modes) > .ig-frame) {
+    height: auto;
+    flex: 0 0 auto;
+  }
 }
