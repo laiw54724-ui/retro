@@ -51,9 +51,9 @@ Running 36 tests using 2 workers
 
   1) [chromium] › tests/e2e/music-sources.spec.ts:335:7 › visitor: official platform players › no hidden player keeps sound going after switching source, minimizing or closing
 
-    Error: browserContext.close: ENOENT: no such file or directory, open '/Users/wen/Documents/Codex/2026-10-19/task-5/retro-music/test-results/.playwright-artifacts-1/traces/resources/73972a580310a3ebd98aadf599eafc4a.jsonl'
+    Error: browserContext.close: ENOENT: no such file or directory, open '<worktree>
 
-    Error: ENOENT: no such file or directory, open '/Users/wen/Documents/Codex/2026-10-19/task-5/retro-music/test-results/.playwright-artifacts-1/22be54d264ef5cae1f4471a5e24ade7b.zip'
+    Error: ENOENT: no such file or directory, open '<worktree>
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     test-results/music-sources-visitor-offi-d2090-ource-minimizing-or-closing-chromium/test-failed-1.png
@@ -63,7 +63,7 @@ Running 36 tests using 2 workers
 
   2) [chromium] › tests/e2e/music.spec.ts:184:5 › mobile music controls remain reachable at 320px ──
 
-    Error: browserContext.close: ENOENT: no such file or directory, open '/Users/wen/Documents/Codex/2026-10-19/task-5/retro-music/test-results/.playwright-artifacts-0/traces/resources/8bdd563a443cc4541407d9c3263eb25b.jsonl'
+    Error: browserContext.close: ENOENT: no such file or directory, open '<worktree>
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     test-results/music-mobile-music-controls-remain-reachable-at-320px-chromium/test-failed-1.png

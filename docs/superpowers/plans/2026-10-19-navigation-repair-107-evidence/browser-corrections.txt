@@ -28,7 +28,7 @@ Running 3 tests using 1 worker
       120 |     await page.reload();
       121 |     await expect(surface).toBeVisible();
       122 |     await expect(surface.getByRole("dialog", { name: "Instagram.exe", exact: true })).toHaveCount(0);
-        at /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01/tests/e2e/public-sharing.spec.ts:119:19
+        at <worktree>/tests/e2e/public-sharing.spec.ts:119:19
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     test-results/public-sharing-published-E-64e67-nd-no-persistence-at-1280px-chromium/test-failed-1.png
@@ -58,7 +58,7 @@ Running 3 tests using 1 worker
       120 |     await page.reload();
       121 |     await expect(surface).toBeVisible();
       122 |     await expect(surface.getByRole("dialog", { name: "Instagram.exe", exact: true })).toHaveCount(0);
-        at /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01/tests/e2e/public-sharing.spec.ts:119:19
+        at <worktree>/tests/e2e/public-sharing.spec.ts:119:19
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     test-results/public-sharing-published-E-75782-and-no-persistence-at-390px-chromium/test-failed-1.png

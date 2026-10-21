@@ -1,5 +1,5 @@
 
- RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-10/retro-editor-save-session/apps/web
+ RUN  v3.2.7 <worktree>/apps/web
 
  ✓ src/i18n/translationQuality.test.ts (7 tests) 152ms
 stderr | src/i18n/resources.test.ts > resource quality gates (all supported locales, including preview) > covers every app type through render-time catalog labels without changing registry data

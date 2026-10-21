@@ -1,7 +1,5 @@
 # Collaboration UI 21B2 Implementation Plan
 
-> **For Codex:** Execute this plan task-by-task in the current `codex/collaboration-ui-21b2` worktree. Use focused tests after each task, then run the full release gate once the milestone is complete.
-
 **Goal:** Expose the already-deployed site collaboration backend through a secure, role-aware editor experience, an owner management dialog, and a fragment-safe invitation flow.
 
 **Architecture:** Keep the API as the authorization source of truth. Load `access_role` with the site before mounting any authoring behavior, route viewers to a separate draft reader, and gate owner/editor affordances through small pure decision helpers. Invitation secrets live only in the URL fragment, `sessionStorage`, and the one acceptance request body.

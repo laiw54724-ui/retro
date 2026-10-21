@@ -1,5 +1,5 @@
 
- RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-5/retro-music/apps/web
+ RUN  v3.2.7 <worktree>/apps/web
 
  ✓ src/features/modules/music/audioCoordinator.test.ts (19 tests) 20ms
  ✓ src/features/modules/music/mediaSession.test.ts (4 tests) 6ms

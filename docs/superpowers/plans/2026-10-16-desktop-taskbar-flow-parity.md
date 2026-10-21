@@ -1,7 +1,5 @@
 # Desktop Taskbar and Flow Parity Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Make Start, the live clock, window tasks, and configured icons behave consistently in the editor, visitor preview, and published desktop.
 
 **Architecture:** Add a focused shared `DesktopTaskbar` component that owns transient Start-menu and local-clock state while receiving window state callbacks from each host. Keep window management in the editor store and visitor runtime. Update `VisitorDesktop` to use the same configured icon rendering as the editor.
@@ -193,7 +191,7 @@ Expected: all existing tests plus the new taskbar coverage pass.
 
 - [ ] **Step 3: Run the Impeccable detector once**
 
-Run: `node /Users/wen/.agents/skills/impeccable/scripts/detect.mjs --json apps/web/src/features/site/DesktopTaskbar.tsx apps/web/src/features/editor/DesktopCanvas.tsx apps/web/src/features/site/VisitorDesktop.tsx apps/web/src/styles/w98.css apps/web/src/styles/global.css`
+Run: `node <external-design-lint>/scripts/detect.mjs --json apps/web/src/features/site/DesktopTaskbar.tsx apps/web/src/features/editor/DesktopCanvas.tsx apps/web/src/features/site/VisitorDesktop.tsx apps/web/src/styles/w98.css apps/web/src/styles/global.css`
 
 Expected: no unaddressed findings.
 
@@ -210,3 +208,5 @@ Open the staging editor preview and published route at desktop width. Verify Sta
 - [ ] **Step 6: Report deployment evidence**
 
 Report the canonical staging URL, deployment identifier, commit, full test counts, and the exact desktop-flow behaviors verified. State that production remains untouched.
+
+Historical tooling note: `<external-design-lint>` denotes a local tool that is not distributed with this repository. It is not a contributor prerequisite; use the current checks in [Development](../../DEVELOPMENT.md).

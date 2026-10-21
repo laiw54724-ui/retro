@@ -94,7 +94,7 @@ Running 40 tests using 1 worker
       109 |     await expect(ig.locator(".ig-pre")).not.toContainText("caption p1");
       110 |     await ig.locator(".ig-card").getByRole("button", { name: "分享", exact: true }).click();
       111 |     await expect(fallback.getByRole("textbox", { name: "分享網址" })).toHaveValue(new URL(`/@demo/post/${encodeURIComponent(post.id)}`, url).href);
-        at /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01/tests/e2e/public-sharing.spec.ts:108:41
+        at <worktree>/tests/e2e/public-sharing.spec.ts:108:41
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     test-results/public-sharing-published-E-64e67-nd-no-persistence-at-1280px-chromium/test-failed-1.png
@@ -133,7 +133,7 @@ Running 40 tests using 1 worker
       109 |     await expect(ig.locator(".ig-pre")).not.toContainText("caption p1");
       110 |     await ig.locator(".ig-card").getByRole("button", { name: "分享", exact: true }).click();
       111 |     await expect(fallback.getByRole("textbox", { name: "分享網址" })).toHaveValue(new URL(`/@demo/post/${encodeURIComponent(post.id)}`, url).href);
-        at /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01/tests/e2e/public-sharing.spec.ts:108:41
+        at <worktree>/tests/e2e/public-sharing.spec.ts:108:41
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     test-results/public-sharing-published-E-75782-and-no-persistence-at-390px-chromium/test-failed-1.png

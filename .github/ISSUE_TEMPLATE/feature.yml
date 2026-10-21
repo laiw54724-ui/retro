@@ -3,6 +3,9 @@ description: Propose an OC platform or editor improvement.
 title: "[Feature] "
 labels: [enhancement]
 body:
+  - type: markdown
+    attributes:
+      value: Check existing issues and PRs first. Use synthetic examples; do not include private content, account details or local paths.
   - type: textarea
     id: problem
     attributes:
@@ -14,6 +17,7 @@ body:
     id: outcome
     attributes:
       label: Desired outcome
+      description: Describe a small independently reviewable change and how you would know it works.
     validations:
       required: true
   - type: textarea
