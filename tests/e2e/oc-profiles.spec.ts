@@ -777,12 +777,12 @@ test("a delayed post upload stays with its original OC after the editor switches
     await openEditorGroup(win, "貼文");
     await editor.locator('input[type="file"]').first().setInputFiles({ name: "original-upload.png", mimeType: "image/png", buffer: png });
     await expect.poll(() => uploadRequests).toBe(1);
-    await expect(editor.getByText("上傳中…", { exact: true })).toBeVisible();
+    await expect(editor.getByText("上傳中", { exact: true })).toBeVisible();
     await selection.selectOption("profile:bei");
     await openEditorGroup(win, "貼文");
     await editor.getByRole("searchbox", { name: "貼文搜尋" }).fill("Bei search in progress");
     await editor.getByRole("textbox", { name: "新貼文圖片網址" }).fill("https://example.com/bei-kept.png");
-    await expect(editor.getByText("上傳中…", { exact: true })).toHaveCount(0);
+    await expect(editor.getByText("上傳中", { exact: true })).toHaveCount(0);
 
     releaseUpload();
     await expect.poll(() => saves.at(-1)?.document.entities.posts.filter((post) => post.media.some((media) => media.src === assetRef)).length).toBe(1);
@@ -798,7 +798,7 @@ test("a delayed post upload stays with its original OC after the editor switches
 
     await selection.selectOption("profile:ig");
     await expect(editor.getByRole("textbox", { name: "標題", exact: true })).toHaveValue("original-upload");
-    await expect(editor.getByText("上傳中…", { exact: true })).toHaveCount(0);
+    await expect(editor.getByText("上傳中", { exact: true })).toHaveCount(0);
     await expect(editor.getByRole("checkbox", { name: "公開顯示", exact: true })).not.toBeChecked();
   } finally {
     releaseUpload();

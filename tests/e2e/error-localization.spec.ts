@@ -39,7 +39,8 @@ test("save errors use stable codes, change language, and retain the edited draft
   await page.locator(".editor-topbar").getByTestId("language-switcher").selectOption("en");
   await expect(alert).toContainText("Too many requests. Please wait and try again.");
   await expect(page.getByLabel("Window title")).toHaveValue("My untranslated title");
-  await expect(alert.getByRole("button", { name: "Retry save" })).toBeVisible();
+  // Retry belongs to the save controls in the top bar, not the error notice.
+  await expect(page.locator(".editor-topbar").getByRole("button", { name: "Retry save" })).toBeVisible();
 });
 
 test("publish unknown errors use a safe fallback and keep the publish action available", async ({ page }) => {
