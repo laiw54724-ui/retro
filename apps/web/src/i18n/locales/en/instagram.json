@@ -442,5 +442,17 @@
     "backEditing": "← Back to editing",
     "pendingStatus": "Unfinished IG input is not saved; it is retained only in this tab.",
     "retainedDrafts": "Unfinished fields stay in this browser tab until it is reloaded."
+  },
+  "authoring": {
+    "contentActions": "Content actions",
+    "managePosts": "Manage posts",
+    "manageHighlights": "Manage highlights",
+    "done": "Done editing",
+    "draftHint": "Changes apply to the site draft. Done and Back do not publish the site.",
+    "pendingBadge": "Unfinished input",
+    "pendingDetail": "Unfinished input stays in this tab. Continue after Done or Back; reloading clears it.",
+    "replaceImage": "Replace image {{n}}",
+    "replacementHint": "The original stays until the upload succeeds.",
+    "chooseImages": "Choose images (multiple allowed)"
   }
 }
