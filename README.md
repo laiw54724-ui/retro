@@ -23,7 +23,7 @@ publishing require your own development services. For a mocked browser test:
 
 ```bash
 pnpm exec playwright install chromium
-pnpm test:e2e -- tests/e2e/collaboration.spec.ts --workers=1
+pnpm test:e2e tests/e2e/collaboration.spec.ts --workers=1
 ```
 
 See [Contributing](CONTRIBUTING.md) for the fork/branch workflow, focused checks

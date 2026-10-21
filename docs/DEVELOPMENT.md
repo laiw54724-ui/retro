@@ -15,7 +15,7 @@ pnpm typecheck
 pnpm test:unit
 pnpm build
 pnpm exec playwright install chromium
-pnpm test:e2e -- tests/e2e/collaboration.spec.ts --workers=1
+pnpm test:e2e tests/e2e/collaboration.spec.ts --workers=1
 ```
 
 The API build is a Wrangler dry run. Browser tests start their own Vite server
@@ -46,10 +46,10 @@ real sessions, invite links or private site exports to a PR.
 
 | Change | Focused check |
 | --- | --- |
-| API logic | `pnpm --filter @retrodesk/api test:unit -- test/access.test.ts` |
-| Shared schema | `pnpm --filter @retrodesk/shared test:unit -- test/site.test.ts` |
+| API logic | `pnpm --filter @retrodesk/api test:unit test/access.test.ts` |
+| Shared schema | `pnpm --filter @retrodesk/shared test:unit test/site.test.ts` |
 | Web logic | `pnpm --filter @retrodesk/web test:unit` |
-| Browser interaction | `pnpm test:e2e -- tests/e2e/collaboration.spec.ts --workers=1` (choose the relevant spec) |
+| Browser interaction | `pnpm test:e2e tests/e2e/collaboration.spec.ts --workers=1` (choose the relevant spec) |
 | Types | `pnpm typecheck` |
 | Bundled assets | `pnpm assets:audit` and `pnpm assets:audit:release` |
 | Documentation | Check changed links, commands and `git diff --check` |
@@ -70,7 +70,7 @@ private scratch material there. Findings print locations, not secret values.
 - Use a separate branch/worktree for each task. Leave another contributor's
   uncommitted changes and active feature branches alone.
 - Stop any unrelated server on the test port, or choose an unused port:
-  `PLAYWRIGHT_PORT=5499 pnpm test:e2e -- tests/e2e/collaboration.spec.ts --workers=1`.
+  `PLAYWRIGHT_PORT=5499 pnpm test:e2e tests/e2e/collaboration.spec.ts --workers=1`.
   Playwright can reuse an existing server outside CI; ensure it serves this
   checkout before trusting a result.
 - If Chromium is missing, rerun `pnpm exec playwright install chromium` (Linux CI
