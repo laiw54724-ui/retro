@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { THEME_PRESETS, type DesktopWindow, type RetroTheme, type SiteDocument } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
-import { useImageWriter } from "./ImageWriteContext";
-import { COMING_SOON, creatableModuleDefinitions, registry } from "../modules/registry";
+import { AddWindowCatalog } from "./AddWindowDialog";
+
 import { useEditorStore } from "./store";
 import { ThemeAppearanceEditor } from "./ThemeAppearanceEditor";
 import { FilePick } from "../modules/ui";
@@ -47,25 +47,13 @@ export function LeftPanel({ document, selectedId, view, onAdd, onSelect, onToggl
 }
 
 function AddTab({ onAdd }: { onAdd: Props["onAdd"] }) {
-  const imageWriter = useImageWriter();
   const { t } = useTranslation("editor");
-  // The legacy coming-soon list contains product labels, not persisted window data.
-  const comingSoonKeys: Record<string, "add.diary" | "add.characterProfile" | "add.visualNovel"> = { "日記": "add.diary", "角色檔案": "add.characterProfile", "視覺小說": "add.visualNovel" }; // i18n-ignore: lookup keys of legacy product labels
-  return (
-    <>
-      <strong>{t("add.heading")}</strong>
-      <span className="w98-hint">{t("add.hint")}</span>
-      {creatableModuleDefinitions.filter((module) => module.type !== "image" || imageWriter).map((module) => (
-        <button key={module.type} type="button" className="w98-btn add-card" onClick={() => onAdd(module.type)}>
-          <Icon name={module.icon} size={32} />
-          <span className="add-card-text"><strong>{t(`modules.${module.type}.label`, { defaultValue: module.label })}</strong><span>{t(`modules.${module.type}.description`, { defaultValue: module.description })}</span></span>
-        </button>
-      ))}
-      <div className="w98-sep" />
-      <strong style={{ color: "var(--w98-muted)" }}>{t("add.comingSoon")}</strong>
-      <div className="soon">{COMING_SOON.map((name) => <span key={name}>{comingSoonKeys[name] ? t(comingSoonKeys[name], { defaultValue: name }) : name}</span>)}</div>
-    </>
-  );
+  return <>
+    <AddWindowCatalog onAdd={onAdd} />
+    <div className="w98-sep" />
+    <strong style={{ color: "var(--w98-muted)" }}>{t("add.comingSoon")}</strong>
+    <div className="soon">{(["diary", "characterProfile", "visualNovel"] as const).map(key => <span key={key}>{t(`add.${key}`)}</span>)}</div>
+  </>;
 }
 
 function LayersTab({ document, selectedId, view, onSelect, onToggleVisible, onMoveLayer }: Pick<Props, "document" | "selectedId" | "view" | "onSelect" | "onToggleVisible" | "onMoveLayer">) {

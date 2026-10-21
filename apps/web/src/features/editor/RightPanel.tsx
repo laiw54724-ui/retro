@@ -8,9 +8,10 @@ import { IconPicker } from "../modules/links/IconPicker";
 import { WindowAppearanceEditor } from "./WindowAppearanceEditor";
 import { WindowChromeEditor } from "./WindowChromeEditor";
 
-type Tab = "general" | "icon" | "layout";
+export type InspectorTab = "general" | "icon" | "layout";
 
 type Props = {
+  tabRequest?: { tab: InspectorTab; token: number };
   document: SiteDocument;
   selected: DesktopWindow | null;
   siteId: string;
@@ -76,14 +77,24 @@ function GeometryNumberInput({ value, min, max, onCommit }: { value: number; min
     }} />;
 }
 
-export function RightPanel({ document, selected, siteId, upload, onUpdate, onDelete, onDuplicate, onBringToFront, onEnterLayout, onSiteName, indexing, onIndexing, onColumns }: Props) {
+export function RightPanel({ tabRequest, document, selected, siteId, upload, onUpdate, onDelete, onDuplicate, onBringToFront, onEnterLayout, onSiteName, indexing, onIndexing, onColumns }: Props) {
   const { t: tr } = useTranslation("editor");
   const imageWriter = useImageWriter();
-  const [tab, setTab] = useState<Tab>("general");
+  const [tab, setTab] = useState<InspectorTab>("general");
+  const panelRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (tabRequest) setTab(tabRequest.tab);
+  }, [tabRequest]);
+  useEffect(() => {
+    if (!tabRequest || tab !== tabRequest.tab) return;
+    const frame = requestAnimationFrame(() => panelRef.current?.querySelector<HTMLElement>(".panel-scroll input, .panel-scroll button")?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, [tab, tabRequest]);
+
 
   if (!selected) {
     return (
-      <aside id="editor-right-panel" className="right-panel2" aria-label={tr("rightPanel.propertiesPanel")}>
+      <aside ref={panelRef} id="editor-right-panel" className="right-panel2" aria-label={tr("rightPanel.propertiesPanel")}>
         <div className="w98-tabpanel w98-scroll panel-scroll">
           <div className="inspector-head"><Icon name="computer" size={22} /><strong>{tr("rightPanel.siteSettings")}</strong></div>
           <label className="w98-field"><span>{tr("rightPanel.desktopName")}</span><input className="w98-input" value={document.siteName} onChange={(event) => onSiteName(event.target.value)} /></label>
@@ -104,10 +115,10 @@ export function RightPanel({ document, selected, siteId, upload, onUpdate, onDel
   const layout = selected.layout.desktop;
   const setDesktop = (change: Partial<typeof layout>, key?: string) =>
     onUpdate((window) => ({ ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, ...change } } }), key);
-  const tabs: Array<[Tab, string]> = [["general", tr("rightPanel.general")], ["icon", tr("rightPanel.icon")], ["layout", tr("rightPanel.layout")]];
+  const tabs: Array<[InspectorTab, string]> = [["general", tr("rightPanel.general")], ["icon", tr("rightPanel.icon")], ["layout", tr("rightPanel.layout")]];
 
   return (
-    <aside id="editor-right-panel" className="right-panel2" aria-label={tr("rightPanel.propertiesPanel")}>
+    <aside ref={panelRef} id="editor-right-panel" className="right-panel2" aria-label={tr("rightPanel.propertiesPanel")}>
       <div className="inspector-head"><Icon name={selected.icon} size={22} /><strong>{selected.title}</strong></div>
       <div role="tablist" className="w98-tabs">
         {tabs.map(([id, label]) => <button key={id} role="tab" type="button" className="w98-tab" aria-selected={tab === id} onClick={() => setTab(id)}>{label}</button>)}

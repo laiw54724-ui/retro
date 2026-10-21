@@ -211,8 +211,8 @@ test(`phone ${width}px Add and inline authoring keep Back reachable after switch
   await page.setViewportSize({ width, height: 900 }); await page.goto("/editor/site-1");
   await page.getByRole("toolbar", { name: "Mobile editor tools" }).getByRole("button", { name: "Add", exact: true }).click();
   await page.locator(".m-sheet .m-add").filter({ hasText: "Upload an image or use an image link" }).click();
-  await page.locator(".m-icon").click();
-  await page.getByRole("button", { name: "Edit content", exact: true }).click();
+  // Adding now opens content immediately; assert that contract before editing.
+  await expect(page.locator(".m-edit-toggle")).toHaveAttribute("aria-pressed", "true");
   await page.getByLabel("Image URL", { exact: true }).fill(SOURCE); await page.getByLabel("Image URL", { exact: true }).press("Enter");
   await page.getByRole("combobox", { name: "Frame", exact: true }).selectOption("none");
   await page.getByLabel("Image role").selectOption("decorative");
@@ -275,3 +275,23 @@ for (const edited of [true, false]) {
     }
   });
 }
+
+test("shell Edit content opens the existing Image inspector after the sidebar is collapsed", async ({ page }) => {
+  await fixture(page);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/editor/site-1");
+  await page.getByRole("button", { name: "Add component", exact: true }).click();
+  await page.getByRole("dialog", { name: "Add component", exact: true }).getByRole("button", { name: /Upload an image or use an image link/ }).click();
+  await page.getByRole("button", { name: "Collapse Right properties panel", exact: true }).click();
+  await page.getByRole("group", { name: "Selected component actions" }).getByRole("button", { name: "Edit content", exact: true }).click();
+  await expect(page.locator("#editor-right-panel").getByLabel("Image URL", { exact: true })).toBeVisible();
+});
+
+test("shell Image content entry stays disabled without the compatible writer", async ({ page }) => {
+  const legacy = createStarterDocument("Reader", "classic98", "card");
+  legacy.windows = [makeWindow("image")];
+  await fixture(page, { legacy, advertisement: { appearanceP2: 1 } });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/editor/site-1");
+  await expect(page.getByRole("group", { name: "Selected component actions" }).getByRole("button", { name: "Edit content", exact: true })).toBeDisabled();
+});

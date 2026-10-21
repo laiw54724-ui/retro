@@ -1,0 +1,17 @@
+.catalog { display: grid; gap: 16px; }
+.catalog p { margin: 0; }
+.catalog h3 { margin: 0 0 8px; font-size: 14px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 8px; }
+.cards :global(.add-card) { margin: 0; width: 100%; min-height: 64px; white-space: normal; }
+.addDialog :global(.modal-body) { overflow-y: auto; }
+.addDialog :global(.modal-actions) { flex-shrink: 0; }
+.stage:global(.editor-stage2) { flex-direction: column; gap: 6px; }
+.stage > :global(.desktop-canvas) { flex: 1; min-height: 0; }
+.bar { display: flex; flex-shrink: 0; align-items: center; flex-wrap: wrap; gap: 6px; padding: 6px; background: var(--w98-face); border: 1px solid var(--w98-shadow); }
+.selection { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; flex: 1; min-width: 0; }
+.selectedTitle { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+.bar button { min-height: 32px; }
+@media (max-width: 767px) {
+  .stage:global(.editor-stage2) { gap: 0; }
+  .addDialog button { min-height: 44px; }
+}

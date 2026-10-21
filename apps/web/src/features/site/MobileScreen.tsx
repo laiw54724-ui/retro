@@ -15,7 +15,7 @@ import { WindowChromeButton } from "../../components/window-chrome";
 import { WindowAppearanceEditor } from "../editor/WindowAppearanceEditor";
 import { WindowChromeEditor } from "../editor/WindowChromeEditor";
 import { ThemeAppearanceEditor } from "../editor/ThemeAppearanceEditor";
-import { creatableModuleDefinitions } from "../modules/registry";
+import { AddWindowDialog } from "../editor/AddWindowDialog";
 import { useEditorStore } from "../editor/store";
 import { WindowRenderer } from "./WindowRenderer";
 import type { ProfileDirectoryEntry } from "../modules/types";
@@ -24,7 +24,7 @@ import { stopAllMedia, stopWindowMedia } from "../modules/music/mediaSession";
 import { LanguageSwitcher } from "../../components/LanguageSwitcher";
 import { useLocaleFormatting } from "../../i18n/format";
 
-type Sheet = "add" | "edit" | "theme" | null;
+type Sheet = "add" | "edit" | "icon" | "theme" | null;
 
 type Props = {
   document: SiteDocument;
@@ -174,6 +174,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
                 : <MobileSiteMenu label={t("mobile.siteMenu")} playing={music.windowId === openWindow.id && music.status === "playing"} playingLabel={musicText("playback.playing")} />}
             >
               <WindowRenderer
+                key={editor ? openWindow.id : undefined}
                 window={openWindow}
                 theme={theme}
                 mobile
@@ -213,19 +214,30 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
       </div>
 
       {!editor ? null : (
-        <div className="m-toolbar" role="toolbar" aria-label={t("mobile.toolbar")} style={{ fontFamily }}>
+        <div className="m-toolbar" role="toolbar" aria-label={t("mobile.toolbar")} style={{ fontFamily, gridTemplateColumns: `repeat(${selected ? 5 : 4}, minmax(0, 1fr))` }}>
           {([
-            ["add", "folder"], ["edit", "doc"], ["theme", "palette"], ["preview", "star"]
+            ["add", "folder"], ...(selected ? [["icon", "photo"] as const] : []), ["edit", "doc"], ["theme", "palette"], ["preview", "star"]
           ] as const).map(([id, icon]) => (
             <button key={id} type="button" className="m-tool" aria-pressed={sheet === id} onClick={() => { if (id === "preview") onPreview?.(); else setSheet(sheet === id ? null : id); }}>
-              <Icon name={icon} size={22} />{t(`mobile.${id}`)}
+              <Icon name={icon} size={22} />{id === "icon" ? t("rightPanel.icon") : t(`mobile.${id}`)}
             </button>
           ))}
         </div>
       )}
 
-      {editor && sheet ? (
-        <ModalDialog title={t(({ add: "mobile.addWindow", edit: "mobile.editWindowTitle", theme: "mobile.theme" } as const)[sheet])} className="m-sheet" bodyClassName="m-sheet-body" width={520} onClose={() => setSheet(null)}>
+      {editor && sheet === "add" ? <AddWindowDialog onClose={() => setSheet(null)} onAdd={type => {
+        const previous = useEditorStore.getState().selectedId;
+        store.addWindow(type);
+        const id = useEditorStore.getState().selectedId;
+        setSheet(null);
+        if (id && id !== previous) {
+          open(id);
+          setInlineEdit(true);
+          requestAnimationFrame(() => contentEditButton.current?.focus({ preventScroll: true }));
+        }
+      }} /> : null}
+      {editor && sheet && sheet !== "add" ? (
+        <ModalDialog title={t(({ icon: "rightPanel.icon", edit: "mobile.editWindowTitle", theme: "mobile.theme" } as const)[sheet])} className="m-sheet" bodyClassName="m-sheet-body" width={520} onClose={() => setSheet(null)} actions={<button type="button" className="w98-btn primary" onClick={() => setSheet(null)}>{t("editor.done")}</button>}>
           {sheet === "edit" && openWindow ? (
             <button type="button" className="w98-btn m-return-content" onClick={() => {
               // Keep the content editor mounted and preserve its mode, local drafts and scroll.
@@ -233,12 +245,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
               requestAnimationFrame(() => contentEditButton.current?.focus({ preventScroll: true }));
             }}>{t("mobile.returnToContent", { title: openWindow.title })}</button>
           ) : sheet === "edit" && selected ? <p className="w98-hint">{t("mobile.openWindowForContent")}</p> : null}
-          {sheet === "add" ? creatableModuleDefinitions.filter((module) => module.type !== "image" || imageWriter).map((module) => (
-            <button key={module.type} type="button" className="w98-btn m-add" onClick={() => { store.addWindow(module.type); setSheet(null); }}>
-              <Icon name={module.mobile.icon} size={32} />
-              <span className="add-card-text"><strong>{t(`modules.${module.type}.label`, { defaultValue: module.label })}</strong><span>{t(`modules.${module.type}.description`, { defaultValue: module.description })}</span></span>
-            </button>
-          )) : null}
+          {sheet === "icon" && selected ? <IconPicker key={selected.id} siteId={siteId} value={selected.icon} upload={upload} mediaTarget={{ windowId: selected.id, windowType: selected.type }} size={28} label={selected.title} defaultValue={makeWindow(selected.type).icon} onChange={icon => store.updateWindow(selected.id, window => ({ ...window, icon }))} /> : null}
           {sheet === "theme" ? <ThemeAppearanceEditor theme={document.theme} previewTheme={store.themePreview} onPreviewTheme={store.setThemePreview} onTheme={store.setTheme} upload={upload} /> : null}
           {sheet === "edit" ? (
             selected ? <MobileEdit key={selected.id} theme={theme} window={selected} count={ordered.length} siteId={siteId} upload={upload} /> : <span className="m-note">{t("mobileScreen.clickAnIconOnThe")}</span>

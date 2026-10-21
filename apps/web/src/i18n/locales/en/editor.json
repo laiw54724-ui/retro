@@ -769,5 +769,17 @@
         "help": "A shortcut is only a reference. Deleting a shortcut never deletes what it points to."
       }
     }
+  },
+  "authoring": {
+    "add": "Add component",
+    "addHint": "Choose by purpose, then edit your new component.",
+    "selectHint": "Select a window to edit its content, icon or settings.",
+    "selection": "Selected component actions",
+    "groups": {
+      "writing": "Profile and writing",
+      "visual": "Images and inspiration",
+      "interaction": "Interaction and audio",
+      "organize": "Organization and navigation"
+    }
   }
 }

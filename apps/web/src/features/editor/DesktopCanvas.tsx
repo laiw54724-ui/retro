@@ -29,6 +29,7 @@ function setGeo(el: HTMLElement, text: string) {
 }
 
 type Props = {
+  readWindowIds?: ReadonlySet<string>;
   siteId?: string;
   upload?: (file: File, kind?: "image" | "icon" | "audio") => Promise<string | null>;
   profiles?: ProfileEntityV2[];
@@ -48,7 +49,7 @@ type Props = {
   socialDocument?: SiteDocumentV2Input;
 };
 
-export function DesktopCanvas({ siteId, upload, profiles, posts, collections, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
+export function DesktopCanvas({ readWindowIds, siteId, upload, profiles, posts, collections, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
   const { t: tr } = useTranslation("editor");
   const document = useEditorStore((s) => s.document)!;
   const selectedId = useEditorStore((s) => s.selectedId);
@@ -285,7 +286,7 @@ export function DesktopCanvas({ siteId, upload, profiles, posts, collections, pr
               style={{ height: "100%" }}
               bodyStyle={{ padding: 0 }}
             >
-              <WindowRenderer window={win} theme={theme} editing={!layoutMode} allWindows={document.windows} siteId={siteId} upload={upload} onUpdate={store().updateWindow} profiles={profiles} posts={posts} collections={collections} profileId={profileId} profileIdsByWindow={profileIdsByWindow} onProfileSelect={onProfileSelect} onProfileAdd={onProfileAdd} onProfileDuplicate={onProfileDuplicate} onProfileChange={onProfileChange} onProfileDelete={onProfileDelete} profileDeleteBlocked={profileDeleteBlocked} profileDeleteGuardById={profileDeleteGuardById} profileDirectory={profileDirectory} updateContent={updateContent} socialDocument={socialDocument} />
+              <WindowRenderer window={win} theme={theme} editing={!layoutMode && !readWindowIds?.has(win.id)} allWindows={document.windows} siteId={siteId} upload={upload} onUpdate={store().updateWindow} profiles={profiles} posts={posts} collections={collections} profileId={profileId} profileIdsByWindow={profileIdsByWindow} onProfileSelect={onProfileSelect} onProfileAdd={onProfileAdd} onProfileDuplicate={onProfileDuplicate} onProfileChange={onProfileChange} onProfileDelete={onProfileDelete} profileDeleteBlocked={profileDeleteBlocked} profileDeleteGuardById={profileDeleteGuardById} profileDirectory={profileDirectory} updateContent={updateContent} socialDocument={socialDocument} />
             </ImageWindowShell>
             {isFramelessImage(win) ? <button type="button" className="image-move-handle" data-image-move-handle aria-label={tr("imageHost.move", { title: win.title })} onKeyDown={(event) => {
               const direction = ({ ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] } as Record<string, number[]>)[event.key];

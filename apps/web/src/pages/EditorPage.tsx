@@ -16,7 +16,10 @@ import { DesktopCanvas } from "../features/editor/DesktopCanvas";
 import { MobileScreen } from "../features/site/MobileScreen";
 import mobileAuthoring from "../features/site/MobileAuthoring.module.css";
 import { LeftPanel } from "../features/editor/LeftPanel";
-import { RightPanel } from "../features/editor/RightPanel";
+import { AddWindowDialog } from "../features/editor/AddWindowDialog";
+import { SelectionToolbar } from "../features/editor/SelectionToolbar";
+import shellStyles from "../features/editor/AuthoringShell.module.css";
+import { RightPanel, type InspectorTab } from "../features/editor/RightPanel";
 import { buildPreviewModel, shareableEntities } from "../features/editor/previewModel";
 import { HelpMenu } from "../features/help/HelpMenu";
 import { VisitorPreview } from "../features/editor/VisitorPreview";
@@ -98,6 +101,25 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   const leaveGuard = useEditorLeaveGuard(siteId);
   const saveInFlight = useRef(false);
   const [loading, setLoading] = useState(true);
+  const [addOpen, setAddOpen] = useState(false);
+  const [readWindows, setReadWindows] = useState<Set<string>>(() => new Set());
+  const [tabRequest, setTabRequest] = useState<{ tab: InspectorTab; token: number }>();
+  function openInspector(tab: InspectorTab) {
+    setSidebarPreferences(current => ({ ...current, rightExpanded: true }));
+    setTabRequest(current => ({ tab, token: (current?.token ?? 0) + 1 }));
+  }
+  function editSelectedContent() {
+    const id = store.selectedId;
+    if (!id) return;
+    if (store.document?.windows.find(window => window.id === id)?.type === "image") {
+      openInspector("general");
+      return;
+    }
+    if (store.viewState[id] === "min" || store.viewState[id] === "closed") store.setViewState(id, null);
+    setReadWindows(current => { const next = new Set(current); next.delete(id); return next; });
+    requestAnimationFrame(() => globalThis.document.querySelector<HTMLElement>(".canvas-window.selected .retro-window-body input, .canvas-window.selected .retro-window-body textarea, .canvas-window.selected .retro-window-body button, .canvas-window.selected .retro-window-body [contenteditable='true']")?.focus());
+  }
+
   const editorAppRef = useRef<HTMLElement | null>(null);
   useEffect(() => {
     const app = editorAppRef.current;
@@ -756,9 +778,14 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         ) : null}
         {!layoutMode ? <SidebarToggle side="left" expanded={sidebarPreferences.leftExpanded} onToggle={() => setSidebarPreferences((current) => ({ ...current, leftExpanded: !current.leftExpanded }))} /> : null}
 
-        <section className="editor-stage2">
+        <section className={`editor-stage2 ${shellStyles.stage}`}>
+          {store.device === "desktop" && !layoutMode ? <div className={shellStyles.bar}>
+            <button type="button" className="w98-btn primary" onClick={() => setAddOpen(true)}>{t("authoring.add")}</button>
+            {selected ? <SelectionToolbar title={selected.title} imageWindow={selected.type === "image"} editing={selected.type !== "image" && !readWindows.has(selected.id)} onEdit={editSelectedContent} onDone={() => setReadWindows(current => new Set(current).add(selected.id))} onIcon={() => openInspector("icon")} onSettings={() => openInspector("general")} /> : <span className="w98-hint">{t("authoring.selectHint")}</span>}
+          </div> : null}
           {store.device === "desktop" ? (
             <DesktopCanvas
+              readWindowIds={readWindows}
               siteId={siteId}
               upload={uploadImage}
               profiles={editorProfiles}
@@ -785,6 +812,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         {!layoutMode && store.device === "desktop" ? <SidebarToggle side="right" expanded={sidebarPreferences.rightExpanded} onToggle={() => setSidebarPreferences((current) => ({ ...current, rightExpanded: !current.rightExpanded }))} /> : null}
         {!layoutMode && store.device === "desktop" && sidebarPreferences.rightExpanded ? (
           <RightPanel
+            tabRequest={tabRequest}
             document={store.document}
             selected={selected}
             siteId={siteId}
@@ -810,6 +838,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       </footer>
 
       {preview && previewModels ? <VisitorPreview publishable={previewModels.publishable} draft={previewModels.draft} username={store.username} siteUrl={store.publishedDocument ? publicSiteUrl(store.username) : null} publishState={!store.publishedDocument ? "never" : hasUnpublishedChanges ? "changed" : "in-sync"} shareable={previewModels.shareable} onClose={() => setPreview(false)} /> : null}
+      {addOpen ? <AddWindowDialog onClose={() => setAddOpen(false)} onAdd={type => { store.addWindow(type); setAddOpen(false); }} /> : null}
       <IntegrityDialog />
       {collaborationOpen ? <CollaborationDialog siteId={siteId} onClose={closeCollaboration} /> : null}
       {transferOpen ? <TransferDialog siteId={siteId} username={store.username} published={!!store.publishedDocument} onClose={() => setTransferOpen(false)} onImported={(newSiteId) => navigate(`/editor/${newSiteId}`)} /> : null}
