@@ -1,5 +1,5 @@
 
-> retrodesk@ typecheck /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01
+> retrodesk@ typecheck <worktree>
 > pnpm -r typecheck
 
 Scope: 3 of 4 workspace projects

@@ -4,15 +4,30 @@ Thanks for helping build Retro. This repository accepts reviewed built-in apps, 
 
 ## Start locally
 
-1. Install Node.js 22 and enable Corepack.
-2. Run `corepack prepare pnpm@10.18.2 --activate`.
-3. Run `pnpm install --frozen-lockfile`.
-4. Run `pnpm exec playwright install chromium` once for browser tests.
-5. Copy `.env.example` values into `apps/web/.env.local` and `apps/api/.dev.vars`; use local or disposable development credentials only.
-6. Apply every file in `supabase/migrations` in filename order to a development Supabase project.
-7. Run `pnpm dev`.
+Follow [Development](docs/DEVELOPMENT.md) for Node/pnpm setup, a credential-free
+web shell, mocked tests and optional service integration. The app must build
+and test without production credentials. Use the [documentation guide](docs/README.md)
+to find design contracts and historical evidence.
 
-The app must build and test without production credentials. See [self-hosting](docs/SELF_HOSTING.md) and [architecture](docs/ARCHITECTURE.md).
+## Make a focused contribution
+
+1. Check open issues and PRs for overlapping work. For a substantial change,
+   propose the problem, scope and acceptance criteria in an issue first.
+2. Fork the repository, fetch the latest upstream `main`, and create a topic
+   branch. If working alongside another contributor or agent, use an independent
+   worktree; never reset or stash someone else's uncommitted work.
+3. Keep one behavior or documentation concern per PR. Avoid unrelated formatting,
+   module moves and schema changes. Preserve comments that explain constraints.
+4. Add focused regression coverage for behavior changes and run the checks below.
+5. Open a PR against `main` with the outcome, verification and remaining limits.
+   Use a draft while checks or design decisions are still pending. Maintainers
+   review and merge; opening a PR does not authorize deployment.
+
+Before committing, check the name/email Git will publish. Use an identity you
+have verified in your GitHub settings; do not invent a noreply address or change
+another contributor's author information. AI-assisted contributions are welcome;
+review the output and report material assistance honestly. Keep valid attribution,
+copyright and third-party notices.
 
 ## Before opening a pull request
 
@@ -34,7 +49,7 @@ pnpm icons:install -- --acknowledge-third-party-rights
 Run `pnpm icons:remove` before the complete contributor gate. If you change the
 importer or generated catalog, run the deep reproducibility check with an exact
 upstream checkout using
-`pnpm icons:audit -- --source=/absolute/path/to/win95-winxp_icons`.
+`pnpm icons:audit -- --source=../win95-winxp_icons`.
 
 ## Assets and content
 
@@ -52,4 +67,4 @@ upstream checkout using
 
 ## Pull requests
 
-Keep changes scoped and explain user impact, schema/asset changes, focused checks run, and final verification. Accessibility requires keyboard operation, visible focus, semantic labels, and mobile coverage for interactive UI.
+Explain user impact, schema/asset changes, focused checks run, and final verification. Include only the logs needed to reproduce the result; redact local paths and private account details. Use synthetic example accounts such as `contributor@example.com`. Accessibility requires keyboard operation, visible focus, semantic labels, and mobile coverage for interactive UI.

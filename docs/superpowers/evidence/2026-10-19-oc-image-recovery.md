@@ -2,7 +2,7 @@
 
 Base: `8e2e54241ecca4c79cb5d6190e7b4b0beb804075` (main, #119).
 Branch: `codex/image-editor-recovery`.
-Independent checkout: `/Users/wen/Documents/Codex/2026-10-20/task-2/retro-image-editor`, created from a separate bare clone. No other worker checkout was edited. Repository AGENTS.md, .agents and local memory_summary.md were not found in the inspected checkout/workspace; worktree, brainstorming, writing-plans and branch-finishing skills were consulted within the delegated implementation authorization.
+Implemented in an isolated checkout; other workspaces were left unchanged.
 
 ## Audit: real gaps and already solved work
 

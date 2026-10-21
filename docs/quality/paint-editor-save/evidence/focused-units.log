@@ -1,5 +1,5 @@
 
- RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-9/retro-paint-editor-save-53/apps/web
+ RUN  v3.2.7 <worktree>/apps/web
 
  ✓ src/features/editor/editorLocalWork.test.ts (1 test) 2ms
  ✓ src/features/paint/keyboardCursor.test.ts (2 tests) 2ms

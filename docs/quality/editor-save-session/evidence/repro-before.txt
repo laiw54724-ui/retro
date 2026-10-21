@@ -34,7 +34,7 @@ Running 2 tests using 1 worker
       88 |   await prompt.getByRole('button', { name: stay, exact: true }).click();
       89 |   await expect(page.getByLabel('簡介', { exact: true })).toHaveValue('Keep this unsaved bio');
       90 |   await expect.poll(() => state.saves.length).toBe(1);
-        at /Users/wen/Documents/Codex/2026-10-19/task-10/retro-editor-save-session/tests/e2e/editor-save-session.spec.ts:87:24
+        at <worktree>/tests/e2e/editor-save-session.spec.ts:87:24
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     test-results/save-session-before/editor-save-session-immedi-79a20-onical-edit-until-confirmed-chromium/test-failed-1.png
@@ -65,7 +65,7 @@ Running 2 tests using 1 worker
       106 |   await expect(page).toHaveURL(/\/editor\/b$/);
       107 |   await expect(page.locator('.save-text')).toHaveText('已儲存');
       108 |   await expect(page.locator('.editor-message')).toHaveCount(0);
-        at /Users/wen/Documents/Codex/2026-10-19/task-10/retro-editor-save-session/tests/e2e/editor-save-session.spec.ts:105:23
+        at <worktree>/tests/e2e/editor-save-session.spec.ts:105:23
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     test-results/save-session-before/editor-save-session-late-s-cfa6f-not-change-B-s-save-session-chromium/test-failed-1.png

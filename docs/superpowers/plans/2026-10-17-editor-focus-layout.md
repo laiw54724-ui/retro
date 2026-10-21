@@ -1,7 +1,5 @@
 # Editor Focus Layout Implementation Plan
 
-> **For Codex:** Implement this plan sequentially in the current isolated worktree. Keep focused checks local to each task, then run the full contributor gate once before deployment.
-
 **Goal:** Make the desktop editor's add-module catalog reliably scroll without overlapping content, and dim the desktop behind the actively selected window so editing remains visually focused.
 
 **Architecture:** Keep the left tab strip fixed and make its existing tab panel the sole scroll container. Add a non-interactive desktop scrim at a reserved z-index and temporarily lift only the selected, visible window above it; selection data and persisted window z-order remain unchanged.
@@ -203,7 +201,7 @@ git commit -m "feat: focus the selected editor window"
 Run:
 
 ```bash
-node /Users/wen/.agents/skills/impeccable/scripts/detect.mjs --json \
+node <external-design-lint>/scripts/detect.mjs --json \
   apps/web/src/features/editor/DesktopCanvas.tsx \
   apps/web/src/styles/w98.css \
   tests/e2e/editor-layout.spec.ts
@@ -232,3 +230,5 @@ Push `codex/editor-focus-layout`, create a PR linked to the approved editor usab
 **Step 6: Report evidence**
 
 Report the merge commit, staging release URL/version, focused E2E result, full gate result, and the two visible behavior changes.
+
+Historical tooling note: `<external-design-lint>` denotes a local tool that is not distributed with this repository. It is not a contributor prerequisite; use the current checks in [Development](../../DEVELOPMENT.md).
