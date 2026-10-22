@@ -43,7 +43,20 @@
     "button": "Button",
     "hyperlink": "Hyperlink",
     "list": "List",
-    "divider": "Divider"
+    "divider": "Divider",
+    "inline": {
+      "paragraphStyle": "Paragraph style",
+      "insert": "Insert",
+      "reorder": "Drag to reorder · Alt+↑/↓",
+      "typeOrSlash": "Type / to insert a block",
+      "dropImage": "Drop an image here, or choose a file…",
+      "imagesOnly": "Only image files can be dropped into the document.",
+      "fileTooLarge": "Choose an image no larger than 8 MB.",
+      "tooLongToConvert": "This text is too long for the selected style. Shorten it first.",
+      "dragHint": "Release at the insertion line to move the block",
+      "status": "Enter: new paragraph · /: insert · Alt+↑/↓: reorder",
+      "count": "{{count}} blocks"
+    }
   },
   "image": {
     "sourceChanged": "The image source was edited. The previous upload will not replace it.",

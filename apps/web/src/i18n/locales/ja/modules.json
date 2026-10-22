@@ -43,7 +43,20 @@
     "button": "ボタン",
     "hyperlink": "ハイパーリンク",
     "list": "リスト",
-    "divider": "区切り線"
+    "divider": "区切り線",
+    "inline": {
+      "paragraphStyle": "段落スタイル",
+      "insert": "挿入",
+      "reorder": "ドラッグで並べ替え · Alt+↑/↓",
+      "typeOrSlash": "/ を入力してブロックを挿入",
+      "dropImage": "画像をここにドロップ、またはファイルを選択…",
+      "imagesOnly": "ドキュメントにドロップできるのは画像ファイルのみです。",
+      "fileTooLarge": "8 MB 以下の画像を選択してください。",
+      "tooLongToConvert": "選択したスタイルの文字数制限を超えています。先に文章を短くしてください。",
+      "dragHint": "挿入線の位置で放して移動",
+      "status": "Enter: 段落追加 · /: 挿入 · Alt+↑/↓: 並べ替え",
+      "count": "{{count}} ブロック"
+    }
   },
   "image": {
     "sourceChanged": "画像の参照先が編集されたため、前のアップロードでは置き換えません。",
