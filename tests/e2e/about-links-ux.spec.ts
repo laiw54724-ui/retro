@@ -39,7 +39,7 @@ async function expectContained(surface: Locator) {
 
 async function expectLastControlAboveDone(dialog: Locator, control: Locator) {
   const body = dialog.locator(".m-win-body");
-  await body.evaluate((element) => { element.scrollTop = element.scrollHeight; });
+  await body.evaluate((element) => { element.scrollTop = element.scrollHeight; element.querySelector(".link-editor-list")?.scrollTo(0, 99999); });
   const controlBox = await control.boundingBox();
   const bodyBox = await body.boundingBox();
   // The finish-editing action now lives in the window's title bar, so it can never cover a control; the last control
@@ -117,33 +117,30 @@ test("rapid edits to the same about field in different windows remain separate u
   await expect(other).toHaveValue("第二張名片");
 });
 
-test("link settings show invalid and empty destinations while retaining each target through switching, undo and reload", async ({ page }) => {
+test("link panels retain target drafts through cancel, undo and reload", async ({ page }) => {
   const { saves } = await mockEditor(page);
   const links = page.getByRole("dialog", { name: "Links.exe" });
   const card = links.locator('[data-link-id="link-1"]');
-  await expect(card.getByText("網址：https://example.com/", { exact: true })).toBeVisible();
-  await card.getByRole("button", { name: "設定連結 Example", exact: true }).click();
-  await card.getByRole("button", { name: "選擇目的地…", exact: true }).click();
-  const picker = page.getByRole("dialog", { name: "目的地", exact: true });
-  await picker.getByLabel("連結網址", { exact: true }).fill("javascript:alert(1)");
-  await expect(picker.getByLabel("連結網址", { exact: true })).toHaveAttribute("aria-invalid", "true");
-  await expect(picker.getByRole("button", { name: "套用", exact: true })).toBeDisabled();
-  await picker.getByLabel("連結網址", { exact: true }).fill("https://example.com/oc");
-  await picker.getByRole("button", { name: "套用", exact: true }).click();
-  await card.getByRole("button", { name: "選擇目的地…", exact: true }).click();
-  await picker.getByRole("button", { name: "站內視窗", exact: true }).click();
-  await picker.getByRole("option", { name: /About.exe/ }).click();
-  await picker.getByRole("button", { name: "套用", exact: true }).click();
+  const open = () => card.locator(".link-destination-trigger").click();
+  await open();
+  await card.getByLabel("連結網址", { exact: true }).fill("javascript:alert(1)");
+  await expect(card.getByRole("button", { name: "完成", exact: true })).toBeDisabled();
+  await card.getByLabel("連結網址", { exact: true }).fill("https://example.com/oc");
+  await card.getByRole("button", { name: "完成", exact: true }).click();
+  await open();
+  await card.getByRole("radio", { name: "打開我桌面上的視窗" }).check();
+  await card.getByRole("button", { name: "About.exe", exact: true }).click();
+  await card.getByRole("button", { name: "完成", exact: true }).click();
   await expect(card.getByText("開啟視窗：About.exe", { exact: true })).toBeVisible();
-  await card.getByRole("button", { name: "選擇目的地…", exact: true }).click();
-  await picker.getByRole("button", { name: "網址", exact: true }).click();
-  await expect(picker.getByLabel("連結網址", { exact: true })).toHaveValue("https://example.com/oc");
-  await picker.getByRole("button", { name: "取消", exact: true }).click();
+  await open();
+  await card.getByRole("radio", { name: "開啟網址", exact: true }).check();
+  await expect(card.getByLabel("連結網址", { exact: true })).toHaveValue("https://example.com/oc");
+  await card.getByRole("button", { name: "取消", exact: true }).click();
   await expect(card.getByText("開啟視窗：About.exe", { exact: true })).toBeVisible();
   await card.getByLabel("按鈕文字", { exact: true }).fill("名片入口");
-  await links.getByRole("button", { name: "新增連結" }).click();
+  await links.getByRole("button", { name: "＋ 空白按鈕" }).click();
   await expect(links.getByText("尚未設定完整網址", { exact: true })).toBeVisible();
-  await card.getByRole("button", { name: "下移", exact: true }).click();
+  await card.getByLabel("按鈕文字", { exact: true }).press("Alt+ArrowDown");
   await expect(links.locator(".link-editor-card").last()).toHaveAttribute("data-link-id", "link-1");
   await page.getByRole("button", { name: "復原", exact: true }).click();
   await expect(links.locator(".link-editor-card").first()).toHaveAttribute("data-link-id", "link-1");
@@ -153,9 +150,8 @@ test("link settings show invalid and empty destinations while retaining each tar
   }).toBe(true);
   await page.reload();
   await expect(card.getByText("開啟視窗：About.exe", { exact: true })).toBeVisible();
-  await card.getByRole("button", { name: "設定連結 名片入口", exact: true }).click();
-  await card.getByRole("button", { name: "選擇目的地…", exact: true }).click();
-  await expect(page.getByRole("dialog", { name: "目的地", exact: true }).getByRole("option", { name: /About.exe/ })).toHaveAttribute("aria-selected", "true");
+  await open();
+  await expect(card.getByRole("button", { name: "✓ About.exe", exact: true })).toHaveAttribute("aria-pressed", "true");
 });
 
 for (const width of [320, 375, 390, 430]) {
@@ -192,9 +188,10 @@ for (const width of [320, 375, 390, 430]) {
     await expect(editLinks).toBeVisible();
     await editLinks.click();
     await linksDialog.getByRole("button", { name: /^設定連結/ }).click();
+    await linksDialog.getByRole("button", { name: "取消", exact: true }).click();
     await expectContained(linksDialog.locator(".links-editor"));
     await expectContained(linksDialog.locator(".m-win-body"));
-    await expectLastControlAboveDone(linksDialog, linksDialog.getByRole("button", { name: "新增連結" }));
+    await expectLastControlAboveDone(linksDialog, linksDialog.getByRole("button", { name: "＋ 空白按鈕" }));
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
   });
 }

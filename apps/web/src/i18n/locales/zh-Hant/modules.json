@@ -156,7 +156,29 @@
     "newLink": "新連結",
     "addLink": "＋ 新增連結",
     "youveReachedTheLimitOf": "已達 100 個連結上限。",
-    "linkN": "第 {{n}} 個連結"
+    "linkN": "第 {{n}} 個連結",
+    "inline": {
+      "mailLabel": "寄信給我",
+      "invalidPaste": "這看起來不像網址。試試 https://… 或 email。",
+      "imageOnly": "請選擇圖片檔。",
+      "imageTooLarge": "圖片要小於 8 MB。",
+      "pasteLabel": "貼上網址，自動做成按鈕",
+      "add": "＋ 加入",
+      "preview": "會建立：{{name}} 按鈕（之後都能改）",
+      "reorder": "拖曳排序（Alt+↑/↓）",
+      "changeColor": "換顏色",
+      "fullLibrary": "完整圖庫…",
+      "colorHint": "按鈕顏色（文字會自動變黑或白）",
+      "blank": "＋ 空白按鈕",
+      "dragHint": "拖到想放的位置後放開",
+      "missing": "{{count}} 個按鈕還沒設定目的地（紅色標示）",
+      "hint": "直接改字 · 點圖示／色球 · 拖 ⋮⋮ 排序",
+      "count": "{{count}} 個連結",
+      "openUrl": "開啟網址",
+      "openWindow": "打開我桌面上的視窗",
+      "noWindows": "桌面上還沒有其他視窗。",
+      "done": "完成"
+    }
   },
   "iconPicker": {
     "builtIn": "{{v1}}（內建）",

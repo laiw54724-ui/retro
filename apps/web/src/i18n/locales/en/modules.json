@@ -156,7 +156,29 @@
     "newLink": "New link",
     "addLink": "＋ Add link",
     "youveReachedTheLimitOf": "You've reached the limit of 100 links.",
-    "linkN": "Link {{n}}"
+    "linkN": "Link {{n}}",
+    "inline": {
+      "mailLabel": "Email me",
+      "invalidPaste": "This does not look like a URL. Try https://… or an email address.",
+      "imageOnly": "Choose an image file.",
+      "imageTooLarge": "Images must be no larger than 8 MB.",
+      "pasteLabel": "Paste a URL to make a button",
+      "add": "＋ Add",
+      "preview": "Will create: {{name}} button (editable later)",
+      "reorder": "Reorder (drag or Alt+↑/↓)",
+      "changeColor": "Change color",
+      "fullLibrary": "Full icon library…",
+      "colorHint": "Button color (text switches to black or white)",
+      "blank": "＋ Blank button",
+      "dragHint": "Drop in the desired position",
+      "missing": "{{count}} buttons need a destination (marked in red)",
+      "hint": "Edit text · Pick an icon or color · Drag ⋮⋮ to reorder",
+      "count": "{{count}} links",
+      "openUrl": "Open a URL",
+      "openWindow": "Open a window on my desktop",
+      "noWindows": "There are no other windows yet.",
+      "done": "Done"
+    }
   },
   "iconPicker": {
     "builtIn": "{{v1}} (built-in)",

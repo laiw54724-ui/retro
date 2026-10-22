@@ -156,7 +156,29 @@
     "newLink": "新しいリンク",
     "addLink": "＋ リンクを追加",
     "youveReachedTheLimitOf": "リンク数の上限（100個）に達しました。",
-    "linkN": "リンク {{n}}"
+    "linkN": "リンク {{n}}",
+    "inline": {
+      "mailLabel": "メールを送る",
+      "invalidPaste": "URLを確認してください。https://… またはメールアドレスを入力してください。",
+      "imageOnly": "画像ファイルを選択してください。",
+      "imageTooLarge": "画像は8 MB以下にしてください。",
+      "pasteLabel": "URLを貼り付けてボタンを作成",
+      "add": "＋ 追加",
+      "preview": "作成：{{name}} ボタン（後から変更できます）",
+      "reorder": "並べ替え（ドラッグまたはAlt+↑/↓）",
+      "changeColor": "色を変更",
+      "fullLibrary": "すべてのアイコン…",
+      "colorHint": "ボタンの色（文字色は自動で黒か白になります）",
+      "blank": "＋ 空のボタン",
+      "dragHint": "移動先でドロップしてください",
+      "missing": "{{count}}個のボタンにリンク先がありません（赤色表示）",
+      "hint": "文字を編集 · アイコンや色を選択 · ⋮⋮をドラッグして並べ替え",
+      "count": "{{count}}個のリンク",
+      "openUrl": "URLを開く",
+      "openWindow": "デスクトップのウィンドウを開く",
+      "noWindows": "他のウィンドウはまだありません。",
+      "done": "完了"
+    }
   },
   "iconPicker": {
     "builtIn": "{{v1}}（組み込み）",

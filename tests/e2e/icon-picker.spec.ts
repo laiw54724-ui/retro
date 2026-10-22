@@ -233,6 +233,7 @@ test("Links items choose icons independently from the same library", async ({ pa
   ];
   const { saves } = await openEditor(page, doc);
   await page.getByRole("dialog", { name: links.title }).getByRole("button", { name: "選擇圖示" }).nth(1).click();
+  await page.getByRole("button", { name: "完整圖庫…", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "選擇圖示" });
   await dialog.getByLabel("搜尋圖示").fill("music");
   await dialog.locator('.ilib-grid [data-icon="pixelarticons:music"]').click();

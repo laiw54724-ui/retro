@@ -156,7 +156,29 @@
     "newLink": "새 링크",
     "addLink": "＋ 링크 추가",
     "youveReachedTheLimitOf": "링크 수 상한인 100개에 도달했습니다.",
-    "linkN": "링크 {{n}}"
+    "linkN": "링크 {{n}}",
+    "inline": {
+      "mailLabel": "메일 보내기",
+      "invalidPaste": "URL을 확인해 주세요. https://… 또는 이메일 주소를 입력하세요.",
+      "imageOnly": "이미지 파일을 선택해 주세요.",
+      "imageTooLarge": "이미지는 8 MB 이하여야 합니다.",
+      "pasteLabel": "URL을 붙여넣어 버튼 만들기",
+      "add": "＋ 추가",
+      "preview": "만들 버튼: {{name}} (나중에 수정 가능)",
+      "reorder": "순서 변경 (드래그 또는 Alt+↑/↓)",
+      "changeColor": "색상 변경",
+      "fullLibrary": "전체 아이콘 라이브러리…",
+      "colorHint": "버튼 색상 (글자는 검정 또는 흰색으로 자동 변경)",
+      "blank": "＋ 빈 버튼",
+      "dragHint": "원하는 위치에 놓으세요",
+      "missing": "버튼 {{count}}개에 목적지가 없습니다 (빨간색 표시)",
+      "hint": "글자 수정 · 아이콘/색상 선택 · ⋮⋮ 드래그로 순서 변경",
+      "count": "링크 {{count}}개",
+      "openUrl": "URL 열기",
+      "openWindow": "내 데스크톱의 창 열기",
+      "noWindows": "다른 창이 아직 없습니다.",
+      "done": "완료"
+    }
   },
   "iconPicker": {
     "builtIn": "{{v1}}(기본 제공)",
