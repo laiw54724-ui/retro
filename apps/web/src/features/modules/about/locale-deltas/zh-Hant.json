@@ -1,0 +1,15 @@
+{
+  "about": {
+    "inline": {
+      "pasteSocial": "＋ 貼社群網址",
+      "dropAvatar": "把照片拖到這裡",
+      "addField": "＋ 新增欄位（例如：生日）",
+      "addBanner": "＋ 加一條橫幅",
+      "close": "關閉",
+      "reorder": "拖曳排序 · Alt+↑/↓",
+      "dragStatus": "拖到想放的位置後放開",
+      "socialStatus": "改社群名稱與網址 · × 刪除",
+      "editStatus": "直接改字 · Enter 跳到下一格 · 拖 ⋮⋮ 排序"
+    }
+  }
+}
