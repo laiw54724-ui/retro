@@ -1,0 +1,15 @@
+{
+  "about": {
+    "inline": {
+      "pasteSocial": "＋ SNSのURLを貼り付け",
+      "dropAvatar": "ここに写真をドロップ",
+      "addField": "＋ 項目を追加（例：誕生日）",
+      "addBanner": "＋ バナーを追加",
+      "close": "閉じる",
+      "reorder": "ドラッグで並べ替え · Alt+↑/↓",
+      "dragStatus": "移動先でドロップしてください",
+      "socialStatus": "SNS名とURLを編集 · ×で削除",
+      "editStatus": "文字を直接編集 · Enterで次の欄へ · ⋮⋮をドラッグして並べ替え"
+    }
+  }
+}
