@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build && node scripts/build-pages-worker.mjs",
-    "build:staging": "tsc -b && vite build --mode staging && node scripts/build-pages-worker.mjs",
+    "build:staging": "tsc -b && VITE_I18N_PREVIEW_LOCALES=true vite build --mode staging && node scripts/build-pages-worker.mjs",
     "typecheck": "tsc -b --pretty false",
     "lint": "tsc -b --pretty false",
     "test:unit": "vitest run && node --test scripts/test-image-rollout.mjs",
