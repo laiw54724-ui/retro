@@ -2,7 +2,7 @@
 
 Dependency: Draft #121, branch `codex/image-editor-recovery`, exact base `d7e4ff69f0db049e20706abfdea580e14f1f3e07`.
 Candidate branch: `codex/ig-batch-media-recovery`.
-Independent worktree: `/Users/wen/Documents/Codex/2026-10-20/task-2/retro-ig-batch-recovery`.
+Independent worktree: `<worktree>`.
 #121's branch/worktree remained unchanged. Parent coordinates integration; this candidate targets #121, not main.
 
 ## Changes and contract

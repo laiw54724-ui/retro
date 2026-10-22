@@ -1,7 +1,5 @@
 # Fictional Social 21A Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Add owner-authored, same-site OC follows, named likes, ordered character comments, structured extra counts, and public people lists without introducing real collaboration or persistent visitor interactions.
 
 **Architecture:** Extend v2 with a strict `followEdges` entity list and additive structured fields on profiles/posts. Keep all mutations in pure shared operations that validate the complete v2 document and site scope. The editor consumes those operations through the existing `updateContent` history/autosave boundary; public projection removes draft actors before the web directory derives counts and lists.

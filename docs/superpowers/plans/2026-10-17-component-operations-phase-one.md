@@ -1,7 +1,5 @@
 # Component operations phase one implementation plan
 
-> **For agentic workers:** Execute these independent tasks in order; keep each change reviewable. The user has explicitly requested implementation of this phase. Steps use checkboxes for tracking.
-
 **Goal:** Fix the four reproducible author/visitor operation problems in #39 and #40.
 
 **Architecture:** Keep the existing module registry and data schema. Use local stable editing identities for OC custom fields, native button activation for Moodboard selection, a scoped focus loop for the Gallery lightbox, and an inner scrolling surface for wide Minesweeper boards. Each correction preserves existing pointer and visual behavior.

@@ -5,7 +5,7 @@ labels: [bug]
 body:
   - type: markdown
     attributes:
-      value: Never paste tokens, private site content, invitation links, or personal information. Use SECURITY.md for vulnerabilities.
+      value: Never paste tokens, private site content, invitation links, real account details, or local personal paths. Use synthetic examples and the repository SECURITY.md policy for vulnerabilities.
   - type: textarea
     id: behavior
     attributes:
@@ -23,7 +23,8 @@ body:
   - type: input
     id: release
     attributes:
-      label: Release URL or commit
+      label: Version or commit
+      description: Use a commit SHA or public release identifier; omit private preview URLs and signed links.
   - type: dropdown
     id: surface
     attributes:
@@ -35,3 +36,4 @@ body:
     id: environment
     attributes:
       label: Browser and viewport
+      description: Include browser version, OS, viewport size and input method; omit device/account identifiers.

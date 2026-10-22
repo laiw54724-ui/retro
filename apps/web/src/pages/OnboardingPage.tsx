@@ -15,7 +15,9 @@ export function OnboardingPage() {
   const [siteName, setSiteName] = useState(tr("onboarding.myLittleDesktop"));
   const [themeId, setThemeId] = useState("classic98");
   const [template, setTemplate] = useState<StarterTemplate | "ig">("card");
-  const [available, setAvailable] = useState<boolean | null>(null);
+  const [availability, setAvailability] = useState<"idle" | "pending" | "available" | "taken" | "failed">("idle");
+  const [availabilityAttempt, setAvailabilityAttempt] = useState(0);
+  const availabilityGeneration = useRef(0);
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const [createError, setCreateError] = useState<"username" | "validation" | "auth" | "general" | null>(null);
@@ -24,20 +26,33 @@ export function OnboardingPage() {
 
   useEffect(() => {
     let active = true;
-    setAvailable(null);
+    const generation = availabilityGeneration.current;
     if (!validUsername.success) {
+      setAvailability("idle");
       return;
     }
+    setAvailability("pending");
     const timer = window.setTimeout(() => {
       api.usernameAvailability(validUsername.data)
-        .then((result) => { if (active) setAvailable(result.available); })
-        .catch(() => { if (active) setAvailable(null); });
+        .then((result) => {
+          if (active && generation === availabilityGeneration.current) setAvailability(result.available ? "available" : "taken");
+        })
+        .catch(() => {
+          if (active && generation === availabilityGeneration.current) setAvailability("failed");
+        });
     }, 300);
     return () => { active = false; window.clearTimeout(timer); };
-  }, [username, validUsername.success]);
+  }, [validUsername, availabilityAttempt]);
+
+  function retryAvailability() {
+    if (availability !== "failed" || !validUsername.success) return;
+    availabilityGeneration.current++;
+    setAvailability("pending");
+    setAvailabilityAttempt((attempt) => attempt + 1);
+  }
 
   async function finish() {
-    if (busyRef.current || !validUsername.success || available !== true || !validSiteName) return;
+    if (busyRef.current || !validUsername.success || availability !== "available" || !validSiteName) return;
     busyRef.current = true;
     setBusy(true);
     setCreateError(null);
@@ -47,7 +62,7 @@ export function OnboardingPage() {
       navigate("/editor/" + site.id);
     } catch (error) {
       if (error instanceof ApiError && error.status === 409 && error.code === "username_taken") {
-        setAvailable(false);
+        setAvailability("taken");
         setCreateError("username");
       } else if (error instanceof ApiError && error.status === 400) {
         setCreateError("validation");
@@ -81,26 +96,32 @@ export function OnboardingPage() {
                   {tr("onboarding.yourUrl")}
                   <div className="url-input">
                     <span>retrodesk.me/</span>
-                    <input value={username} onChange={(event) => {
+                    <input aria-describedby="url-availability" value={username} onChange={(event) => {
                       const nextUsername = event.target.value.toLowerCase().replace(/\s+/g, "-");
                       if (nextUsername === username) return;
+                      // Invalidate before effect cleanup, so even an already-queued response
+                      // cannot mark a newly typed URL available.
+                      availabilityGeneration.current++;
                       setUsername(nextUsername);
-                      setAvailable(null);
+                      setAvailability(UsernameSchema.safeParse(nextUsername).success ? "pending" : "idle");
                       setCreateError(null);
                     }} placeholder="your-name" />
                   </div>
                 </label>
-                <p className={available === false ? "status bad" : "status"}>
+                <p id="url-availability" role="status" aria-live="polite" className={availability === "taken" || availability === "failed" ? "status bad" : "status"}>
                   {!username
                     ? tr("onboarding.n320CharactersLowercaseLetters")
                     : !validUsername.success
                       ? tr("onboarding.theUrlFormatIsntAllowed")
-                      : available === false
+                      : availability === "taken"
                         ? tr("onboarding.thisUrlIsAlreadyTaken")
-                        : available === true
+                        : availability === "available"
                           ? tr("onboarding.thisUrlIsAvailable")
-                          : tr("onboarding.checking")}
+                          : availability === "failed"
+                            ? tr("onboarding.availabilityFailed")
+                            : tr("onboarding.checking")}
                 </p>
+                {availability === "failed" ? <RetroButton style={{ minHeight: 44 }} onClick={retryAvailability}>{tr("onboarding.retryAvailability")}</RetroButton> : null}
                 <label>{tr("onboarding.desktopName")}<input value={siteName} maxLength={120} onChange={(event) => { setSiteName(event.target.value); setCreateError(null); }} /></label>
               </>
             ) : null}
@@ -155,9 +176,9 @@ export function OnboardingPage() {
             <div className="button-row end">
               <RetroButton disabled={busy || step === 1} onClick={() => { if (!busyRef.current) setStep((current) => Math.max(1, current - 1)); }}>{tr("onboarding.back")}</RetroButton>
               {step < 3 ? (
-                <RetroButton className="primary" disabled={step === 1 && (!validUsername.success || available !== true || !validSiteName)} onClick={() => setStep((current) => current + 1)}>{tr("onboarding.next")}</RetroButton>
+                <RetroButton className="primary" disabled={step === 1 && (!validUsername.success || availability !== "available" || !validSiteName)} onClick={() => setStep((current) => current + 1)}>{tr("onboarding.next")}</RetroButton>
               ) : (
-                <RetroButton className="primary" disabled={busy || available !== true || createError === "auth" || createError === "validation"} onClick={finish}>
+                <RetroButton className="primary" disabled={busy || availability !== "available" || createError === "auth" || createError === "validation"} onClick={finish}>
                   {busy ? tr("onboarding.creating") : createError === "general" ? tr("onboarding.retryCreation") : tr("onboarding.doneOpenTheEditor")}
                 </RetroButton>
               )}

@@ -69,7 +69,7 @@ function image(document: SiteDocumentV2Input) {
   return window;
 }
 
-test("desktop Add → protected upload → Inspector → history/move → save/reload → projected public image", async ({ page }) => {
+test("desktop Add → protected upload → Inspector → history/move → save/reload → projected public image", async ({ page }, info) => {
   const site = await fixture(page); const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.setViewportSize({ width: 1440, height: 1000 }); await page.goto("/editor/site-1");
@@ -106,6 +106,7 @@ test("desktop Add → protected upload → Inspector → history/move → save/r
   await page.mouse.down(); await page.mouse.move(handle.x + handle.width / 2 + 16, handle.y + handle.height / 2 + 8); await page.mouse.up();
   await expect.poll(() => image(site.saved()).layout.desktop).toMatchObject({ x: startX + 17, y: startY + 8 });
   expect(image(site.saved()).content).toMatchObject({ src: ASSET, srcUrl: "", frameMode: "none", alt: "Transparent OC portrait", crop: { x: 23, y: 50, zoom: 1 } });
+  await page.screenshot({ path: info.outputPath("image-authoring-desktop.png"), fullPage: false });
   expect(site.writes.at(-1)).toMatchObject({ clientImageWindowContract: 1, clientAppearanceContract: 1 });
   expect(JSON.stringify(site.saved())).not.toContain("blob:");
   await page.reload();
@@ -132,6 +133,33 @@ test("pending upload cannot overwrite a newer URL source", async ({ page }) => {
   await expect(panel.getByRole("status")).toContainText("failed");
   expect(image(site.saved()).content.src).toBe(SOURCE);
   expect(image(site.saved()).content.srcUrl).toBe(SOURCE);
+});
+
+test("JPEG source decodes through authoring, save/reload and the projected public reader", async ({ page }) => {
+  const site = await fixture(page);
+  // Encode a real local JPEG; no remote image or browser-specific screenshot fixture.
+  const encoded = await page.evaluate(() => {
+    const canvas = document.createElement("canvas"); canvas.width = 32; canvas.height = 16;
+    const context = canvas.getContext("2d")!; context.fillStyle = "#e02030"; context.fillRect(0, 0, 32, 16);
+    return canvas.toDataURL("image/jpeg").split(",")[1];
+  });
+  const source = "https://images.example.test/portrait.jpg";
+  await page.route(source, (route) => route.fulfill({ body: Buffer.from(encoded, "base64"), contentType: "image/jpeg" }));
+  await page.setViewportSize({ width: 1440, height: 1000 }); await page.goto("/editor/site-1");
+  await page.locator(".add-card").filter({ hasText: "Upload an image or use an image link" }).click();
+  const panel = page.locator("#editor-right-panel");
+  await panel.getByRole("textbox", { name: "Alt text", exact: true }).fill("JPEG portrait");
+  await panel.getByLabel("Image URL", { exact: true }).fill(source);
+  await panel.getByLabel("Image URL", { exact: true }).press("Enter");
+  const portrait = () => page.locator(".canvas-window, .visitor-window").getByRole("img", { name: "JPEG portrait", exact: true });
+  const decoded = async () => {
+    await expect(portrait()).toBeVisible();
+    await expect.poll(() => portrait().evaluate((element: HTMLImageElement) => [element.naturalWidth, element.naturalHeight])).toEqual([32, 16]);
+  };
+  await decoded(); await expect.poll(() => site.saved().windows.find((window) => window.type === "image")?.content.src).toBe(source);
+  await page.reload(); await decoded();
+  await page.goto("/@demo"); await decoded();
+  expect(site.uploads).toHaveLength(0);
 });
 
 test("local opt-in without the matching image API advertisement keeps creation and authoring hidden", async ({ page }) => {
@@ -178,17 +206,36 @@ test("decorative outer host passes real clicks through in preview and public whi
 });
 
 for (const width of [320, 375, 430]) {
-test(`phone ${width}px Add and inline authoring keep Back reachable after switching to frameless/decorative`, async ({ page }) => {
+test(`phone ${width}px Add and inline authoring keep Back reachable after switching to frameless/decorative`, async ({ page }, info) => {
   const site = await fixture(page);
   await page.setViewportSize({ width, height: 900 }); await page.goto("/editor/site-1");
   await page.getByRole("toolbar", { name: "Mobile editor tools" }).getByRole("button", { name: "Add", exact: true }).click();
   await page.locator(".m-sheet .m-add").filter({ hasText: "Upload an image or use an image link" }).click();
-  await page.locator(".m-icon").click();
-  await page.getByRole("button", { name: "Edit this window", exact: true }).click();
+  // Adding now opens content immediately; assert that contract before editing.
+  await expect(page.locator(".m-edit-toggle")).toHaveAttribute("aria-pressed", "true");
   await page.getByLabel("Image URL", { exact: true }).fill(SOURCE); await page.getByLabel("Image URL", { exact: true }).press("Enter");
   await page.getByRole("combobox", { name: "Frame", exact: true }).selectOption("none");
   await page.getByLabel("Image role").selectOption("decorative");
-  await page.getByRole("button", { name: "Finish editing", exact: true }).click();
+  const help = page.getByRole("region", { name: "Image settings", exact: true }).getByText("Visitors cannot click decorative images", { exact: false });
+  const contrast = await help.evaluate((element) => {
+    const rgb = (value: string) => (value.match(/[\d.]+/g) ?? []).map(Number);
+    const luminance = (color: number[]) => color.slice(0, 3).map((value) => {
+      const channel = value / 255; return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+    }).reduce((sum, value, index) => sum + value * [0.2126, 0.7152, 0.0722][index], 0);
+    let parent: Element | null = element;
+    while (parent) {
+      const background = rgb(getComputedStyle(parent).backgroundColor);
+      if (background.length === 3 || background[3] === 1) {
+        const pair = [luminance(rgb(getComputedStyle(element).color)), luminance(background)].sort((a, b) => a - b);
+        return (pair[1] + 0.05) / (pair[0] + 0.05);
+      }
+      parent = parent.parentElement;
+    }
+    throw new Error("No opaque editor background");
+  });
+  expect(contrast).toBeGreaterThanOrEqual(4.5);
+  await page.screenshot({ path: info.outputPath(`image-authoring-${width}.png`), fullPage: false });
+  await page.getByRole("button", { name: "Done", exact: true }).click();
   await expect(page.locator(".m-screen [data-image-shell='none']")).toBeVisible();
   await page.getByRole("button", { name: "‹ Desktop", exact: true }).click();
   await expect(page.locator(".m-icon")).toBeFocused();
@@ -228,3 +275,23 @@ for (const edited of [true, false]) {
     }
   });
 }
+
+test("shell Edit content opens the existing Image inspector after the sidebar is collapsed", async ({ page }) => {
+  await fixture(page);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/editor/site-1");
+  await page.getByRole("button", { name: "Add component", exact: true }).click();
+  await page.getByRole("dialog", { name: "Add component", exact: true }).getByRole("button", { name: /Upload an image or use an image link/ }).click();
+  await page.getByRole("button", { name: "Collapse Right properties panel", exact: true }).click();
+  await page.getByRole("group", { name: "Selected component actions" }).getByRole("button", { name: "Edit content", exact: true }).click();
+  await expect(page.locator("#editor-right-panel").getByLabel("Image URL", { exact: true })).toBeVisible();
+});
+
+test("shell Image content entry stays disabled without the compatible writer", async ({ page }) => {
+  const legacy = createStarterDocument("Reader", "classic98", "card");
+  legacy.windows = [makeWindow("image")];
+  await fixture(page, { legacy, advertisement: { appearanceP2: 1 } });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/editor/site-1");
+  await expect(page.getByRole("group", { name: "Selected component actions" }).getByRole("button", { name: "Edit content", exact: true })).toBeDisabled();
+});

@@ -1,7 +1,5 @@
 # Window Appearance, Win98 IG, Icons, and Font Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Add persistent per-window title-bar styling, a default Win98 Instagram skin, a searchable supplied icon library, and universal Cubic 11 typography.
 
 **Architecture:** Extend shared document schemas with defaulted visual fields, keep rendering decisions in small view helpers/components, and generate a static icon manifest whose images are lazy browser assets. Existing content and interaction state remain unchanged.

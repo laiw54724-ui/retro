@@ -1,5 +1,5 @@
 
- RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01/apps/api
+ RUN  v3.2.7 <worktree>/apps/api
 
  ✓ test/publish-route-assets.test.ts (1 test) 13ms
  ✓ test/public-site.test.ts (1 test) 12ms

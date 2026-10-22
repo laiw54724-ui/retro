@@ -425,5 +425,34 @@
     "omitted": "有 {{count}} 個檔案未加入佇列，因為貼文或精選沒有剩餘圖片空間。請取消或清除待處理／失敗項目，或移除圖片，再選取檔案。",
     "draftHint": "選取檔案後立即建立可編輯的草稿。成功的圖片會保留；可逐一重試或取消。若取消所有檔案，可自行刪除空白草稿。",
     "uploadPages": "上傳頁面（可多選）"
+  },
+  "editorFlow": {
+    "entryCharacter": "此視窗入口角色",
+    "manageCharacters": "管理角色（{{count}}）",
+    "newPost": "新增貼文",
+    "backPosts": "← 返回貼文",
+    "filters": "篩選",
+    "edit": "編輯",
+    "datePlace": "日期與地點",
+    "highlights": "精選動態",
+    "collections": "貼文合集",
+    "organizeContent": "內容分類",
+    "backHighlights": "← 返回精選",
+    "backCollections": "← 返回合集",
+    "backEditing": "← 返回編輯",
+    "pendingStatus": "有未完成的 IG 輸入，尚未儲存；僅保留在此分頁。",
+    "retainedDrafts": "未完成的欄位會保留在此分頁；重新載入後不會保留。"
+  },
+  "authoring": {
+    "contentActions": "內容操作",
+    "managePosts": "管理貼文",
+    "manageHighlights": "管理精選",
+    "done": "完成編輯",
+    "draftHint": "內容會套用至網站草稿；完成或返回不會發布網站。",
+    "pendingBadge": "有待續輸入",
+    "pendingDetail": "未完成輸入會保留在此分頁；完成或返回後可繼續編輯，重新載入會清除。",
+    "replaceImage": "替換圖片 {{n}}",
+    "replacementHint": "上傳成功後才替換原圖。",
+    "chooseImages": "選擇圖片（可多選）"
   }
 }

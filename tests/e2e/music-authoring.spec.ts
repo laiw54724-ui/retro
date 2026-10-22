@@ -69,7 +69,7 @@ async function mockMedia(page: Page, { width = 1440, failOnce = "", hold = "" } 
   await page.goto("/editor/site-1");
   if (width < 768) {
     await page.getByRole("button", { name: "Music A", exact: true }).click();
-    await page.getByRole("button", { name: "編輯此視窗" }).click();
+    await page.getByRole("button", { name: "編輯內容" }).click();
   }
   const player = page.getByRole("dialog", { name: "Music A", exact: true });
   await expect(player.locator(".music-editor")).toBeVisible();

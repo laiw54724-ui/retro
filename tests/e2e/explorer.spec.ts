@@ -399,7 +399,7 @@ test("phone editor: a tap opens an item, every item has a 44px ⋯ action button
   const { saves } = await openEditor(page, withContent([F("chars", null, "角色")], [S("link", null, "主角設定")]), { width: 1440, height: 900 }).then(async (ctx) => { await page.getByRole("button", { name: "手機版" }).click(); return ctx; });
   const phone = page.locator(".visitor-mobile.framed");
   await phone.getByRole("button", { name: "World.exe", exact: true }).click();
-  await phone.getByRole("button", { name: "編輯此視窗" }).click();
+  await phone.getByRole("button", { name: "編輯內容" }).click();
   const more = phone.getByRole("button", { name: "主角設定 的操作" });
   const box = await more.boundingBox();
   expect(box!.width).toBeGreaterThanOrEqual(44);
@@ -469,7 +469,7 @@ test("320px author redirects an OC shortcut to an exact post, then tests it in v
   const { saves } = await openEditor(page, document as unknown as SiteDocument);
   await page.setViewportSize({ width: 320, height: 844 });
   await page.locator(".m-icon").getByText("World.exe", { exact: true }).click();
-  await page.getByRole("button", { name: "編輯此視窗", exact: true }).click();
+  await page.getByRole("button", { name: "編輯內容", exact: true }).click();
   const world = page.getByRole("dialog", { name: "World.exe", exact: true });
   await world.getByRole("button", { name: "主角 的操作", exact: true }).click();
   await world.getByRole("button", { name: "變更目標", exact: true }).click();
@@ -536,9 +536,9 @@ test("phone editor: deleting a window that shortcuts point at asks first and fit
   await page.setViewportSize({ width: 390, height: 800 });
   await page.goto("/editor/site-1");
   await page.getByRole("button", { name: "角色設定.txt", exact: true }).click();
-  await page.getByRole("button", { name: "編輯此視窗" }).click();
-  await page.getByRole("button", { name: "完成編輯" }).click();
-  await page.locator(".m-toolbar").getByRole("button", { name: "編輯" }).click();
+  await page.getByRole("button", { name: "編輯內容" }).click();
+  await page.getByRole("button", { name: "完成" }).click();
+  await page.locator(".m-toolbar").getByRole("button", { name: "視窗設定" }).click();
   await page.getByRole("button", { name: "刪除", exact: true }).click();
   const confirm = page.getByRole("dialog", { name: "這項刪除會影響 1 個捷徑" });
   await expect(confirm).toBeVisible();

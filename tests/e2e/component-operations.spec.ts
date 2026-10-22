@@ -37,7 +37,7 @@ for (const width of [1440, 320]) {
     await page.goto("/editor/site-1");
     if (width < 768) {
       await page.getByRole("button", { name: "Instagram.exe", exact: true }).click();
-      await page.getByRole("button", { name: "編輯此視窗" }).click();
+      await page.getByRole("button", { name: "編輯內容" }).click();
     }
     const profile = page.locator(".ig-profile-editor:visible");
     await profile.getByRole("button", { name: "展開角色設定" }).click();
@@ -50,11 +50,13 @@ for (const width of [1440, 320]) {
     await profile.getByRole("button", { name: "刪除自訂欄位 First" }).click();
     await names.first().fill("職業");
     await expect(names.first()).toHaveValue("職業");
+    // unfinished IG input is committed when the field is left (blur), not on every keystroke
+    await names.first().blur();
     await expect.poll(() => site.draft_document.entities.profiles[0].customFields).toEqual([{ key: "職業", value: "two" }]);
     await page.reload();
     if (width < 768) {
       await page.getByRole("button", { name: "Instagram.exe", exact: true }).click();
-      await page.getByRole("button", { name: "編輯此視窗" }).click();
+      await page.getByRole("button", { name: "編輯內容" }).click();
     }
     const reloaded = page.locator(".ig-profile-editor:visible");
     await reloaded.getByRole("button", { name: "展開角色設定" }).click();
@@ -71,7 +73,7 @@ for (const width of [1440, 320]) {
     await page.goto("/editor/site-1");
     if (width < 768) {
       await page.getByRole("button", { name: "Moodboard.exe", exact: true }).click();
-      await page.getByRole("button", { name: "編輯此視窗" }).click();
+      await page.getByRole("button", { name: "編輯內容" }).click();
     }
     const dialog = page.getByRole("dialog", { name: "Moodboard.exe" });
     const second = dialog.getByRole("button", { name: "選取文字：Second" });

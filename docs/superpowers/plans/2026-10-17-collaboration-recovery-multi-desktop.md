@@ -1,7 +1,5 @@
 # Collaboration Recovery and Multi-Desktop Hub Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Restore invitation acceptance and expose the already-supported owned/shared multi-desktop model through a responsive Win98 desktop hub.
 
 **Architecture:** A forward-only Supabase migration replaces the ambiguous invite RPC conflict target without changing its signature. The web app keeps `/auth` as both Google login and authenticated desktop hub, rendering a focused `DesktopHub` component from the existing `GET /api/sites` contract; editor navigation links back to the hub. API diagnostics log only database metadata and never invite secrets.
@@ -179,7 +177,7 @@ Expected: all commands pass. Existing non-blocking bundle-size and Wrangler envi
 - [ ] **Step 2: Run one mechanical UI detector pass**
 
 ```bash
-node /Users/wen/.agents/skills/impeccable/scripts/detect.mjs --json apps/web/src/features/sites/DesktopHub.tsx apps/web/src/pages/AuthPage.tsx apps/web/src/styles/global.css
+node <external-design-lint>/scripts/detect.mjs --json apps/web/src/features/sites/DesktopHub.tsx apps/web/src/pages/AuthPage.tsx apps/web/src/styles/global.css
 ```
 
 Fix mechanical findings once, then rerun only the affected focused check.
@@ -222,3 +220,5 @@ For each issue, write its implementation plan from the approved issue spec, impl
 
 Ship safe entity sharing and metadata before export/import. Start public guestbook or owner backup/import only after their moderation, abuse and rights prerequisites are present; stop only for a decision that changes data retention, content policy or redistribution rights.
 
+
+Historical tooling note: `<external-design-lint>` denotes a local tool that is not distributed with this repository. It is not a contributor prerequisite; use the current checks in [Development](../../DEVELOPMENT.md).

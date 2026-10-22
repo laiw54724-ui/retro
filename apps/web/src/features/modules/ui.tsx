@@ -45,7 +45,7 @@ export function SafeImg({ src, alt, className, style, compact }: { src: string; 
  * Text field for an image link. Commits on blur/Enter: stores the raw input in `srcUrl`
  * and the normalised URL (Google Drive etc.) in `src`.
  */
-export function ImageUrlField({ raw, placeholder, label, onCommit, onEdit, className = "ie small", maxLength = 2048, visibleLabel = false }: {
+export function ImageUrlField({ raw, placeholder, label, onCommit, onEdit, className = "ie small", maxLength = 2048, visibleLabel = false, draftState }: {
   raw: string;
   placeholder: string;
   label: string;
@@ -55,12 +55,18 @@ export function ImageUrlField({ raw, placeholder, label, onCommit, onEdit, class
   className?: string;
   maxLength?: number;
   visibleLabel?: boolean;
+  /** Optional authoring-session state; ordinary image fields remain local. */
+  draftState?: { text: string; error: string; setText: (text: string) => void; setError: (error: string) => void };
 }) {
   const composing = useRef(false);
   const inputId = useId();
-  const [text, setText] = useState(raw);
-  const [error, setError] = useState("");
-  useEffect(() => { setText(raw); setError(""); }, [raw]);
+  const [localText, setLocalText] = useState(raw);
+  const [localError, setLocalError] = useState("");
+  const text = draftState?.text ?? localText;
+  const error = draftState?.error ?? localError;
+  const setText = draftState?.setText ?? setLocalText;
+  const setError = draftState?.setError ?? setLocalError;
+  useEffect(() => { setLocalText(raw); setLocalError(""); }, [raw]);
 
   function commit() {
     const value = text.trim();

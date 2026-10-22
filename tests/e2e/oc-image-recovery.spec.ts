@@ -29,7 +29,7 @@ async function open(page: Page, width = 1400) {
     return route.fulfill({ json: { asset } });
   });
   await page.setViewportSize({ width, height: 950 }); await page.goto("/editor/site-1");
-  if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯此視窗" }).click(); }
+  if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯內容" }).click(); }
   const win = page.getByRole("dialog", { name: "Instagram.exe", exact: true });
   await expect(win.getByRole("textbox", { name: "Handle", exact: true })).toBeVisible();
   return { win, calls, assets, saved: () => saved, profile: (id = "profile:ig") => saved.entities.profiles.find((p) => p.id === id)!, release: (name: string) => { const done = held.get(name); if (!done) throw new Error("not held"); held.delete(name); done(); } };
@@ -93,11 +93,13 @@ for (const width of [320, 390]) test(`visible sources and highlight replacement 
   await expect.poll(() => s.profile().avatar).toBe("https://assets.test/phone.png");
   await page.screenshot({ path: testInfo.outputPath(`avatar-${width}.png`) });
   await s.win.getByRole("tab", { name: "貼文", exact: true }).click();
-  await expect(s.win.getByText("新貼文圖片網址", { exact: true })).toBeVisible();
-  const newPostUrl = s.win.getByRole("textbox", { name: "新貼文圖片網址", exact: true });
+  await s.win.getByRole("button", { name: "新增貼文", exact: true }).click();
+  await expect(s.win.getByText("新增輪播圖片網址", { exact: true })).toBeVisible();
+  const newPostUrl = s.win.getByRole("textbox", { name: "新增輪播圖片網址", exact: true });
   expect((await newPostUrl.boundingBox())!.width).toBeGreaterThan(140);
   await page.screenshot({ path: testInfo.outputPath(`post-fields-${width}.png`) });
   await s.win.getByRole("tab", { name: "精選／合集", exact: true }).click();
+  await s.win.locator(".ig-canonical-highlights [data-ig-edit]").first().click();
   const url = s.win.getByRole("textbox", { name: "精選第 1 頁圖片網址", exact: true });
   const before = structuredClone(s.saved().entities.highlights![0].frames[0]);
   await expect(url).toBeVisible();

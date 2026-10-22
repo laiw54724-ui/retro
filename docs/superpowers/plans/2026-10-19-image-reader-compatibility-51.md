@@ -1,7 +1,5 @@
 # Image Reader Compatibility Implementation Plan
 
-> **For agentic workers:** Execute inline as the sole central schema/API owner. The separately assigned image worker owns the leaf UI and its review; no central files are delegated.
-
 **Goal:** Accept and preserve the bounded image window in readers and the existing media pipeline while image creation stays disabled.
 
 **Architecture:** Add the same strict content schema to v1 and v2, retaining the existing title and media reference contracts. A separate transport contract protects raw incoming and stored image windows before parsing; it does not change the appearance contract, authentication, authorization, or version CAS. The image worker confirmed this contract before implementation.

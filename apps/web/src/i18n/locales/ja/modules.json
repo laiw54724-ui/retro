@@ -261,6 +261,7 @@
     "opensInANewTab": "新しいタブで開きます。"
   },
   "about": {
+    "avatarSettings": "アバターの設定",
     "sAvatar": "{{nickname}} のアイコン画像",
     "editTheCardContentExpand": "カードの内容を編集します。変更したい項目を展開してください。",
     "basicInfo": "基本情報",
@@ -510,6 +511,7 @@
     "stateUnopened": "、未開封"
   },
   "characterDialog": {
+    "preview": "キャラクターポップアップをプレビュー",
     "removeCharacterImage": "キャラクター画像を削除",
     "character": "キャラクター",
     "characterPopUp": "キャラクターのポップアップ",

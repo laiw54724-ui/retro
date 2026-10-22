@@ -163,8 +163,8 @@ test("mobile chrome edits and reset remain local until Apply and retain custom a
   await page.setViewportSize({ width: 375, height: 850 });
   await page.goto("/editor/site-1");
   await page.getByRole("button", { name: "About.exe", exact: true }).click();
-  await page.getByRole("button", { name: "編輯", exact: true }).click();
-  const sheet = page.getByRole("dialog", { name: "編輯視窗", exact: true });
+  await page.getByRole("button", { name: "視窗設定", exact: true }).click();
+  const sheet = page.getByRole("dialog", { name: "視窗設定", exact: true });
   const editor = sheet.getByRole("group", { name: "視窗樣式", exact: true });
   const live = page.getByRole("dialog", { name: "About.exe", exact: true });
   await editor.getByRole("button", { name: /^Classic 95/ }).click();
@@ -184,7 +184,7 @@ test("mobile chrome edits and reset remain local until Apply and retain custom a
   await page.reload();
   await page.getByRole("button", { name: "About.exe", exact: true }).click();
   await expect(live).toHaveAttribute("data-chrome-preset", "classic-95");
-  await page.getByRole("button", { name: "編輯", exact: true }).click();
+  await page.getByRole("button", { name: "視窗設定", exact: true }).click();
   await editor.getByRole("button", { name: "重設視窗樣式", exact: true }).click();
   await expect(live).toHaveAttribute("data-chrome-preset", "classic-95");
   await page.waitForTimeout(800);

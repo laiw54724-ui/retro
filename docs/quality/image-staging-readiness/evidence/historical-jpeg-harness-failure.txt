@@ -1,0 +1,43 @@
+[WebServer] (node:33729) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:33759) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:33775) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [webkit] › tests/image-authoring/image-authoring.spec.ts:137:5 › JPEG source decodes through authoring, save/reload and the projected public reader (1.9s)
+
+
+  1) [webkit] › tests/image-authoring/image-authoring.spec.ts:137:5 › JPEG source decodes through authoring, save/reload and the projected public reader
+
+    Error: missing saved image
+
+      66 | function image(document: SiteDocumentV2Input) {
+      67 |   const window = document.windows.find((item) => item.type === "image");
+    > 68 |   if (window?.type !== "image") throw new Error("missing saved image");
+         |                                       ^
+      69 |   return window;
+      70 | }
+      71 |
+        at image (/Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-staging-readiness-51/tests/image-authoring/image-authoring.spec.ts:68:39)
+        at /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-staging-readiness-51/tests/image-authoring/image-authoring.spec.ts:158:44
+        at /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-staging-readiness-51/tests/image-authoring/image-authoring.spec.ts:158:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/image-readiness-authoring/image-authoring-JPEG-sourc-37d2f-the-projected-public-reader-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/image-readiness-authoring/image-authoring-JPEG-sourc-37d2f-the-projected-public-reader-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/image-readiness-authoring/image-authoring-JPEG-sourc-37d2f-the-projected-public-reader-webkit/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/image-readiness-authoring/image-authoring-JPEG-sourc-37d2f-the-projected-public-reader-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › tests/image-authoring/image-authoring.spec.ts:137:5 › JPEG source decodes through authoring, save/reload and the projected public reader

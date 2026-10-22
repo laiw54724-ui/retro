@@ -34,7 +34,7 @@ async function openEditor(page: Page, type: "document" | "gallery" | "about", wi
   await page.goto("/editor/site-1");
   if (width < 768) {
     await page.getByRole("button", { name: win.title, exact: true }).click();
-    await page.getByRole("button", { name: "編輯此視窗", exact: true }).click();
+    await page.getByRole("button", { name: "編輯內容", exact: true }).click();
   }
   const editor = page.getByRole("dialog", { name: win.title, exact: true });
   await expect(editor.locator(`.${type === "document" ? "document" : type === "gallery" ? "gal" : "about"}-editor`)).toBeVisible();
@@ -157,7 +157,7 @@ for (const width of [320, 390, 430]) {
     await nickname.fill("LongNickname".repeat(12));
     await expect(nickname).toBeFocused();
     await editor.getByLabel("簡介", { exact: true }).fill("About text\n".repeat(40));
-    await editor.locator("summary").nth(1).tap();
+    await editor.locator(".about-editor-section > summary").filter({ hasText: "自訂欄位" }).tap();
     await editor.getByRole("button", { name: "＋ 新增欄位", exact: true }).tap();
     const key = editor.getByLabel("欄位名稱", { exact: true }).last();
     await key.fill("自訂欄位".repeat(20));
@@ -170,7 +170,7 @@ for (const width of [320, 390, 430]) {
     await reopenMobile(page, "about.exe");
     await expect(nickname).toHaveValue("LongNickname".repeat(12));
     await expect(editor.getByLabel("簡介", { exact: true })).toHaveValue("About text\n".repeat(40));
-    await editor.locator("summary").nth(1).tap();
+    await editor.locator(".about-editor-section > summary").filter({ hasText: "自訂欄位" }).tap();
     await expect(editor.getByLabel("欄位名稱", { exact: true }).last()).toHaveValue("自訂欄位".repeat(20));
     await expect(editor.getByLabel("欄位內容", { exact: true }).last()).toHaveValue("LongValue".repeat(50));
   });
@@ -178,7 +178,7 @@ for (const width of [320, 390, 430]) {
 
 async function reopenMobile(page: Page, name: string) {
   await page.getByRole("button", { name, exact: true }).click();
-  await page.getByRole("button", { name: "編輯此視窗", exact: true }).click();
+  await page.getByRole("button", { name: "編輯內容", exact: true }).click();
 }
 async function assertFits(page: Page, root: import("@playwright/test").Locator) {
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);

@@ -180,14 +180,15 @@ test("clean release explains the optional Windows icon pack", async ({ page }) =
 test("desktop and mobile add surfaces share the registry modules", async ({ page }) => {
   const saves = await openEditor(page);
   const desktopLabels = await page.locator(".left-panel2 .add-card strong").allTextContents();
-  expect(desktopLabels).toEqual(["文件視窗", "相簿視窗", "連結視窗", "名片／關於我", "復古 IG 個人頁", "音樂播放器", "Moodboard 畫板", "世界觀資料夾", "掃雷", "角色彈窗", "訪客留言簿"]);
+  expect(desktopLabels).toEqual(["名片／關於我", "文件視窗", "連結視窗", "復古 IG 個人頁", "相簿視窗", "Moodboard 畫板", "音樂播放器", "角色彈窗", "訪客留言簿", "掃雷", "世界觀資料夾"]);
 
   await page.getByRole("button", { name: "手機版" }).click();
   await page.locator(".m-toolbar").getByRole("button", { name: "新增" }).click();
-  const mobileSheet = page.getByRole("dialog", { name: "新增視窗" });
+  const mobileSheet = page.getByRole("dialog", { name: "新增元件" });
   await expect(mobileSheet).toBeVisible();
   const mobileLabels = await mobileSheet.locator(".m-add strong").allTextContents();
   expect(mobileLabels).toEqual(desktopLabels);
+  expect(await mobileSheet.getByRole("heading").allTextContents()).toEqual(["介紹與文字", "圖片與靈感", "互動與聲音", "整理與導覽"]);
 
   await mobileSheet.getByRole("button", { name: /文件視窗/ }).click();
   await expect.poll(() => saves.at(-1)?.document.windows.some((window) => window.type === "document")).toBe(true);

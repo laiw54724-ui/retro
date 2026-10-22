@@ -11,7 +11,7 @@
 .editor [hidden] { display: none !important; }
 .editor > :global(.ig-modes) { background: #c0c0c0; color: #000; }
 .workspace { color: #000; background: #c0c0c0; container-type: inline-size; }
-.switcher { flex: 0 1 auto; min-height: 0; overflow-y: auto; padding: 8px; background: #dfdfdf; border-bottom: 1px solid #808080; }
+.switcher { flex: 0 1 auto; min-height: 0; overflow-y: auto; padding: 6px 8px; background: #dfdfdf; border-bottom: 1px solid #808080; }
 .currentRole { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .workspace .currentRole > :global(.ig-thumb) { width: 34px; height: 34px; flex-shrink: 0; }
 .currentRole label { flex: 1; min-width: 0; }
@@ -102,3 +102,42 @@
 .draftFeedback > span { flex: 1 1 140px; }
 .draftFeedback > button { flex: 0 0 auto; min-height: 32px; }
 @media (max-width: 600px) { .draftFeedback > button { min-height: 44px; } }
+
+/* Task navigation stays compact; each list opens one focused editor. */
+.directory summary { padding: 3px 2px; }
+.collectionSwitch { display: flex; gap: 5px; }
+.collectionSwitch > button { flex: 1; min-width: 0; white-space: normal; }
+.collectionSwitch > button[aria-pressed="true"] { background: #000080; color: #fff; }
+.panel :global(.ig-list-tools) { display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
+.panel :global(.ig-list-tools) > button { align-self: flex-start; }
+.panel :global(.ig-post-filter-details) { width: 100%; }
+.panel :global(.ig-post-filter-details) > summary { cursor: pointer; padding: 4px 0; }
+.panel :global([data-ig-back]) { align-self: flex-start; margin-bottom: 8px; }
+.panel :global(.ig-post-toggle) { overflow-wrap: anywhere; }
+.panel :global(.ig-post-filter-status) { margin: 2px 0; }
+@container (max-width: 450px) {
+  .panel :global(.ig-trio) { grid-template-columns: minmax(0, 1fr); }
+  .panel :global([data-ig-edit]), .panel :global([data-ig-back]), .collectionSwitch > button { min-height: 40px; }
+}
+.panel :global(.ig-source-draft-feedback) { display: flex; flex-wrap: wrap; gap: 4px; align-items: start; }
+.panel :global(.ig-source-draft-feedback) > small { flex: 1 1 140px; overflow-wrap: anywhere; }
+.panel :global(.ig-item-actions) { display: flex; gap: 6px; flex-shrink: 0; }
+@media (max-width: 767px) {
+  .panel :global(.ig-post-row) { flex-wrap: wrap; }
+  .panel :global(.ig-item-actions) { flex-basis: 100%; justify-content: flex-end; }
+  .panel :global(.mini-btn), .panel :global([data-ig-edit]), .panel :global([data-ig-back]) { min-width: 44px; min-height: 44px; height: auto; }
+  .panel :global(.ig-media-edit-row), .panel :global(.ig-highlight-frame-row) { display: flex; flex-wrap: wrap; align-items: flex-start; }
+  .panel :global(.ig-media-edit-row) > :global(.grow), .panel :global(.ig-highlight-frame-row) > :global(.grow) { flex: 1 1 calc(100% - 60px); }
+}
+@media (max-width: 767px) {
+  .workspace .sections > button, .workspace .collectionSwitch > button { min-height: 44px; }
+}
+
+.profileActions, .taskNavigation { display: flex; flex-wrap: wrap; gap: 8px; }
+.panel .profileActions > button, .panel .taskNavigation > button { flex: 1; min-width: 0; min-height: 44px; white-space: normal; }
+.panel .taskNavigation :global([data-ig-back]) { margin: 0; align-self: stretch; }
+.taskHint { margin: 4px 0 8px; line-height: 1.5; font-size: 12px; overflow-wrap: anywhere; }
+.pendingBadge { margin: 4px 0; padding: 4px 6px; background: #fff4cd; color: #332800; font-size: 12px; }
+.replacement { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.panel .replacement > label { min-height: 44px; white-space: normal; display: inline-flex; align-items: center; }
+.replacement > small { flex: 1 1 140px; line-height: 1.4; }

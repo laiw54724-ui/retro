@@ -1,5 +1,5 @@
 
- RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01/apps/web
+ RUN  v3.2.7 <worktree>/apps/web
 
  ✓ src/features/navigation/useVisitorNavigation.test.ts (3 tests) 4ms
  ✓ src/features/navigation/resolveLinkDestination.test.ts (7 tests) 5ms

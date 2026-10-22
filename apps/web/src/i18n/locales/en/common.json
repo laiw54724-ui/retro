@@ -97,6 +97,8 @@
     "thisUrlIsAlreadyTaken": "This URL is already taken",
     "thisUrlIsAvailable": "This URL is available",
     "checking": "Checking...",
+    "availabilityFailed": "Could not check this URL. Check your connection and try again.",
+    "retryAvailability": "Retry check",
     "desktopName": "Desktop name",
     "chooseAStartingTheme": "Choose a starting theme",
     "chooseAStartingTemplate": "Choose a starting template",

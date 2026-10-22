@@ -14,13 +14,19 @@ import { api, API_URL, ApiError, type AssetRecord, type SiteRecord } from "../li
 import { useEditorStore } from "../features/editor/store";
 import { DesktopCanvas } from "../features/editor/DesktopCanvas";
 import { MobileScreen } from "../features/site/MobileScreen";
+import mobileAuthoring from "../features/site/MobileAuthoring.module.css";
 import { LeftPanel } from "../features/editor/LeftPanel";
-import { RightPanel } from "../features/editor/RightPanel";
+import { AddWindowDialog } from "../features/editor/AddWindowDialog";
+import { SelectionToolbar } from "../features/editor/SelectionToolbar";
+import shellStyles from "../features/editor/AuthoringShell.module.css";
+import { RightPanel, type InspectorTab } from "../features/editor/RightPanel";
 import { buildPreviewModel, shareableEntities } from "../features/editor/previewModel";
+import { HelpMenu } from "../features/help/HelpMenu";
 import { VisitorPreview } from "../features/editor/VisitorPreview";
 import { publicSiteLabel, publicSiteUrl } from "../lib/publicSiteUrl";
 import { Icon } from "../components/Icon";
 import { RetroButton } from "../components/RetroButton";
+import { ModalDialog } from "../components/ModalDialog";
 import { useAuth } from "../app/AuthProvider";
 import { AssetSourceProvider } from "../lib/assetSource";
 import { buildProfileDirectory } from "../features/modules/instagram/profileDirectory";
@@ -36,6 +42,7 @@ import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { useLocaleFormatting } from "../i18n/format";
 import { PaintEditorEntry } from "../features/paint/PaintEditorEntry";
 import { useEditorLeaveGuard, useEditorSaveSession } from "../features/editor/editorSession";
+import { useIgHasPendingDrafts } from "../features/modules/instagram/useIgSessionValue";
 
 
 
@@ -89,13 +96,66 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const store = useEditorStore();
+  const hasPendingIgDrafts = useIgHasPendingDrafts();
   const captureSaveSession = useEditorSaveSession(siteId);
   const leaveGuard = useEditorLeaveGuard(siteId);
   const saveInFlight = useRef(false);
   const [loading, setLoading] = useState(true);
+  const [addOpen, setAddOpen] = useState(false);
+  const [readWindows, setReadWindows] = useState<Set<string>>(() => new Set());
+  const [tabRequest, setTabRequest] = useState<{ tab: InspectorTab; token: number }>();
+  function openInspector(tab: InspectorTab) {
+    setSidebarPreferences(current => ({ ...current, rightExpanded: true }));
+    setTabRequest(current => ({ tab, token: (current?.token ?? 0) + 1 }));
+  }
+  function editSelectedContent() {
+    const id = store.selectedId;
+    if (!id) return;
+    if (store.document?.windows.find(window => window.id === id)?.type === "image") {
+      openInspector("general");
+      return;
+    }
+    if (store.viewState[id] === "min" || store.viewState[id] === "closed") store.setViewState(id, null);
+    setReadWindows(current => { const next = new Set(current); next.delete(id); return next; });
+    requestAnimationFrame(() => globalThis.document.querySelector<HTMLElement>(".canvas-window.selected .retro-window-body input, .canvas-window.selected .retro-window-body textarea, .canvas-window.selected .retro-window-body button, .canvas-window.selected .retro-window-body [contenteditable='true']")?.focus());
+  }
+
+  const editorAppRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    const app = editorAppRef.current;
+    const viewport = window.visualViewport;
+    if (!app) return;
+    const phone = window.matchMedia("(max-width: 767px)");
+    const resize = () => {
+      if (!phone.matches) {
+        app.style.removeProperty("--authoring-height");
+        app.removeAttribute("data-authoring-short");
+        return;
+      }
+      // Keep the last unzoomed height while pinching; removing it would expand
+      // the editor behind a keyboard that only resized the visual viewport.
+      if (viewport && viewport.scale !== 1) return;
+      const height = viewport?.height ?? window.innerHeight;
+      app.style.setProperty("--authoring-height", `${height}px`);
+      app.toggleAttribute("data-authoring-short", height <= 500);
+    };
+    resize();
+    viewport?.addEventListener("resize", resize);
+    window.addEventListener("resize", resize);
+    phone.addEventListener("change", resize);
+    return () => {
+      viewport?.removeEventListener("resize", resize);
+      window.removeEventListener("resize", resize);
+      phone.removeEventListener("change", resize);
+      app.style.removeProperty("--authoring-height");
+      app.removeAttribute("data-authoring-short");
+    };
+  }, [loading]);
   const [loadError, setLoadError] = useState("");
   const [message, setMessage] = useState<EditorMessage>("");
   const [conflict, setConflict] = useState(false);
+  // Dismissing recovery must not resume autosave against a conflicting version.
+  const [conflictRecoveryOpen, setConflictRecoveryOpen] = useState(false);
   const upgradePaused = useRef(false);
   const [upgradeRequired, setUpgradeRequired] = useState(false);
   const [upgradeRecoveryOpen, setUpgradeRecoveryOpen] = useState(false);
@@ -313,6 +373,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
           void leaveGuard.leaveAfterAccessLoss(() => navigate(`/auth?notice=${encodeURIComponent(t("page.lostEditAccess"))}`, { replace: true }));
         } else if (error instanceof ApiError && error.code === "version_conflict") {
           setConflict(true);
+          setConflictRecoveryOpen(true);
           setMessage({ fallback: "editor.anUpdateFromAnotherTab" });
         } else {
           setMessage({ code: error instanceof ApiError ? error.code : undefined, fallback: "editor.saveFailed" });
@@ -325,6 +386,11 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
   useEffect(() => {
     function keydown(event: KeyboardEvent) {
+      // A modal can focus its own buttons while the editor behind it is inert.
+      // Do not let window-level shortcuts mutate that background document.
+      if (document.getElementById("root")?.hasAttribute("inert")) return;
+      // Dialogs that render inside #root cannot make it inert; any open modal still owns the keyboard.
+      if (document.querySelector('[aria-modal="true"]')) return;
       const target = event.target as HTMLElement | null;
       if (target?.matches("input, textarea, select, [contenteditable='true']")) return;
       const modifier = event.metaKey || event.ctrlKey;
@@ -427,6 +493,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   }
 
   function requestPublish() {
+    if (conflict) { setConflictRecoveryOpen(true); return; }
     if (store.themePreview) { setMessage(t("imageInput.previewPending")); return; }
     if (upgradePaused.current) { setUpgradeRecoveryOpen(true); return; }
     const invalid = validationMessage(store.document);
@@ -463,7 +530,9 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       if (!isCurrentSession()) return;
       if (stopForUpgrade(error)) return;
       if (error instanceof ApiError && error.code === "version_conflict") {
+        setPublishPrompt(false);
         setConflict(true);
+        setConflictRecoveryOpen(true);
       }
       setMessage({ code: error instanceof ApiError ? error.code : undefined, fallback: "editor.publishingFailed" });
     } finally {
@@ -588,11 +657,11 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     : hasUnpublishedChanges
       ? { text: t("shell.unpublishedChanges"), bg: "#fff0e0", color: "#b35c00" }
       : { text: t("shell.published", { version: store.publishedVersion == null ? "" : formatNumber(store.publishedVersion) }), bg: "#e6f4ee", color: "#1f7a5c" };
-  const saveText = draftIssue && store.saveStatus === "dirty"
-    ? t("shell.saveIncomplete")
-    : store.saveStatus === "saving" ? t("shell.saving")
-      : store.saveStatus === "dirty" ? t("shell.unsaved")
-        : store.saveStatus === "error" ? t("shell.saveFailed")
+  const savedWithPendingIgInput = store.saveStatus === "saved" && hasPendingIgDrafts;
+  const saveText = store.saveStatus === "error" ? t("shell.saveFailed")
+    : composing || savedWithPendingIgInput || (draftIssue && store.saveStatus === "dirty") ? t("shell.saveIncomplete")
+      : store.saveStatus === "saving" ? t("shell.saving")
+        : store.saveStatus === "dirty" ? t("shell.unsaved")
           : t("shell.saved");
 
   const layoutMode = store.layoutMode && store.device === "desktop";
@@ -607,7 +676,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     <AppearanceWriteProvider siteId={siteId} apiOrigin={API_URL} load={appearanceLoad} blocked={upgradeRequired}>
     <AssetSourceProvider siteId={siteId}>
     <EditorMediaProvider key={siteId} siteId={siteId}>
-    <main className="editor-app">
+    <main ref={editorAppRef} className={`editor-app ${mobileAuthoring.app}`}>
       <header className="editor-topbar" style={{ height: "auto", minHeight: 46, flexWrap: "wrap", overflow: "visible", paddingBlock: 6, fontFamily }}>
         <Link to="/auth" className="brand" title={t("shell.backToDesktops")} style={{ fontFamily, flex: "0 0 auto" }}><Icon name="computer" size={22} />Retro Desktop</Link>
         <LanguageSwitcher compact />
@@ -617,24 +686,27 @@ export function EditorPage({ site }: { site: SiteRecord }) {
           <span className="status-badge" title={badge.text} style={{ background: badge.bg, color: badge.color, borderColor: badge.color }}>{badge.text}</span>
         </div>
         <span className="w98-vsep mobile-hide" />
-        <RetroButton className="mobile-hide" disabled={store.past.length === 0} onClick={store.undo} aria-label={t("shell.undo")} title={t("shell.undoTitle")}>↶ {t("shell.undo")}</RetroButton>
-        <RetroButton className="mobile-hide" disabled={store.future.length === 0} onClick={store.redo} aria-label={t("shell.redo")} title={t("shell.redoTitle")}>↷ {t("shell.redo")}</RetroButton>
-        <span className={"save-text mobile-hide " + store.saveStatus} title={draftIssue ?? undefined} role="status">{saveText}</span>
-        {store.saveStatus === "error" && !conflict && !upgradeRequired ? <RetroButton onClick={() => { setMessage(""); store.retrySave(); }}>{t("shell.retrySave")}</RetroButton> : null}
+        <div className="editor-history-controls">
+          <RetroButton disabled={store.past.length === 0} onClick={store.undo} aria-label={t("shell.undo")} title={t("shell.undoTitle")}>↶ {t("shell.undo")}</RetroButton>
+          <RetroButton disabled={store.future.length === 0} onClick={store.redo} aria-label={t("shell.redo")} title={t("shell.redoTitle")}>↷ {t("shell.redo")}</RetroButton>
+          <span className={"save-text " + ((composing || savedWithPendingIgInput) && store.saveStatus !== "error" ? "dirty" : store.saveStatus)} title={draftIssue ?? undefined} role="status" aria-atomic="true">{saveText}</span>
+          {store.saveStatus === "error" && !conflict && !upgradeRequired ? <RetroButton onClick={() => { setMessage(""); store.retrySave(); }}>{t("shell.retrySave")}</RetroButton> : null}
+        </div>
         {store.accessRole === "editor" ? <span className="collaboration-role-note" title={t("shell.roleHint")}>{t("shell.roleNote")}</span> : null}
         <div className="top-spacer" />
         <div role="group" aria-label={t("shell.device")} className="device-toggle mobile-hide">
           <button type="button" aria-pressed={store.device === "desktop"} className={"w98-btn" + (store.device === "desktop" ? " on" : "")} onClick={() => store.setDevice("desktop")}>{t("shell.desktop")}</button>
           <button type="button" aria-pressed={store.device === "mobile"} className={"w98-btn" + (store.device === "mobile" ? " on" : "")} onClick={() => { store.setLayoutMode(false); store.setDevice("mobile"); }}>{t("shell.mobile")}</button>
         </div>
-        <RetroButton onClick={() => { stopAllMedia(); setPreview(true); }}>▶ {t("shell.preview")}</RetroButton>
+        <RetroButton data-help="preview" onClick={() => { stopAllMedia(); setPreview(true); }}>▶ {t("shell.preview")}</RetroButton>
         <PaintEditorEntry key={siteId} siteId={siteId} disabled={upgradeRequired || !actions.uploadAssets} />
         {actions.manageMembers ? <RetroButton ref={collaborationButtonRef} onClick={() => setCollaborationOpen(true)}>{t("shell.collaborators")}</RetroButton> : null}
         {actions.manageMembers ? <RetroButton onClick={() => setTransferOpen(true)}>{t("shell.transfer")}</RetroButton> : null}
         {store.publishedDocument ? <a className="w98-btn mobile-hide" href={publicSiteUrl(store.username)} target="_blank" rel="noreferrer">{t("shell.openPublished")}</a> : null}
-        {actions.publish ? <RetroButton className="primary" onClick={requestPublish} disabled={upgradeRequired || publishing || (!!store.publishedDocument && !hasUnpublishedChanges)}>
+        {actions.publish ? <RetroButton className="primary" data-help="publish" onClick={requestPublish} disabled={upgradeRequired || publishing || (!!store.publishedDocument && !hasUnpublishedChanges)}>
           {t(store.publishedDocument ? "shell.republish" : "shell.publish")}
         </RetroButton> : null}
+        <HelpMenu />
         <Link className="retro-link mobile-hide" to="/">{t("shell.home")}</Link>
         <RetroButton className="mobile-hide" onClick={() => leaveGuard.requestLeave(async () => { await signOut(); await navigate("/"); })}>{t("shell.signOut")}</RetroButton>
       </header>
@@ -649,6 +721,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       ) : null}
 
       {upgradeRequired ? <div className="editor-message" role="status"><span>{t("documentCompatibility.paused")}</span><button onClick={() => setUpgradeRecoveryOpen(true)}>{t("documentCompatibility.title")}</button></div> : null}
+      {conflict ? <div className="editor-message conflict-notice" role="status"><span>{t("editor.anUpdateFromAnotherTab")}</span><RetroButton className="conflict-reopen" onClick={() => setConflictRecoveryOpen(true)}>{t("editor.versionConflict")}</RetroButton></div> : null}
       {upgradeRequired && upgradeRecoveryOpen && store.document ? <DocumentUpgradeRecovery key={siteId} siteId={siteId} localDocument={store.versionedDocument ?? versionedDraft ?? store.document} onClose={() => setUpgradeRecoveryOpen(false)} /> : null}
 
       {legacyAssets.length > 0 || pendingPublicCopyAssets.length > 0 ? <div className="editor-message asset-migration-message" role="status">
@@ -705,9 +778,14 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         ) : null}
         {!layoutMode ? <SidebarToggle side="left" expanded={sidebarPreferences.leftExpanded} onToggle={() => setSidebarPreferences((current) => ({ ...current, leftExpanded: !current.leftExpanded }))} /> : null}
 
-        <section className="editor-stage2">
+        <section className={`editor-stage2 ${shellStyles.stage}`}>
+          {store.device === "desktop" && !layoutMode ? <div className={shellStyles.bar}>
+            <button type="button" className="w98-btn primary" onClick={() => setAddOpen(true)}>{t("authoring.add")}</button>
+            {selected ? <SelectionToolbar title={selected.title} imageWindow={selected.type === "image"} editing={selected.type !== "image" && !readWindows.has(selected.id)} onEdit={editSelectedContent} onDone={() => setReadWindows(current => new Set(current).add(selected.id))} onIcon={() => openInspector("icon")} onSettings={() => openInspector("general")} /> : <span className="w98-hint">{t("authoring.selectHint")}</span>}
+          </div> : null}
           {store.device === "desktop" ? (
             <DesktopCanvas
+              readWindowIds={readWindows}
               siteId={siteId}
               upload={uploadImage}
               profiles={editorProfiles}
@@ -734,6 +812,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         {!layoutMode && store.device === "desktop" ? <SidebarToggle side="right" expanded={sidebarPreferences.rightExpanded} onToggle={() => setSidebarPreferences((current) => ({ ...current, rightExpanded: !current.rightExpanded }))} /> : null}
         {!layoutMode && store.device === "desktop" && sidebarPreferences.rightExpanded ? (
           <RightPanel
+            tabRequest={tabRequest}
             document={store.document}
             selected={selected}
             siteId={siteId}
@@ -759,45 +838,39 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       </footer>
 
       {preview && previewModels ? <VisitorPreview publishable={previewModels.publishable} draft={previewModels.draft} username={store.username} siteUrl={store.publishedDocument ? publicSiteUrl(store.username) : null} publishState={!store.publishedDocument ? "never" : hasUnpublishedChanges ? "changed" : "in-sync"} shareable={previewModels.shareable} onClose={() => setPreview(false)} /> : null}
+      {addOpen ? <AddWindowDialog onClose={() => setAddOpen(false)} onAdd={type => { store.addWindow(type); setAddOpen(false); }} /> : null}
       <IntegrityDialog />
       {collaborationOpen ? <CollaborationDialog siteId={siteId} onClose={closeCollaboration} /> : null}
       {transferOpen ? <TransferDialog siteId={siteId} username={store.username} published={!!store.publishedDocument} onClose={() => setTransferOpen(false)} onImported={(newSiteId) => navigate(`/editor/${newSiteId}`)} /> : null}
 
-      {conflict ? (
-        <div className="modal-backdrop" role="presentation">
-          <section className="retro-panel editor-dialog" role="alertdialog" aria-modal="true" aria-labelledby="conflict-title">
-            <header className="landing-titlebar" id="conflict-title">{t("editor.versionConflict")}</header>
-            <div className="dialog-body">
-              <h2>{t("editor.aNewerVersionOfThe")}</h2>
-              <p>{t("editor.autosaveWasStoppedToAvoid")}</p>
-              <div className="button-row end">
-                <RetroButton onClick={copyLocalJson}>{t("editor.copyLocalJson")}</RetroButton>
-                <RetroButton className="primary" onClick={reloadRemote}>{t("editor.reloadTheCloudVersion")}</RetroButton>
-              </div>
-            </div>
-          </section>
-        </div>
+      {conflict && conflictRecoveryOpen ? (
+        <ModalDialog role="alertdialog" title={t("editor.versionConflict")} className="publish-preflight" width={520} dismissOnBackdrop={false} onClose={() => setConflictRecoveryOpen(false)} actions={
+          <>
+            <RetroButton data-autofocus onClick={copyLocalJson}>{t("editor.copyLocalJson")}</RetroButton>
+            <RetroButton onClick={() => setConflictRecoveryOpen(false)}>{t("editor.cancel")}</RetroButton>
+            <RetroButton className="primary" onClick={reloadRemote}>{t("editor.reloadTheCloudVersion")}</RetroButton>
+          </>
+        }>
+          <h2>{t("editor.aNewerVersionOfThe")}</h2>
+          <p>{t("editor.autosaveWasStoppedToAvoid")}</p>
+        </ModalDialog>
       ) : null}
 
       {publishPrompt ? (
-        <div className="modal-backdrop" role="presentation">
-          <section className="retro-panel editor-dialog" role="dialog" aria-modal="true" aria-labelledby="publish-title">
-            <header className="landing-titlebar" id="publish-title">{t("editor.publishRetroDesktop")}</header>
-            <div className="dialog-body">
-              <h2>{t("editor.prePublishCheck")}</h2>
-              <p>{t("editor.publicUrl")}<strong>{publicSiteLabel(store.username)}</strong></p>
-              <ul className="publish-checks" aria-label={t("editor.prePublishCheckResults")}>
-                {publishChecks.map((check, index) => <li key={index} className={check.level}><span aria-hidden="true">{check.level === "ok" ? "✓" : check.level === "warn" ? "!" : "×"}</span>{translateSystemMessage(check.text)}</li>)}
-              </ul>
-              <p>{hasBlockingCheck(publishChecks) ? t("editor.fixTheRedItemsFirst") : t("editor.yellowItemsAreSuggestionsAnd")}</p>
-              {publishing ? <div className="publish-progress" role="progressbar" aria-label={t("editor.publishing")}><i /></div> : null}
-              <div className="button-row end">
-                <RetroButton disabled={publishing} onClick={() => setPublishPrompt(false)}>{t("editor.cancel")}</RetroButton>
-                <RetroButton className="primary" disabled={publishing || hasBlockingCheck(publishChecks)} onClick={confirmPublish}>{publishing ? t("editor.publishing2") : t("editor.confirmAndPublish")}</RetroButton>
-              </div>
-            </div>
-          </section>
-        </div>
+        <ModalDialog title={t("editor.publishRetroDesktop")} className="publish-preflight" width={520} closeDisabled={publishing} onClose={() => setPublishPrompt(false)} actions={
+          <>
+            <RetroButton data-autofocus disabled={publishing} onClick={() => setPublishPrompt(false)}>{t("editor.cancel")}</RetroButton>
+            <RetroButton className="primary" disabled={publishing || hasBlockingCheck(publishChecks)} onClick={confirmPublish}>{publishing ? t("editor.publishing2") : t("editor.confirmAndPublish")}</RetroButton>
+          </>
+        }>
+          <h2>{t("editor.prePublishCheck")}</h2>
+          <p>{t("editor.publicUrl")}<strong>{publicSiteLabel(store.username)}</strong></p>
+          <ul className="publish-checks" aria-label={t("editor.prePublishCheckResults")}>
+            {publishChecks.map((check, index) => <li key={index} className={check.level}><span aria-hidden="true">{check.level === "ok" ? "✓" : check.level === "warn" ? "!" : "×"}</span>{translateSystemMessage(check.text)}</li>)}
+          </ul>
+          <p>{hasBlockingCheck(publishChecks) ? t("editor.fixTheRedItemsFirst") : t("editor.yellowItemsAreSuggestionsAnd")}</p>
+          {publishing ? <div className="publish-progress" role="progressbar" aria-label={t("editor.publishing")}><i /></div> : null}
+        </ModalDialog>
       ) : null}
 
       {publishSuccess ? (

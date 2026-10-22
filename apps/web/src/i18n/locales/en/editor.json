@@ -6,7 +6,9 @@
     "unsavedBody": "Recent edits or a theme preview have not been confirmed saved. Leaving may lose them. A save already sent may still finish. Stay to finish editing or retry saving.",
     "savedBody": "Your changes are now saved. You can leave or keep editing."
   },
-  "imageHost": { "move": "Move image {{title}}" },
+  "imageHost": {
+    "move": "Move image {{title}}"
+  },
   "shell": {
     "backToDesktops": "Back to my desktops",
     "undo": "Undo",
@@ -115,16 +117,18 @@
     "emptyEditor": "Tap Add below to create your first window.",
     "emptyVisitor": "This desktop has no content yet.",
     "desktop": "Desktop",
-    "finishEditing": "Finish editing",
-    "editWindow": "Edit this window",
+    "finishEditing": "Done",
+    "editWindow": "Edit content",
     "toolbar": "Mobile editor tools",
     "add": "Add",
-    "edit": "Edit",
+    "edit": "Window settings",
     "theme": "Theme",
     "preview": "Preview",
     "addWindow": "Add a window",
-    "editWindowTitle": "Edit window",
-    "siteMenu": "Site options"
+    "editWindowTitle": "Window settings",
+    "siteMenu": "Site options",
+    "returnToContent": "Return to {{title}} content",
+    "openWindowForContent": "Open a window, then choose “Edit content”."
   },
   "integrity": {
     "targetWindow": "Window: {{name}}",
@@ -522,8 +526,7 @@
     "openAutomaticallyWhenVisitorsArrive": "Open automatically when visitors arrive",
     "moveIconEarlier": "▲ Move icon earlier",
     "moveIconLater": "▼ Move icon later",
-    "duplicate": "Duplicate",
-    "contentCloseThisPanelOpen": "Content: close this panel, open the window, then choose \"Edit this window\" and click the text or image directly to edit it."
+    "duplicate": "Duplicate"
   },
   "windowTitleBar": {
     "minimize": "Minimize",
@@ -721,5 +724,62 @@
     "uploading": "Uploading image…",
     "uploadFailed": "Image upload failed. Try again or paste an image URL.",
     "addUrlImage": "Add image from URL"
+  },
+  "help": {
+    "button": "Help",
+    "title": "What would you like to know?",
+    "intro": "Every topic has a one-sentence explanation; some also offer an interactive tour. A tour never clicks, saves or publishes anything for you, and you can skip it at any time.",
+    "close": "Close",
+    "start": "Start tour",
+    "replay": "Replay tour",
+    "skip": "Skip tour",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done",
+    "step": "Step {{current}} of {{total}}",
+    "tourLabel": "Tour: {{topic}}",
+    "missing": {
+      "generic": "This item isn’t on the screen, or you don’t have permission to use it. Press Back, or skip the tour.",
+      "publish": "You don’t have permission to publish, so the Publish button isn’t shown.",
+      "disabled": "This button can’t be used right now (for example, there are no unpublished changes).",
+      "openTab": "Open the tab from the previous step first, then press Next."
+    },
+    "topics": {
+      "publish": {
+        "title": "What you’ll see before publishing",
+        "help": "A draft is visible only to you. The “After publishing” preview leaves out content that isn’t public; saving is not publishing.",
+        "previewTitle": "Preview first",
+        "previewBody": "Press Preview and use “After publishing” to check what visitors will see; switch to “Current draft” to look at your own draft.",
+        "publishTitle": "Publish when ready",
+        "publishBody": "Press Publish when it looks right. The pre-publish check lists what needs fixing; Cancel publishes nothing."
+      },
+      "instagram": {
+        "title": "Organising highlights and collections",
+        "help": "Highlights are multi-page stories. Collections group posts you have already made.",
+        "requires": "Open an Instagram window and start editing it to tour this topic.",
+        "tabTitle": "Choose the tab",
+        "tabBody": "Go to the “Highlights / Collections” tab — both are organised here.",
+        "switchTitle": "One at a time",
+        "switchBody": "Use these two buttons to choose between Highlights (multi-page stories) and Collections (groups of existing posts). Switching never loses unfinished input.",
+        "previewTitle": "Preview the result",
+        "previewBody": "Press Preview to check how it looks; you come back to the same place."
+      },
+      "explorer": {
+        "title": "Explorer shortcuts",
+        "help": "A shortcut is only a reference. Deleting a shortcut never deletes what it points to."
+      }
+    }
+  },
+  "authoring": {
+    "add": "Add component",
+    "addHint": "Choose by purpose, then edit your new component.",
+    "selectHint": "Select a window to edit its content, icon or settings.",
+    "selection": "Selected component actions",
+    "groups": {
+      "writing": "Profile and writing",
+      "visual": "Images and inspiration",
+      "interaction": "Interaction and audio",
+      "organize": "Organization and navigation"
+    }
   }
 }

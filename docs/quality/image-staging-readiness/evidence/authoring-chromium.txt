@@ -1,0 +1,21 @@
+[WebServer] (node:36422) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:36441) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 10 tests using 1 worker
+
+(node:36500) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › tests/image-authoring/image-authoring.spec.ts:72:5 › desktop Add → protected upload → Inspector → history/move → save/reload → projected public image (8.3s)
+  ✓   2 [chromium] › tests/image-authoring/image-authoring.spec.ts:122:5 › pending upload cannot overwrite a newer URL source (1.8s)
+  ✓   3 [chromium] › tests/image-authoring/image-authoring.spec.ts:138:5 › JPEG source decodes through authoring, save/reload and the projected public reader (3.5s)
+  ✓   4 [chromium] › tests/image-authoring/image-authoring.spec.ts:165:5 › local opt-in without the matching image API advertisement keeps creation and authoring hidden (706ms)
+  ✓   5 [chromium] › tests/image-authoring/image-authoring.spec.ts:177:5 › decorative outer host passes real clicks through in preview and public while editor selection still works (1.5s)
+  ✓   6 [chromium] › tests/image-authoring/image-authoring.spec.ts:209:5 › phone 320px Add and inline authoring keep Back reachable after switching to frameless/decorative (3.2s)
+  ✓   7 [chromium] › tests/image-authoring/image-authoring.spec.ts:209:5 › phone 375px Add and inline authoring keep Back reachable after switching to frameless/decorative (2.6s)
+  ✓   8 [chromium] › tests/image-authoring/image-authoring.spec.ts:209:5 › phone 430px Add and inline authoring keep Back reachable after switching to frameless/decorative (2.3s)
+  ✓   9 [chromium] › tests/image-authoring/image-authoring.spec.ts:233:7 › delayed upload from an existing URL preserves newer uncommitted URL input (1.7s)
+  ✓  10 [chromium] › tests/image-authoring/image-authoring.spec.ts:233:7 › delayed upload from an existing URL commits when source input is untouched (1.5s)
+
+  10 passed (30.2s)

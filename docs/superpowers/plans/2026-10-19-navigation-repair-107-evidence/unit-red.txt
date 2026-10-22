@@ -1,5 +1,5 @@
 
- RUN  v3.2.7 /Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01/apps/web
+ RUN  v3.2.7 <worktree>/apps/web
 
  ❯ src/features/navigation/useVisitorNavigation.test.ts (3 tests | 3 failed) 5ms
    × explicit visitor window close > resets only the closed window's restoration/request/return state without changing source or other sessions 4ms
@@ -54,5 +54,5 @@ TypeError: (0 , resetVisitorWindow) is not a function
    Duration  661ms (transform 242ms, setup 193ms, collect 231ms, tests 5ms, environment 0ms, prepare 55ms)
 
 undefined
-/Users/wen/Documents/Codex/2026-10-19/task-9/retro-image-r1-integration-01/apps/web:
+<worktree>/apps/web:
  ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run src/features/navigation/useVisitorNavigation.test.ts

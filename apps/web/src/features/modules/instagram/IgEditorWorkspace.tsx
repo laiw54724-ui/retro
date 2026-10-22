@@ -40,12 +40,13 @@ function IgEditorWorkspaceContent(props: ModuleProps<"instagram">) {
   const { ctx } = props;
   const scope = igEditorScope(props);
   const [section, setSection] = useIgEditorState<Section>(scope, "profile");
+  const [collectionKind, setCollectionKind] = useIgEditorState<"highlights" | "collections">(scope, "highlights");
   const [retargetId, setRetargetId] = useIgEditorState(scope, "");
   const id = useId();
   const sectionTabs = useRef<HTMLDivElement>(null);
   const scroll = useRef<HTMLDivElement>(null);
   const positions = useRef(new Map<string, number>());
-  const positionKey = `${scope}:${section}`;
+  const positionKey = `${scope}:${section}:${section === "collections" ? collectionKind : ""}`;
   const current = ctx.profiles?.find((profile) => profile.id === ctx.profileId);
 
   useLayoutEffect(() => {
@@ -77,13 +78,23 @@ function IgEditorWorkspaceContent(props: ModuleProps<"instagram">) {
     </div>
     <div ref={sectionTabs} role="tablist" aria-label={tr("igEditorWorkspace.ocEditingSections")} className={styles.sections}>
       {SECTION_KEYS.map((key, index) => <button
-        key={key} id={`${id}-${key}-tab`} type="button" role="tab" className="w98-btn small"
+        key={key} id={`${id}-${key}-tab`} type="button" role="tab" className="w98-btn small" data-help={key === "collections" ? "ig-tab-collections" : undefined}
         aria-selected={section === key} aria-controls={`${id}-${key}-panel`} tabIndex={section === key ? 0 : -1}
         onKeyDown={(event) => onSectionKeyDown(event, index)} onClick={() => setSection(key)}>{sectionLabels()[key]}</button>)}
     </div>
     <div ref={scroll} className={`ig-edit-scroll w98-scroll ${styles.content}`} tabIndex={0} aria-label={tr("igEditorWorkspace.instagramContentEditor")}
       onScroll={(event) => positions.current.set(positionKey, event.currentTarget.scrollTop)}>
       <section role="tabpanel" id={`${id}-profile-panel`} aria-labelledby={`${id}-profile-tab`} hidden={section !== "profile"} className={styles.panel}>
+        <div className={styles.profileActions} role="group" aria-label={tr("authoring.contentActions")}>
+          <button type="button" className="w98-btn small" onClick={() => {
+            setSection("posts");
+            sectionTabs.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[1]?.focus();
+          }}>{tr("authoring.managePosts")}</button>
+          <button type="button" className="w98-btn small" onClick={() => {
+            setCollectionKind("highlights"); setSection("collections");
+            sectionTabs.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[2]?.focus();
+          }}>{tr("authoring.manageHighlights")}</button>
+        </div>
         <ProfileEditor siteId={ctx.siteId ?? ""} windowId={props.window.id} draftScope={scope} profiles={ctx.profiles} profile={current} onChange={changeProfile} showAppearance={false} upload={ctx.upload ? (file) => ctx.upload!(file, "image") : undefined} />
         <IgEditForm {...props} section="profile" />
         {ctx.onProfileDelete ? <details className={styles.management}>
@@ -105,9 +116,12 @@ function IgEditorWorkspaceContent(props: ModuleProps<"instagram">) {
         <CanonicalPostEditor props={props} />
       </section>
       <section role="tabpanel" id={`${id}-collections-panel`} aria-labelledby={`${id}-collections-tab`} hidden={section !== "collections"} className={styles.panel}>
-        <p className="w98-hint">{tr("igEditorWorkspace.highlightsTellAStoryAcross")}</p>
-        <CanonicalHighlightEditor props={props} />
-        <CanonicalCollectionEditor props={props} />
+        <div className={styles.collectionSwitch} role="group" aria-label={tr("editorFlow.organizeContent")} data-help="ig-collection-switch">
+          <button type="button" className="w98-btn small" aria-pressed={collectionKind === "highlights"} onClick={() => setCollectionKind("highlights")}>{tr("editorFlow.highlights")}</button>
+          <button type="button" className="w98-btn small" aria-pressed={collectionKind === "collections"} onClick={() => setCollectionKind("collections")}>{tr("editorFlow.collections")}</button>
+        </div>
+        <div hidden={collectionKind !== "highlights"}><CanonicalHighlightEditor props={props} /></div>
+        <div hidden={collectionKind !== "collections"}><CanonicalCollectionEditor props={props} /></div>
       </section>
       <section role="tabpanel" id={`${id}-social-panel`} aria-labelledby={`${id}-social-tab`} hidden={section !== "social"} className={styles.panel}>
         <CanonicalSocialEditor props={props} />

@@ -261,6 +261,7 @@
     "opensInANewTab": "在新分頁開啟。"
   },
   "about": {
+    "avatarSettings": "頭像設定",
     "sAvatar": "{{nickname}} 的頭像",
     "editTheCardContentExpand": "編輯名片內容，展開需要修改的區段。",
     "basicInfo": "基本資料",
@@ -510,6 +511,7 @@
     "stateUnopened": "，未開啟"
   },
   "characterDialog": {
+    "preview": "預覽角色彈窗",
     "removeCharacterImage": "移除角色圖片",
     "character": "角色",
     "characterPopUp": "角色彈窗",

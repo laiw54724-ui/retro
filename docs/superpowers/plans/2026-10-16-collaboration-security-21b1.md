@@ -1,7 +1,5 @@
 # Collaboration Security 21B1 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Add a complete backend security boundary for owner/editor/viewer site collaboration, email-bound single-use invites, immediate revocation, and audited membership changes without exposing collaboration UI yet.
 
 **Architecture:** Keep `sites.owner_id` as the only owner source of truth and store only editor/viewer rows in `site_memberships`. All Worker routes use a request-time access resolver even though the service-role client bypasses RLS; Postgres RLS independently protects authenticated direct reads. Invite secrets are 32 random bytes returned once, while Postgres stores only a SHA-256 digest and atomically accepts or rejects a token through a service-role RPC.

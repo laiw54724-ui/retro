@@ -1,0 +1,51 @@
+
+> retrodesk@ build /Users/wen/Documents/Codex/2026-10-20/task-7/ux-integration
+> pnpm -r build
+
+Scope: 3 of 4 workspace projects
+packages/shared build$ tsc -p tsconfig.json
+packages/shared build: Done
+apps/api build$ wrangler deploy --dry-run --outdir dist
+apps/web build$ tsc -b && vite build && node scripts/build-pages-worker.mjs
+apps/api build:  ⛅️ wrangler 4.151.0 (update available 4.151.2)
+apps/api build: ───────────────────────────────────────────────
+apps/api build: [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mMultiple environments are defined in the Wrangler configuration file, but no target environment was specified for the deploy command.[0m
+apps/api build:   To avoid unintentional changes to the wrong environment, it is recommended to explicitly specify the target environment using the `-e|--env` flag or CLOUDFLARE_ENV env variable.
+apps/api build:   If your intention is to use the top-level environment of your configuration simply pass an empty string to the flag to target such environment. For example `--env=""`.
+apps/api build: Total Upload: 1740.15 KiB / gzip: 311.66 KiB
+apps/api build: Your Worker has access to the following bindings:
+apps/api build: Binding                                                             Resource                  
+apps/api build: env.ASSETS (retrodesk-assets-dev)                                   R2 Bucket                 
+apps/api build: env.ALLOWED_ORIGINS ("http://localhost:5173")                       Environment Variable      
+apps/api build: env.PUBLIC_ASSET_BASE_URL ("http://localhost:8787/api/assets")      Environment Variable      
+apps/api build: --dry-run: exiting now.
+apps/api build: Done
+apps/web build: vite v7.3.7 building client environment for production...
+apps/web build: transforming...
+apps/web build: ../../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/util.js (400:0): A comment
+apps/web build: "// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle."
+apps/web build: in "../../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/util.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+apps/web build: ../../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/regexes.js (74:0): A comment
+apps/web build: "/** Anchors a pattern source. The interpolation lives here rather than at the call site because
+apps/web build:  * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it
+apps/web build:  * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */"
+apps/web build: in "../../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/regexes.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+apps/web build: ✓ 456 modules transformed.
+apps/web build: rendering chunks...
+apps/web build: computing gzip size...
+apps/web build: dist/index.html                                     0.68 kB │ gzip:   0.43 kB
+apps/web build: dist/assets/CollaborativeSitePage-Cl3LRjVS.css      0.07 kB │ gzip:   0.08 kB
+apps/web build: dist/assets/PaintEditorDialog-D-mVKT5K.css          3.94 kB │ gzip:   1.36 kB
+apps/web build: dist/assets/index-DM0F01Gf.css                    153.25 kB │ gzip:  28.70 kB
+apps/web build: dist/assets/PaintEditorDialog-BshWKeYA.js          23.39 kB │ gzip:   8.35 kB │ map:    73.42 kB
+apps/web build: dist/assets/catalog.generated-Bz3d29Gr.js          68.19 kB │ gzip:  17.37 kB │ map:   137.11 kB
+apps/web build: dist/assets/CollaborativeSitePage-Btnu60TM.js      96.32 kB │ gzip:  27.06 kB │ map:   283.50 kB
+apps/web build: dist/assets/windowsIconManifest-BSvZw_z7.js       168.35 kB │ gzip:  20.66 kB │ map:   307.10 kB
+apps/web build: dist/assets/index-CGETh8de.js                   1,640.80 kB │ gzip: 493.88 kB │ map: 5,115.90 kB
+apps/web build: ✓ built in 3.44s
+apps/web build: (!) Some chunks are larger than 500 kB after minification. Consider:
+apps/web build: - Using dynamic import() to code-split the application
+apps/web build: - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+apps/web build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+apps/web build: pages-worker: built with API origin http://localhost:8787
+apps/web build: Done

@@ -2,9 +2,12 @@
 
 ## Why the web app uses React + Vite
 
-The requested stack mentioned “Next.js + Vite”. Those are alternative application build pipelines rather than layers that normally run together. For this MVP, the editor and visitor renderer are implemented as **React + Vite**, while **Hono** owns the server/API layer on Cloudflare Workers.
+The editor and visitor UI use React + Vite; Hono owns the API on Cloudflare
+Workers. Keeping API routing and authorization in the Worker avoids duplicating
+server responsibilities in the web app. The Pages edge worker provides public
+metadata handling alongside the client-rendered site.
 
-This keeps the architecture small and avoids duplicating routing, server actions and deployment responsibilities. If public pages later need server-rendered metadata/SEO at scale, add a dedicated Next.js/OpenNext public renderer that consumes the same `@retrodesk/shared` site schema and module registry.
+For setup and test commands, see [Development](DEVELOPMENT.md).
 
 ## Runtime topology
 
@@ -24,6 +27,23 @@ Public visitor
   /@username -> web -> GET /api/public/sites/:username
 ```
 
+## Source entry points
+
+| Concern | Start here |
+| --- | --- |
+| Web routes and page composition | `apps/web/src/app/App.tsx`, `apps/web/src/pages/` |
+| Editor state, canvas and inspector | `apps/web/src/features/editor/` |
+| Built-in app registration | `apps/web/src/features/modules/registry.ts` |
+| Module rendering and editing | `apps/web/src/features/modules/<module>/` |
+| API routes and access checks | `apps/api/src/routes/`, `apps/api/src/lib/access.ts` |
+| Publication and public projection | `apps/api/src/lib/publish.ts`, `packages/shared/src/public-projection.ts` |
+| Shared document validation | `packages/shared/src/site.ts` |
+| Database contracts | `supabase/migrations/`, `apps/api/test/*migration.test.ts` |
+
+Keep changes within the relevant boundary. Changes to shared document contracts
+need both editor and API compatibility checks; module UI changes should not move
+runtime code between packages solely for cleanup.
+
 ## Data model
 
 The editor works on one `SiteDocument` JSON tree:
@@ -40,7 +60,7 @@ Publishing copies the validated draft into `published_document`, increments `pub
 
 ## Window module registry
 
-The prototype's strongest engineering idea is preserved: each window type is a module with one schema and one renderer shared by editor and visitor mode.
+Each window type has a schema and shared rendering contract for editor and visitor mode.
 
 Built-in module types:
 
@@ -72,11 +92,11 @@ evidence of the importer inputs and outputs, not a license grant.
 ## Security boundaries
 
 1. Supabase is used for identity, not trusted client-side authorization.
-2. Every write API verifies the bearer token and scopes mutations to `owner_id`.
+2. Site-management write APIs verify the bearer token and resolve site ownership or membership; owner-only operations such as publishing enforce the owner role. Public guestbook submissions have separate validation and moderation rules.
 3. Public reads return only the published snapshot, never the draft.
 4. User content is typed JSON. Arbitrary HTML/JavaScript is not accepted.
 5. External links are limited to `http`, `https`, and `mailto` schemes.
-6. R2 uploads are owner/site namespaced, type checked, and capped at 8 MB.
+6. R2 uploads are user/site namespaced, type checked, and subject to media-specific size limits in `apps/api/src/lib/upload.ts`.
 7. Draft saves use optimistic concurrency.
 8. RLS remains enabled as defense in depth even though the Worker uses a service role for server-side operations.
 

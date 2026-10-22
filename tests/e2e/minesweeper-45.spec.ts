@@ -33,7 +33,7 @@ test(`owner selects difficulties, customizes them, and reaches the board at ${wi
   await page.setViewportSize({ width, height: 800 });
   await page.goto("/editor/site-1");
   await page.getByRole("button", { name: "Minesweeper.exe", exact: true }).click();
-  await page.getByRole("button", { name: "編輯此視窗" }).click();
+  await page.getByRole("button", { name: "編輯內容" }).click();
   const dialog = page.getByRole("dialog", { name: "Minesweeper.exe" });
   await dialog.getByRole("button", { name: "初級難度" }).click();
   await expect(dialog.getByRole("gridcell")).toHaveCount(25);
@@ -49,6 +49,7 @@ test(`owner selects difficulties, customizes them, and reaches the board at ${wi
   expect(await scroll.evaluate((node) => node.scrollLeft)).toBeGreaterThan(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
   await dialog.getByRole("spinbutton", { name: "地雷" }).fill("20");
+  await dialog.getByRole("spinbutton", { name: "地雷" }).press("Tab");
   await expect(dialog.getByRole("button", { name: "進階難度" })).toHaveAttribute("aria-pressed", "false");
   await expect.poll(() => {
     const saved = site.draft_document.windows.find((window) => window.type === "minesweeper");

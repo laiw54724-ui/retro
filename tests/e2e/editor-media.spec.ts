@@ -36,6 +36,7 @@ test("clearing a field pauses autosave quietly without an error popup", async ({
 test("pasting a Google Drive link previews it and the avatar can be repositioned inline", async ({ page }) => {
   await openEditor(page);
   const about = page.getByRole("dialog", { name: "About.exe" });
+  await about.locator(".about-avatar-settings > summary").click();
   const field = about.getByLabel("頭像網址");
   await field.fill(`https://drive.google.com/file/d/${DRIVE_ID}/view?usp=sharing`);
   await field.press("Enter");
@@ -51,6 +52,7 @@ test("pasting a Google Drive link previews it and the avatar can be repositioned
 test("rejects non-https avatar links with a visible reason", async ({ page }) => {
   await openEditor(page);
   const about = page.getByRole("dialog", { name: "About.exe" });
+  await about.locator(".about-avatar-settings > summary").click();
   const field = about.getByLabel("頭像網址");
   await field.fill("javascript:alert(1)");
   await field.press("Enter");
@@ -100,9 +102,9 @@ test("uses an installed optional icon pack and leaves removed legacy PNGs unavai
 
   await page.getByRole("button", { name: "手機版" }).click();
   await page.getByRole("button", { name: "About.exe" }).click();
-  await page.getByRole("button", { name: "編輯此視窗" }).click();
-  await page.getByRole("button", { name: "完成編輯" }).click();
-  await page.locator(".m-toolbar").getByRole("button", { name: "編輯" }).click();
+  await page.getByRole("button", { name: "編輯內容" }).click();
+  await page.getByRole("button", { name: "完成" }).click();
+  await page.locator(".m-toolbar").getByRole("button", { name: "視窗設定" }).click();
   await page.getByRole("button", { name: "更換圖示…" }).click();
   const mobileDialog = page.getByRole("dialog", { name: "選擇圖示" });
   await mobileDialog.getByRole("tab", { name: "Windows（本機）" }).click();

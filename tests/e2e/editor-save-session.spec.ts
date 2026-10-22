@@ -89,7 +89,7 @@ async function openAbout(page: Page, width = 1280) {
   await expect(page.locator('.editor-topbar')).toBeVisible();
   if (width < 768) {
     await page.getByRole('button', { name: 'About.exe', exact: true }).click();
-    await page.getByRole('button', { name: '編輯此視窗', exact: true }).click();
+    await page.getByRole('button', { name: '編輯內容', exact: true }).click();
   }
   await expect(page.getByLabel('簡介', { exact: true })).toBeVisible();
 }
@@ -205,6 +205,10 @@ test('ordinary remote reload to viewer retains its access-loss redirect', async 
 
 for (const width of [1280, 390]) test(`immediate exit at ${width}px retains the canonical edit until confirmed`, async ({ page }, testInfo) => {
   const state = await fixture(page, width);
+  // Hold the save response: the edit is then unsaved/in flight no matter how slow the machine is. Without this the
+  // 650ms autosave could finish before the click on a loaded runner, leaving nothing to protect and no prompt
+  // (reproduced: 4 of 60 runs under load, traces kept in retro-evidence/save-session-race).
+  state.hold();
   await page.getByLabel('簡介', { exact: true }).fill('Keep this unsaved bio');
   await page.locator('.editor-topbar .brand').click();
   const prompt = page.getByRole('dialog', { name: leaveTitle, exact: true });
@@ -213,6 +217,7 @@ for (const width of [1280, 390]) test(`immediate exit at ${width}px retains the 
   await prompt.getByRole('button', { name: stay, exact: true }).click();
   await expect(page.getByLabel('簡介', { exact: true })).toHaveValue('Keep this unsaved bio');
   await expect.poll(() => state.saves.length).toBe(1);
+  state.release(); await consumed(page);
   await expect(page.locator('.save-text')).toHaveText('已儲存');
   await page.locator('.editor-topbar .brand').click();
   await expect(page).toHaveURL(/\/auth$/);
@@ -275,7 +280,7 @@ test('390px save failure retains Retry after the notice closes', async ({ page }
 test('real current-session conflict still pauses saving and retains the edit', async ({ page }) => {
   const state = await fixture(page); state.fail(409);
   await page.getByLabel('簡介', { exact: true }).fill('Conflict bio');
-  await expect(page.locator('.editor-message')).toContainText('另一個分頁');
+  await expect(page.locator('.editor-message[role="alert"]')).toContainText('另一個分頁');
   await expect(page.getByRole('button', { name: '重試儲存', exact: true })).toHaveCount(0);
   await page.waitForTimeout(750); expect(state.saves).toHaveLength(1);
   await expect(page.getByLabel('簡介', { exact: true })).toHaveValue('Conflict bio');

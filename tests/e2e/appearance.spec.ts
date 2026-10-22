@@ -100,8 +100,8 @@ test("mobile window appearance validates hex input, persists and resets to inher
   await page.setViewportSize({ width: 320, height: 850 });
   await page.goto("/editor/site-1");
   await page.getByRole("button", { name: "About.exe", exact: true }).click();
-  await page.getByRole("button", { name: "編輯", exact: true }).click();
-  let sheet = page.getByRole("dialog", { name: "編輯視窗", exact: true });
+  await page.getByRole("button", { name: "視窗設定", exact: true }).click();
+  let sheet = page.getByRole("dialog", { name: "視窗設定", exact: true });
   await sheet.getByRole("textbox", { name: "標題起始色色碼", exact: true }).fill("#12");
   await expect(sheet.getByRole("textbox", { name: "標題起始色色碼", exact: true })).toHaveAttribute("aria-invalid", "true");
   expect(site.writes()).toBe(0);
@@ -112,8 +112,8 @@ test("mobile window appearance validates hex input, persists and resets to inher
   await page.reload();
   await page.getByRole("button", { name: "About.exe", exact: true }).click();
   await expect(page.getByRole("dialog", { name: "About.exe" }).locator(".m-win-title")).toHaveCSS("background-color", "rgb(170, 187, 204)");
-  await page.getByRole("button", { name: "編輯", exact: true }).click();
-  sheet = page.getByRole("dialog", { name: "編輯視窗", exact: true });
+  await page.getByRole("button", { name: "視窗設定", exact: true }).click();
+  sheet = page.getByRole("dialog", { name: "視窗設定", exact: true });
   await sheet.getByRole("button", { name: "恢復主題設定", exact: true }).click();
   await expect.poll(() => site.saved().windows[0].appearance).toBeUndefined();
   expect(site.saved().windows[1].appearance).toEqual(appearanceDocument().windows[1].appearance);

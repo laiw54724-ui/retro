@@ -1,0 +1,39 @@
+[WebServer] (node:30644) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:30657) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:30699) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [webkit] › tests/image-authoring/image-authoring.spec.ts:72:5 › desktop Add → protected upload → Inspector → history/move → save/reload → projected public image (1ms)
+Testing stopped early after 1 maximum allowed failures.
+
+
+  1) [webkit] › tests/image-authoring/image-authoring.spec.ts:72:5 › desktop Add → protected upload → Inspector → history/move → save/reload → projected public image
+
+    Error: browserType.launch: Executable doesn't exist at /Users/wen/Library/Caches/ms-playwright/webkit-2370/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     pnpm exec playwright install                           ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/image-readiness/image-authoring-desktop-Ad-f3e6e-ad-→-projected-public-image-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/image-readiness/image-authoring-desktop-Ad-f3e6e-ad-→-projected-public-image-webkit/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/image-readiness/image-authoring-desktop-Ad-f3e6e-ad-→-projected-public-image-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › tests/image-authoring/image-authoring.spec.ts:72:5 › desktop Add → protected upload → Inspector → history/move → save/reload → projected public image
+  8 did not run
+  1 error was not a part of any test, see above for details

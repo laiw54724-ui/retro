@@ -425,5 +425,34 @@
     "omitted": "이미지 공간이 부족하여 {{count}}개 파일을 대기열에 추가하지 못했습니다. 대기 중이거나 실패한 작업을 취소 또는 삭제하거나 이미지를 제거한 후 파일을 다시 선택하세요.",
     "draftHint": "파일을 선택하면 편집 가능한 초안이 즉시 생성됩니다. 성공한 이미지는 유지되며 각 파일을 재시도하거나 취소할 수 있습니다. 모두 취소하면 빈 초안을 삭제할 수 있습니다.",
     "uploadPages": "페이지 업로드 (여러 개 선택 가능)"
+  },
+  "editorFlow": {
+    "entryCharacter": "이 창의 시작 캐릭터",
+    "manageCharacters": "캐릭터 관리 ({{count}})",
+    "newPost": "새 게시물",
+    "backPosts": "← 게시물 목록으로",
+    "filters": "필터",
+    "edit": "편집",
+    "datePlace": "날짜와 장소",
+    "highlights": "하이라이트",
+    "collections": "게시물 컬렉션",
+    "organizeContent": "콘텐츠 유형",
+    "backHighlights": "← 하이라이트 목록으로",
+    "backCollections": "← 컬렉션 목록으로",
+    "backEditing": "← 편집으로 돌아가기",
+    "pendingStatus": "완료하지 않은 IG 입력은 저장되지 않았으며 이 탭에만 유지됩니다.",
+    "retainedDrafts": "완료하지 않은 입력은 이 탭에 유지되며 새로고침하면 사라집니다."
+  },
+  "authoring": {
+    "contentActions": "콘텐츠 작업",
+    "managePosts": "게시물 관리",
+    "manageHighlights": "하이라이트 관리",
+    "done": "편집 완료",
+    "draftHint": "변경 사항은 사이트 초안에 반영됩니다. 완료나 뒤로 가기로 사이트가 게시되지는 않습니다.",
+    "pendingBadge": "미완료 입력 있음",
+    "pendingDetail": "미완료 입력은 이 탭에 유지됩니다. 완료나 뒤로 가기 후에도 이어서 편집할 수 있지만 새로고침하면 지워집니다.",
+    "replaceImage": "이미지 {{n}} 교체",
+    "replacementHint": "업로드가 성공할 때까지 원본 이미지를 유지합니다.",
+    "chooseImages": "이미지 선택 (여러 장 가능)"
   }
 }

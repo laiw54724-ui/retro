@@ -16,6 +16,8 @@ name = "retrodesk-api-staging"
 [env.staging.vars]
 ALLOWED_ORIGINS = "https://retrodesk-staging.pages.dev"
 PUBLIC_ASSET_BASE_URL = "https://retrodesk-api-staging.beibeiz.workers.dev/api/assets"
+# Fail closed: no site shows the Image entry unless a deploy passes --var IMAGE_QA_SITE_IDS:<ids>.
+IMAGE_QA_SITE_IDS = ""
 
 [[env.staging.r2_buckets]]
 binding = "ASSETS"

@@ -19,7 +19,7 @@ async function openEditor(page: Page, width = 1400) {
   await page.route("**/api/sites/site-1/draft", (route) => { saved = route.request().postDataJSON().document; saves++; return route.fulfill({ json: { version: saves + 1, updatedAt: "2026-10-19T00:00:00Z" } }); });
   await page.setViewportSize({ width, height: 950 });
   await page.goto("/editor/site-1");
-  if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯此視窗" }).click(); }
+  if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯內容" }).click(); }
   const win = page.getByRole("dialog", { name: "Instagram.exe", exact: true });
   await expect(win.getByRole("textbox", { name: "Handle", exact: true })).toBeVisible();
   return { win, saved: () => saved, profile: () => saved.entities.profiles[0], saves: () => saves };
@@ -54,7 +54,7 @@ for (const width of [1400, 390]) {
     await expect(page.getByRole("alert")).toHaveCount(0);
     await page.screenshot({ path: testInfo.outputPath(`identity-${width}.png`) });
     await page.reload();
-    if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯此視窗" }).click(); }
+    if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯內容" }).click(); }
     await expect(identity(win)).toHaveValue("new-name");
     await expect(nameField(win)).toHaveValue("New Display Name");
   });
@@ -187,13 +187,13 @@ test("post-count drafts survive collapsing their editor without saving zero", as
   await win.getByRole("tab", { name: "貼文", exact: true }).click();
   const toggle = win.locator(".ig-canonical-posts .ig-post-toggle").first();
   if (await toggle.getAttribute("aria-expanded") !== "true") await toggle.click();
-  const details = win.locator(".ig-post-social-details").first();
+  const details = win.locator(".ig-post-social-details").filter({ has: page.locator(".ig-post-social") }).first();
   await details.locator("summary").click();
   const count = win.getByRole("spinbutton", { name: "其他虛構喜歡人數", exact: true }).first();
   const original = await count.inputValue();
   await count.fill("");
   await toggle.click(); await toggle.click();
-  await win.locator(".ig-post-social-details").first().locator("summary").click();
+
   await expect(count).toHaveValue("");
   await win.getByRole("button", { name: "取消編輯其他虛構喜歡人數", exact: true }).click();
   await expect(count).toHaveValue(original);

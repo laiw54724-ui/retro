@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { SUPPORTED_LOCALES } from "./locale";
 import { NAMESPACES, resources } from "./resources";
+// Registry imports all module renderers. Collect it with the suite instead of
+// timing cold Vite transforms as part of this translation-key assertion.
+import { WINDOW_TYPES } from "../features/modules/registry";
 
 function leaves(value: unknown, prefix = ""): Record<string, string> {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error(`Expected an object at ${prefix}`);
@@ -33,8 +36,7 @@ describe("resource quality gates (all supported locales, including preview)", ()
     }
   });
 
-  it("covers every app type through render-time catalog labels without changing registry data", async () => {
-    const { WINDOW_TYPES } = await import("../features/modules/registry");
+  it("covers every app type through render-time catalog labels without changing registry data", () => {
     for (const locale of SUPPORTED_LOCALES) {
       expect(Object.keys(resources[locale].editor.modules).sort()).toEqual([...WINDOW_TYPES].sort());
     }

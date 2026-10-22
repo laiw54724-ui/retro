@@ -71,30 +71,32 @@ export function AboutInlineEditor({ window, ctx, update }: ModuleProps<"about">)
 
   return (
     <div className="about editing about-editor" style={{ background: tv.face }}>
-      <p className="about-editor-intro">{tr("about.editTheCardContentExpand")}</p>
       <UploadTaskList tasks={media.tasks} onRetry={media.retry} onDismiss={media.dismiss} />
       <details className="about-editor-section" open>
         <summary>{tr("about.basicInfo")}</summary>
         <div className="about-editor-section-body about-editor-basics">
-          <div className="about-edit-avatar">
+          <div className="about-editor-heading">
             <div className="about-avatar ph" style={{ border: `1px solid ${tv.shadow}` }}>
               {content.avatar ? <AvatarImage src={content.avatar} crop={content.avatarCrop} alt={tr("about.avatarPreview")} /> : <span className="about-avatar-empty">{tr("about.noAvatarSetYet")}</span>}
             </div>
-            <div className="ie-row">
-              <FilePick onFiles={(files) => uploadAvatar(files[0])}>{content.avatar ? tr("about.changeAvatar") : tr("about.uploadAvatar")}</FilePick>
-              {content.avatar ? <MiniBtn label={tr("about.adjustPosition")} className="mini-btn wide" on={cropping} aria-pressed={cropping} onClick={() => setCropping(!cropping)}>{tr("about.adjustPosition")}</MiniBtn> : null}
-              {content.avatar ? <MiniBtn label={tr("about.removeAvatar")} className="mini-btn wide" onClick={() => { setCropping(false); patch({ avatar: null, avatarUrl: "", avatarCrop: undefined }); }}>{tr("about.removeAvatar")}</MiniBtn> : null}
-            </div>
-            <ImageUrlField visibleLabel onEdit={() => media.cancel("avatar")} key={window.id} raw={content.avatarUrl} label={tr("about.avatarUrl")} placeholder={tr("about.orPasteAnAvatarUrl")} onCommit={(raw, src) => { setCropping(false); patch({ avatarUrl: raw, avatar: src, avatarCrop: undefined }); }} />
-            {cropping && content.avatar ? <CropEditor key={content.avatar} src={content.avatar} crop={content.avatarCrop as ImageCrop | undefined} onChange={(avatarCrop) => patch({ avatarCrop }, "avatar-crop")} /> : null}
-          </div>
-          <div className="about-info">
             <label><span>{tr("about.nickname")}</span><input className="ie" value={content.nickname} maxLength={160} onChange={(event) => patch({ nickname: event.currentTarget.value }, "nickname")} /></label>
-            <label><span>{tr("about.bioTagline")}</span><input className="ie" value={content.detailsTitle} maxLength={100} aria-label={tr("about.tagline")} onChange={(event) => patch({ detailsTitle: event.currentTarget.value }, "details-title")} /></label>
-            <label><span>{tr("about.bio")}</span><textarea className="ie" rows={4} value={content.bio} maxLength={5000} placeholder={tr("about.introduceYourselfOneLinePer")} aria-label={tr("about.bio")} onChange={(event) => patch({ bio: event.currentTarget.value }, "bio")} /></label>
-            <label><span>{tr("about.quoteOptional")}</span><textarea className="ie" rows={2} value={content.quote} maxLength={500} placeholder={tr("about.aLineYoudLikeTo")} aria-label={tr("about.quote")} onChange={(event) => patch({ quote: event.currentTarget.value }, "quote")} /></label>
-            <label><span>{tr("about.bannerTextOptional")}</span><textarea className="ie" rows={2} value={content.banner} maxLength={500} placeholder={tr("about.leaveBlankToHideThe")} aria-label={tr("about.bannerText")} onChange={(event) => patch({ banner: event.currentTarget.value }, "banner")} /></label>
           </div>
+          <label><span>{tr("about.bio")}</span><textarea className="ie" rows={3} value={content.bio} maxLength={5000} placeholder={tr("about.introduceYourselfOneLinePer")} aria-label={tr("about.bio")} onChange={(event) => patch({ bio: event.currentTarget.value }, "bio")} /></label>
+          <details className="about-avatar-settings">
+            <summary>{tr("about.avatarSettings")}</summary>
+            <div className="about-edit-avatar">
+              <div className="ie-row">
+                <FilePick onFiles={(files) => uploadAvatar(files[0])}>{content.avatar ? tr("about.changeAvatar") : tr("about.uploadAvatar")}</FilePick>
+                {content.avatar ? <MiniBtn label={tr("about.adjustPosition")} className="mini-btn wide" on={cropping} aria-pressed={cropping} onClick={() => setCropping(!cropping)}>{tr("about.adjustPosition")}</MiniBtn> : null}
+                {content.avatar ? <MiniBtn label={tr("about.removeAvatar")} className="mini-btn wide" onClick={() => { setCropping(false); patch({ avatar: null, avatarUrl: "", avatarCrop: undefined }); }}>{tr("about.removeAvatar")}</MiniBtn> : null}
+              </div>
+              <ImageUrlField visibleLabel onEdit={() => media.cancel("avatar")} key={window.id} raw={content.avatarUrl} label={tr("about.avatarUrl")} placeholder={tr("about.orPasteAnAvatarUrl")} onCommit={(raw, src) => { setCropping(false); patch({ avatarUrl: raw, avatar: src, avatarCrop: undefined }); }} />
+              {cropping && content.avatar ? <CropEditor key={content.avatar} src={content.avatar} crop={content.avatarCrop as ImageCrop | undefined} onChange={(avatarCrop) => patch({ avatarCrop }, "avatar-crop")} /> : null}
+            </div>
+          </details>
+          <label><span>{tr("about.bioTagline")}</span><input className="ie" value={content.detailsTitle} maxLength={100} aria-label={tr("about.tagline")} onChange={(event) => patch({ detailsTitle: event.currentTarget.value }, "details-title")} /></label>
+          <label><span>{tr("about.quoteOptional")}</span><textarea className="ie" rows={2} value={content.quote} maxLength={500} placeholder={tr("about.aLineYoudLikeTo")} aria-label={tr("about.quote")} onChange={(event) => patch({ quote: event.currentTarget.value }, "quote")} /></label>
+          <label><span>{tr("about.bannerTextOptional")}</span><textarea className="ie" rows={2} value={content.banner} maxLength={500} placeholder={tr("about.leaveBlankToHideThe")} aria-label={tr("about.bannerText")} onChange={(event) => patch({ banner: event.currentTarget.value }, "banner")} /></label>
         </div>
       </details>
       <details className="about-editor-section">

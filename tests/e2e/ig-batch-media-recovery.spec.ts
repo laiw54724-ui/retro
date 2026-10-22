@@ -27,14 +27,23 @@ async function open(page: Page, width = 1400) {
     return route.fulfill({ json: { asset } });
   });
   await page.setViewportSize({ width, height: 950 }); await page.goto("/editor/site-1");
-  if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯此視窗" }).click(); }
+  if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯內容" }).click(); }
   const win = page.getByRole("dialog", { name: "Instagram.exe", exact: true }); await expect(win.getByRole("textbox", { name: "Handle", exact: true })).toBeVisible();
   await win.getByRole("tab", { name: "貼文", exact: true }).click();
   const posts = win.locator(".ig-canonical-posts");
   return { win, posts, calls, assets, saved: () => saved, post: (title: string) => saved.entities.posts.find((post) => post.title === title)!, src: (name: string) => assets.find((asset) => asset.name === name)!.url,
     release: (name: string) => { const done = held.get(name); if (!done) throw new Error("not held"); held.delete(name); done(); } };
 }
-const newPostPicker = (posts: ReturnType<Page["locator"]>) => posts.locator(':scope > .ie-row input[type="file"]');
+const newPostPicker = (posts: ReturnType<Page["locator"]>) => ({
+  async setInputFiles(files: ReturnType<typeof file> | ReturnType<typeof file>[]) {
+    const back = posts.getByRole("button", { name: "← 返回貼文", exact: true });
+    if (await back.isVisible()) await back.click();
+    await posts.getByRole("button", { name: "新增貼文", exact: true }).click();
+    const post = posts.locator("article:visible");
+    await post.getByLabel("標題", { exact: true }).fill((Array.isArray(files) ? files[0] : files).name.replace(/\.[^.]+$/, ""));
+    await post.locator('input[type="file"]').setInputFiles(files);
+  }
+});
 
 test("partial post batch keeps successes and newer edits; retry fills selection order without resurrecting removed media", async ({ page }) => {
   const s = await open(page); await newPostPicker(s.posts).setInputFiles(["a.png", "fail-b.png", "held-c.png", "d.png", "e.png"].map(file));
@@ -53,7 +62,7 @@ test("partial post batch keeps successes and newer edits; retry fills selection 
   expect(media.map((item) => item.src)).toEqual([s.src("fail-b.png"), "https://assets.test/newer.png", s.src("d.png"), s.src("e.png")]);
   expect(media[1]).toMatchObject({ id: beforeIds[1], alt: "newer alt" }); expect(media.some((item) => item.id === beforeIds[0])).toBe(false);
   expect(s.calls).toEqual(["a.png", "fail-b.png", "held-c.png", "d.png", "e.png", "fail-b.png"]);
-  await page.reload(); await s.win.getByRole("tab", { name: "貼文", exact: true }).click(); await expect(s.posts.getByRole("button", { name: /Edited during upload/ })).toBeVisible();
+  await page.reload(); await s.win.getByRole("tab", { name: "貼文", exact: true }).click(); await expect(s.posts.locator("[data-ig-edit]").filter({ hasText: "Edited during upload" })).toBeVisible();
   expect(s.post("Edited during upload").media).toEqual(media);
 });
 
@@ -76,7 +85,7 @@ test("reselecting the same file creates independent drafts; deleting an uploadin
   await newPostPicker(s.posts).setInputFiles(file("same.png")); await expect.poll(() => s.calls.filter((name) => name === "same.png").length).toBe(2);
   await expect.poll(() => s.saved().entities.posts.filter((post) => post.title === "same" && post.media?.length === 1).length).toBe(2);
   await newPostPicker(s.posts).setInputFiles(file("held-delete.png")); await expect.poll(() => s.calls.includes("held-delete.png")).toBe(true);
-  await s.posts.locator("article").last().getByRole("button", { name: "刪除貼文", exact: true }).click();
+  await s.posts.locator("article").last().getByRole("button", { name: /^刪除貼文：/ }).click();
   s.release("held-delete.png"); await expect.poll(() => s.assets.length).toBe(3);
   await expect.poll(() => s.saved().entities.posts.length).toBe(initial + 2);
   expect(s.saved().entities.posts.some((post) => post.title === "held-delete")).toBe(false);
@@ -85,6 +94,7 @@ test("reselecting the same file creates independent drafts; deleting an uploadin
 for (const width of [320, 390]) test(`highlight batch retry preserves page edits and task controls at ${width}px`, async ({ page }, testInfo) => {
   const s = await open(page, width); await s.win.getByRole("tab", { name: "精選／合集", exact: true }).click();
   const highlight = s.win.locator(".ig-canonical-highlights article").first();
+  await highlight.locator("[data-ig-edit]").click();
   const h = () => s.saved().entities.highlights!.find((entry) => entry.ownerProfileId === "profile:ig" && entry.title === "Trip")!;
   const before = structuredClone(h().frames); const pageNumber = before.length + 1;
   await highlight.locator('input[type="file"]').setInputFiles(["first.png", "fail-page.png", "third.png"].map(file));

@@ -97,6 +97,8 @@
     "thisUrlIsAlreadyTaken": "這個網址已有人使用",
     "thisUrlIsAvailable": "這個網址可以使用",
     "checking": "正在檢查...",
+    "availabilityFailed": "無法檢查網址，請確認網路連線後重試。",
+    "retryAvailability": "重試檢查",
     "desktopName": "桌面名稱",
     "chooseAStartingTheme": "選一個初始主題",
     "chooseAStartingTemplate": "選一個起始模板",

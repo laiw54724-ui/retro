@@ -1,7 +1,5 @@
 # Appearance and template delivery order
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
-
 **Goal:** Complete #35 appearance customization before shipping #36 template storage and sharing.
 
 **Architecture:** First establish one appearance resolver and shared editor controls for desktop and mobile. Expand the validated appearance contract through every renderer, then serialize only those supported fields into reusable templates. Cloud sharing publishes immutable template versions with separate asset copies; it never serializes a whole site as a theme.
