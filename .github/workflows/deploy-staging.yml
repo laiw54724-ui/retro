@@ -91,7 +91,7 @@ jobs:
           if [ -n "$QA_SITE_IDS" ]; then
             RETRO_IMAGE_RELEASE_CONFIG="$PWD/config/image-staging-rollout.qa.json" NODE_ENV=production pnpm build:staging
           else
-            pnpm build
+            NODE_ENV=production pnpm build:staging
           fi
 
       - name: Deploy Pages
