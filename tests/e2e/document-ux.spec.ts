@@ -20,7 +20,7 @@ function documentWithBlocks(long = false): SiteDocumentV2Input {
     { id: "list", kind: "list", text: long ? "ListItem".repeat(80) : "第一項\n第二項" },
     { id: "divider", kind: "divider" }
   ];
-  const migrated = migrateSiteDocumentV2(normalizeDocument({ ...documentFixture, windows: [documentWindow] }), { siteId: "site-1" });
+  const migrated = migrateSiteDocumentV2(normalizeDocument({ ...documentFixture, windows: [documentWindow, { ...structuredClone(documentWindow), id: "document-2", title: "Other document", defaultOpen: false }] }), { siteId: "site-1" });
   if (!migrated.ok || migrated.version !== 2) throw new Error("Document fixture migration failed");
   return migrated.document;
 }
@@ -71,7 +71,7 @@ test("document advanced fields follow the selected block, including keyboard-sel
 
   const paragraph = dialog.getByLabel("段落", { exact: true });
   await paragraph.focus();
-  await paragraph.press("Tab");
+  await dialog.locator('[data-block-id="image"]').focus();
   const image = dialog.getByRole("group", { name: "圖片區塊 3", exact: true });
   await expect(image).toBeFocused();
   await expect(image.getByRole("group", { name: "圖片設定" })).toBeVisible();
@@ -99,7 +99,7 @@ test("document advanced fields follow the selected block, including keyboard-sel
   await expect(dialog.getByLabel("連結網址", { exact: true })).toHaveCount(0);
   const list = dialog.getByLabel("清單，每行一項", { exact: true });
   await list.focus();
-  await list.press("Tab");
+  await dialog.locator('[data-block-id="divider"]').focus();
   const divider = dialog.getByRole("group", { name: "分隔線區塊 7", exact: true });
   await expect(divider).toBeFocused();
   await expect(divider.getByRole("button", { name: "刪除區塊", exact: true })).toBeVisible();
@@ -147,14 +147,15 @@ test("document captions and alt remain independent through undo, reload and publ
 
 test("document add, reorder and remove each remain undoable", async ({ page }) => {
   const { dialog } = await openDocument(page);
-  await dialog.getByRole("button", { name: "新增標題", exact: true }).click();
+  await dialog.getByRole("button", { name: "插入", exact: true }).click();
+  await dialog.getByRole("menuitem", { name: "標題", exact: true }).click();
   const blocks = dialog.locator(".doc-block");
   await expect(blocks).toHaveCount(8);
   const newId = await blocks.last().getAttribute("data-block-id");
   expect(newId).toBeTruthy();
   const added = dialog.locator(`.doc-block[data-block-id="${newId}"]`);
   await added.getByLabel("標題", { exact: true }).fill("新的內容標題");
-  await added.getByRole("button", { name: "上移", exact: true }).click();
+  await added.getByLabel("標題", { exact: true }).press("Alt+ArrowUp");
   await expect(blocks.nth(6)).toHaveAttribute("data-block-id", newId!);
   await added.getByRole("button", { name: "刪除區塊", exact: true }).click();
   await expect(blocks).toHaveCount(7);
@@ -170,13 +171,13 @@ test("document add, reorder and remove each remain undoable", async ({ page }) =
   await expect(blocks).toHaveCount(7);
 });
 
-for (const width of [320, 375, 430]) {
+for (const width of [320, 375, 390, 430]) {
   test(`long document content and active controls fit ${width}px editor and public pages`, async ({ page }) => {
     const { dialog } = await openDocument(page, { width, long: true });
     const editor = dialog.locator(".document-editor");
     await expectContained(page, editor);
     await dialog.locator('[data-block-id="text"]').focus();
-    await expect(dialog.getByRole("group", { name: "段落格式", exact: true })).toBeVisible();
+    await expect(dialog.getByRole("toolbar", { name: "段落格式", exact: true })).toBeVisible();
     await expectContained(page, editor);
     await dialog.locator('[data-block-id="image"]').focus();
     await expect(dialog.getByLabel("替代文字", { exact: true })).toBeVisible();
@@ -197,3 +198,201 @@ for (const width of [320, 375, 430]) {
     await expectContained(page, publicView);
   });
 }
+
+for (const width of [1280, 320, 375, 390, 430]) {
+  test(`inline paper keeps toolbar visible and controls usable at ${width}px`, async ({ page }, testInfo) => {
+    const { dialog } = await openDocument(page, { width });
+    const paragraph = dialog.getByLabel("段落", { exact: true });
+    await paragraph.focus();
+    await expect(dialog.getByRole("toolbar")).toBeVisible();
+    if (width < 768) {
+      await expect(paragraph).toHaveCSS("font-size", "15px");
+      expect((await paragraph.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+      for (const button of await dialog.getByRole("toolbar").getByRole("button").all()) {
+        expect((await button.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+      }
+    }
+    await dialog.getByRole("button", { name: "粗體", exact: true }).click();
+    await expect(paragraph).toBeFocused();
+    await expect(paragraph).toHaveCSS("font-weight", "700");
+    await paragraph.press("Control+i");
+    await expect(paragraph).toHaveCSS("font-style", "italic");
+    await paragraph.fill("Long paragraph\n".repeat(40));
+    await dialog.locator(".doc-page").evaluate((node) => node.scrollTo(0, node.scrollHeight));
+    await expect.poll(() => dialog.locator(".doc-page").evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
+    await expect(dialog.locator(".doc-status")).toBeInViewport();
+    expect(await dialog.locator(".retro-window-body, .m-win-body").evaluate((node) => node.scrollTop)).toBe(0);
+    await expect(dialog.getByRole("toolbar")).toBeInViewport();
+    await paragraph.fill("可直接編輯的段落");
+    await dialog.locator(".doc-page").evaluate((node) => node.scrollTo(0, 0));
+    await expectContained(page, dialog.locator(".document-editor"));
+    await page.screenshot({ path: testInfo.outputPath(`document-${width}.png`) });
+  });
+}
+
+test("split selection, slash menu cancellation, conversion, empty deletion and append preserve focus and history", async ({ page }) => {
+  const { dialog } = await openDocument(page);
+  const paragraph = dialog.getByLabel("段落", { exact: true }).first();
+  await paragraph.fill("beforeSELECTafter");
+  await paragraph.evaluate((node: HTMLTextAreaElement) => node.setSelectionRange(6, 12));
+  await paragraph.press("Enter");
+  const paragraphs = dialog.getByLabel("段落", { exact: true });
+  await expect(paragraphs.nth(0)).toHaveValue("before");
+  await expect(paragraphs.nth(1)).toHaveValue("after");
+  await expect(paragraphs.nth(1)).toBeFocused();
+  await page.getByRole("button", { name: "復原", exact: true }).click();
+  await expect(paragraph).toHaveValue("beforeSELECTafter");
+  await paragraph.fill("");
+  await paragraph.press("/");
+  await expect(dialog.getByRole("menuitem").first()).toBeFocused();
+  await page.keyboard.press("ArrowDown");
+  await expect(dialog.getByRole("menuitem").nth(1)).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(paragraph).toBeFocused();
+  await expect(dialog.getByRole("menu")).toHaveCount(0);
+  await paragraph.press("/");
+  await dialog.getByRole("menuitem", { name: "清單", exact: true }).click();
+  const list = dialog.getByLabel("清單，每行一項", { exact: true }).first();
+  await expect(list).toBeFocused();
+  await list.press("Backspace");
+  await expect(dialog.getByLabel("標題", { exact: true })).toBeFocused();
+  await dialog.locator(".doc-append").click();
+  const last = dialog.getByLabel("段落", { exact: true }).last();
+  await expect(last).toBeFocused();
+  await dialog.locator(".doc-append").click();
+  await expect(last).toBeFocused();
+  await last.press("/");
+  await page.keyboard.press("Tab");
+  await expect(last).toBeFocused();
+});
+
+test("undo while slash menu is open cannot erase restored text", async ({ page }) => {
+  const { dialog } = await openDocument(page);
+  const paragraph = dialog.getByLabel("段落", { exact: true });
+  await paragraph.fill("");
+  await paragraph.press("/");
+  await page.keyboard.press("Control+z");
+  await expect(paragraph).toHaveValue("可直接編輯的段落");
+  if (await dialog.getByRole("menu").isVisible()) await dialog.getByRole("menuitem", { name: "圖片", exact: true }).click();
+  await expect(paragraph).toHaveValue("可直接編輯的段落");
+});
+
+test("IME Enter is ignored and conversion limits keep long text intact", async ({ page }) => {
+  const { dialog } = await openDocument(page);
+  const paragraph = dialog.getByLabel("段落", { exact: true });
+  await paragraph.focus();
+  await paragraph.dispatchEvent("keydown", { key: "Enter", isComposing: true, keyCode: 229 });
+  await expect(dialog.locator(".doc-block")).toHaveCount(7);
+  await paragraph.fill("x".repeat(501));
+  await dialog.getByLabel("段落樣式", { exact: true }).selectOption("heading");
+  await expect(dialog.locator(".doc-error")).toBeVisible();
+  await expect(paragraph).toHaveValue("x".repeat(501));
+  await dialog.locator(".doc-error").getByRole("button", { name: "關閉" }).click();
+  await expect(dialog.locator(".doc-error")).toHaveCount(0);
+});
+
+const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg==", "base64");
+async function uploads(page: Page, failOnce = false) {
+  let release: (() => void) | undefined;
+  let calls = 0;
+  await page.route("**/api/sites/site-1/assets**", async (route) => {
+    if (route.request().url().endsWith("/content")) return route.fulfill({ contentType: "image/png", body: PNG });
+    if (route.request().method() !== "POST") return route.fulfill({ json: { assets: [] } });
+    calls++;
+    if (failOnce && calls === 1) return route.fulfill({ status: 503, json: { error: { code: "upload_failed", message: "Temporary upload failure" } } });
+    await new Promise<void>((resolve) => { release = resolve; });
+    const id = `00000000-0000-4000-8000-${String(calls).padStart(12, "0")}`;
+    return route.fulfill({ json: { asset: { id, url: `retro-asset:${id}`, name: "held.png", kind: "image", mimeType: "image/png", size: PNG.length, createdAt: "2026-10-22T00:00:00Z" } } });
+  });
+  return { calls: () => calls, release: () => release?.() };
+}
+
+async function dropImages(page: Page, target: Locator, count = 1) {
+  const transfer = await page.evaluateHandle(({ bytes, count }) => {
+    const data = new DataTransfer();
+    for (let index = 0; index < count; index++) data.items.add(new File([new Uint8Array(bytes)], `${index}.png`, { type: "image/png" }));
+    return data;
+  }, { bytes: Array.from(PNG), count });
+  await target.dispatchEvent("drop", { dataTransfer: transfer });
+  await transfer.dispose();
+}
+
+test("dropped image placeholders retain order, retry and newer URL protection", async ({ page }) => {
+  const { dialog, getDraft } = await openDocument(page);
+  const queue = await uploads(page, true);
+  await dropImages(page, dialog.locator(".doc-append"), 2);
+  await expect(dialog.locator(".doc-block")).toHaveCount(9);
+  await expect(dialog.locator('[data-upload-state="failed"]')).toHaveCount(1);
+  await expect.poll(queue.calls).toBe(2);
+  queue.release();
+  await expect(dialog.locator('[data-upload-state="completed"]')).toHaveCount(1);
+  const first = dialog.locator(".doc-block").nth(7);
+  const second = dialog.locator(".doc-block").nth(8);
+  await first.focus();
+  await first.getByLabel("圖說", { exact: true }).fill("Reserved caption");
+  await dialog.getByRole("button", { name: "重試 0.png", exact: true }).click();
+  await expect.poll(queue.calls).toBe(3);
+  await first.getByLabel("圖片網址", { exact: true }).fill("https://assets.test/newer.png");
+  await first.getByLabel("圖片網址", { exact: true }).press("Enter");
+  queue.release();
+  await expect(first.locator("img")).toHaveAttribute("src", "https://assets.test/newer.png");
+  await expect(second.locator("img")).toBeVisible();
+  await expect.poll(() => {
+    const win = getDraft().windows.find((item) => item.id === "document-1");
+    return win?.type === "document" ? win.content.blocks.slice(-2) : [];
+  }).toMatchObject([{ src: "https://assets.test/newer.png", caption: "Reserved caption" }, { src: expect.stringMatching(/^retro-asset:/) }]);
+});
+
+test("dropping multiple files into an empty image fills it and adds remaining files", async ({ page }) => {
+  const { dialog } = await openDocument(page);
+  const queue = await uploads(page);
+  const image = dialog.locator('[data-block-id="image"]');
+  await image.focus();
+  await image.getByRole("button", { name: "移除圖片", exact: true }).click();
+  await dropImages(page, image.locator(".doc-image-drop"), 2);
+  await expect(dialog.locator(".doc-block")).toHaveCount(8);
+  await expect.poll(queue.calls).toBe(1);
+  queue.release();
+  await expect.poll(queue.calls).toBe(2);
+  queue.release();
+  await expect(dialog.locator('[data-upload-state="completed"]')).toHaveCount(2);
+  await expect(image.locator("img")).toBeVisible();
+  await expect(dialog.locator(".doc-block").nth(3).locator("img")).toBeVisible();
+});
+
+test("late upload stays in its original window and never steals another window's focus", async ({ page }) => {
+  const { dialog, getDraft } = await openDocument(page);
+  const queue = await uploads(page);
+  const image = dialog.locator('[data-block-id="image"]');
+  await image.focus();
+  await image.getByLabel("更換圖片…", { exact: true }).setInputFiles({ name: "held.png", mimeType: "image/png", buffer: PNG });
+  await expect.poll(queue.calls).toBe(1);
+  await page.locator(".task-items").getByRole("button", { name: "Other document", exact: true }).click();
+  const other = page.getByRole("dialog", { name: "Other document", exact: true });
+  const paragraph = other.getByLabel("段落", { exact: true });
+  await paragraph.fill("Keep this focus and text");
+  queue.release();
+  await expect.poll(() => {
+    const win = getDraft().windows.find((item) => item.id === "document-1");
+    return win?.type === "document" ? win.content.blocks.find((block) => block.kind === "image") : null;
+  }).toMatchObject({ src: expect.stringMatching(/^retro-asset:/), alt: LEGACY_CAPTION });
+  await expect(paragraph).toBeFocused();
+  await expect(paragraph).toHaveValue("Keep this focus and text");
+  await expect(other.locator('[data-block-id="image"] img')).toHaveAttribute("src", "https://assets.test/document.png");
+});
+
+test("drag sorting and invalid file drop do not mutate neighboring blocks", async ({ page }) => {
+  const { dialog } = await openDocument(page);
+  const handle = dialog.locator('[data-block-id="heading"] .doc-drag-handle');
+  await handle.dragTo(dialog.locator(".doc-append"));
+  await expect(dialog.locator(".doc-block").last()).toHaveAttribute("data-block-id", "heading");
+  await page.getByRole("button", { name: "復原", exact: true }).click();
+  await expect(dialog.locator(".doc-block").first()).toHaveAttribute("data-block-id", "heading");
+  const transfer = await page.evaluateHandle(() => {
+    const data = new DataTransfer(); data.items.add(new File(["test"], "test.txt", { type: "text/plain" })); return data;
+  });
+  await dialog.locator(".doc-append").dispatchEvent("drop", { dataTransfer: transfer });
+  await expect(dialog.locator(".doc-error")).toContainText("只能拖曳圖片");
+  await expect(dialog.locator(".doc-block")).toHaveCount(7);
+  await transfer.dispose();
+});

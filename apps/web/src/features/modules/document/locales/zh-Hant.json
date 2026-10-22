@@ -1,0 +1,17 @@
+{
+  "document": {
+    "inline": {
+      "paragraphStyle": "段落樣式",
+      "insert": "插入",
+      "reorder": "拖曳排序 · Alt+↑/↓",
+      "typeOrSlash": "輸入 / 插入其他區塊",
+      "dropImage": "拖曳圖片到這裡，或選擇檔案…",
+      "imagesOnly": "只能拖曳圖片檔進文件。",
+      "fileTooLarge": "請選擇不超過 8 MB 的圖片。",
+      "tooLongToConvert": "文字超過所選樣式的長度限制，請先縮短內容。",
+      "dragHint": "拖到插入線的位置後放開",
+      "status": "Enter 新增段落 · / 插入 · Alt+↑/↓ 排序",
+      "count": "{{count}} 個區塊"
+    }
+  }
+}
