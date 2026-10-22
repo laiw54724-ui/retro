@@ -1,4 +1,3 @@
-import galleryDelta from "../../apps/web/src/features/modules/gallery/locale-deltas/zh-Hant.json";
 import { expect, test, type Page, type Route } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import {
@@ -97,12 +96,6 @@ export async function mockGallery(page: Page, { long = false, legacyAlt = false,
   const gallery = page.getByRole("dialog", { name: "Gallery A", exact: true });
   await expect(gallery.locator(".gal-editor")).toBeVisible();
 
-  await page.evaluate(async (delta) => {
-    const path = "/src/i18n/index.ts";
-    const { i18n } = await import(path);
-    i18n.addResourceBundle("zh-Hant", "modules", delta, true, true);
-    i18n.emit("languageChanged", "zh-Hant");
-  }, galleryDelta);
   return {
     gallery, calls, assets, saved: () => draft,
     failProtected: () => { protectedFailure = true; },

@@ -16,7 +16,7 @@ Validation:
 
 Screenshots in `evidence/` use synthetic data and intentionally broken images to verify failure rendering and long-text containment. All five checked-in viewport screenshots were visually inspected against the executable reference. The desktop capture has a 760px gallery inside a 1440px viewport; phone captures use the actual mobile authoring shell.
 
-The dedicated fixture loads the four-language delta's Traditional Chinese values into its local session. Existing media tests run with unmodified catalogs, exercising the fallback keys. Deep-merge `apps/web/src/features/modules/gallery/locale-deltas/{zh-Hant,en,ja,ko}.json` in the shared locale integration before release. Locale keys and nonempty values are unit checked across all four languages.
+Integration: the four locale deltas are now merged into the production `modules.json` catalogs. The dedicated fixture no longer injects translations, so its tests exercise the normal application catalog. The standalone branch verification above predates this integration. Locale keys and nonempty values are unit checked across all four languages.
 
 Compatibility choices: caption and alt stay separate; existing `normalizeImageUrl` HTTPS-only and Google Drive behavior is preserved; no shared renderer, schema, media queue, permissions, flags, loader, build or deployment changes. Initial first-image selection stays available for existing workflows; explicit deselection closes the pane.
 

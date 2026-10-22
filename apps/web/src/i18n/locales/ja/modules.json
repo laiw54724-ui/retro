@@ -134,7 +134,20 @@
     "selectImage": "画像 {{n}} を選択：{{title}}",
     "countOfMax_one": "{{count}} / 200 枚",
     "countOfMax_other": "{{count}} / 200 枚",
-    "altNotCaption": "代替テキストはキャプションとしては表示されません。"
+    "altNotCaption": "代替テキストはキャプションとしては表示されません。",
+    "inline": {
+      "pasteUrls": "URL を貼り付け…",
+      "deselect": "選択を解除",
+      "urlsPlaceholder": "画像 URL を1行に1つ貼り付けます（Google ドライブの公開リンクに対応）。Shift+Enter で改行。",
+      "invalidUrls": "https:// で始まる有効な画像 URL を貼り付けてください。",
+      "skippedUrls": "有効な HTTPS 画像 URL ではない行をスキップしました。",
+      "invalidFiles": "追加できるのは 8 MB 以下の画像です。無効なファイルをスキップしました。",
+      "emptyDrop": "写真をここにドラッグするか、クリックして選択。複数の画像を選べます。",
+      "dropHere": "ドロップしてアルバムに追加",
+      "sorting": "ドラッグして並べ替え（青い線が挿入位置です）",
+      "selectionHint": "サムネイルをドラッグして並べ替え · ← → 選択 · Alt+← → 移動 · Delete 削除",
+      "browseHint": "サムネイルを選択してタイトルやリンクを編集、ドラッグで並べ替え"
+    }
   },
   "lightbox": {
     "imageViewer": "画像ビューアー",
