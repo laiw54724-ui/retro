@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Page } from "@playwright/test";
 import { mkdirSync } from "node:fs";
 import { makeGalleryImage, makeWindow, migrateSiteDocumentV2, normalizeDocument } from "../../packages/shared/src";
@@ -34,7 +35,7 @@ async function openEditor(page: Page, type: "document" | "gallery" | "about", wi
   await page.goto("/editor/site-1");
   if (width < 768) {
     await page.getByRole("button", { name: win.title, exact: true }).click();
-    await page.getByRole("button", { name: "編輯內容", exact: true }).click();
+    await enterContentEditor(page);
   }
   const editor = page.getByRole("dialog", { name: win.title, exact: true });
   await expect(editor.locator(`.${type === "document" ? "document" : type === "gallery" ? "gal" : "about"}-editor`)).toBeVisible();
@@ -64,6 +65,11 @@ test("gallery composition confirmation does not insert and clear an unfinished U
 
 test("gallery deleting selected image keeps keyboard focus in its thumbnail list", async ({ page }) => {
   const { editor } = await openEditor(page, "gallery");
+  // This fixture's 700px window exceeds the canvas below the wrapped shell.
+  // Use the real view-state action; it must not resize the canonical window.
+  const before=await page.evaluate(async()=>{const {useEditorStore}=await import('/src/features/editor/store.ts');const s=useEditorStore.getState();return {document:s.document,past:s.past.length};});
+  await editor.getByRole("button",{name:"最大化",exact:true}).click();
+  expect(await page.evaluate(async()=>{const {useEditorStore}=await import('/src/features/editor/store.ts');const s=useEditorStore.getState();return {document:s.document,past:s.past.length};})).toEqual(before);
   await editor.getByRole("button", { name: "選取圖片 2：two", exact: true }).click();
   await editor.getByRole("button", { name: "刪除圖片", exact: true }).click();
   await expect(editor.getByRole("button", { name: "選取圖片 2：three", exact: true })).toBeFocused();
@@ -179,7 +185,7 @@ for (const width of [320, 390, 430]) {
 
 async function reopenMobile(page: Page, name: string) {
   await page.getByRole("button", { name, exact: true }).click();
-  await page.getByRole("button", { name: "編輯內容", exact: true }).click();
+  await enterContentEditor(page);
 }
 async function assertFits(page: Page, root: import("@playwright/test").Locator) {
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);

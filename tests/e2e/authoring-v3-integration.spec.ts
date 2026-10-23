@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Page } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import { createAssetReference, duplicateProfile, makeWindow, migrateSiteDocumentV2 } from "../../packages/shared/src";
@@ -42,7 +43,8 @@ async function fixture(page: Page, width: number) {
   await page.goto("/editor/combined");
   const enter = async () => {
     await page.getByRole("button", { name: "Instagram.exe", exact: true }).click();
-    await page.locator(".m-edit-toggle").click();
+    await enterContentEditor(page);
+    await page.getByRole("dialog", { name: "Instagram.exe", exact: true }).getByRole("button", { name: "編輯個人檔案", exact: true }).click();
   };
   await enter();
   const win = page.getByRole("dialog", { name: "Instagram.exe", exact: true });
@@ -80,23 +82,23 @@ for (const width of [320, 375, 390, 430]) test(`combined IG draft survives phone
   const field = (await pending.boundingBox())!, scroll = (await s.win.locator(".ig-edit-scroll").boundingBox())!;
   expect(field.y).toBeGreaterThanOrEqual(scroll.y);
   expect(field.y + field.height).toBeLessThanOrEqual(scroll.y + scroll.height);
-  for (const control of [page.locator(".m-edit-toggle"), page.locator(".m-back"), page.getByRole("button", { name: "發布", exact: true })]) await expect(control).toBeInViewport({ ratio: 1 });
+  for (const control of [page.locator(".m-window-settings"), page.locator(".m-back"), page.getByRole("button", { name: "發布", exact: true })]) await expect(control).toBeInViewport({ ratio: 1 });
   await page.screenshot({ path: test.info().outputPath(`combined-ig-short-${width}.png`) });
   await page.setViewportSize({ width, height: 844 });
   await s.posts.getByRole("button", { name: "完成編輯", exact: true }).click();
   const item = s.posts.locator("[data-ig-edit]").filter({ hasText: "p1" });
   await expect(item).toBeFocused();
   await item.click();
-  await page.locator(".m-edit-toggle").click();
+  await s.win.getByRole("button", { name: "← 返回 IG 畫面", exact: true }).click();
   await expect(page.locator(".save-text")).toHaveText("有欄位未完成，暫不儲存");
-  await page.locator(".m-edit-toggle").click();
+  await s.win.getByRole("button", { name: "編輯個人檔案", exact: true }).click();
   await s.win.getByRole("button", { name: "管理貼文", exact: true }).click();
-  await item.click();
+  await expect(item).toHaveAttribute("aria-expanded", "true");
   await expect(pending).toHaveValue("https:");
   await s.win.getByRole("tab", { name: "▶ 預覽互動", exact: true }).click();
   await s.win.getByRole("button", { name: "← 返回編輯", exact: true }).click();
   await expect(pending).toHaveValue("https:");
-  const settings = page.locator(".m-toolbar").getByRole("button", { name: "視窗設定", exact: true });
+  const settings = page.getByRole("button", { name: "視窗設定", exact: true });
   await settings.click(); await page.keyboard.press("Escape");
   await expect(settings).toBeFocused();
   await expect(pending).toHaveValue("https:");

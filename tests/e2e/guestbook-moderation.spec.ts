@@ -51,34 +51,98 @@ test("owner filters real queue rows, retries a failed read, and locks only the a
   await expect(queue.getByRole("alert")).toContainText("無法載入審核列表");
   await expect(queue).not.toContainText("目前沒有留言");
   await queue.getByRole("button", { name: "重試" }).click();
+  await expect(queue.locator("article")).toHaveCount(2);
+  await queue.getByRole("tab", { name: /^全部/ }).click();
   await expect(queue.locator("article")).toHaveCount(4);
-  await queue.getByRole("button", { name: "待審", exact: true }).click();
+  await queue.getByRole("tab", { name: /^待審/ }).click();
   await expect(queue.locator("article")).toHaveCount(2);
   await expect(queue).toContainText("Pending visitor");
   await expect(queue).not.toContainText("Public visitor");
-  await queue.getByRole("button", { name: "已公開", exact: true }).click();
+  await queue.getByRole("tab", { name: /^已公開/ }).click();
   await expect(queue.locator("article")).toHaveCount(1);
   await expect(queue).toContainText("Public visitor");
-  await queue.getByRole("button", { name: "有待處理檢舉" }).click();
+  await queue.getByRole("tab", { name: /^被檢舉/ }).click();
   await expect(queue.locator("article")).toHaveCount(2);
   await expect(queue).toContainText("Reported pending");
-  await queue.getByRole("button", { name: "已拒絕" }).click();
+  await queue.getByRole("tab", { name: /^已隱藏/ }).click();
   await expect(queue.locator("article")).toHaveCount(1);
-  await queue.getByRole("button", { name: "全部" }).click();
+  await queue.getByRole("tab", { name: /^全部/ }).click();
   const pending = queue.locator("article", { hasText: "Pending visitor" });
-  await pending.getByRole("button", { name: "核准" }).click();
+  await pending.getByRole("button", { name: "公開" }).click();
   await expect(page.getByRole("dialog", { name: "Guestbook.exe" }).getByRole("alert")).toContainText("審核操作失敗");
   await expect(pending).toContainText("待審");
-  await pending.getByRole("button", { name: "核准" }).click();
-  await expect(pending.getByRole("button", { name: "核准" })).toBeDisabled();
-  await expect(pending.getByRole("button", { name: "拒絕" })).toBeDisabled();
+  await pending.getByRole("button", { name: "公開" }).click();
+  await expect(pending.getByRole("button", { name: "公開" })).toBeDisabled();
+  await expect(pending.getByRole("button", { name: "隱藏" })).toBeDisabled();
   await expect(pending.getByRole("button", { name: "刪除" })).toBeDisabled();
   await expect(queue.locator("article", { hasText: "Public visitor" }).getByRole("button", { name: "刪除" })).toBeEnabled();
   expect(actions).toBe(2);
   releaseAction?.();
   await expect(pending).toContainText("已公開");
-  await queue.getByRole("button", { name: "待審", exact: true }).click();
+  await queue.getByRole("tab", { name: /^待審/ }).click();
   await expect(queue.locator("article")).toHaveCount(1);
+});
+
+test("focused moderation card supports A, H and Delete without leaking actions from other controls", async ({ page }) => {
+  await owner(page);
+  let rows = [entry(1, "Keyboard visitor", "pending")];
+  const requests: Array<{ method: string; status?: string }> = [];
+  await page.route("**/api/sites/site-1/guestbook", (route) => route.fulfill({ json: { entries: rows } }));
+  await page.route(`**/api/sites/site-1/guestbook/${id(1)}`, async (route) => {
+    const method = route.request().method();
+    const status = method === "PUT" ? route.request().postDataJSON().status as string : undefined;
+    requests.push({ method, status });
+    if (method === "DELETE") { rows = []; return route.fulfill({ status: 204, body: "" }); }
+    rows = [{ ...rows[0], status: status as "approved" | "rejected" }];
+    return route.fulfill({ json: { entry: rows[0] } });
+  });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/editor/site-1");
+  const queue = page.getByRole("dialog", { name: "Guestbook.exe" }).locator(".guestbook-moderation");
+  await queue.getByRole("tab", { name: /^全部/ }).click();
+  const card = queue.locator("article", { hasText: "Keyboard visitor" });
+  await expect(card).toBeVisible();
+  await card.getByRole("button", { name: "公開" }).focus();
+  await page.keyboard.press("h");
+  expect(requests).toHaveLength(0);
+  await card.focus(); await page.keyboard.press("a");
+  await expect(card).toContainText("已公開");
+  await expect.poll(() => requests).toEqual([{ method: "PUT", status: "approved" }]);
+  await card.focus(); await page.keyboard.press("h");
+  await expect(card).toContainText("已隱藏");
+  await expect.poll(() => requests).toHaveLength(2);
+  expect(requests[1]).toEqual({ method: "PUT", status: "rejected" });
+  await card.focus(); await page.keyboard.press("Delete");
+  await expect(card).toHaveCount(0);
+  expect(requests).toHaveLength(2);
+  await expect.poll(() => requests.length, {timeout:7000}).toBe(3);
+  expect(requests[2]).toEqual({ method: "DELETE" });
+});
+
+test.describe("mobile owner queue", () => {
+  test.use({ hasTouch: true, isMobile: true });
+  for (const width of [320, 375, 390, 430]) {
+    test(`${width}px keeps the compact settings strip above reachable moderation cards`, async ({ page }, info) => {
+      await owner(page);
+      await page.route("**/api/sites/site-1/guestbook", (route) => route.fulfill({ json: { entries: [entry(1, "Pending visitor", "pending")] } }));
+      await page.setViewportSize({ width, height: 720 });
+      await page.goto("/editor/site-1");
+      await page.locator(".m-icon", { hasText: "Guestbook.exe" }).click();
+      if(await page.locator(".m-edit-toggle").count()) await page.locator(".m-edit-toggle").click(); else await expect(page.locator(".m-window-settings")).toBeVisible();
+      const queue = page.locator(".m-window .guestbook-moderation");
+      await expect(queue.locator("article")).toHaveCount(1);
+      const card = queue.locator("article");
+      await expect(card.getByRole("button", { name: "公開" })).toBeVisible();
+      const queueBox = await queue.boundingBox();
+      const settingsBox = await page.locator(".m-window .guestbook-settings").boundingBox();
+      if (!queueBox || !settingsBox) throw new Error("queue layout bounds");
+      expect(settingsBox.y).toBeLessThan(queueBox.y);
+      const approve = await card.getByRole("button", { name: "公開" }).boundingBox();
+      expect(approve?.height).toBeGreaterThanOrEqual(44);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      await page.screenshot({ path: info.outputPath(`guestbook-queue-${width}.png`), fullPage: false });
+    });
+  }
 });
 
 test.describe("touch visitor", () => {
@@ -109,7 +173,7 @@ test.describe("touch visitor", () => {
       await page.locator(".visitor-mobile").getByRole("button", { name: "Guestbook.exe" }).tap();
       const dialog = page.locator(".visitor-mobile").getByRole("dialog", { name: "Guestbook.exe" });
       await expect(dialog.getByRole("alert")).toContainText("目前無法載入留言");
-      await expect(dialog).not.toContainText("目前還沒有已核准的留言");
+      await expect(dialog).not.toContainText("目前還沒有已公開的留言");
       await dialog.getByRole("button", { name: "重試" }).tap();
       await expect(dialog).toContainText("Visible public");
       await expect(dialog).not.toContainText("Never public");
@@ -149,10 +213,11 @@ test("late list response after owner window closes cannot replace the reopened q
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/editor/site-1");
   const dialog = page.getByRole("dialog", { name: "Guestbook.exe" });
-  await expect(dialog.getByRole("status")).toContainText("載入中");
+  await expect(dialog.getByRole("status").filter({ hasText: "載入中" })).toBeVisible();
   await dialog.getByRole("button", { name: "關閉" }).click();
   await expect(dialog).toHaveCount(0);
   await page.getByRole("button", { name: /開啟 Guestbook.exe/ }).click();
+  await dialog.getByRole("tab", { name: /^全部/ }).click();
   await expect(dialog).toContainText("Fresh response");
   releaseOld.forEach((release) => release());
   await expect(dialog).not.toContainText("Old response");
@@ -201,4 +266,69 @@ test("closing during submission and navigating during report leave later visitor
   await icon.click();
   await expect(dialog).toContainText("Public visitor");
   await expect(dialog).not.toContainText("已收到檢舉");
+});
+
+test('v2 queue starts oldest-first, batches sequentially and keeps unsupported pending Undo absent',async({page})=>{
+ await owner(page);let rows=[{...entry(1,'Newer','pending'),createdAt:'2026-10-17T02:00:00Z'},{...entry(2,'Older','pending'),createdAt:'2026-10-17T01:00:00Z'}];
+ const calls:string[]=[];let active=0,maxActive=0;
+ await page.route('**/api/sites/site-1/guestbook',r=>r.fulfill({json:{entries:rows}}));
+ await page.route('**/api/sites/site-1/guestbook/*',async r=>{active++;maxActive=Math.max(maxActive,active);const id=r.request().url().split('/').at(-1)!;calls.push(id);await new Promise(resolve=>setTimeout(resolve,100));rows=rows.map(x=>x.id===id?{...x,status:'approved' as const}:x);active--;return r.fulfill({json:{entry:rows.find(x=>x.id===id)}});});
+ await page.setViewportSize({width:1440,height:900});await page.goto('/editor/site-1');const queue=page.locator('.guestbook-queue-v2:visible');
+ await expect(queue.getByRole('tab',{name:/^待審/})).toHaveAttribute('aria-selected','true');
+ await expect(queue.locator('article').first()).toContainText('Older');
+ await page.screenshot({path:test.info().outputPath('queue-v2-desktop.png')});
+ await queue.getByRole('checkbox',{name:'全選這一頁',exact:true}).check();await queue.getByRole('button',{name:'全部公開',exact:true}).click();
+ await expect.poll(()=>calls).toEqual([id(2),id(1)]);expect(maxActive).toBe(1);await expect(queue.locator('article')).toHaveCount(0);
+ await expect(queue.locator('.editing-undo-toast').getByRole('button',{name:'復原',exact:true})).toHaveCount(0);
+ await queue.getByRole('tab',{name:/^已公開/}).click();await expect(queue.locator('article')).toHaveCount(2);
+});
+test('v2 deferred deletion Undo makes zero DELETE calls and failure restores the row',async({page})=>{
+ await owner(page);const rows=[entry(1,'Keep me','pending'),entry(2,'Next row','pending')];let deletes=0;
+ await page.route('**/api/sites/site-1/guestbook',r=>r.fulfill({json:{entries:rows}}));
+ await page.route('**/api/sites/site-1/guestbook/*',r=>{deletes++;return r.fulfill({status:503,json:{error:{code:'db_error'}}});});
+ await page.setViewportSize({width:1440,height:900});await page.goto('/editor/site-1');const queue=page.locator('.guestbook-queue-v2:visible'),card=queue.locator('article').filter({hasText:'Keep me'});
+ await card.focus();await card.press('Delete');await expect(card).toHaveCount(0);await expect(queue.locator('article').filter({hasText:'Next row'})).toBeFocused();expect(deletes).toBe(0);
+ await queue.locator('.editing-undo-toast').getByRole('button',{name:'復原',exact:true}).click();await expect(card).toBeVisible();expect(deletes).toBe(0);
+ await card.getByRole('button',{name:'刪除',exact:true}).click();await expect(card).toHaveCount(0);await expect.poll(()=>deletes,{timeout:7000}).toBe(1);await expect(card).toBeVisible();await expect(queue.getByRole('alert')).toContainText('審核操作失敗');
+});
+test('v2 supported status Undo calls the existing API and keyboard R resolves only the selected report',async({page})=>{
+ await owner(page);let rows=[entry(1,'Public','approved',1)];const calls:string[]=[];
+ await page.route('**/api/sites/site-1/guestbook',r=>r.fulfill({json:{entries:rows}}));
+ await page.route('**/api/sites/site-1/guestbook/*',r=>{const status=r.request().postDataJSON().status;calls.push(status);rows=[{...rows[0],status}];return r.fulfill({json:{entry:rows[0]}});});
+ await page.route('**/api/sites/site-1/guestbook/*/reports/resolve',r=>{calls.push('resolve');return r.fulfill({json:{resolved:1}});});
+ await page.setViewportSize({width:1440,height:900});await page.goto('/editor/site-1');const queue=page.locator('.guestbook-queue-v2:visible');await queue.getByRole('tab',{name:/^全部/}).click();const card=queue.locator('article');await card.focus();await card.press('h');await expect.poll(()=>calls).toEqual(['rejected']);
+ await queue.locator('.editing-undo-toast').getByRole('button',{name:'復原',exact:true}).click();await expect.poll(()=>calls).toEqual(['rejected','approved']);
+ await card.focus();await card.press('r');await expect.poll(()=>calls).toEqual(['rejected','approved','resolve']);await expect(queue.locator('.editing-undo-toast').getByRole('button',{name:'復原',exact:true})).toHaveCount(0);
+});
+
+test('v2 queue keyboard Undo stays outside document history and leaving flushes a deferred delete once',async({page})=>{
+ await owner(page);const rows=[entry(1,'Deferred','pending'),entry(2,'Focus next','pending')];let deletes=0;
+ await page.route('**/api/sites/site-1/guestbook',r=>r.fulfill({json:{entries:rows}}));await page.route('**/api/sites/site-1/guestbook/*',r=>{deletes++;return r.fulfill({status:204,body:''});});
+ await page.setViewportSize({width:1440,height:900});await page.goto('/editor/site-1');const dialog=page.getByRole('dialog',{name:'Guestbook.exe',exact:true}),queue=dialog.locator('.guestbook-queue-v2');const card=queue.locator('article').filter({hasText:'Deferred'});
+ const snapshot=()=>page.evaluate(async()=>{const{useEditorStore}=await import('/src/features/editor/store.ts');const s=useEditorStore.getState();return{document:s.versionedDocument,past:s.past.length,future:s.future.length};});
+ await expect(card).toBeVisible();await expect.poll(async()=>(await snapshot()).document).not.toBeNull();
+ const before=await snapshot();await card.focus();await card.press('Delete');await expect(card).toHaveCount(0);await page.keyboard.press('Control+z');await expect(card).toBeVisible();expect(deletes).toBe(0);expect(await snapshot()).toEqual(before);
+ await card.focus();await card.press('Delete');await expect(card).toHaveCount(0);await dialog.getByRole('button',{name:'關閉',exact:true}).click();await expect.poll(()=>deletes).toBe(1);
+});
+
+test('v2 delayed moderation does not steal focus after the owner changes tabs',async({page})=>{
+ await owner(page);const rows=[entry(1,'Held action','pending'),entry(2,'Other card','pending')];let release:(()=>void)|undefined;
+ await page.route('**/api/sites/site-1/guestbook',r=>r.fulfill({json:{entries:rows}}));await page.route(`**/api/sites/site-1/guestbook/${id(1)}`,async r=>{await new Promise<void>(resolve=>release=resolve);return r.fulfill({json:{entry:{...rows[0],status:'approved'}}});});
+ await page.setViewportSize({width:1440,height:900});await page.goto('/editor/site-1');const queue=page.locator('.guestbook-queue-v2:visible');await queue.locator('article').filter({hasText:'Held action'}).getByRole('button',{name:'公開',exact:true}).click();await expect.poll(()=>!!release).toBe(true);
+ const all=queue.getByRole('tab',{name:/^全部/});await all.focus();await all.press('Enter');release!();await expect(queue.locator('article').filter({hasText:'Held action'})).toContainText('已公開');await expect(all).toBeFocused();
+});
+
+for(const undoDelete of [false,true])test(`review: late approval cannot erase deferred delete, undo=${undoDelete}`,async({page})=>{
+ await owner(page);let rows=[entry(1,'A held','pending'),entry(2,'B delete','pending')];let release:(()=>void)|undefined;const deletes:string[]=[];
+ await page.route('**/api/sites/site-1/guestbook',r=>r.fulfill({json:{entries:rows}}));
+ await page.route('**/api/sites/site-1/guestbook/*',async r=>{const rowId=r.request().url().split('/').at(-1)!;if(r.request().method()==='DELETE'){deletes.push(rowId);rows=rows.filter(row=>row.id!==rowId);return r.fulfill({status:204,body:''});}await new Promise<void>(resolve=>release=resolve);rows=rows.map(row=>row.id===rowId?{...row,status:'approved' as const}:row);return r.fulfill({json:{entry:rows.find(row=>row.id===rowId)}});});
+ await page.setViewportSize({width:1440,height:900});await page.goto('/editor/site-1');const dialog=page.getByRole('dialog',{name:'Guestbook.exe',exact:true}),queue=dialog.locator('.guestbook-queue-v2');
+ await queue.locator('article').filter({hasText:'A held'}).getByRole('button',{name:'公開',exact:true}).click();await expect.poll(()=>!!release).toBe(true);const b=queue.locator('article').filter({hasText:'B delete'});await b.getByRole('button',{name:'刪除',exact:true}).click();await expect(b).toHaveCount(0);release!();await expect(queue.locator('article').filter({hasText:'A held'})).toHaveCount(0);
+ if(undoDelete){await expect(queue.locator('.editing-undo-toast')).toContainText('已移除');await queue.locator('.editing-undo-toast').getByRole('button',{name:'復原',exact:true}).click();await expect(b).toBeVisible();await page.waitForTimeout(5200);expect(deletes).toEqual([]);}else{await expect.poll(()=>deletes,{timeout:7000}).toEqual([id(2)]);await dialog.getByRole('button',{name:'關閉',exact:true}).click();expect(deletes).toEqual([id(2)]);}
+});
+
+test('review: a later queued deletion wins over a still-running bulk action for that row',async({page})=>{
+ await owner(page);let rows=[entry(1,'Bulk A','pending'),entry(2,'Bulk B','pending')];let release:(()=>void)|undefined;const puts:string[]=[],deletes:string[]=[];
+ await page.route('**/api/sites/site-1/guestbook',r=>r.fulfill({json:{entries:rows}}));await page.route('**/api/sites/site-1/guestbook/*',async r=>{const rowId=r.request().url().split('/').at(-1)!;if(r.request().method()==='DELETE'){deletes.push(rowId);rows=rows.filter(row=>row.id!==rowId);return r.fulfill({status:204,body:''});}puts.push(rowId);if(rowId===id(1))await new Promise<void>(resolve=>release=resolve);rows=rows.map(row=>row.id===rowId?{...row,status:'approved' as const}:row);return r.fulfill({json:{entry:rows.find(row=>row.id===rowId)}});});
+ await page.setViewportSize({width:1440,height:900});await page.goto('/editor/site-1');const queue=page.locator('.guestbook-queue-v2:visible');await queue.getByRole('checkbox',{name:'全選這一頁',exact:true}).check();await queue.getByRole('button',{name:'全部公開',exact:true}).click();await expect.poll(()=>!!release).toBe(true);await queue.locator('article').filter({hasText:'Bulk B'}).getByRole('button',{name:'刪除',exact:true}).click();release!();await expect.poll(()=>deletes,{timeout:7000}).toEqual([id(2)]);expect(puts).toEqual([id(1)]);
 });

@@ -88,6 +88,7 @@ const changed = (page: Page) => expect(page.getByText("草稿有未發布的變�
 
 async function addCustomField(page: Page, backend: Backend) {
   const win = page.getByRole("dialog", { name: "Instagram.exe" });
+  await win.getByRole("button", { name: "編輯個人檔案", exact: true }).click();
   await win.getByRole("button", { name: "展開角色設定" }).click();
   await win.getByRole("button", { name: "＋ 新增欄位" }).click();
   const panel = win.getByRole("tabpanel", { name: "角色資料", exact: true });

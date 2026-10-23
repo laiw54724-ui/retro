@@ -76,6 +76,7 @@ test("mobile theme changes stay in preview until applied and retain window overr
   await page.goto("/editor/site-1");
   await page.getByRole("button", { name: "主題", exact: true }).click();
   const sheet = page.getByRole("dialog", { name: "主題", exact: true });
+  await sheet.locator("summary").filter({ hasText: "更多主題設定" }).click();
   await sheet.getByRole("button", { name: "粉紅 98", exact: true }).click();
   await expect(page.locator(".m-titlebar")).toHaveCSS("background-image", "linear-gradient(90deg, rgb(194, 24, 91), rgb(244, 143, 177))");
   await sheet.getByRole("button", { name: "取消預覽", exact: true }).click();
@@ -84,7 +85,7 @@ test("mobile theme changes stay in preview until applied and retain window overr
   await page.waitForTimeout(800);
   expect(site.writes()).toBe(0);
   await sheet.getByRole("button", { name: "粉紅 98", exact: true }).click();
-  await sheet.locator(".m-sheet-body").evaluate((element) => { element.scrollTop = 0; });
+  await sheet.locator(".editing-sheet-body").evaluate((element) => { element.scrollTop = 0; });
   await page.screenshot({ path: testInfo.outputPath("mobile-theme-preview.png") });
   await sheet.getByRole("button", { name: "套用至草稿", exact: true }).click();
   await expect.poll(() => site.writes()).toBe(1);
@@ -92,7 +93,7 @@ test("mobile theme changes stay in preview until applied and retain window overr
   expect(site.saved().windows[0].appearance).toEqual(appearanceDocument().windows[0].appearance);
   await sheet.getByRole("button", { name: "關閉", exact: true }).click();
   await page.getByRole("button", { name: "About.exe", exact: true }).click();
-  await expect(page.getByRole("dialog", { name: "About.exe" }).locator(".m-win-title")).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await expect(page.getByRole("dialog", { name: "About.exe" }).locator(".m-inline-titlebar")).toHaveCSS("background-color", "rgb(255, 255, 255)");
 });
 
 test("mobile window appearance validates hex input, persists and resets to inheritance", async ({ page }, testInfo) => {
@@ -102,6 +103,7 @@ test("mobile window appearance validates hex input, persists and resets to inher
   await page.getByRole("button", { name: "About.exe", exact: true }).click();
   await page.getByRole("button", { name: "視窗設定", exact: true }).click();
   let sheet = page.getByRole("dialog", { name: "視窗設定", exact: true });
+  await sheet.locator("summary").filter({ hasText: "更多視窗設定" }).click();
   await sheet.getByRole("textbox", { name: "標題起始色色碼", exact: true }).fill("#12");
   await expect(sheet.getByRole("textbox", { name: "標題起始色色碼", exact: true })).toHaveAttribute("aria-invalid", "true");
   expect(site.writes()).toBe(0);
@@ -111,9 +113,10 @@ test("mobile window appearance validates hex input, persists and resets to inher
   await page.screenshot({ path: testInfo.outputPath("mobile-window-settings.png") });
   await page.reload();
   await page.getByRole("button", { name: "About.exe", exact: true }).click();
-  await expect(page.getByRole("dialog", { name: "About.exe" }).locator(".m-win-title")).toHaveCSS("background-color", "rgb(170, 187, 204)");
+  await expect(page.getByRole("dialog", { name: "About.exe" }).locator(".m-inline-titlebar")).toHaveCSS("background-color", "rgb(170, 187, 204)");
   await page.getByRole("button", { name: "視窗設定", exact: true }).click();
   sheet = page.getByRole("dialog", { name: "視窗設定", exact: true });
+  await sheet.locator("summary").filter({ hasText: "更多視窗設定" }).click();
   await sheet.getByRole("button", { name: "恢復主題設定", exact: true }).click();
   await expect.poll(() => site.saved().windows[0].appearance).toBeUndefined();
   expect(site.saved().windows[1].appearance).toEqual(appearanceDocument().windows[1].appearance);

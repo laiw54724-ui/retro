@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -128,7 +129,7 @@ test("the Instagram topic says what is needed first, then follows the person's o
   await expect(dialog.locator('[data-help-topic="instagram-organize"]').getByRole("button")).toHaveCount(0);
   await page.evaluate(() => { document.querySelector('[data-help="x"]')?.setAttribute("data-help", "ig-tab-collections"); });
   await dialog.getByRole("button", { name: "關閉" }).last().click();
-
+  await page.getByRole("dialog",{name:"Instagram.exe",exact:true}).getByRole("button",{name:"編輯個人檔案",exact:true}).click();
   await helpButton(page).click();
   await page.getByRole("dialog", { name: "你想了解什麼？" }).locator('[data-help-topic="instagram-organize"]').getByRole("button", { name: "開始導覽" }).click();
   await expect(card(page)).toHaveAttribute("data-tour-step", "tab");
@@ -152,7 +153,8 @@ for (const width of [320, 390, 430]) {
   test(`phone: Escape ends the tour first (not the open app) at ${width}px`, async ({ page }) => {
     await openEditor(page, width);
     await page.getByRole("button", { name: "Instagram.exe", exact: true }).click();
-    await page.getByRole("button", { name: "編輯內容", exact: true }).click();
+    await enterContentEditor(page);
+    await page.getByRole("dialog", {name:"Instagram.exe",exact:true}).getByRole("button",{name:"編輯個人檔案",exact:true}).click();
     await helpButton(page).click();
     await page.getByRole("dialog", { name: "你想了解什麼？" }).locator('[data-help-topic="instagram-organize"]').getByRole("button", { name: "開始導覽" }).click();
     await expect(card(page)).toBeVisible();

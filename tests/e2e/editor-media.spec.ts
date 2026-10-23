@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Page } from "@playwright/test";
 import { documentFixture, mockWindowsIconPack } from "./fixture";
 
@@ -102,9 +103,8 @@ test("uses an installed optional icon pack and leaves removed legacy PNGs unavai
 
   await page.getByRole("button", { name: "手機版" }).click();
   await page.getByRole("button", { name: "About.exe" }).click();
-  await page.getByRole("button", { name: "編輯內容" }).click();
-  await page.getByRole("button", { name: "完成" }).click();
-  await page.locator(".m-toolbar").getByRole("button", { name: "視窗設定" }).click();
+  await enterContentEditor(page);
+  await page.locator(".m-window-settings").click();
   await page.getByRole("button", { name: "更換圖示…" }).click();
   const mobileDialog = page.getByRole("dialog", { name: "選擇圖示" });
   await mobileDialog.getByRole("tab", { name: "Windows（本機）" }).click();

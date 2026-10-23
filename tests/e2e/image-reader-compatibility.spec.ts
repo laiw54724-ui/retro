@@ -33,7 +33,8 @@ for (const width of [1440, 390]) {
       await dialog.locator(".retro-titlebar").click();
       await expect(page.locator("#editor-right-panel").getByRole("textbox").first()).toHaveValue("Portrait.png");
     } else {
-      await dialog.getByRole("button", { name: "編輯內容", exact: true }).click();
+      await expect(dialog.locator(".m-window-settings")).toBeVisible();
+      await expect(dialog.getByRole("button", { name: "編輯內容", exact: true })).toHaveCount(0);
     }
     await expect(dialog.getByRole("img", { name: site.image.content.alt })).toBeVisible();
     await expect(dialog.locator("[data-frame='simple']")).toBeVisible();

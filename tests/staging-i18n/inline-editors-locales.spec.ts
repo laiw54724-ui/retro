@@ -38,7 +38,7 @@ for (const locale of Object.keys(catalogs) as Array<keyof typeof catalogs>) for 
     });
     await page.goto("/editor/integrated");
     for (const type of ["about", "gallery", "document", "links", "music", "moodboard", "explorer"]) {
-      if (width < 768) { await page.locator(".m-icon").getByText(`${type}.exe`, { exact: true }).click(); await page.locator(".m-edit-toggle").click(); }
+      if (width < 768) { await page.locator(".m-icon").getByText(`${type}.exe`, { exact: true }).click(); await expect(page.locator(".m-window-settings")).toBeVisible(); await expect(page.locator(".m-edit-toggle")).toHaveCount(0); }
       else {
         const task = page.locator(".task-items").getByRole("button", { name: `${type}.exe`, exact: true });
         // Clicking the active task minimizes it; the initial About window is

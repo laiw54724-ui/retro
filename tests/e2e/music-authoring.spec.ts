@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Page, type Route } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import {
@@ -69,7 +70,7 @@ async function mockMedia(page: Page, { width = 1440, failOnce = "", hold = "" } 
   await page.goto("/editor/site-1");
   if (width < 768) {
     await page.getByRole("button", { name: "Music A", exact: true }).click();
-    await page.getByRole("button", { name: "編輯內容" }).click();
+    await enterContentEditor(page);
   }
   const player = page.getByRole("dialog", { name: "Music A", exact: true });
   await expect(player.locator(".music-editor")).toBeVisible();

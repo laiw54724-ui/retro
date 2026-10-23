@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Page } from "@playwright/test";
 import { makeWindow, type SiteDocument } from "@retrodesk/shared";
 import { documentFixture } from "./fixture";
@@ -30,7 +31,7 @@ async function openEditor(page: Page, width: number) {
   await page.goto("/editor/site-1");
   if (width < 768) {
     await page.getByRole("button", { name: "Moodboard.exe", exact: true }).click();
-    await page.getByRole("button", { name: "編輯內容" }).click();
+    await enterContentEditor(page);
   }
   return site;
 }
@@ -103,7 +104,7 @@ for (const width of [1440, 320, 375, 390, 430]) {
       const saved = site.draft_document.windows[0]; if (saved.type !== "moodboard") return null;
       return { count: saved.content.elements.length, note: saved.content.elements.find(item => item.id === "note"), locked: saved.content.elements.find(item => item.id === "locked")?.locked };
     }).toEqual({ count: 3, note: { id:"note",kind:"text",content:"Hidden note",color:"#111111",fontSize:32,align:"center",x:160,y:120,width:320,height:210,zOrder:2,locked:false }, locked:true });
-    await page.reload(); if(width<768){await page.getByRole("button",{name:"Moodboard.exe",exact:true}).click();await page.getByRole("button",{name:"編輯內容"}).click();}
+    await page.reload(); if(width<768){await page.getByRole("button",{name:"Moodboard.exe",exact:true}).click();await enterContentEditor(page);}
     await select(page,"note"); await geometry(page); await expect(x).toHaveValue("160"); await expect(height).toHaveValue("210");
     expect(await rank(page,"note")).toBe(2); await expect(editor.getByRole("button",{name:"置中",exact:true})).toHaveAttribute("aria-pressed","true");
     await page.screenshot({path:testInfo.outputPath(`geometry-${width}.png`),fullPage:true});

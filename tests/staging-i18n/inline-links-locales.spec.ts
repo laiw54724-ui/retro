@@ -28,7 +28,7 @@ for (const locale of Object.keys(labels) as Array<keyof typeof labels>) for (con
       return route.fulfill({ json: { assets: [] } });
     });
     await page.goto("/editor/compiled-links");
-    if (width < 768) { await page.locator(".m-icon").click(); await page.locator(".m-edit-toggle").click(); }
+    if (width < 768) { await page.locator(".m-icon").click(); await expect(page.locator(".m-window-settings")).toBeVisible(); await expect(page.locator(".m-edit-toggle")).toHaveCount(0); }
     const editor = page.locator(".links-editor");
     const paste = editor.getByLabel(labels[locale].paste, { exact: true });
     await paste.fill("instagram.com/mochi");

@@ -1,6 +1,6 @@
 import { IgImageUrlField as ImageUrlInput } from "./IgImageUrlField";
 import { useIgPendingEntities, useIgSessionValue } from "./useIgSessionValue";
-import { useId } from "react";
+import { useEffect, useId } from "react";
 import { useIgEntityEditor } from "./useIgEntityEditor";
 import styles from "./ocEditor.module.css";
 import sourceStyles from "./ImageSourceFields.module.css";
@@ -37,9 +37,9 @@ import { useIgMedia } from "./useIgMedia";
 import { IgDraftInput } from "./IgDraftInput";
 import { validateCountDraft } from "./igDraftValidation";
 
-type Props = { props: ModuleProps<"instagram"> };
+type Props = { props: ModuleProps<"instagram">; openRequest?: { token: number; entityId?: string } };
 
-export function CanonicalPostEditor({ props }: Props) {
+export function CanonicalPostEditor({ props, openRequest }: Props) {
   const { t: tr } = useTranslation("instagram");
   const { formatDate } = useLocaleFormatting();
   const { ctx } = props;
@@ -50,6 +50,11 @@ export function CanonicalPostEditor({ props }: Props) {
   const { hasPending, discardPending } = useIgPendingEntities(scope, "post-media-urls");
   const [mediaUrls, setMediaUrls] = useIgSessionValue<Record<string, string>>(`${scope}:post-media-urls`, {});
   const { root, openId, setOpenId, wasOpened } = useIgEntityEditor(scope, posts.map((post) => post.id));
+  useEffect(() => {
+    if (openRequest?.entityId && posts.some((post) => post.id === openRequest.entityId)) {
+      setOpenId(openRequest.entityId, { focusField: true });
+    }
+  }, [openRequest?.token]);
   const [error, setError] = useIgEditorState(scope, "");
   const media = useIgMedia(props);
   const [filters, setFilters] = useIgEditorState<PostEditorFilters>(scope, DEFAULT_POST_EDITOR_FILTERS);

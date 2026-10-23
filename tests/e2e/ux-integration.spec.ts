@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test } from "@playwright/test";
 import { createStarterDocument, makeWindow, migrateSiteDocumentV2 } from "@retrodesk/shared";
 
@@ -36,14 +37,14 @@ for (const width of [320, 390, 430]) {
       });
       await page.goto("/editor/combined");
       await page.getByRole("button", { name: "Minesweeper.exe", exact: true }).tap();
-      await page.getByRole("button", { name: "編輯內容", exact: true }).tap();
+      await enterContentEditor(page);
       const rows = page.getByRole("spinbutton", { name: "列", exact: true });
       const status = page.locator(".save-text");
       await rows.fill("10");
       await rows.press("Enter");
       await expect(status).toHaveText("已儲存");
       await expect.poll(() => saves).toBe(1);
-      const edit = page.locator(".m-toolbar").getByRole("button", { name: "視窗設定", exact: true });
+      const edit = page.locator(".m-window-settings");
       await edit.tap();
       const sheet = page.getByRole("dialog", { name: "視窗設定", exact: true });
       await expect(sheet).toBeVisible();

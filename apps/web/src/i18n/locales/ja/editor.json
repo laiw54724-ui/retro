@@ -103,7 +103,7 @@
       "description": "スコアの記録や送信をしない訪問者向けミニゲーム"
     },
     "character-dialog": {
-      "label": "キャラクターのあいさつ",
+      "label": "ウェルカムポップアップ",
       "description": "閉じることができるキャラクターのウェルカムメッセージ"
     },
     "guestbook": {
@@ -188,7 +188,23 @@
     "add": "追加",
     "edit": "編集",
     "theme": "テーマ",
-    "preview": "プレビュー"
+    "preview": "プレビュー",
+    "siteName": "サイト名",
+    "arrange": "整理",
+    "moved": "{{position}} 番目に移動しました",
+    "deleted": "「{{title}}」を取り除きました。5秒以内なら元に戻せます。",
+    "desktopIcons": "デスクトップアイコン",
+    "iconName": "アイコン名",
+    "deleteNamed": "{{title}} を削除",
+    "arrangeHint": "ドラッグで並べ替え · タップで名前を変更 · ×で削除",
+    "homeHint": "タップで編集 · 長押しで整理",
+    "windowCount": "{{count}} 個のウィンドウ",
+    "added": "デスクトップの末尾に追加しました。",
+    "wallColor": "壁紙の色 {{number}}",
+    "titleColor": "タイトルバーの色 {{number}}",
+    "titleColors": "タイトルバーの色",
+    "moreThemeOptions": "その他のテーマ設定",
+    "moreWindowOptions": "その他のウィンドウ設定"
   },
   "desktopCanvas": {
     "snapOn": "グリッドにスナップ {{size}}px：オン",
@@ -374,7 +390,7 @@
     "worldBuildingFolders": "世界観フォルダー",
     "addFoldersAndShortcutsRight": "ウィンドウ内でフォルダーとショートカットを直接追加できます。ショートカットは元のウィンドウを開くだけで、フォルダーを削除しても作品は削除されません。",
     "minesweeper": "マインスイーパー",
-    "characterPopUp": "キャラクターのポップアップ",
+    "characterPopUp": "ウェルカムポップアップ",
     "visitorGuestbook": "訪問者ゲストブック",
     "openMessagesInsideTheWindow": "ウィンドウ内でメッセージを開き、承認待ちのものを管理します。メッセージはデスクトップのドキュメントには書き込まれません。",
     "adjustSettingsAndPreviewDirectly": "ウィンドウの内容でそのまま設定を調整してプレビューできます。訪問者の操作はこの訪問中のみ有効です。",
@@ -383,7 +399,8 @@
     "displayName": "表示名",
     "extraText": "補足テキスト",
     "uploadPostImages": "+ 投稿画像をアップロード",
-    "postDescription": "投稿の説明"
+    "postDescription": "投稿の説明",
+    "editImageOnCanvas": "デスクトップの画像ウィンドウ内で直接編集できます。"
   },
   "windowChromeEditor": {
     "solidTitle3dBorder": "単色タイトル・立体枠線",

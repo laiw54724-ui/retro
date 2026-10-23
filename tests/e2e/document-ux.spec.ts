@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { makeWindow, migrateSiteDocumentV2, normalizeDocument, projectPublicSiteDocument, type SiteDocumentV2Input } from "../../packages/shared/src";
 import { documentFixture } from "./fixture";
@@ -50,7 +51,7 @@ async function openDocument(page: Page, options: { width?: number; long?: boolea
   await page.goto("/editor/site-1");
   if (width < 768) {
     await page.getByRole("button", { name: "Document.exe", exact: true }).click();
-    await page.getByRole("button", { name: "編輯內容" }).click();
+    await enterContentEditor(page);
   }
   const dialog = page.getByRole("dialog", { name: "Document.exe", exact: true });
   await expect(dialog.locator(".document-editor")).toBeVisible();
@@ -190,8 +191,12 @@ for (const width of [320, 375, 390, 430]) {
     await expect(dialog.getByLabel("連結網址", { exact: true })).toBeVisible();
     await expectContained(page, editor);
 
-    await page.getByRole("button", { name: "完成" }).click();
-    await expectContained(page, dialog.locator(".document-view"));
+    await dialog.locator(".m-back").click();
+    await page.locator(".m-tool").filter({ hasText: "預覽" }).click();
+    const preview = page.locator(".preview-overlay");
+    await preview.getByRole("button", { name: "Document.exe", exact: true }).click();
+    await expectContained(page, preview.locator(".document-view"));
+    await preview.getByRole("button", { name: "‹ 回到編輯器", exact: true }).click();
     await page.goto("/@demo");
     await page.getByRole("button", { name: "Document.exe", exact: true }).click();
     const publicView = page.getByRole("dialog", { name: "Document.exe", exact: true }).locator(".document-view");

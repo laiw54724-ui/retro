@@ -86,6 +86,6 @@ test("owner can enable submissions and operate the moderation queue", async ({ p
   const dialog = page.getByRole("dialog", { name: "Guestbook.exe" });
   await dialog.getByRole("checkbox", { name: "允許訪客送出待審留言" }).check();
   await expect.poll(() => saves.at(-1)?.document.windows.find((window: any) => window.type === "guestbook")?.content.enabled).toBe(true);
-  await dialog.getByRole("button", { name: "核准" }).click();
+  await dialog.getByRole("button", { name: "公開" }).click();
   await expect.poll(() => approvals).toBe(1);
 });

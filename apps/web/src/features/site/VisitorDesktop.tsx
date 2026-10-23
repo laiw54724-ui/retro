@@ -214,7 +214,7 @@ export function VisitorDesktop({ document, profiles, profileIdsByWindow, profile
             className="deskicon visitor-icon"
             data-window-id={window.id}
             style={{ left: iconX, top: iconY }}
-            onClick={() => openWindow(window.id)}
+            onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); openWindow(window.id); }}
           >
             <span className="deskicon-tile" style={{ background: tv.tileBg, boxShadow: tv.tileShadow }}><Icon name={window.icon} size={32} /></span>
             <small className="deskicon-label" style={resolveDesktopLabelAppearance(document.theme, window.appearance)}>{window.title}</small>

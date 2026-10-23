@@ -103,7 +103,7 @@
       "description": "A visitor mini-game with no score tracking or uploads"
     },
     "character-dialog": {
-      "label": "Character greeting",
+      "label": "Welcome popup",
       "description": "A character welcome message visitors can dismiss"
     },
     "guestbook": {
@@ -188,7 +188,23 @@
     "add": "Add",
     "edit": "Edit",
     "theme": "Theme",
-    "preview": "Preview"
+    "preview": "Preview",
+    "siteName": "Site name",
+    "arrange": "Arrange",
+    "moved": "Moved to position {{position}}",
+    "deleted": "Removed “{{title}}”. Undo within 5 seconds.",
+    "desktopIcons": "Desktop icons",
+    "iconName": "Icon name",
+    "deleteNamed": "Delete {{title}}",
+    "arrangeHint": "Drag to reorder · tap an icon to rename · × to delete",
+    "homeHint": "Tap an icon to edit · long press to arrange",
+    "windowCount": "{{count}} windows",
+    "added": "Window added at the end of the desktop.",
+    "wallColor": "Wallpaper color {{number}}",
+    "titleColor": "Title color {{number}}",
+    "titleColors": "Title bar colors",
+    "moreThemeOptions": "More theme options",
+    "moreWindowOptions": "More window options"
   },
   "desktopCanvas": {
     "snapOn": "Snap to grid {{size}}px: on",
@@ -374,7 +390,7 @@
     "worldBuildingFolders": "World-building folders",
     "addFoldersAndShortcutsRight": "Add folders and shortcuts right in the window; a shortcut only opens the original window, and deleting a folder doesn't delete the work.",
     "minesweeper": "Minesweeper",
-    "characterPopUp": "Character pop-up",
+    "characterPopUp": "Welcome popup",
     "visitorGuestbook": "Visitor guestbook",
     "openMessagesInsideTheWindow": "Open messages inside the window and manage those awaiting review; messages aren't written into the desktop document.",
     "adjustSettingsAndPreviewDirectly": "Adjust settings and preview directly in the window content; visitor actions stay within this visit only.",
@@ -383,7 +399,8 @@
     "displayName": "Display name",
     "extraText": "Extra text",
     "uploadPostImages": "+ Upload post images",
-    "postDescription": "Post description"
+    "postDescription": "Post description",
+    "editImageOnCanvas": "Edit this image directly in its desktop window."
   },
   "windowChromeEditor": {
     "solidTitle3dBorder": "Solid title · 3D border",

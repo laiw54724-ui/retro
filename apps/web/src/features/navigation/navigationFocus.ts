@@ -24,7 +24,11 @@ export function restoreNavigationFocus(key: string | null, surface?: HTMLElement
       for (const node of scope.querySelectorAll<HTMLElement>("[data-navigation-focus]")) {
         if (node.dataset.navigationFocus !== key || !available(node)) continue;
         node.focus();
-        if (document.activeElement === node) return;
+        if (document.activeElement === node) {
+          // WebKit can focus a button in an inner scroll clip without revealing it.
+          node.scrollIntoView({ block: "nearest", inline: "nearest" });
+          return;
+        }
       }
     }
     // A removed/disabled trigger still leaves keyboard users in the source app.

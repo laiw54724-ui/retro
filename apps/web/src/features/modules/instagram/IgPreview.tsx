@@ -1,6 +1,6 @@
 import { useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
-import type { IgPost } from "@retrodesk/shared";
+import { addFollow, createActorComment, removeFollow, setPostNamedLikers, type IgPost, type SiteDocumentV2Input, type SocialOperationResult } from "@retrodesk/shared";
 import { AvatarImage } from "../../../components/AvatarImage";
 import { FallbackImage } from "../ui";
 import { safeHref, type ModuleProps, type ProfileDirectoryPost } from "../types";
@@ -8,11 +8,21 @@ import { igIcons } from "./igIcons";
 import { useIgSession } from "./useIgSession";
 import { buildPublicEntityUrl, sharePublicUrl } from "../../../lib/publicShare";
 import { ProfileDetails } from "./ProfileDetails";
+import { translateSystemMessage } from "../../../i18n/systemMessages";
 
 const Ic = ({ bg, size = 24 }: { bg: string; size?: number }) => <span aria-hidden="true" className="ig-ic" style={{ width: size, height: size, background: bg }} />;
 
-/** The "real app" experience. State is per visit only. */
-export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "window" | "ctx">) {
+/** Visitor interactions stay in this session; editor actions use canonical draft operations. */
+export type IgAuthoringActions = {
+  actorId: string;
+  onEditProfile: () => void;
+  onNewPost: () => void;
+  onEditPost: (postId: string) => void;
+  onNewHighlight: () => void;
+  onEditHighlight: (highlightId: string) => void;
+};
+
+export function IgPreview({ window, ctx, authoring }: Pick<ModuleProps<"instagram">, "window" | "ctx"> & { authoring?: IgAuthoringActions }) {
   const { t: tr } = useTranslation("instagram");
   const entryProfileId = ctx.profileId ?? "entry";
   const profileDirectory = ctx.profileDirectory ?? [];
@@ -42,6 +52,22 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
   })();
   const session = useIgSession((profileId) => storyFramesFor(profileId).length, entryProfileId, `${entrySiteId}:${window.id}`, ctx.initialPostId ?? null, ctx.navigation ? { restore: restorable as never, save: (state) => { ctx.navigation!.ig[window.id] = state as never; } } : undefined, ctx.navigationRequest && profileDirectory.some((entry) => entry.id === ctx.navigationRequest!.profileId && (!ctx.navigationRequest!.postId || entry.posts.some((post) => post.id === ctx.navigationRequest!.postId))) ? ctx.navigationRequest : undefined);
   const s = session;
+  const actorId = authoring?.actorId;
+  const canAct = !!(actorId && ctx.editing && ctx.siteId && ctx.updateContent && ctx.profiles?.some((item) => item.id === actorId && item.siteId === ctx.siteId));
+  const mutateSocial = (recipe: (document: SiteDocumentV2Input) => SocialOperationResult) => {
+    if (!canAct) return false;
+    let succeeded = false;
+    ctx.updateContent?.((document) => {
+      const result = recipe(document);
+      if (!result.ok) {
+        s.showToast(translateSystemMessage(result.diagnostics[0]?.message ?? "") || tr("canonicalSocialEditor.theCharacterInteractionDataIs"));
+        return document;
+      }
+      succeeded = true;
+      return result.document;
+    });
+    return succeeded;
+  };
   const [shareFallback, setShareFallback] = useState<string | null>(null);
   const shareEntity = async (kind: "oc" | "post", id: string, title: string) => {
     if (!ctx.publicShareBaseUrl) { s.showToast(tr("igPreview.publishBeforeSharing")); return; }
@@ -81,6 +107,14 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
   const ringBg = showHighlights ? `conic-gradient(${tv.titleFrom}, ${tv.accent}, ${tv.titleTo}, ${tv.titleFrom})` : "transparent";
   const followersText = directoryEntry?.followerCount ?? directoryEntry?.legacyFollowerLabel ?? (profile.followers || "0");
   const followingText = directoryEntry?.followingCount ?? directoryEntry?.legacyFollowingLabel ?? (profile.following || "0");
+  const actorFollowing = !!(canAct && directoryEntry?.followerIds.includes(actorId!));
+  const toggleActorFollow = () => {
+    if (!canAct || !actorId || actorId === s.activeProfileId) return;
+    mutateSocial((document) => {
+      const edge = document.entities.followEdges?.find((item) => item.fromProfileId === actorId && item.toProfileId === s.activeProfileId && item.siteId === ctx.siteId);
+      return edge ? removeFollow(document, edge.id, { siteId: ctx.siteId! }) : addFollow(document, { fromProfileId: actorId, toProfileId: s.activeProfileId }, { siteId: ctx.siteId!, id: `follow:${crypto.randomUUID()}` });
+    });
+  };
   const phStyle: CSSProperties = { ["--ph-a" as string]: tv.light, ["--ph-b" as string]: tv.face };
   const appStyle: CSSProperties = {
     background: "#fff",
@@ -117,9 +151,28 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
     const namedLikerIds = socialPost.namedLikerIds ?? [];
     const hasStructuredLikes = Array.isArray(socialPost.namedLikerIds) || socialPost.otherLikeCount !== undefined;
     const baseLikes = hasStructuredLikes ? namedLikerIds.length + (socialPost.otherLikeCount ?? 0) : post.likes;
-    const likes = baseLikes + (s.liked[key] ? 1 : 0);
+    const actorLiked = !!(canAct && socialPost.namedLikerIds?.includes(actorId!));
+    const likes = baseLikes + (!canAct && s.liked[key] ? 1 : 0);
     const inputOpen = profile.allowComments && (single || s.commentOpen[key]);
     const draft = s.drafts[key] ?? "";
+    const like = (force = false) => {
+      if (!canAct) { if (force) s.doubleLike(post.id); else s.toggleLike(post.id); return; }
+      if (!ctx.posts?.some((item) => item.id === post.id && item.siteId === ctx.siteId) || !actorId || force && actorLiked) return;
+      mutateSocial((document) => {
+        const current = document.entities.posts.find((item) => item.id === post.id && item.siteId === ctx.siteId);
+        if (!current) return { ok: false, code: "invalid", diagnostics: [{ path: ["postId"], message: tr("canonicalPostEditor.theOriginalPostWasntFound"), code: "not_found" }] };
+        const likers = current.namedLikerIds ?? [];
+        return setPostNamedLikers(document, post.id, likers.includes(actorId) ? likers.filter((id) => id !== actorId) : [...likers, actorId], { siteId: ctx.siteId! });
+      });
+    };
+    const postComment = () => {
+      if (!canAct) { s.postComment(post.id); return; }
+      const text = draft.trim();
+      if (!text || !ctx.posts?.some((item) => item.id === post.id && item.siteId === ctx.siteId)) return;
+      if (mutateSocial((document) => createActorComment(document, post.id, { authorKind: "profile", authorProfileId: actorId!, text }, { siteId: ctx.siteId!, id: `comment:${crypto.randomUUID()}` }))) {
+        s.setDrafts((current) => ({ ...current, [key]: "" }));
+      }
+    };
     const current = sources[index];
     const currentMedia = (post as Partial<ProfileDirectoryPost>).media?.[index];
     const mediaStyle: CSSProperties = single && currentMedia?.aspectRatio
@@ -137,7 +190,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
           <span className="ig-card-who"><strong>{profile.username}</strong>{post.location ? <span>{post.location}</span> : null}</span>
           <button type="button" className="ig-icbtn" aria-label={tr("igPreview.moreOptions")} onClick={() => s.setSheetId(post.id)}><Ic bg={I.more} size={20} /></button>
         </div>
-        <div className={`ig-media ph${single ? ` detail${currentMedia?.aspectRatio ? " has-ratio" : ""}` : ""}`} style={mediaStyle} onDoubleClick={() => { if (profile.allowLikes) s.doubleLike(post.id); }}>
+        <div className={`ig-media ph${single ? ` detail${currentMedia?.aspectRatio ? " has-ratio" : ""}` : ""}`} style={mediaStyle} onDoubleClick={() => { if (profile.allowLikes) like(true); }}>
           {current ? <FallbackImage src={current} alt={currentMedia?.alt || post.caption} style={imageStyle} /> : null}
           {sources.length > 1 ? (
             <>
@@ -150,7 +203,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
         </div>
         {sources.length > 1 ? <div className="ig-dots">{sources.map((_, i) => <span key={i} style={{ background: i === index ? "#0095f6" : "#c7c7c7" }} />)}</div> : null}
         <div className="ig-actions">
-          {profile.allowLikes ? <button type="button" className="ig-icbtn lg" aria-pressed={!!s.liked[key]} aria-label={tr("igPreview.like")} onClick={() => s.toggleLike(post.id)}><Ic bg={s.liked[key] ? I.heartFill : I.heart} /></button> : null}
+          {profile.allowLikes ? <button type="button" className="ig-icbtn lg" aria-pressed={canAct ? actorLiked : !!s.liked[key]} aria-label={tr("igPreview.like")} onClick={() => like()}><Ic bg={(canAct ? actorLiked : !!s.liked[key]) ? I.heartFill : I.heart} /></button> : null}
           {profile.allowComments ? <button type="button" className="ig-icbtn lg" aria-label={tr("igPreview.message")} onClick={() => (single ? undefined : s.setCommentOpen((o) => ({ ...o, [key]: !o[key] })))}><Ic bg={I.comment} /></button> : null}
           <button type="button" className="ig-icbtn lg" aria-label={tr("igPreview.share")} onClick={() => void shareEntity("post", post.id, post.title || tr("igPreview.ocPost"))}><Ic bg={I.send} /></button>
           <span style={{ flex: 1 }} />
@@ -172,9 +225,9 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
         </div>
         {inputOpen ? (
           <div className="ig-comment-box">
-            <input value={draft} placeholder={tr("igPreview.commentAsAVisitor")} aria-label={tr("igPreview.message")} autoFocus={!single} onChange={(event) => s.setDrafts((o) => ({ ...o, [key]: event.target.value }))} onKeyDown={(event) => { if (event.key === "Enter") s.postComment(post.id); }} />
-            <button type="button" disabled={!draft.trim()} onClick={() => s.postComment(post.id)} style={{ color: draft.trim() ? "#0095f6" : "#9aa" }}>{tr("igPreview.post")}</button>
-            <small>{tr("igPreview.thisVisitOnlyNothingIs")}</small>
+            <input value={draft} placeholder={canAct ? tr("inlineApp.commentAs", { handle: ctx.profiles?.find((item) => item.id === actorId)?.handle ?? "" }) : tr("igPreview.commentAsAVisitor")} aria-label={tr("igPreview.message")} autoFocus={!single} onChange={(event) => s.setDrafts((o) => ({ ...o, [key]: event.target.value }))} onKeyDown={(event) => { if (event.key === "Enter" && !event.nativeEvent.isComposing) postComment(); }} />
+            <button type="button" disabled={!draft.trim()} onClick={postComment} style={{ color: draft.trim() ? "#0095f6" : "#9aa" }}>{tr("igPreview.post")}</button>
+            <small>{canAct ? tr("authoring.draftHint") : tr("igPreview.thisVisitOnlyNothingIs")}</small>
           </div>
         ) : null}
       </article>
@@ -187,6 +240,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
         <button key={post.id} type="button" className="ig-cell ph" style={phStyle} aria-label={tr("igPreview.openPost", { v1: post.caption || post.title })} onClick={() => open(post)}>
           {post.src ? <AvatarImage src={post.src} crop={(post as Partial<ProfileDirectoryPost>).media?.[0]?.crop} alt="" /> : null}
           {post.extra.length ? <span className="ig-multi" style={{ background: I.multi }} /> : null}
+          {canAct && ctx.posts?.some((item) => item.id === post.id && item.visibility === "draft") ? <span className="ig-draft-badge">{tr("profileSwitcher.draft")}</span> : null}
         </button>
       ))}
     </div>
@@ -194,6 +248,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
 
   const renderHighlights = (ring: boolean) => (
     <div className="ig-hls">
+      {canAct && s.activeProfileId === actorId && !ring ? <button type="button" className="ig-hl" onClick={authoring?.onNewHighlight}><span className="ig-hl-ring ig-add-highlight">＋</span><span className="ig-hl-title">{tr("inlineApp.newHighlight")}</span></button> : null}
       {highlights.map((h, i) => {
         const storyIndex = canonicalHighlights.length ? canonicalHighlights.slice(0, i).reduce((total, item) => total + Math.max(1, item.frames.length), 0) : i;
         return (
@@ -275,6 +330,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
           <strong style={{ fontSize: s.screen === "feed" ? 20 : 15 }}>{headTitle}</strong>
           {s.screen === "profile" && profile.verified ? <span role="img" aria-label={tr("igPreview.verified")} className="ig-verified">✓</span> : null}
         </span>
+        {canAct ? <button type="button" className="ig-icbtn lg" aria-label={tr("editorFlow.newPost")} title={tr("editorFlow.newPost")} onClick={authoring?.onNewPost}><Ic bg={I.plus} size={22} /></button> : null}
         {s.screen === "profile" ? <button type="button" className="ig-icbtn lg" aria-label={tr("igPreview.shareProfile")} onClick={() => void shareEntity("oc", s.activeProfileId, profile.name || profile.username)}><Ic bg={I.send} size={22} /></button> : null}
       </div>
 
@@ -302,12 +358,12 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
                 {profile.showFollowedBy && profile.followedBy ? <span className="ig-followed">{profile.followedBy}</span> : null}
               </div>
               <div className="ig-btns">
-                <button type="button" aria-pressed={s.followed} className="ig-btn ig-follow-btn" title={tr("igPreview.thisVisitOnly")} style={s.followed ? { background: tv.face, color: tv.text, boxShadow: tv.pressed } : { background: tv.accent, color: tv.accentText, boxShadow: tv.bevel }} onClick={() => s.setFollowed(!s.followed)}>{s.followed ? tr("igPreview.followingThisVisitOnly") : tr("igPreview.followThisVisitOnly")}</button>
+                {canAct && s.activeProfileId === actorId ? <button type="button" className="ig-btn" style={{ background: tv.face, color: tv.text, boxShadow: tv.bevel }} onClick={authoring?.onEditProfile}>{tr("inlineApp.editProfile")}</button> : <button type="button" aria-pressed={canAct ? actorFollowing : s.followed} className="ig-btn ig-follow-btn" title={canAct ? tr("authoring.draftHint") : tr("igPreview.thisVisitOnly")} style={(canAct ? actorFollowing : s.followed) ? { background: tv.face, color: tv.text, boxShadow: tv.pressed } : { background: tv.accent, color: tv.accentText, boxShadow: tv.bevel }} onClick={canAct ? toggleActorFollow : () => s.setFollowed(!s.followed)}>{canAct ? actorFollowing ? tr("inlineApp.following") : tr("inlineApp.follow") : s.followed ? tr("igPreview.followingThisVisitOnly") : tr("igPreview.followThisVisitOnly")}</button>}
                 {profile.dmUrl ? <button type="button" className="ig-btn" style={{ background: tv.face, color: tv.text, boxShadow: tv.bevel }} onClick={() => ctx.onLink({ target: "url", url: profile.dmUrl, label: tr("igPreview.message2") })}>{tr("igPreview.message2")}</button> : null}
                 {profileDirectory.length > 1 ? <button type="button" className="ig-btn" style={{ background: tv.face, color: tv.text, boxShadow: tv.bevel }} onClick={s.openDirectory}>{tr("igPreview.allCharacters")}</button> : null}
                 <button type="button" className="ig-btn" style={{ background: tv.face, color: tv.text, boxShadow: tv.bevel }} onClick={() => void shareEntity("oc", s.activeProfileId, profile.name || profile.username)}>{tr("igPreview.share")}</button>
               </div>
-              {showHighlights ? renderHighlights(false) : null}
+              {showHighlights || canAct && s.activeProfileId === actorId ? renderHighlights(false) : null}
             </div>
             <div role="tablist" className="ig-ptabs" style={{ gridTemplateColumns: `repeat(${visibleCollections.length ? 3 : 2}, minmax(0, 1fr))` }}>
               {(["grid", "list", ...(visibleCollections.length ? ["collections" as const] : [])] as const).map((id) => (
@@ -363,18 +419,20 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
         {s.screen === "post" ? (postFor ? renderCard(postFor, true) : <div className="ig-empty"><strong>{tr("igPreview.thisPostCouldntBeFound")}</strong></div>) : null}
       </div>
 
-      <div className="ig-nav4">
-        {nav.map((item) => (
+      <div className="ig-nav4" style={{ gridTemplateColumns: `repeat(${canAct ? 5 : 4}, minmax(0, 1fr))` }}>
+        {nav.flatMap((item) => [
+          ...(canAct && item.id === "saved" ? [<button key="new" type="button" aria-label={tr("editorFlow.newPost")} onClick={authoring?.onNewPost}><Ic bg={I.plus} /></button>] : []),
           <button key={item.id} type="button" aria-label={item.label} aria-current={activeNav === item.id ? "page" : undefined} style={{ background: activeNav === item.id ? "#f2f2f2" : "#fff" }} onClick={() => s.go(item.id)}>
             {item.icon ? <Ic bg={item.icon} /> : avatar(26, activeNav === item.id ? `2px solid ${tv.text}` : "1px solid #dbdbdb")}
           </button>
-        ))}
+        ])}
       </div>
 
       {sheetPost ? (
         <>
           <div className="ig-scrim" onClick={() => s.setSheetId(null)} />
           <div role="menu" className="ig-sheet" style={{ background: tv.face, boxShadow: tv.bevel }}>
+          {canAct && authoring && ctx.posts?.some((item) => item.id === sheetPost.id && item.authorProfileId === actorId) ? <button role="menuitem" type="button" style={{ color: tv.text }} onClick={() => { s.setSheetId(null); authoring.onEditPost(sheetPost.id); }}>{tr("inlineApp.editPost")}</button> : null}
           <button role="menuitem" type="button" style={{ color: tv.text }} onClick={() => { s.toggleSave(sheetPost.id); s.setSheetId(null); }}>{s.saved[s.interactionKey(sheetPost.id)] ? tr("igPreview.unsave") : tr("igPreview.save")}</button>
             <button role="menuitem" type="button" style={{ color: tv.text }} onClick={() => { const post = posts.find((item) => item.id === s.sheetId); if (post) void shareEntity("post", post.id, post.title || tr("igPreview.ocPost")); s.setSheetId(null); }}>{tr("igPreview.copyLink")}</button>
             {s.screen !== "post" ? <button role="menuitem" type="button" style={{ color: tv.text }} onClick={() => open(sheetPost)}>{tr("igPreview.goToPost")}</button> : null}
@@ -391,7 +449,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
           if (event.key === "Escape") { event.preventDefault(); s.closeStory(); }
         }}>
           <div className="ig-bars">{storyFrames.map((frame, i) => <span key={frame.id}><span style={{ width: i < s.story ? "100%" : i === s.story ? `${s.storyProgress}%` : "0%" }} /></span>)}</div>
-          <div className="ig-story-head">{avatar(28)}<strong>{profile.username}</strong><span className="ig-story-title">{story.highlightTitle}{story.frameCount > 1 ? ` · ${story.frameIndex + 1}/${story.frameCount}` : ""}</span><button type="button" aria-label={s.storyPaused ? tr("igPreview.resumePlayback") : tr("igPreview.pausePlayback")} onClick={s.toggleStoryPause}>{s.storyPaused ? "▶" : "Ⅱ"}</button><button type="button" aria-label={tr("igPreview.close")} onClick={s.closeStory}>×</button></div>
+          <div className="ig-story-head">{avatar(28)}<strong>{profile.username}</strong><span className="ig-story-title">{story.highlightTitle}{story.frameCount > 1 ? ` · ${story.frameIndex + 1}/${story.frameCount}` : ""}</span>{canAct && s.activeProfileId === actorId ? <button type="button" aria-label={tr("inlineApp.editHighlight")} onClick={() => { s.closeStory(); authoring?.onEditHighlight(story.highlightId); }}>{tr("editorFlow.edit")}</button> : null}<button type="button" aria-label={s.storyPaused ? tr("igPreview.resumePlayback") : tr("igPreview.pausePlayback")} onClick={s.toggleStoryPause}>{s.storyPaused ? "▶" : "Ⅱ"}</button><button type="button" aria-label={tr("igPreview.close")} onClick={s.closeStory}>×</button></div>
           <div className="ig-story-body">
             {story.src ? <FallbackImage src={story.src} alt={story.alt || story.highlightTitle} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }} /> : <div className="ph" style={{ height: "100%", aspectRatio: "9 / 16", ...phStyle }} />}
             {story.text ? <div className="ig-story-text">{story.text}</div> : null}

@@ -21,7 +21,7 @@ test("geometry drafts commit once on Enter or blur, preserve partial text, and u
   await page.goto("/editor/site-1");
   await expect(page.getByRole("dialog", { name: "About.exe" })).toBeVisible();
   await expect.poll(() => saves.at(-1)?.document.schemaVersion).toBe(2);
-  await expect(page.getByRole("status")).toHaveText("已儲存");
+  await expect(page.locator(".save-text")).toHaveText("已儲存");
   await page.getByRole("tab", { name: "版面", exact: true }).click();
   const aboutWindow = page.getByRole("dialog", { name: "About.exe" }).locator("xpath=ancestor::div[contains(@class,'canvas-window')]");
   const width = page.locator("#editor-right-panel").getByLabel("寬", { exact: true });

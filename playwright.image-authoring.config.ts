@@ -8,5 +8,8 @@ export default defineConfig({
   webServer: {
     command: `VITE_IMAGE_WINDOW_WRITER=true VITE_API_URL=${baseURL} corepack pnpm --filter @retrodesk/web dev --host 127.0.0.1 --port ${port}`,
     url: baseURL, reuseExistingServer: false, timeout: 120_000
-  }, projects: [{ name: "chromium", use: { browserName: "chromium" } }]
+  }, projects: [
+    { name: "chromium", use: { browserName: "chromium" } },
+    { name: "webkit", use: { browserName: "webkit" } }
+  ]
 });

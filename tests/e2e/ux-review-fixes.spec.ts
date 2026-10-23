@@ -124,7 +124,7 @@ test("the tour card exposes its explanation to assistive technology", async ({ p
 test("phone app title-bar controls are real 44px targets", async ({ page }) => {
   await openEditor(page, 390);
   await page.getByRole("button", { name: "Instagram.exe", exact: true }).click();
-  for (const control of [page.getByRole("button", { name: /‹ 桌面/ }), page.getByRole("button", { name: "關閉", exact: true })]) {
+  for (const control of [page.getByRole("button", { name: /‹ 桌面/ }), page.locator(".m-window-settings")]) {
     const box = (await control.first().boundingBox())!;
     expect(box.height).toBeGreaterThanOrEqual(43.5);
     expect(box.width).toBeGreaterThanOrEqual(43.5);

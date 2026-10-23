@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Page } from "@playwright/test";
 import { makeWindow, migrateSiteDocumentV2, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { documentFixture } from "./fixture";
@@ -37,8 +38,9 @@ for (const width of [1440, 320]) {
     await page.goto("/editor/site-1");
     if (width < 768) {
       await page.getByRole("button", { name: "Instagram.exe", exact: true }).click();
-      await page.getByRole("button", { name: "編輯內容" }).click();
+      await enterContentEditor(page);
     }
+    await page.getByRole("dialog",{name:"Instagram.exe",exact:true}).getByRole("button",{name:"編輯個人檔案",exact:true}).click();
     const profile = page.locator(".ig-profile-editor:visible");
     await profile.getByRole("button", { name: "展開角色設定" }).click();
     const names = profile.getByPlaceholder("欄位名稱");
@@ -56,8 +58,9 @@ for (const width of [1440, 320]) {
     await page.reload();
     if (width < 768) {
       await page.getByRole("button", { name: "Instagram.exe", exact: true }).click();
-      await page.getByRole("button", { name: "編輯內容" }).click();
+      await enterContentEditor(page);
     }
+    await page.getByRole("dialog",{name:"Instagram.exe",exact:true}).getByRole("button",{name:"編輯個人檔案",exact:true}).click();
     const reloaded = page.locator(".ig-profile-editor:visible");
     await reloaded.getByRole("button", { name: "展開角色設定" }).click();
     await expect(reloaded.getByPlaceholder("欄位名稱")).toHaveValue("職業");
@@ -73,7 +76,7 @@ for (const width of [1440, 320]) {
     await page.goto("/editor/site-1");
     if (width < 768) {
       await page.getByRole("button", { name: "Moodboard.exe", exact: true }).click();
-      await page.getByRole("button", { name: "編輯內容" }).click();
+      await enterContentEditor(page);
     }
     const dialog = page.getByRole("dialog", { name: "Moodboard.exe" });
     const second = dialog.getByRole("button", { name: "選取文字：Second" });

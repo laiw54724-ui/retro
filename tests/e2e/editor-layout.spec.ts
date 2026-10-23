@@ -19,13 +19,13 @@ async function openEditor(page: Page) {
   // v1 fixtures are migrated once on load. Wait for that canonical v2 draft
   // save before tests attempt to publish or make assertions about later saves.
   await expect.poll(() => saves.at(-1)?.document.schemaVersion).toBe(2);
-  await expect(page.getByRole("status")).toHaveText("已儲存");
+  await expect(page.locator(".save-text")).toHaveText("已儲存");
   return saves;
 }
 
 test("layout mode drags windows and icons with 8px snapping and Esc exits", async ({ page }) => {
   const saves = await openEditor(page);
-  await page.locator(".icon-layer").click({ position: { x: 600, y: 440 } }); // click empty desktop → no selection
+  await page.locator(".icon-layer").click({ position: { x: 600, y: 20 } }); // empty desktop, clear of the floating toolbar
   await page.getByRole("button", { name: "▦ 進入桌面排版模式" }).click();
   const toolbar = page.getByRole("toolbar", { name: "排版模式" });
   await expect(toolbar).toBeVisible();
@@ -180,13 +180,13 @@ test("clean release explains the optional Windows icon pack", async ({ page }) =
 test("desktop and mobile add surfaces share the registry modules", async ({ page }) => {
   const saves = await openEditor(page);
   const desktopLabels = await page.locator(".left-panel2 .add-card strong").allTextContents();
-  expect(desktopLabels).toEqual(["名片／關於我", "文件視窗", "連結視窗", "復古 IG 個人頁", "相簿視窗", "Moodboard 畫板", "音樂播放器", "角色彈窗", "訪客留言簿", "掃雷", "世界觀資料夾"]);
+  expect(desktopLabels).toEqual(["名片／關於我", "文件視窗", "連結視窗", "復古 IG 個人頁", "相簿視窗", "Moodboard 畫板", "音樂播放器", "歡迎彈窗", "訪客留言簿", "掃雷", "世界觀資料夾"]);
 
   await page.getByRole("button", { name: "手機版" }).click();
   await page.locator(".m-toolbar").getByRole("button", { name: "新增" }).click();
   const mobileSheet = page.getByRole("dialog", { name: "新增元件" });
   await expect(mobileSheet).toBeVisible();
-  const mobileLabels = await mobileSheet.locator(".m-add strong").allTextContents();
+  const mobileLabels = await mobileSheet.locator(".add-card strong").allTextContents();
   expect(mobileLabels).toEqual(desktopLabels);
   expect(await mobileSheet.getByRole("heading").allTextContents()).toEqual(["介紹與文字", "圖片與靈感", "互動與聲音", "整理與導覽"]);
 
@@ -219,7 +219,7 @@ test("selected window gets a non-blocking desktop focus scrim", async ({ page })
     .toBeGreaterThan(Number(await scrim.evaluate((element) => getComputedStyle(element).zIndex)));
   await expect(scrim).toHaveCSS("pointer-events", "none");
 
-  await canvas.locator(".icon-layer").click({ position: { x: 600, y: 440 } });
+  await canvas.locator(".icon-layer").click({ position: { x: 600, y: 20 } });
   await expect(scrim).toHaveCount(0);
 
   await page.getByRole("button", { name: "▦ 進入桌面排版模式" }).click();
