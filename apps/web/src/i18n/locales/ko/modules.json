@@ -609,6 +609,10 @@
     "stateUnopened": "미공개"
   },
   "characterDialog": {
+    "imageTools": "캐릭터 이미지",
+    "dropImage": "놓아서 캐릭터 이미지 바꾸기",
+    "addButton": "+ 버튼 문구 추가",
+    "editHint": "메시지 직접 편집 · 이미지 놓기 · 버튼 문구 변경",
     "preview": "캐릭터 팝업 미리 보기",
     "removeCharacterImage": "캐릭터 이미지 제거",
     "character": "캐릭터",

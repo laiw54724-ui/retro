@@ -105,10 +105,14 @@ test("character and Moodboard image URL fields preview and survive reload", asyn
   const site = await fixture(page, [character, board]);
   await page.setViewportSize({ width: 1440, height: 900 }); await page.goto("/editor/site-1");
   const editor = page.locator(".moodboard-editor:visible");
+  await editor.getByRole("button", { name: "從連結新增圖片", exact: true }).click();
   await editor.getByRole("textbox", { name: "從連結新增圖片", exact: true }).fill(SOURCE);
   await editor.getByRole("textbox", { name: "從連結新增圖片", exact: true }).press("Enter");
   await expect(editor.locator(".moodboard-stage img")).toHaveAttribute("src", SOURCE);
+  await page.getByRole("button", { name: "開始", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Character.exe", exact: true }).click();
   const dialog = page.locator(".character-dialog-app:visible");
+  await dialog.locator(".character-image-toggle").click();
   await dialog.getByRole("textbox", { name: "圖片網址", exact: true }).fill(SOURCE);
   await dialog.getByRole("textbox", { name: "圖片網址", exact: true }).press("Enter");
   await expect(dialog.locator(".character-dialog-image")).toHaveAttribute("src", SOURCE);
@@ -132,9 +136,11 @@ for (const type of ["about", "document", "gallery", "character-dialog", "moodboa
   if (type === "about") await module.locator(".about-avatar-toggle").click();
   if (type === "document") await module.locator(".doc-block").first().click();
   if (type === "gallery") await module.locator("[data-image-id]").first().click();
-  await module.locator('input[type="file"]').last().setInputFiles(FILE);
+  if (type === "character-dialog") await module.locator(".character-image-toggle").click();
+  await module.locator(type === "moodboard" ? '.moodboard-toolbar input[type="file"]' : 'input[type="file"]').last().setInputFiles(FILE);
   await expect.poll(site.pending).toBe(true);
   if (type === "about") await module.locator(".about-avatar-toggle").click();
+  if (type === "moodboard") await module.getByRole("button", { name: "圖片說明", exact: true }).click();
   const input = module.getByRole("textbox", { name: type === "about" ? "頭像網址" : "圖片網址", exact: true });
   const next = "https://images.example.test/newer.png";
   await input.fill(next); await site.finish();

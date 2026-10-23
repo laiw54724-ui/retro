@@ -609,6 +609,10 @@
     "stateUnopened": "，未開啟"
   },
   "characterDialog": {
+    "imageTools": "角色圖片",
+    "dropImage": "放開以更換角色圖片",
+    "addButton": "＋ 加入按鈕文字",
+    "editHint": "直接改訊息 · 拖入角色圖片 · 就地改按鈕文字",
     "preview": "預覽角色彈窗",
     "removeCharacterImage": "移除角色圖片",
     "character": "角色",

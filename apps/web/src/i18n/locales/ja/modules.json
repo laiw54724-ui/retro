@@ -609,6 +609,10 @@
     "stateUnopened": "、未開封"
   },
   "characterDialog": {
+    "imageTools": "キャラクター画像",
+    "dropImage": "ドロップしてキャラクター画像を差し替え",
+    "addButton": "＋ ボタンの文字を追加",
+    "editHint": "メッセージを直接編集 · 画像をドロップ · ボタンの文字を変更",
     "preview": "キャラクターポップアップをプレビュー",
     "removeCharacterImage": "キャラクター画像を削除",
     "character": "キャラクター",

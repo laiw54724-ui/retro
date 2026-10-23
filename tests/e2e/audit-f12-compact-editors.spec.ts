@@ -41,7 +41,7 @@ async function setup(page: Page, kind: Kind, width: number, publicOnly = false) 
   const surface = publicOnly ? page.locator(width < 768 ? ".visitor-mobile" : ".visitor-desktop") : page.locator("main");
   const dialog = surface.getByRole("dialog", { name: win.title, exact: true });
   await expect(dialog).toBeVisible();
-  await expect(dialog.locator(publicOnly ? kind === "about" ? ".about-view" : ".character-dialog-app" : kind === "about" ? ".about-editor" : ".character-dialog-settings")).toBeVisible();
+  await expect(dialog.locator(publicOnly ? kind === "about" ? ".about-view" : ".character-dialog-app" : kind === "about" ? ".about-editor" : ".character-message-editor")).toBeVisible();
   return { dialog, initial, saved: () => draft, saves };
 }
 async function visibility(locator: Locator) {
@@ -71,7 +71,7 @@ for (const width of [1440, 320, 390, 430]) {
         await expect(message).toBeInViewport({ ratio: 1 });
         expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
         expect(saves).toHaveLength(0);
-        const disclosure = dialog.locator(kind === "about" ? ".about-avatar-toggle" : ".character-editor-preview > summary");
+        const disclosure = dialog.locator(kind === "about" ? ".about-avatar-toggle" : ".character-image-toggle");
         const nameBefore = await name.inputValue();
         await name.fill(`${nameBefore} edited`);
         await expect.poll(() => saves.length).toBe(1);
@@ -80,7 +80,7 @@ for (const width of [1440, 320, 390, 430]) {
         if (width < 768) await disclosure.tap();
         else { await disclosure.focus(); await disclosure.press("Enter"); }
         if (kind === "about") await expect(dialog.locator(".about-avatar-panel")).toBeVisible();
-        else await expect(disclosure.locator("..")).toHaveAttribute("open", "");
+        else await expect(disclosure).toHaveAttribute("aria-expanded", "true");
         const url = dialog.getByLabel(kind === "about" ? "頭像網址" : "圖片網址", { exact: true });
         await url.fill("https://");
         await url.press("Tab");
@@ -88,7 +88,7 @@ for (const width of [1440, 320, 390, 430]) {
         await disclosure.focus();
         await disclosure.press("Space");
         if (kind === "about") await expect(dialog.locator(".about-avatar-panel")).toHaveCount(0);
-        else await expect(disclosure.locator("..")).not.toHaveAttribute("open", "");
+        else await expect(disclosure).toHaveAttribute("aria-expanded", "false");
         await expect(disclosure).toBeFocused();
         await disclosure.press("Enter");
         await expect(url).toHaveValue(kind === "about" ? portraitUrl : "https://");

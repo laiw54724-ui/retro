@@ -609,6 +609,10 @@
     "stateUnopened": ", unopened"
   },
   "characterDialog": {
+    "imageTools": "Character image",
+    "dropImage": "Drop to replace the character image",
+    "addButton": "+ Add button text",
+    "editHint": "Edit the message directly · Drop a portrait · Change the button text",
     "preview": "Preview character pop-up",
     "removeCharacterImage": "Remove character image",
     "character": "Character",
