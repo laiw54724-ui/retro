@@ -474,5 +474,23 @@
     "replaceImage": "替換圖片 {{n}}",
     "replacementHint": "上傳成功後才替換原圖。",
     "chooseImages": "選擇圖片（可多選）"
+  },
+  "composer": {
+    "newPost": "新貼文",
+    "cancel": "取消",
+    "next": "下一步",
+    "finish": "完成",
+    "backToPhotos": "← 返回選圖",
+    "choosePhotos": "從裝置選擇照片",
+    "photoHint": "可多選，最多 10 張（輪播）",
+    "add": "加入",
+    "photos": "已選照片",
+    "photo": "照片 {{n}}",
+    "removePhoto": "移除照片 {{n}}",
+    "remove": "移除",
+    "date": "日期",
+    "keepDraft": "存成草稿（先不公開）",
+    "saveHint": "完成後才加入網站草稿；網站仍需另行發布。",
+    "limit": "每則貼文最多 10 張圖片，包含等待中的上傳。"
   }
 }

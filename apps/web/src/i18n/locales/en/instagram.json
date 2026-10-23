@@ -474,5 +474,23 @@
     "replaceImage": "Replace image {{n}}",
     "replacementHint": "The original stays until the upload succeeds.",
     "chooseImages": "Choose images (multiple allowed)"
+  },
+  "composer": {
+    "newPost": "New post",
+    "cancel": "Cancel",
+    "next": "Next",
+    "finish": "Done",
+    "backToPhotos": "← Back to photos",
+    "choosePhotos": "Choose photos from device",
+    "photoHint": "Select up to 10 photos for a carousel",
+    "add": "Add",
+    "photos": "Selected photos",
+    "photo": "Photo {{n}}",
+    "removePhoto": "Remove photo {{n}}",
+    "remove": "Remove",
+    "date": "Date",
+    "keepDraft": "Keep as draft (not public yet)",
+    "saveHint": "Done adds this post to the site draft. Publish the site separately.",
+    "limit": "Each post allows 10 photos, including pending uploads."
   }
 }

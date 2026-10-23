@@ -474,5 +474,23 @@
     "replaceImage": "画像 {{n}} を置き換え",
     "replacementHint": "アップロードが成功するまで元の画像を保持します。",
     "chooseImages": "画像を選択（複数可）"
+  },
+  "composer": {
+    "newPost": "新しい投稿",
+    "cancel": "キャンセル",
+    "next": "次へ",
+    "finish": "完了",
+    "backToPhotos": "← 写真の選択に戻る",
+    "choosePhotos": "端末から写真を選ぶ",
+    "photoHint": "最大10枚まで複数選択できます",
+    "add": "追加",
+    "photos": "選択した写真",
+    "photo": "写真 {{n}}",
+    "removePhoto": "写真 {{n}} を削除",
+    "remove": "削除",
+    "date": "日付",
+    "keepDraft": "下書きとして保存（まだ公開しない）",
+    "saveHint": "完了するとサイトの下書きに追加されます。サイトの公開は別途必要です。",
+    "limit": "アップロード待ちを含め、投稿ごとの写真は最大10枚です。"
   }
 }

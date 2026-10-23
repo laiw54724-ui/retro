@@ -1,0 +1,17 @@
+.composer { display: flex; flex-direction: column; min-height: 0; height: 100%; overflow: auto; color: var(--w98-text); background: var(--w98-face); }
+.header { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 6px; background: var(--w98-face); box-shadow: var(--w98-raised); }
+.header h3 { flex: 1; min-width: 70px; margin: 0; font-size: 14px; }
+.navigation { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px; }
+.body { display: flex; flex-direction: column; gap: 12px; padding: 12px; min-width: 0; }
+.body > label { display: flex; flex-direction: column; gap: 4px; }
+.body input:not([type=checkbox]), .body textarea { width: 100%; min-width: 0; box-sizing: border-box; }
+.body p { margin: 0; font-size: 12px; line-height: 1.5; }
+.pick { display: grid; place-items: center; gap: 12px; min-height: 160px; padding: 16px; background: #fff; border: 2px dashed var(--w98-shadow); cursor: pointer; text-align: center; }
+.pick[aria-disabled=true] { opacity: .65; cursor: default; }
+.pick:focus-within { outline: 2px solid #000080; }
+.url { display: flex; gap: 6px; min-width: 0; }
+.media { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.photo { display: flex; flex-direction: column; gap: 4px; flex: 0 0 96px; }
+.photo img, .photo > span, .photo > div { width: 96px; height: 96px; object-fit: cover; }
+.body > .check { flex-direction: row; align-items: center; min-height: 44px; }
+@media (max-width: 767px), (pointer: coarse) { .composer button, .pick { min-height: 44px; min-width: 44px; } }
