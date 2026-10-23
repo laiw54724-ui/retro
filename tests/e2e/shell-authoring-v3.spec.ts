@@ -148,6 +148,23 @@ for (const [locale, addLabel, iconLabel] of [['en', 'Add', 'Icon']]) {
   });
 }
 
+test('short desktop docks actions without covering content and restores focused actions on return', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await fixture(page);
+  await page.locator('.deskicon').click();
+  const toolbar = page.getByRole('toolbar', { name: '已選取元件操作' });
+  await expect.poll(() => toolbar.evaluate(node => !!node.closest('.desktop-canvas'))).toBe(true);
+  await toolbar.getByRole('button', { name: '圖示', exact: true }).focus();
+  await page.setViewportSize({ width: 1440, height: 550 });
+  await expect.poll(() => toolbar.evaluate(node => !!node.closest('.desktop-canvas'))).toBe(false);
+  await expect(toolbar.getByRole('button', { name: '圖示', exact: true })).toBeFocused();
+  const upload = page.getByRole('dialog', { name: 'Gallery.exe', exact: true }).locator('label').filter({ has: page.getByRole('button', { name: '上傳圖片（可多選）', exact: true }) });
+  expect(await upload.evaluate(node => { const r = node.getBoundingClientRect(); return node.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)); })).toBe(true);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await expect.poll(() => toolbar.evaluate(node => !!node.closest('.desktop-canvas'))).toBe(true);
+  await expect(toolbar.getByRole('button', { name: '圖示', exact: true })).toBeFocused();
+});
+
 test('Edit content preserves a maximized window', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await fixture(page);

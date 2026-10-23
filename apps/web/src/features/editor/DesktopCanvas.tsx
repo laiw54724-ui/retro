@@ -1,5 +1,5 @@
 import { resolveDesktopLabelAppearance } from "../../lib/windowAppearance";
-import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type PointerEvent, type ReactNode, type RefObject } from "react";
 import { useTranslation } from "react-i18next";
 import type { CollectionEntityV2, DesktopWindow, PostEntityV2, ProfileEntityV2, SiteDocumentV2Input } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
@@ -31,6 +31,7 @@ function setGeo(el: HTMLElement, text: string) {
 
 type Props = {
   windowActions?: ReactNode;
+  actionsDock?: RefObject<HTMLDivElement | null>;
   readWindowIds?: ReadonlySet<string>;
   siteId?: string;
   upload?: (file: File, kind?: "image" | "icon" | "audio") => Promise<string | null>;
@@ -51,7 +52,7 @@ type Props = {
   socialDocument?: SiteDocumentV2Input;
 };
 
-export function DesktopCanvas({ windowActions, readWindowIds, siteId, upload, profiles, posts, collections, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
+export function DesktopCanvas({ windowActions, actionsDock, readWindowIds, siteId, upload, profiles, posts, collections, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
   const { t: tr } = useTranslation("editor");
   const document = useEditorStore((s) => s.document)!;
   const selectedId = useEditorStore((s) => s.selectedId);
@@ -309,7 +310,7 @@ export function DesktopCanvas({ windowActions, readWindowIds, siteId, upload, pr
         <div className="sel-tag" style={{ left: selected.layout.desktop.x, top: Math.max(0, selected.layout.desktop.y - 22), zIndex: 99990 }}>{tr("desktopCanvas.selectedDragTheTitleBar")}</div>
       ) : null}
 
-      {windowActions && selectedId && !layoutMode ? <FloatingWindowActions anchorKey={`${selectedId}:${selectedView ?? "open"}`}>{windowActions}</FloatingWindowActions> : null}
+      {windowActions && selectedId && !layoutMode ? <FloatingWindowActions canvasRef={canvasRef} dockRef={actionsDock} anchorKey={`${selectedId}:${selectedView ?? "open"}`}>{windowActions}</FloatingWindowActions> : null}
       {layoutMode ? (
         <div className="layout-toolbar w98-window" role="toolbar" aria-label={tr("desktopCanvas.layoutMode")}>
           <strong>{tr("desktopCanvas.layoutMode2")}</strong>
