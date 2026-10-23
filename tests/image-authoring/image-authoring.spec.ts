@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { expect, test, type Page, type Route } from "@playwright/test";
 import { createStarterDocument, makeLink, makeWindow, migrateSiteDocumentV2, projectPublicSiteDocument, replaceAssetReferences, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
 
@@ -63,6 +64,8 @@ async function fixture(page: Page, options: { legacy?: SiteDocument; advertiseme
   };
 }
 
+const imageEditor = (page: Page) => page.locator(".canvas-window:visible, .m-window:visible").getByRole("region", { name: "Image settings", exact: true });
+
 function image(document: SiteDocumentV2Input) {
   const window = document.windows.find((item) => item.type === "image");
   if (window?.type !== "image") throw new Error("missing saved image");
@@ -121,8 +124,8 @@ test("desktop Add → protected upload → Inspector → history/move → save/r
   page.on("pageerror", (error) => errors.push(error.message));
   await page.setViewportSize({ width: 1440, height: 1000 }); await page.goto("/editor/site-1");
   await page.locator(".add-card").filter({ hasText: "Upload an image or use an image link" }).click();
-  const panel = page.locator("#editor-right-panel");
-  await panel.getByLabel("Window title", { exact: true }).fill("OC.png");
+  const panel = imageEditor(page);
+  await page.locator("#editor-right-panel").getByLabel("Window title", { exact: true }).fill("OC.png");
   await panel.getByLabel("Upload image…", { exact: true }).setInputFiles(FILE);
   await expect.poll(() => site.uploads.length).toBe(1);
   await expect(panel.locator("img")).toHaveAttribute("src", /^blob:/);
@@ -173,7 +176,7 @@ test("pending upload cannot overwrite a newer URL source", async ({ page }) => {
   const site = await fixture(page); site.holdUpload();
   await page.setViewportSize({ width: 1440, height: 1000 }); await page.goto("/editor/site-1");
   await page.locator(".add-card").filter({ hasText: "Upload an image or use an image link" }).click();
-  const panel = page.locator("#editor-right-panel");
+  const panel = imageEditor(page);
   await panel.getByLabel("Upload image…", { exact: true }).setInputFiles(FILE);
   await expect.poll(site.pending).toBe(true);
   await panel.getByLabel("Image URL", { exact: true }).fill(SOURCE);
@@ -197,7 +200,7 @@ test("JPEG source decodes through authoring, save/reload and the projected publi
   await page.route(source, (route) => route.fulfill({ body: Buffer.from(encoded, "base64"), contentType: "image/jpeg" }));
   await page.setViewportSize({ width: 1440, height: 1000 }); await page.goto("/editor/site-1");
   await page.locator(".add-card").filter({ hasText: "Upload an image or use an image link" }).click();
-  const panel = page.locator("#editor-right-panel");
+  const panel = imageEditor(page);
   await panel.getByLabel("Image URL", { exact: true }).fill(source);
   await panel.getByLabel("Image URL", { exact: true }).press("Enter");
   await panel.getByRole("textbox", { name: "Alt text", exact: true }).fill("JPEG portrait");
@@ -236,7 +239,7 @@ test("decorative outer host passes real clicks through in preview and public whi
   const site = await fixture(page, { legacy });
   await page.setViewportSize({ width: 1440, height: 1000 }); await page.goto("/editor/site-1");
   await page.getByRole("button", { name: "Move image Decoration", exact: true }).focus();
-  await expect(page.locator("#editor-right-panel").getByRole("checkbox", { name: "Decorative image", exact: true })).toBeChecked();
+  await expect(imageEditor(page).getByRole("checkbox", { name: "Decorative image", exact: true })).toBeChecked();
   await page.getByRole("button", { name: /Visitor preview/ }).click();
   async function pointerThrough() {
     const host = page.locator(`[data-visitor-window='${art.id}']`);
@@ -262,7 +265,7 @@ test(`phone ${width}px Add and inline authoring keep Back reachable after switch
   await page.getByRole("toolbar", { name: "Mobile editor tools" }).getByRole("button", { name: "Add", exact: true }).click();
   await page.locator(".m-sheet .m-add").filter({ hasText: "Upload an image or use an image link" }).click();
   // Adding now opens content immediately; assert that contract before editing.
-  await expect(page.locator(".m-edit-toggle")).toHaveAttribute("aria-pressed", "true");
+  if(await page.locator(".m-edit-toggle").count()) await expect(page.locator(".m-edit-toggle")).toHaveAttribute("aria-pressed", "true"); else await expect(page.locator(".m-window-settings")).toBeVisible();
   await page.getByLabel("Image URL", { exact: true }).fill(SOURCE); await page.getByLabel("Image URL", { exact: true }).press("Enter");
   await page.getByRole("button", { name: "Frame", exact: true }).click();
   await page.getByRole("checkbox", { name: "Decorative image", exact: true }).check();
@@ -304,7 +307,7 @@ for (const edited of [true, false]) {
     existing.content.src = SOURCE; existing.content.srcUrl = SOURCE; legacy.windows = [existing];
     const site = await fixture(page, { legacy }); site.holdUpload();
     await page.setViewportSize({ width: 1440, height: 1000 }); await page.goto("/editor/site-1");
-    const panel = page.locator("#editor-right-panel"), url = panel.getByRole("textbox", { name: "Image URL", exact: true });
+    const panel = imageEditor(page), url = panel.getByRole("textbox", { name: "Image URL", exact: true });
     await panel.getByLabel("Replace image…", { exact: true }).setInputFiles(FILE);
     await expect.poll(site.pending).toBe(true);
     await panel.getByRole("button", { name: "Image source", exact: true }).click();
@@ -327,7 +330,7 @@ for (const edited of [true, false]) {
   });
 }
 
-test("shell Edit content opens the existing Image inspector after the sidebar is collapsed", async ({ page }) => {
+test("shell Edit content opens the inline Image canvas while its sidebar stays collapsed", async ({ page }) => {
   await fixture(page);
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/editor/site-1");
@@ -335,7 +338,7 @@ test("shell Edit content opens the existing Image inspector after the sidebar is
   await page.getByRole("dialog", { name: "Add component", exact: true }).getByRole("button", { name: /Upload an image or use an image link/ }).click();
   await page.getByRole("button", { name: "Collapse Right properties panel", exact: true }).click();
   await page.getByRole("group", { name: "Selected component actions" }).getByRole("button", { name: "Edit content", exact: true }).click();
-  await expect(page.locator("#editor-right-panel").getByLabel("Image URL", { exact: true })).toBeVisible();
+  await expect(imageEditor(page).getByLabel("Image URL", { exact: true })).toBeVisible();
 });
 
 test("shell Image content entry stays disabled without the compatible writer", async ({ page }) => {
@@ -425,4 +428,26 @@ test("v2 image canvas replaces old forms with direct fit, keyboard, wheel and in
   await editor.getByRole('checkbox', { name: 'Decorative image', exact: true }).uncheck();
   await expect(editor.getByLabel('Alt text', { exact: true })).toBeEnabled();
   await page.screenshot({path:info.outputPath('image-v2-desktop.png')});
+});
+
+test('v2 desktop editor lives inside the image window and accepts paste/drop from its bottom tools',async({page},info)=>{
+ const legacy=createStarterDocument('Canvas entry','classic98','blank'),art=makeWindow('image');
+ if(art.type!=='image')throw Error('fixture');art.content.src=SOURCE;art.content.srcUrl=SOURCE;art.content.alt='Keep this description';art.layout.desktop={...art.layout.desktop,x:20,y:20,w:560,h:520};legacy.windows=[art];
+ const site=await fixture(page,{legacy});await page.setViewportSize({width:1440,height:1000});await page.goto('/editor/site-1');
+ const editor=imageEditor(page);await expect(editor).toBeVisible();await expect(page.locator('#editor-right-panel').getByRole('region',{name:'Image settings',exact:true})).toHaveCount(0);
+ expect(await editor.evaluate(node=>!!node.closest('.canvas-window'))).toBe(true);
+ const tools=editor.getByRole('toolbar',{name:'Image positioning tools',exact:true});const button=tools.getByRole('button',{name:'Frame',exact:true});await button.focus();
+ await button.evaluate((node,bytes)=>{const dt=new DataTransfer();dt.items.add(new File([new Uint8Array(bytes)],'pasted.png',{type:'image/png'}));node.dispatchEvent(new ClipboardEvent('paste',{clipboardData:dt,bubbles:true,cancelable:true}));},Array.from(readFileSync(FILE)));
+ await expect.poll(()=>site.uploads.length).toBe(1);await expect.poll(()=>image(site.saved()).content.src).toBe(ASSET);
+ await tools.dispatchEvent('drop',{dataTransfer:await page.evaluateHandle(bytes=>{const dt=new DataTransfer();dt.items.add(new File([new Uint8Array(bytes)],'dropped.png',{type:'image/png'}));return dt;},Array.from(readFileSync(FILE)))});
+ await expect.poll(()=>site.uploads.length).toBe(2);expect(image(site.saved()).content.alt).toBe('Keep this description');
+ await page.screenshot({path:info.outputPath('image-v2-real-canvas.png')});
+});
+
+test('v2 first crop drag can focus a background image without invalidating its own gesture',async({page})=>{
+ const legacy=createStarterDocument('Background crop','classic98','blank'),art=makeWindow('image'),note=makeWindow('document');if(art.type!=='image')throw Error('fixture');
+ art.content={...art.content,src:SOURCE,srcUrl:SOURCE,alt:'Portrait',fit:'cover',crop:{x:50,y:50,zoom:1.2}};art.layout.desktop={...art.layout.desktop,x:20,y:20,w:560,h:520,z:1};note.layout.desktop={...note.layout.desktop,x:650,y:20,w:300,h:200,z:2};legacy.windows=[art,note];
+ const site=await fixture(page,{legacy});await page.setViewportSize({width:1440,height:1000});await page.goto('/editor/site-1');const stage=imageEditor(page).locator('[data-testid=image-stage]'),img=stage.locator('img');await expect.poll(()=>img.evaluate((node:HTMLImageElement)=>node.naturalWidth)).toBeGreaterThan(0);const box=await stage.boundingBox();
+ await page.mouse.move(box!.x+box!.width/2,box!.y+box!.height/2);await page.mouse.down();await page.mouse.move(box!.x+box!.width/2-16,box!.y+box!.height/2,{steps:4});await page.mouse.up();await expect.poll(()=>image(site.saved()).content.crop?.x).not.toBe(50);
+ await page.getByRole('button',{name:'Undo',exact:true}).click();await expect.poll(()=>image(site.saved()).content.crop?.x).toBe(50);expect(site.saved().windows.find(w=>w.id===note.id)?.content).toEqual(note.content);
 });

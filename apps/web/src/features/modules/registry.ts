@@ -70,7 +70,7 @@ export function renderModule({ window, ctx, editing, update }: RenderModuleOptio
     case "image": {
       const props: ModuleProps<"image"> = { window, ctx, update: (recipe, key) => update((current) => recipe(current as WindowOf<"image">), key) };
       if (editing && ctx.imageAuthoring && IMAGE_WINDOW_CREATION_ENABLED) return createElement(registry.image.InlineEditor, props);
-      // Canvas images remain visual objects; controls live in the Inspector or phone editor.
+      // Readers and incompatible writers always retain the presentation-only path.
       return createElement("div", { style: { height: "100%", minHeight: 0, display: "grid", gridTemplateRows: "minmax(0, 1fr)" } }, createElement(registry.image.View, props));
     }
     case "document": {

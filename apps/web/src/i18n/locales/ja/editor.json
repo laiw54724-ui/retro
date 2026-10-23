@@ -383,7 +383,8 @@
     "displayName": "表示名",
     "extraText": "補足テキスト",
     "uploadPostImages": "+ 投稿画像をアップロード",
-    "postDescription": "投稿の説明"
+    "postDescription": "投稿の説明",
+    "editImageOnCanvas": "デスクトップの画像ウィンドウ内で直接編集できます。"
   },
   "windowChromeEditor": {
     "solidTitle3dBorder": "単色タイトル・立体枠線",

@@ -42,7 +42,7 @@ export function ImageInlineEditor({ window, ctx, update }: ModuleProps<"image">)
   const [error, setError] = useState("");
   const [sourceOpen, setSourceOpen] = useState(false);
   const [positionOpen, setPositionOpen] = useState(false);
-  const root = useRef<HTMLElement>(null);
+  const root = useRef<HTMLDivElement>(null);
   const sourceButton = useRef<HTMLButtonElement>(null);
   const positionButton = useRef<HTMLButtonElement>(null);
   const drag = useRef<Drag | null>(null);
@@ -100,9 +100,14 @@ export function ImageInlineEditor({ window, ctx, update }: ModuleProps<"image">)
     const imageRect = event.target.getBoundingClientRect();
     if (imageRect.width <= stageRect.width + .5 && imageRect.height <= stageRect.height + .5) return;
     event.currentTarget.focus({ preventScroll: true });
+    // Focusing a background desktop image changes document layering. Finish
+    // that existing shell action before taking the crop-gesture snapshot.
+    if (!ctx.mobile) { useEditorStore.getState().focusWindow(window.id); event.stopPropagation(); }
     const state = useEditorStore.getState();
+    const focused = state.document?.windows.find(candidate => candidate.id === window.id);
+    const gestureContent = focused?.type === "image" ? focused.content : content;
     drag.current = {
-      document: state.versionedDocument ?? state.document, siteId: state.siteId, selectedId: state.selectedId, content,
+      document: state.versionedDocument ?? state.document, siteId: state.siteId, selectedId: state.selectedId, content: gestureContent,
       pointerId: event.pointerId, source: content.src, startX: event.clientX, startY: event.clientY,
       crop: { ...crop }, latest: { ...crop }, stage: { width: stageRect.width, height: stageRect.height },
       image: { width: imageRect.width, height: imageRect.height }
@@ -140,12 +145,12 @@ export function ImageInlineEditor({ window, ctx, update }: ModuleProps<"image">)
   const loadFailed = content.src && (sourceStatus === "failed" || resolved && failed === resolved);
   const sourceField = <ImageUrlInput onEdit={cancelSourceUpload} raw={content.srcUrl} label={t("image.url")} placeholder="https://" onCommit={(srcUrl, src) => { cancelSourceUpload(); patch({ srcUrl, src, crop: undefined }); setSourceOpen(false); setError(""); }} />;
   const bgKey = typeof content.background === "object" ? content.background.color.toLowerCase() : content.background;
-  return <section ref={root} className={styles.editor} aria-label={t("image.settings")}>
-    <FileDropZone className={styles.canvas} accept="image" maxBytes={8 * 1024 * 1024} disabled={!canUpload} onFiles={files => upload(files[0])} onError={setError} overlayText={t("image.dropReplace")} tv={ctx.tv} mobile={ctx.mobile} onPaste={event => {
+  return <FileDropZone ref={root} role="region" className={styles.editor} aria-label={t("image.settings")} accept="image" maxBytes={8 * 1024 * 1024} disabled={!canUpload} onFiles={files => upload(files[0])} onError={setError} overlayText={t("image.dropReplace")} tv={ctx.tv} mobile={ctx.mobile} onPaste={event => {
       if (!canUpload || (event.target as HTMLElement).closest("input, textarea, select, [contenteditable=true]")) return;
       const file = Array.from(event.clipboardData.files).find(file => file.type.startsWith("image/"));
       if (file) { event.preventDefault(); if (file.size > 8 * 1024 * 1024) setError(t("image.fileTooLarge")); else upload(file); }
     }}>
+    <div className={styles.canvas}>
       <div ref={surface} role="group" tabIndex={0} aria-label={t("image.canvas")} className={styles.preview} onKeyDown={keyboard} onDoubleClick={event => { if (content.src && !(event.target as HTMLElement).closest("input,button,label")) patch({ crop: undefined }); }} onLostPointerCapture={cancelDrag} onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}
         onLoadCapture={event => { const target = event.target; if (target instanceof HTMLImageElement && target.getAttribute("src") === resolved && target.naturalWidth) setNatural({ source: resolved!, width: target.naturalWidth, height: target.naturalHeight }); }}
         onErrorCapture={event => { if (event.target instanceof HTMLImageElement && event.target.getAttribute("src") === resolved) setFailed(resolved); }}>
@@ -156,7 +161,7 @@ export function ImageInlineEditor({ window, ctx, update }: ModuleProps<"image">)
         </div>}
       </div>
       {content.src && content.showCaption ? <InlineTextField className={styles.caption} aria-label={t("image.caption")} placeholder={t("image.captionPlaceholder")} value={content.caption} maxLength={300} onValueChange={caption => patch({ caption }, "caption")} /> : null}
-    </FileDropZone>
+    </div>
     {content.src ? <div className={styles.altRow} data-missing={missingAlt || undefined}>
       <label>{t("image.alt")}<InlineTextField value={content.alt} aria-label={t("image.alt")} maxLength={300} disabled={content.interactionMode === "decorative"} placeholder={t("image.altHint")} onValueChange={alt => patch({ alt }, "alt")} /></label>
       <label className={styles.check}><input type="checkbox" checked={content.interactionMode === "decorative"} onChange={event => patch({ interactionMode: event.target.checked ? "decorative" : "content" })} />{t("image.decorative")}</label>
@@ -188,5 +193,5 @@ export function ImageInlineEditor({ window, ctx, update }: ModuleProps<"image">)
     <UploadProgressList tasks={media.tasks} onRetry={media.retry} onDismiss={media.dismiss} />
     <InlineErrorBanner message={error || (loadFailed ? t("image.loadFailed") : "")} onClose={() => { setError(""); setFailed(null); }} tv={ctx.tv} mobile={ctx.mobile} />
     <EditorStatusBar message={t(content.src ? "image.canvasHint" : "image.emptyHint")} problem={missingAlt ? t("image.missingAlt") : undefined} count={resolved && natural?.source === resolved ? `${natural.width}×${natural.height}` : undefined} tv={ctx.tv} mobile={ctx.mobile} />
-  </section>;
+  </FileDropZone>;
 }

@@ -1,4 +1,4 @@
-.editor { display:flex; flex-direction:column; min-width:0; min-height:420px; height:100%; box-sizing:border-box; overflow:auto; gap:4px; padding:4px; color:var(--editing-text,#000); background:var(--editing-face,#c0c0c0); }
+.editor { display:flex; flex-direction:column; min-width:0; min-height:0; height:100%; box-sizing:border-box; overflow:auto; gap:4px; padding:4px; color:var(--editing-text,#000); background:var(--editing-face,#c0c0c0); }
 .canvas { position:relative; display:flex; flex-direction:column; flex:1 0 200px; min-width:0; min-height:180px; }
 .preview { position:relative; flex:1; min-height:160px; min-width:0; overflow:hidden; }
 .preview:focus-visible { outline:1px dotted #000; outline-offset:-2px; }
@@ -21,6 +21,6 @@
 .color { display:inline-flex; align-items:center; }
 .color input { width:32px; height:28px; padding:2px; }
 .alignments { display:flex; flex-wrap:wrap; gap:6px; }
-@media (max-width:767px), (pointer:coarse) { .editor { min-height:480px; } .toolbar button,.toolbar label,.alignments button { min-width:44px; min-height:44px; } .color input { width:44px; height:44px; } .check { min-height:44px; } .altRow input { min-height:36px; font-size:15px; } .fits button { flex:1; } .fits { width:100%; } .caption { min-height:36px; font-size:15px; } }
+@media (max-width:767px), (pointer:coarse) { .editor { min-height:0; } .toolbar button,.toolbar label,.alignments button { min-width:44px; min-height:44px; } .color input { width:44px; height:44px; } .check { min-height:44px; } .altRow input { min-height:36px; font-size:15px; } .fits button { flex:1; } .fits { width:100%; } .caption { min-height:36px; font-size:15px; } }
 
 .decorativeHelp { flex-basis:100%; color:#000; font-size:12px; }

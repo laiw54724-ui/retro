@@ -383,7 +383,8 @@
     "displayName": "顯示名稱",
     "extraText": "補充文字",
     "uploadPostImages": "+ 上傳貼文圖片",
-    "postDescription": "貼文說明"
+    "postDescription": "貼文說明",
+    "editImageOnCanvas": "直接在桌面上的圖片視窗內編輯。"
   },
   "windowChromeEditor": {
     "solidTitle3dBorder": "純色標題・立體框線",

@@ -1,5 +1,4 @@
 import { useImageWriter } from "./ImageWriteContext";
-import { WindowRenderer } from "../site/WindowRenderer";
 import type { ModuleCtx } from "../modules/types";
 import type { RetroTheme } from "@retrodesk/shared";
 import { LegacyLinkTargetButton } from "../navigation/LegacyLinkTargetButton";
@@ -160,7 +159,7 @@ export function InspectorContent({ window, allWindows, siteId, update, onMessage
   const imageWriter = useImageWriter();
   const { t: tr } = useTranslation("editor");
   if (window.type === "image") {
-    if (imageWriter && theme) return <WindowRenderer window={window} theme={theme} allWindows={allWindows} siteId={siteId} upload={upload} editing imageControls onUpdate={(_id, recipe, key) => update(recipe, key)} />;
+    if (imageWriter) return <p className="w98-hint">{tr("inspectorContent.editImageOnCanvas")}</p>;
     return <section className="inspector-section" data-testid="image-reader-inspector">
       <div className="section-heading"><strong>{window.title}</strong></div>
       <p>{tr("documentCompatibility.imageReadOnly")}</p>

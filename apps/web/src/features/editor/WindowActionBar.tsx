@@ -8,6 +8,7 @@ type Props = { title: string; imageWindow?: boolean; editing: boolean; onEdit: (
 export function WindowActionBar({ title, imageWindow, editing, onEdit, onDone, onIcon, onSettings }: Props) {
   const { t } = useTranslation("editor");
   const imageWriter = useImageWriter();
+  editing = editing && (!imageWindow || imageWriter);
   const editButton = useRef<HTMLButtonElement | null>(null);
   return <div className={styles.selection} role="group" aria-label={t("authoring.selection")}>
     <strong className={styles.selectedTitle} title={title}>{title}</strong>

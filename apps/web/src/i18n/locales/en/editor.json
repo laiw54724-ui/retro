@@ -383,7 +383,8 @@
     "displayName": "Display name",
     "extraText": "Extra text",
     "uploadPostImages": "+ Upload post images",
-    "postDescription": "Post description"
+    "postDescription": "Post description",
+    "editImageOnCanvas": "Edit this image directly in its desktop window."
   },
   "windowChromeEditor": {
     "solidTitle3dBorder": "Solid title · 3D border",

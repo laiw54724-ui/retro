@@ -383,7 +383,8 @@
     "displayName": "표시 이름",
     "extraText": "추가 텍스트",
     "uploadPostImages": "+ 게시물 이미지 업로드",
-    "postDescription": "게시물 설명"
+    "postDescription": "게시물 설명",
+    "editImageOnCanvas": "데스크톱의 이미지 창에서 직접 편집하세요."
   },
   "windowChromeEditor": {
     "solidTitle3dBorder": "단색 제목 · 입체 테두리",
