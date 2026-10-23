@@ -50,15 +50,15 @@ export function Lightbox({ images, index, onIndex, onClose, ctx }: Props) {
         return;
       }
       if (event.key !== "Tab" || !root.current) return;
+      event.preventDefault();
       event.stopPropagation();
       const controls = Array.from(root.current.querySelectorAll<HTMLElement>(FOCUSABLE));
-      const first = controls[0];
-      const last = controls.at(-1);
-      if (!first || !last) { event.preventDefault(); return; }
+      if (!controls.length) return;
       const active = globalThis.document.activeElement;
-      if (!root.current.contains(active)) { event.preventDefault(); first.focus(); }
-      else if (event.shiftKey && active === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && active === last) { event.preventDefault(); first.focus(); }
+      const focusedIndex = controls.indexOf(active as HTMLElement);
+      const next = focusedIndex < 0 ? event.shiftKey ? controls.length - 1 : 0 : (focusedIndex + (event.shiftKey ? -1 : 1) + controls.length) % controls.length;
+      // Native Tab can skip buttons in WebKit and leave a portal entirely.
+      controls[next].focus();
     }
     globalThis.addEventListener("keydown", onKey, true);
     return () => globalThis.removeEventListener("keydown", onKey, true);

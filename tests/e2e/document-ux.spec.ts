@@ -5,7 +5,7 @@ import { documentFixture } from "./fixture";
 const SESSION = { access_token: "a.b.c", refresh_token: "r", expires_at: 4102444800, expires_in: 3600, token_type: "bearer", user: { id: "u", email: "x@y.z", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01" } };
 const LEGACY_CAPTION = "舊版圖片下方的圖說";
 
-function documentWithBlocks(long = false): SiteDocumentV2Input {
+function documentWithBlocks(long = false, compact = false): SiteDocumentV2Input {
   const documentWindow = makeWindow("document");
   if (documentWindow.type !== "document") throw new Error("Expected document window");
   documentWindow.id = "document-1";
@@ -20,14 +20,15 @@ function documentWithBlocks(long = false): SiteDocumentV2Input {
     { id: "list", kind: "list", text: long ? "ListItem".repeat(80) : "第一項\n第二項" },
     { id: "divider", kind: "divider" }
   ];
+  if (compact) documentWindow.content.blocks = documentWindow.content.blocks.filter(block => ["heading", "text", "divider"].includes(block.id));
   const migrated = migrateSiteDocumentV2(normalizeDocument({ ...documentFixture, windows: [documentWindow, { ...structuredClone(documentWindow), id: "document-2", title: "Other document", defaultOpen: false }] }), { siteId: "site-1" });
   if (!migrated.ok || migrated.version !== 2) throw new Error("Document fixture migration failed");
   return migrated.document;
 }
 
-async function openDocument(page: Page, options: { width?: number; long?: boolean } = {}) {
+async function openDocument(page: Page, options: { width?: number; long?: boolean; compact?: boolean } = {}) {
   const width = options.width ?? 1280;
-  let draft = documentWithBlocks(options.long);
+  let draft = documentWithBlocks(options.long, options.compact);
   let version = 1;
   const saves: SiteDocumentV2Input[] = [];
   await page.setViewportSize({ width, height: 900 });
@@ -382,9 +383,15 @@ test("late upload stays in its original window and never steals another window's
 });
 
 test("drag sorting and invalid file drop do not mutate neighboring blocks", async ({ page }) => {
-  const { dialog } = await openDocument(page);
+  const { dialog } = await openDocument(page, { compact: true });
   const handle = dialog.locator('[data-block-id="heading"] .doc-drag-handle');
-  await handle.dragTo(dialog.locator(".doc-append"));
+  const source = await handle.boundingBox(), target = await dialog.locator(".doc-block").last().boundingBox();
+  if (!source || !target) throw new Error("drag targets unavailable");
+  await page.mouse.move(source.x + source.width / 2, source.y + source.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(source.x + source.width / 2, source.y + source.height / 2 + 18, { steps: 4 });
+  await page.mouse.move(target.x + target.width / 2, target.y + target.height - 4, { steps: 12 });
+  await page.mouse.up();
   await expect(dialog.locator(".doc-block").last()).toHaveAttribute("data-block-id", "heading");
   await page.getByRole("button", { name: "復原", exact: true }).click();
   await expect(dialog.locator(".doc-block").first()).toHaveAttribute("data-block-id", "heading");
@@ -393,6 +400,6 @@ test("drag sorting and invalid file drop do not mutate neighboring blocks", asyn
   });
   await dialog.locator(".doc-append").dispatchEvent("drop", { dataTransfer: transfer });
   await expect(dialog.locator(".doc-error")).toContainText("只能拖曳圖片");
-  await expect(dialog.locator(".doc-block")).toHaveCount(7);
+  await expect(dialog.locator(".doc-block")).toHaveCount(3);
   await transfer.dispose();
 });

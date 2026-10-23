@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { InlineTextField } from "../../../components/editing";
 import { normalizeImageUrl } from "@retrodesk/shared";
 import { translateSystemMessage } from "../../../i18n/systemMessages";
 
@@ -28,9 +29,9 @@ export function MusicCoverUrlField({ raw, label, placeholder, onCommit, onEdit, 
     setError(""); onCommit(value, result.url);
   };
   return <label className="image-source-field"><span>{label}</span>
-    <input className="ie small" value={text} placeholder={placeholder} aria-label={label} aria-invalid={!!error} maxLength={2048}
-      onChange={(event) => { onEdit(); setText(event.target.value); }} onBlur={commit}
-      onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); commit(); } }} />
+    <InlineTextField className="ie small" value={text} placeholder={placeholder} aria-label={label} aria-invalid={!!error} maxLength={2048}
+      onChange={(event) => { onEdit(); drafts.set(draftKey, { raw, text: event.target.value, error }); setText(event.target.value); }} onBlur={commit}
+      onEnter={(event) => { event.preventDefault(); commit(); }} />
     {error ? <span role="alert" className="ie-error">{error}</span> : null}
   </label>;
 }

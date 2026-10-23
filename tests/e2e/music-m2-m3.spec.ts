@@ -17,7 +17,16 @@ const doc = () => document(track("Video", { kind: "audioUrl", url: VIDEO }), tra
 async function openPublic(page: Page, value = doc(), width = 1280) {
   await page.addInitScript(() => localStorage.setItem("retrodesk:locale", "en"));
   await page.route("**/api/public/sites/demo", (route) => route.fulfill({ json: { site: { username: "demo", site_name: "Music", published_document: value, published_version: 1, published_at: "2026-10-19T00:00:00Z" } } }));
-  await page.route("https://media.example.com/**", (route) => route.fulfill({ contentType: "video/mp4", body: videoBytes }));
+  await page.route("https://media.example.com/**", (route) => {
+    // WebKit requests byte ranges for native video controls; a 200 response to
+    // Range can decode initially yet fail when the viewer resumes playback.
+    const range = /^bytes=(\d+)-(\d*)$/.exec(route.request().headers()["range"] ?? "");
+    if (!range) return route.fulfill({ contentType: "video/mp4", body: videoBytes, headers: { "accept-ranges": "bytes" } });
+    const start = Number(range[1]);
+    const end = Math.min(range[2] ? Number(range[2]) : videoBytes.length - 1, videoBytes.length - 1);
+    if (start >= videoBytes.length || end < start) return route.fulfill({ status: 416, headers: { "content-range": `bytes */${videoBytes.length}` } });
+    return route.fulfill({ status: 206, contentType: "video/mp4", body: videoBytes.subarray(start, end + 1), headers: { "accept-ranges": "bytes", "content-range": `bytes ${start}-${end}/${videoBytes.length}` } });
+  });
   await page.route("https://www.youtube-nocookie.com/**", (route) => route.fulfill({ contentType: "text/html", body: "<p>Controlled player</p>" }));
   await page.setViewportSize({ width, height: 900 });
   await page.goto("/@demo");
@@ -117,10 +126,15 @@ test("real browser decodes the generated video after click; native controls paus
   const player = await openPublic(page);
   const video = player.locator("video");
   await player.getByRole("button", { name: "Load / play video", exact: true }).click();
-  await expect.poll(() => video.evaluate((node) => ({ width: node.videoWidth, playing: !node.paused }))).toEqual({ width: 320, playing: true });
+  // `paused === false` can precede the first decoded frame. Wait for actual
+  // playback before exercising the browser's native controls.
+  await expect.poll(() => video.evaluate((node) => node.videoWidth === 320 && !node.paused && node.readyState >= 2 && node.currentTime > 0)).toBe(true);
   const box = await video.boundingBox();
   await video.click({ position: { x: 20, y: box!.height - 48 } });
   await expect.poll(() => video.evaluate((node) => node.paused)).toBe(true);
+  // Two rapid clicks on native controls can be interpreted as fullscreen's
+  // double-click gesture instead of separate pause and resume actions.
+  await page.waitForTimeout(600);
   await video.click({ position: { x: 20, y: box!.height - 48 } });
   await expect.poll(() => video.evaluate((node) => node.paused)).toBe(false);
   await player.getByRole("button", { name: "Select YouTube", exact: true }).click();
@@ -156,6 +170,7 @@ test("old external video stays external until explicitly converted; save/reload 
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/editor/site-1");
   const editor = page.locator(".music-track-editor").first();
+  await editor.locator(".music-source-chip").click();
   await expect(editor.getByTestId("source-explanation")).toContainText("saved as an external link");
   await expect(page.locator("video")).toHaveCount(0);
   await editor.getByLabel("Paste a link or upload a file").fill(VIDEO);
@@ -163,6 +178,7 @@ test("old external video stays external until explicitly converted; save/reload 
   await editor.getByRole("button", { name: "Use the in-page player", exact: true }).click();
   await expect.poll(() => sources.at(-1)).toEqual({ kind: "audioUrl", url: VIDEO });
   await page.reload();
+  await editor.locator(".music-source-chip").click();
   await expect(editor.getByLabel("Paste a link or upload a file")).toHaveValue(VIDEO);
   await expect(editor.locator("video")).not.toHaveAttribute("src");
   await editor.getByRole("button", { name: "Use an external link instead (opens the original site)", exact: true }).click();

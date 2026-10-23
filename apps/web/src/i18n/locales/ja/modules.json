@@ -415,7 +415,32 @@
     "deletedTheFolderTheOriginal": "フォルダー「{{name}}」を削除しました。元の内容は削除されていません。「元に戻す」で復元できます。",
     "folderName": "フォルダー名",
     "shortcutName": "ショートカット名",
-    "folderEmpty": "このフォルダーは空です。"
+    "folderEmpty": "このフォルダーは空です。",
+    "inline": {
+      "tree": "フォルダーツリー",
+      "search": "フォルダーとショートカットを検索",
+      "selectMode": "項目を選択",
+      "actions": "項目の操作",
+      "open": "開く",
+      "cut": "切り取り",
+      "paste": "ここに{{count}}項目を貼り付け",
+      "cutStatus": "{{count}}項目を切り取りました。移動先に貼り付けてください",
+      "moved": "{{count}}項目を「{{path}}」に移動しました",
+      "selected": "{{count}}項目を選択中",
+      "count": "{{count}}項目",
+      "dragHint": "フォルダー、ツリー、上部のパスにドロップ",
+      "hint": "ドラッグで整理 · ダブルクリックで開く · Ctrl/Shiftで複数選択 · 右クリックで操作",
+      "touchHint": "タップで開く ·「項目を選択」で整理や名前変更",
+      "renameHint": "名前を入力 · Enterで確定 · Escでキャンセル",
+      "broken": "{{count}}個のリンク先がありません。項目の操作から修復できます",
+      "confirmDelete": "選択項目を削除しますか？フォルダー{{folders}}個とショートカット{{shortcuts}}個を削除します。元のウィンドウと投稿は残ります。",
+      "deleted": "{{count}}項目を削除しました。元のウィンドウと投稿は残ります。元に戻せます",
+      "noResults": "一致する項目がありません",
+      "expand": "{{name}}を展開",
+      "collapse": "{{name}}を折りたたむ",
+      "searchTarget": "ウィンドウ・OC・投稿を検索",
+      "changeIcon": "アイコンを変更…"
+    }
   },
   "explorerDialogs": {
     "search": "検索",
@@ -485,7 +510,21 @@
     "textLabel": "テキスト：{{content}}",
     "imageLabel": "画像：{{alt}}",
     "blank": "空白",
-    "untitled": "無題"
+    "untitled": "無題",
+    "inline": {
+      "invalidImage": "8 MB 以下の画像を選択してください。",
+      "dropImages": "ドロップして画像を追加",
+      "resize": "サイズ変更：{{handle}}",
+      "smallerText": "文字を小さく",
+      "largerText": "文字を大きく",
+      "replaceImage": "画像を変更…",
+      "selectedCount": "{{count}} 個を選択中",
+      "dragHint": "ドラッグで移動 · Alt でスナップを一時停止",
+      "lockedHint": "ロック中 · 移動やサイズ変更にはロック解除が必要です",
+      "selectionHint": "矢印キーで移動 · Shift で複数選択 · Enter で文字を編集",
+      "emptyHint": "選択または画像をドロップ · 文字や画像を貼り付け",
+      "preciseGeometry": "位置とサイズを指定"
+    }
   },
   "export": {
     "thisBrowserDoesntSupportCanvas": "このブラウザーはCanvasのエクスポートに対応していません",

@@ -16,6 +16,7 @@ export type SourceDraftCache = Map<string, { source: string; pending: string | n
 
 type Props = {
   draftCache?: SourceDraftCache;
+  showPlayer?: boolean;
   onEdit?: () => void;
   track: MusicTrack;
   windowId: string;
@@ -33,7 +34,7 @@ type Props = {
  * The author can always choose the external link instead of the player. Nothing here loads a third party; the player
  * preview is the same click-to-load card visitors get.
  */
-export function TrackSourceField({ draftCache, onEdit, track, windowId, patchSource, uploadAudio, onOpenOriginal, resourceName }: Props) {
+export function TrackSourceInput({ showPlayer = true, draftCache, onEdit, track, windowId, patchSource, uploadAudio, onOpenOriginal, resourceName }: Props) {
   const { t: tr } = useTranslation("music");
   const inputId = useId();
   // Text that is not yet a usable URL (still being typed) stays in the field without being saved over the last good source.
@@ -66,6 +67,9 @@ export function TrackSourceField({ draftCache, onEdit, track, windowId, patchSou
     onEdit?.();
     const result = classifyPastedUrl(raw);
     const key = `music-source-${track.id}`;
+    // Selection can unmount this field in the same frame as input. Keep its
+    // track-scoped draft immediately instead of waiting for the effect.
+    draftCache?.set(draftKey, { source: JSON.stringify(track.source), pending: result.type === "invalid" ? raw : null, externalFor });
     if (result.type === "invalid") { setPending(raw); return; }
     setPending(null);
     if (result.type === "empty") { patchSource({ kind: "audioUrl", url: "https://" }, key); return; }
@@ -121,6 +125,7 @@ export function TrackSourceField({ draftCache, onEdit, track, windowId, patchSou
             className="w98-input"
             type="url"
             inputMode="url"
+            maxLength={2048}
             autoComplete="off"
             spellCheck={false}
             value={value}
@@ -141,7 +146,7 @@ export function TrackSourceField({ draftCache, onEdit, track, windowId, patchSou
       {embedSource ? (
         <>
           <p className="w98-hint music-embed-summary">{tr("music.source.sourceLine", { platform: PLATFORM_LABELS[embedSource.provider] })} · {tr("music.source.playerNote")}</p>
-          <ProviderPlayer source={embedSource} title={track.title} windowId={windowId} trackId={track.id} onOpenOriginal={onOpenOriginal} />
+          {showPlayer ? <ProviderPlayer source={embedSource} title={track.title} windowId={windowId} trackId={track.id} onOpenOriginal={onOpenOriginal} /> : null}
           <button type="button" className="w98-btn small" style={{ alignSelf: "flex-start" }} onClick={useExternal}>{tr("music.source.useExternal")}</button>
         </>
       ) : null}
@@ -154,3 +159,6 @@ export function TrackSourceField({ draftCache, onEdit, track, windowId, patchSou
     </div>
   );
 }
+
+/** Compatibility for integrations that still use the former component name. */
+export { TrackSourceInput as TrackSourceField };

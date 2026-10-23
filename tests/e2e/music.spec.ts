@@ -79,7 +79,7 @@ test("author uploads private audio, records rights, saves and reloads the stable
   const { saves } = await openEditor(page);
   await page.getByRole("button", { name: /音樂播放器/ }).click();
   const player = page.getByRole("dialog", { name: "Music Player.exe" });
-  await player.getByRole("button", { name: "新增第一首" }).click();
+  await player.getByRole("button", { name: /新增空白曲目/ }).click();
   const editor = player.locator(".music-track-editor").first();
   await editor.locator(".music-source-field input[type=file]").setInputFiles({ name: "theme.wav", mimeType: "audio/wav", buffer: Buffer.from("RIFF0000WAVEfmt ") });
   await expect(editor.getByText("檔案會保存在私有草稿")).toBeVisible();
@@ -93,6 +93,7 @@ test("author uploads private audio, records rights, saves and reloads the stable
 
   await page.reload();
   const reloaded = page.getByRole("dialog", { name: "Music Player.exe" });
+  await reloaded.getByRole("button", { name: "更換音源" }).click();
   await expect(reloaded.getByText("檔案會保存在私有草稿")).toBeVisible();
   await expect(reloaded.getByLabel("權利說明（發布必填）")).toHaveValue("本人原創");
 });
@@ -102,19 +103,20 @@ test("author adds, reorders, deletes and reloads a music playlist", async ({ pag
   await page.getByRole("button", { name: /音樂播放器/ }).click();
   const player = page.getByRole("dialog", { name: "Music Player.exe" });
   await expect(player).toBeVisible();
-  await player.getByRole("button", { name: "新增第一首" }).click();
+  await player.getByRole("button", { name: /新增空白曲目/ }).click();
   let editors = player.locator(".music-track-editor");
   await editors.nth(0).getByLabel("曲名").fill("First Theme");
   await editors.nth(0).getByLabel("演出者").fill("Creator A");
   await editors.nth(0).getByLabel("貼上連結或上傳檔案").fill("https://media.example.com/first.mp3");
-  await player.getByRole("button", { name: "新增曲目" }).click();
+  await player.getByRole("button", { name: /新增空白曲目/ }).click();
   editors = player.locator(".music-track-editor");
   await editors.nth(0).getByLabel("曲名").fill("Second Theme");
   await editors.nth(0).getByLabel("演出者").fill("Creator B");
-  await editors.nth(0).getByRole("button", { name: "往前" }).click();
+  await player.locator(".music-authoring-track").filter({ hasText: "Second Theme" }).locator(".editing-sort-handle").focus();
+  await page.keyboard.press("Alt+ArrowUp");
   await expect(player.locator(".music-track-editor").first().getByLabel("曲名")).toHaveValue("Second Theme");
   await player.locator(".music-authoring-track").filter({ hasText: "First Theme" }).click();
-  await player.locator(".music-track-editor").getByRole("button", { name: "刪除" }).click();
+  await player.getByRole("button", { name: "刪除曲目：First Theme" }).click();
   await expect(player.locator(".music-track-editor")).toHaveCount(1);
 
   await expect.poll(() => {
@@ -133,12 +135,13 @@ test("editing an active preview source stops the old audio", async ({ page }) =>
   await openEditor(page);
   await page.getByRole("button", { name: /音樂播放器/ }).click();
   const player = page.getByRole("dialog", { name: "Music Player.exe" });
-  await player.getByRole("button", { name: "新增第一首" }).click();
+  await player.getByRole("button", { name: /新增空白曲目/ }).click();
   const source = player.getByLabel("貼上連結或上傳檔案");
   await source.fill("https://media.example.com/first.mp3");
   await player.getByRole("button", { name: "試聽" }).click();
   await expect(player.getByRole("button", { name: "停止試聽" })).toBeVisible();
 
+  await player.getByRole("button", { name: "更換音源" }).click();
   await source.fill("https://media.example.com/replacement.mp3");
   await expect(player.getByRole("button", { name: "試聽" })).toBeVisible();
 });

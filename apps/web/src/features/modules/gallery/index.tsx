@@ -1,3 +1,4 @@
+import { InlineTextField, InlineTextArea, EditorStatusBar, InlineErrorBanner } from "../../../components/editing";
 import { useRef, useState, type CSSProperties, type DragEvent } from "react";
 import type { ParseKeys } from "i18next";
 import type galleryLocaleDelta from "./locale-deltas/en.json";
@@ -194,7 +195,7 @@ function GalleryEditorSession({ window, ctx, update }: ModuleProps<"gallery">) {
         {selected ? <button type="button" className="mini-btn wide gal-deselect" onClick={deselect}>{label("deselect", "lightbox.close")}</button> : null}
       </div>
       {urlOpen ? <div className="gal-add-url">
-        <textarea ref={urlInput} rows={2} className="w98-input small-input" value={url} maxLength={409800} placeholder={label("urlsPlaceholder", "gallery.pasteAnImageUrlTo")} aria-label={tr("gallery.addImageUrl")} onChange={(event) => { setUrl(event.target.value); setUrlError(""); }} onCompositionStart={() => { composingUrl.current = true; }} onCompositionEnd={() => { composingUrl.current = false; }} onKeyDown={(event) => {
+        <InlineTextArea ref={urlInput} rows={2} className="w98-input small-input" value={url} maxLength={409800} placeholder={label("urlsPlaceholder", "gallery.pasteAnImageUrlTo")} aria-label={tr("gallery.addImageUrl")} onChange={(event) => { setUrl(event.target.value); setUrlError(""); }} onCompositionStart={() => { composingUrl.current = true; }} onCompositionEnd={() => { composingUrl.current = false; }} onKeyDown={(event) => {
           if (composingUrl.current || event.nativeEvent.isComposing || event.keyCode === 229) return;
           if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); closeUrls(); }
           if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.stopPropagation(); addUrl(); }
@@ -239,25 +240,25 @@ function GalleryEditorSession({ window, ctx, update }: ModuleProps<"gallery">) {
               <CompactButton label={tr("gallery.moveUp")} disabled={selectedIndex === 0} onClick={() => setImages((list) => moveById(list, selected.id, -1))}>◀</CompactButton>
               <CompactButton label={tr("gallery.moveDown")} disabled={selectedIndex === images.length - 1} onClick={() => setImages((list) => moveById(list, selected.id, 1))}>▶</CompactButton>
             </div>
-              <label>{tr("gallery.imageTitle")}<input ref={titleInput} className="ie small" maxLength={200} value={selected.title} placeholder={tr("gallery.imageTitle")} onChange={(event) => patch(selected.id, { title: event.target.value }, historyKey("title", selected.id))} /></label>
-              <label>{tr("document.caption")}<textarea className="ie small" rows={2} maxLength={1000} value={selected.caption} aria-label={tr("document.caption")} placeholder={tr("gallery.shownBelowTheEnlargedImage")} onChange={(event) => patch(selected.id, { caption: event.target.value }, historyKey("caption", selected.id))} /></label>
+              <label>{tr("gallery.imageTitle")}<InlineTextField ref={titleInput} className="ie small" maxLength={200} value={selected.title} placeholder={tr("gallery.imageTitle")} onChange={(event) => patch(selected.id, { title: event.target.value }, historyKey("title", selected.id))} /></label>
+              <label>{tr("document.caption")}<InlineTextArea className="ie small" rows={2} maxLength={1000} value={selected.caption} aria-label={tr("document.caption")} placeholder={tr("gallery.shownBelowTheEnlargedImage")} onChange={(event) => patch(selected.id, { caption: event.target.value }, historyKey("caption", selected.id))} /></label>
               <span className="w98-hint">{tr("gallery.theCaptionAppearsBelowThe")}</span>
-              <label>{tr("document.altText")}<textarea className="ie small" rows={2} maxLength={300} value={selected.alt ?? ""} aria-label={tr("document.altText")} placeholder={selected.alt === undefined ? tr("gallery.currentlyFollowsTheCaptionOr") : tr("gallery.describeTheImageForScreen")} onChange={(event) => patch(selected.id, { alt: event.target.value }, historyKey("alt", selected.id))} /></label>
+              <label>{tr("document.altText")}<InlineTextArea className="ie small" rows={2} maxLength={300} value={selected.alt ?? ""} aria-label={tr("document.altText")} placeholder={selected.alt === undefined ? tr("gallery.currentlyFollowsTheCaptionOr") : tr("gallery.describeTheImageForScreen")} onChange={(event) => patch(selected.id, { alt: event.target.value }, historyKey("alt", selected.id))} /></label>
               <span className="w98-hint">{tr("gallery.altNotCaption")} {selected.alt === undefined ? tr("gallery.currentlyFollowsTheCaptionOr2") : selected.alt === "" ? tr("gallery.thisImageIsMarkedAs") : tr("gallery.screenReadersWillReadThis")}</span>
               <div className="ie-row">
                 <CompactButton label={tr("gallery.markAsDecorative")} className="mini-btn wide" disabled={selected.alt === ""} onClick={() => patch(selected.id, { alt: "" })}>{tr("gallery.markAsDecorative")}</CompactButton>
                 {selected.alt !== undefined ? <CompactButton label={tr("gallery.followCaptionOrTitle")} className="mini-btn wide" onClick={() => patch(selected.id, { alt: undefined })}>{tr("gallery.followCaptionOrTitle")}</CompactButton> : null}
               </div>
               <label>{tr("gallery.imageSource")}<ImageUrlInput key={selected.id} onEdit={() => media.cancel(`replace:${selected.id}`)} raw={selected.srcUrl} label={tr("document.imageUrl")} placeholder={tr("gallery.imageUrlPublicGoogleDrive")} onCommit={(raw, src) => patch(selected.id, { srcUrl: raw, src })} /></label>
-              <label>{tr("gallery.imageLink")}<input className="ie small" value={selected.href} maxLength={2048} placeholder={tr("gallery.httpsOrMailtoOptional")} aria-invalid={!!selected.href && safeHref(selected.href) === "#"} onChange={(event) => patch(selected.id, { href: event.target.value }, historyKey("href", selected.id))} /></label>
+              <label>{tr("gallery.imageLink")}<InlineTextField className="ie small" value={selected.href} maxLength={2048} placeholder={tr("gallery.httpsOrMailtoOptional")} aria-invalid={!!selected.href && safeHref(selected.href) === "#"} onChange={(event) => patch(selected.id, { href: event.target.value }, historyKey("href", selected.id))} /></label>
               {selected.href && safeHref(selected.href) === "#" ? <span role="alert" className="ie-error">{tr("gallery.enterAValidHttpHttps")}</span> : null}
             <CompactButton label={tr("gallery.deleteImage")} className="mini-btn wide danger" onClick={deleteSelected}>{tr("gallery.deleteImage")}</CompactButton>
           </section>
         ) : null}
       </div>
-      <div className="gal-editor-status"><span title={status}>{status}</span><span>{tr("gallery.countOfMax", { count: images.length })}</span></div>
+      <EditorStatusBar className="gal-editor-status" tv={tv} mobile={ctx.mobile} message={status} count={tr("gallery.countOfMax", { count: images.length })} />
       {dropping ? <div className="gal-drop-overlay">{label("dropHere", "gallery.uploadImagesMultipleAllowed")}</div> : null}
-      {urlError ? <div role="alert" className="gal-editor-error"><span>{urlError}</span><CompactButton label={tr("lightbox.close")} onClick={() => setUrlError("")}>×</CompactButton></div> : null}
+      <InlineErrorBanner className="gal-editor-error" tv={tv} mobile={ctx.mobile} message={urlError} onClose={() => setUrlError("")} />
     </div>
   );
 }

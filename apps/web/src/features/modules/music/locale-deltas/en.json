@@ -1,0 +1,29 @@
+{
+  "music": {
+    "inline": {
+      "pasteLabel": "Paste a song link, or drop audio files here",
+      "pastePlaceholder": "YouTube, Spotify or https://…",
+      "uploadFiles": "Upload audio",
+      "dropAudio": "Drop audio files (up to 50 MB each)",
+      "dropCover": "Drop to replace cover (up to 8 MB)",
+      "blankTrack": "Add a blank track",
+      "source": "Source",
+      "changeSource": "Change source",
+      "lyrics": "＋ Lyrics",
+      "character": "＋ Character theme",
+      "rights": "＋ Rights note",
+      "instructions": "Select a track to edit; drag or Alt＋↑↓ to reorder",
+      "dragging": "Release to reorder tracks",
+      "missingSource": "{{count}} tracks need a source",
+      "missingRights": "{{count}} uploaded tracks need a rights note",
+      "count": "{{count}} tracks",
+      "limit": "A playlist can contain up to 100 tracks.",
+      "invalidAudio": "Choose audio files up to 50 MB each.",
+      "invalidCover": "Choose an image up to 8 MB.",
+      "coverUrl": "Cover URL",
+      "noSelection": "Select a track from the list, or add a song.",
+      "deleteTrack": "Delete track: {{title}}",
+      "selectAndPreview": "{{title}}; Enter or Space to preview"
+    }
+  }
+}

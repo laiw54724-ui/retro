@@ -1,0 +1,18 @@
+{
+  "moodboard": {
+    "inline": {
+      "invalidImage": "Choose an image up to 8 MB.",
+      "dropImages": "Drop to add images",
+      "resize": "Resize: {{handle}}",
+      "smallerText": "Decrease font size",
+      "largerText": "Increase font size",
+      "replaceImage": "Replace image…",
+      "selectedCount": "{{count}} selected",
+      "dragHint": "Drag to move · Hold Alt to disable snapping",
+      "lockedHint": "Object locked · Unlock to move or resize",
+      "selectionHint": "Arrow keys move · Shift to select more · Enter to edit text",
+      "emptyHint": "Select an object or drop images · Paste text or images",
+      "preciseGeometry": "Precise position and size"
+    }
+  }
+}

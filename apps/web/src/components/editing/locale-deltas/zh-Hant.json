@@ -1,0 +1,12 @@
+{
+  "editing": {
+    "done": "完成",
+    "close": "關閉",
+    "add": "＋ 加入",
+    "reorder": "拖曳排序",
+    "moved": "已移到第 {{position}} 個",
+    "invalidFile": "請選擇不超過 {{size}} MB 的{{kind}}檔。",
+    "image": "圖片",
+    "audio": "音訊"
+  }
+}

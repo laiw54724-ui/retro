@@ -1,3 +1,4 @@
+import { InlineTextField, EditorStatusBar, InlineErrorBanner } from "../../../components/editing";
 import { useEffect, useId, useRef, useState, type DragEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { makeLink, type LinkItem } from "@retrodesk/shared";
@@ -120,7 +121,7 @@ function Editor({ window, ctx, update }: ModuleProps<"links">) {
   }}>
     <div className="link-paste-bar">
       <label htmlFor={`${prefix}-paste`}>{t("links.inline.pasteLabel")}</label>
-      <div><input id={`${prefix}-paste`} className="link-paste-input" value={paste} maxLength={2048} placeholder="https://instagram.com/mochi" onChange={(event) => { setPaste(event.target.value); setError(""); }} onCompositionStart={() => { composing.current = true; }} onCompositionEnd={() => { composing.current = false; }} onKeyDown={(event) => {
+      <div><InlineTextField id={`${prefix}-paste`} className="link-paste-input" value={paste} maxLength={2048} placeholder="https://instagram.com/mochi" onChange={(event) => { setPaste(event.target.value); setError(""); }} onCompositionStart={() => { composing.current = true; }} onCompositionEnd={() => { composing.current = false; }} onKeyDown={(event) => {
         if (event.key === "Enter" && !composing.current && !event.nativeEvent.isComposing && event.keyCode !== 229) { event.preventDefault(); add(); }
       }} /><button type="button" disabled={links.length >= 100} onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); add(); }}>{t("links.inline.add")}</button></div>
       {guess ? <span>{t("links.inline.preview", { name: guessLabel })}</span> : null}
@@ -142,7 +143,7 @@ function Editor({ window, ctx, update }: ModuleProps<"links">) {
             <button type="button" className="link-drag" draggable aria-label={t("links.inline.reorder")} title={t("links.inline.reorder")} aria-expanded={open === "order"} onClick={(event) => toggle(link.id, "order", event.currentTarget)} onDragStart={(event) => { event.dataTransfer.effectAllowed = "move"; event.dataTransfer.setData("text/plain", link.id); setDragId(link.id); close(false); }} onDragEnd={resetDrag}>⋮⋮</button>
             <div className="link-tile edit" style={{ background: link.color, color: fg, boxShadow: tileShadow }}>
               <button type="button" className="link-icon btn" aria-label={t("iconPicker.chooseAnIcon")} aria-expanded={open === "icon"} onClick={(event) => toggle(link.id, "icon", event.currentTarget)}><Icon name={link.icon} size={24} /><span aria-hidden="true" className="link-icon-pencil">✎</span></button>
-              <input className="link-input" value={link.label} maxLength={200} placeholder={t("document.buttonText")} aria-label={t("document.buttonText")} aria-invalid={!link.label.trim()} style={{ color: fg }} onChange={(event) => patch(link.id, { label: event.target.value }, `label:${link.id}`)} />
+              <InlineTextField className="link-input" value={link.label} maxLength={200} placeholder={t("document.buttonText")} aria-label={t("document.buttonText")} aria-invalid={!link.label.trim()} style={{ color: fg }} onChange={(event) => patch(link.id, { label: event.target.value }, `label:${link.id}`)} />
               <span aria-hidden="true">{link.target === "window" ? "▸" : "↗"}</span>
               <button type="button" className="link-color-trigger" style={{ borderColor: fg }} aria-label={t("links.inline.changeColor")} aria-expanded={open === "color"} onClick={(event) => toggle(link.id, "color", event.currentTarget)} />
             </div>
@@ -164,15 +165,15 @@ function Editor({ window, ctx, update }: ModuleProps<"links">) {
             <ImageUrlInput key={link.id} onEdit={() => media.cancel(`icon:${link.id}`)} raw={link.iconUrl} label={t("iconPicker.iconUrl")} placeholder={t("iconPicker.orPasteAnIconUrl")} onCommit={(raw, src) => setIcon(link, src || "link", raw)} />
             <div onClickCapture={() => media.cancel(`icon:${link.id}`)}><IconPickerAction text={t("links.inline.fullLibrary")} siteId={ctx.siteId} value={link.icon} upload={ctx.upload} mediaTarget={{ windowId: window.id, windowType: "links", itemId: link.id }} label={link.label} defaultValue="link" onChange={(value) => setIcon(link, value, value.startsWith("http") ? value : "")} /></div>
           </div> : null}
-          {open === "color" ? <div className="link-inline-panel link-colors"><span>{t("links.inline.colorHint")}</span>{COLORS.map((color) => <button key={color} type="button" className="swatch" aria-label={t("links.color", { color })} aria-pressed={link.color.toLowerCase() === color} style={{ background: color }} onClick={() => patch(link.id, { color })} />)}<label>{t("links.customColor")}<input type="color" value={link.color} aria-label={t("links.customColor")} onChange={(event) => patch(link.id, { color: event.target.value }, `color:${link.id}`)} /></label></div> : null}
+          {open === "color" ? <div className="link-inline-panel link-colors"><span>{t("links.inline.colorHint")}</span>{COLORS.map((color) => <button key={color} type="button" className="swatch" aria-label={t("links.color", { color })} aria-pressed={link.color.toLowerCase() === color} style={{ background: color }} onClick={() => patch(link.id, { color })} />)}<label>{t("links.customColor")}<InlineTextField type="color" value={link.color} aria-label={t("links.customColor")} onChange={(event) => patch(link.id, { color: event.target.value }, `color:${link.id}`)} /></label></div> : null}
           {open === "destination" ? <DestinationPanel key={link.id} link={link} windows={otherWindows} onApply={(change) => { patch(link.id, change); close(); }} onClose={() => close()} /> : null}
         </div>;
       })}
       <button type="button" className="ie-add link-add-blank" disabled={links.length >= 100} data-drop={over?.id === "end" || undefined} onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); add(true); }} onDragOver={(event) => { if (dragId) { event.preventDefault(); setOver({ id: "end", after: true }); } }} onDrop={(event) => { if (dragId) { event.preventDefault(); move(null, true); resetDrag(); } }}>{t("links.inline.blank")}</button>
       <UploadProgressList tasks={media.tasks} onRetry={media.retry} onDismiss={media.dismiss} />
     </div>
-    <div className="link-status"><span title={t("links.inline.hint")} role="status">{dragId ? t("links.inline.dragHint") : missing ? t("links.inline.missing", { count: missing }) : t("links.inline.hint")}</span><span>{t("links.inline.count", { count: links.length })}</span></div>
-    {error ? <div role="alert" className="link-error"><span>{error}</span><CompactButton label={t("iconPicker.cancel")} onClick={() => setError("")}>×</CompactButton></div> : null}
+    <EditorStatusBar className="link-status" tv={ctx.tv} mobile={ctx.mobile} message={dragId ? t("links.inline.dragHint") : missing ? t("links.inline.missing", { count: missing }) : t("links.inline.hint")} count={t("links.inline.count", { count: links.length })} />
+    <InlineErrorBanner className="link-error" tv={ctx.tv} mobile={ctx.mobile} message={error} onClose={() => setError("")} />
   </div>;
 }
 
@@ -185,10 +186,10 @@ function DestinationPanel({ link, windows, onApply, onClose }: { link: LinkItem;
   const invalid = target === "url" && !!url && (!/^(https?:\/\/|mailto:)/i.test(url) || !normalizeLinkInput(url));
   return <div className="link-inline-panel link-destination-panel" role="group" aria-label={t("links.destination")}>
     <div className="link-target-types" role="radiogroup" aria-label={t("links.destination")}>
-      <label><input type="radio" name={group} checked={target === "url"} onChange={() => setTarget("url")} />{t("links.inline.openUrl")}</label>
-      <label><input type="radio" name={group} checked={target === "window"} onChange={() => setTarget("window")} />{t("links.inline.openWindow")}</label>
+      <label><InlineTextField type="radio" name={group} checked={target === "url"} onChange={() => setTarget("url")} />{t("links.inline.openUrl")}</label>
+      <label><InlineTextField type="radio" name={group} checked={target === "window"} onChange={() => setTarget("window")} />{t("links.inline.openWindow")}</label>
     </div>
-    {target === "url" ? <input className="ie" value={url} maxLength={2048} aria-label={t("document.linkUrl")} aria-invalid={invalid} placeholder="https:// / mailto:" onChange={(event) => setUrl(event.target.value)} /> : <div className="link-window-options">{windows.length ? windows.map((item) => <button type="button" key={item.id} aria-pressed={item.id === windowId} onClick={() => setWindowId(item.id)}>{item.id === windowId ? "✓ " : ""}{item.title}</button>) : <span>{t("links.inline.noWindows")}</span>}</div>}
+    {target === "url" ? <InlineTextField className="ie" value={url} maxLength={2048} aria-label={t("document.linkUrl")} aria-invalid={invalid} placeholder="https:// / mailto:" onChange={(event) => setUrl(event.target.value)} /> : <div className="link-window-options">{windows.length ? windows.map((item) => <button type="button" key={item.id} aria-pressed={item.id === windowId} onClick={() => setWindowId(item.id)}>{item.id === windowId ? "✓ " : ""}{item.title}</button>) : <span>{t("links.inline.noWindows")}</span>}</div>}
     {invalid ? <span role="alert" className="ie-error">{t("document.enterAFullHttpHttps")}</span> : null}
     <div className="link-panel-actions"><CompactButton label={t("iconPicker.cancel")} onClick={onClose}>{t("iconPicker.cancel")}</CompactButton><CompactButton label={t("links.inline.done")} disabled={invalid} onClick={() => onApply({ target, url: target === "url" ? url.trim() : link.url, windowId })}>{t("links.inline.done")}</CompactButton></div>
   </div>;

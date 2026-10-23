@@ -415,7 +415,32 @@
     "deletedTheFolderTheOriginal": "폴더 \"{{name}}\"을(를) 삭제했습니다. 원본 내용은 삭제되지 않았으며 \"실행 취소\"로 되돌릴 수 있습니다.",
     "folderName": "폴더 이름",
     "shortcutName": "바로가기 이름",
-    "folderEmpty": "이 폴더는 비어 있습니다."
+    "folderEmpty": "이 폴더는 비어 있습니다.",
+    "inline": {
+      "tree": "폴더 트리",
+      "search": "폴더 및 바로가기 검색",
+      "selectMode": "항목 선택",
+      "actions": "항목 작업",
+      "open": "열기",
+      "cut": "잘라내기",
+      "paste": "여기에 {{count}}개 붙여넣기",
+      "cutStatus": "{{count}}개 항목을 잘라냈습니다. 대상 폴더에 붙여넣으세요",
+      "moved": "{{count}}개 항목을 “{{path}}”로 이동했습니다",
+      "selected": "{{count}}개 항목 선택됨",
+      "count": "{{count}}개 항목",
+      "dragHint": "폴더, 트리 또는 위쪽 경로에 놓으세요",
+      "hint": "끌어서 정리 · 두 번 클릭하여 열기 · Ctrl/Shift로 여러 항목 선택 · 오른쪽 클릭으로 작업",
+      "touchHint": "폴더를 탭하여 열기 · “항목 선택”으로 정리하거나 이름 변경",
+      "renameHint": "이름 입력 · Enter로 확인 · Esc로 취소",
+      "broken": "바로가기 대상 {{count}}개가 없습니다. 항목 작업에서 복구하세요",
+      "confirmDelete": "선택한 항목을 삭제할까요? 폴더 {{folders}}개와 바로가기 {{shortcuts}}개가 삭제됩니다. 원본 창과 게시물은 유지됩니다.",
+      "deleted": "{{count}}개 항목을 삭제했습니다. 원본 창과 게시물은 유지되며 실행 취소할 수 있습니다",
+      "noResults": "일치하는 항목이 없습니다",
+      "expand": "{{name}} 펼치기",
+      "collapse": "{{name}} 접기",
+      "searchTarget": "창, 캐릭터, 게시물 검색",
+      "changeIcon": "아이콘 변경…"
+    }
   },
   "explorerDialogs": {
     "search": "검색",
@@ -485,7 +510,21 @@
     "textLabel": "텍스트: {{content}}",
     "imageLabel": "이미지: {{alt}}",
     "blank": "비어 있음",
-    "untitled": "제목 없음"
+    "untitled": "제목 없음",
+    "inline": {
+      "invalidImage": "8 MB 이하의 이미지를 선택하세요.",
+      "dropImages": "놓아서 이미지 추가",
+      "resize": "크기 조절: {{handle}}",
+      "smallerText": "글자 크기 줄이기",
+      "largerText": "글자 크기 늘리기",
+      "replaceImage": "이미지 교체…",
+      "selectedCount": "{{count}}개 선택됨",
+      "dragHint": "드래그하여 이동 · Alt 키로 맞춤 일시 중지",
+      "lockedHint": "잠긴 개체 · 이동하거나 크기를 조절하려면 잠금 해제",
+      "selectionHint": "방향키로 이동 · Shift로 다중 선택 · Enter로 텍스트 편집",
+      "emptyHint": "개체 선택 또는 이미지 끌어오기 · 텍스트나 이미지 붙여넣기",
+      "preciseGeometry": "정확한 위치와 크기"
+    }
   },
   "export": {
     "thisBrowserDoesntSupportCanvas": "이 브라우저는 Canvas 내보내기를 지원하지 않습니다",

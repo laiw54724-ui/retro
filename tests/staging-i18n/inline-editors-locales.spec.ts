@@ -4,8 +4,13 @@ import zh from "../../apps/web/src/i18n/locales/zh-Hant/modules.json";
 import en from "../../apps/web/src/i18n/locales/en/modules.json";
 import ja from "../../apps/web/src/i18n/locales/ja/modules.json";
 import ko from "../../apps/web/src/i18n/locales/ko/modules.json";
+import zhMusic from "../../apps/web/src/i18n/locales/zh-Hant/music.json";
+import enMusic from "../../apps/web/src/i18n/locales/en/music.json";
+import jaMusic from "../../apps/web/src/i18n/locales/ja/music.json";
+import koMusic from "../../apps/web/src/i18n/locales/ko/music.json";
 
 const catalogs = { "zh-Hant": zh, en, ja, ko };
+const musicCatalogs = { "zh-Hant": zhMusic, en: enMusic, ja: jaMusic, ko: koMusic };
 for (const locale of Object.keys(catalogs) as Array<keyof typeof catalogs>) for (const width of [1440, 320]) {
   test(`compiled integrated editors use production ${locale} catalogs at ${width}px`, async ({ page }) => {
     const text = catalogs[locale];
@@ -15,7 +20,7 @@ for (const locale of Object.keys(catalogs) as Array<keyof typeof catalogs>) for 
       localStorage.setItem("sb-example-auth-token", JSON.stringify({ access_token: "a.b.c", refresh_token: "r", expires_at: 4102444800, expires_in: 3600, token_type: "bearer", user: { id: "fixture", email: "fixture@example.test", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01" } }));
     }, locale);
     const legacy = createStarterDocument("Integrated", "classic98", "blank");
-    legacy.windows = (["about", "gallery", "document", "links"] as const).map(type => {
+    legacy.windows = (["about", "gallery", "document", "links", "music", "moodboard", "explorer"] as const).map(type => {
       const win = makeWindow(type); win.id = type; win.title = `${type}.exe`; win.defaultOpen = true;
       win.layout.desktop = { ...win.layout.desktop, x: 20, y: 20, w: 500, h: 600 };
       return win;
@@ -32,9 +37,14 @@ for (const locale of Object.keys(catalogs) as Array<keyof typeof catalogs>) for 
       return route.fulfill({ json: { assets: [] } });
     });
     await page.goto("/editor/integrated");
-    for (const type of ["about", "gallery", "document", "links"]) {
+    for (const type of ["about", "gallery", "document", "links", "music", "moodboard", "explorer"]) {
       if (width < 768) { await page.locator(".m-icon").getByText(`${type}.exe`, { exact: true }).click(); await page.locator(".m-edit-toggle").click(); }
-      else await page.locator(".task-items").getByRole("button", { name: `${type}.exe`, exact: true }).click();
+      else {
+        const task = page.locator(".task-items").getByRole("button", { name: `${type}.exe`, exact: true });
+        // Clicking the active task minimizes it; the initial About window is
+        // already active when the compiled fixture opens.
+        if (!await task.evaluate(element => element.classList.contains("active"))) await task.click();
+      }
       const win = page.getByRole("dialog", { name: `${type}.exe`, exact: true });
       if (type === "about") {
         const social = win.getByPlaceholder(text.about.inline.pasteSocial, { exact: true });
@@ -49,8 +59,17 @@ for (const locale of Object.keys(catalogs) as Array<keyof typeof catalogs>) for 
         await win.getByRole("button", { name: text.document.inline.insert, exact: true }).click();
         await expect(win.getByRole("menu")).toBeVisible();
         await page.keyboard.press("Escape");
-      } else {
+      } else if (type === "links") {
         await expect(win.getByLabel(text.links.inline.pasteLabel, { exact: true })).toBeVisible();
+      } else if (type === "music") {
+        await expect(win.getByLabel(musicCatalogs[locale].music.inline.pasteLabel, { exact: true })).toBeVisible();
+        await expect(win.getByRole("button", { name: musicCatalogs[locale].music.inline.blankTrack })).toBeVisible();
+      } else if (type === "moodboard") {
+        await expect(win.getByRole("status").first()).toContainText(text.moodboard.inline.emptyHint);
+        await expect(win.getByRole("button", { name: text.moodboard.exportPng })).toBeVisible();
+      } else {
+        await expect(win.getByRole("searchbox", { name: text.explorer.inline.search })).toBeVisible();
+        if (width >= 768) await expect(win.getByRole("tree", { name: text.explorer.inline.tree })).toBeVisible();
       }
       expect(await win.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
       await page.screenshot({ path: test.info().outputPath(`${locale}-${width}-${type}.png`) });

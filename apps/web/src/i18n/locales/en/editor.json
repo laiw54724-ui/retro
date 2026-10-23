@@ -781,5 +781,15 @@
       "interaction": "Interaction and audio",
       "organize": "Organization and navigation"
     }
+  },
+  "editing": {
+    "done": "Done",
+    "close": "Close",
+    "add": "＋ Add",
+    "reorder": "Drag to reorder",
+    "moved": "Moved to position {{position}}",
+    "invalidFile": "Choose a {{kind}} file no larger than {{size}} MB.",
+    "image": "image",
+    "audio": "audio"
   }
 }

@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import { makeWindow, migrateSiteDocumentV2, projectPublicSiteDocument, type SiteDocument } from "@retrodesk/shared";
 import { documentFixture } from "./fixture";
 import { igWindow } from "./ig-fixture";
@@ -26,8 +26,13 @@ async function openEditor(page: Page, draftDocument = explorerDocument(), viewpo
   await page.route("**/api/sites/site-1", (route) => route.fulfill({ json: { site } }));
   await page.setViewportSize(viewport);
   await page.goto("/editor/site-1");
+  if (viewport.width < 768) {
+    await page.locator(".m-icon").getByText("World.exe", { exact: true }).click();
+    await page.getByRole("button", { name: "編輯內容", exact: true }).click();
+  }
   const dialog = page.getByRole("dialog", { name: "World.exe" });
   await expect(dialog).toBeVisible();
+  if (viewport.width >= 768) await dialog.locator(".retro-titlebar").click();
   return { dialog, saves };
 }
 
@@ -47,6 +52,13 @@ const explorerContent = (saves: Array<{ document: SiteDocument }>) => {
   const explorer = saves.at(-1)?.document.windows.find((window) => window.type === "explorer");
   return explorer?.type === "explorer" ? explorer.content : null;
 };
+const editorTile = (dialog: Locator, name: string) => dialog.locator(`.folder-tree-editor .explorer-grid .explorer-item:has(> .explorer-open[aria-label=${JSON.stringify(name)}])`);
+async function editorAction(dialog: Locator, name: string, action: string) {
+  await dialog.locator(".retro-titlebar").click();
+  await editorTile(dialog, name).locator(".explorer-open").click();
+  await dialog.getByRole("button", { name: "項目操作" }).click();
+  await dialog.page().getByRole("menuitem", { name: action }).click();
+}
 
 function canonicalFixture(document: SiteDocument) {
   const migrated = migrateSiteDocumentV2(document, { siteId: "site-1" });
@@ -63,9 +75,8 @@ test("healthy shortcut target editing stages Cancel/Escape, preserves fields, an
   explorer.content.shortcuts[0] = { ...explorer.content.shortcuts[0], icon: "heart", order: 7, visibility: "draft" };
   const original = structuredClone(explorer.content.shortcuts[0]);
   const { dialog, saves } = await openEditor(page, canonicalFixture(document));
-  await dialog.getByRole("button", { name: "Keep this label", exact: true }).click();
-  const change = dialog.getByRole("button", { name: "變更目標", exact: true });
-  await change.click();
+  await editorAction(dialog, "Keep this label", "變更目標");
+  const change = dialog.getByRole("button", { name: "項目操作", exact: true });
   const picker = page.getByRole("dialog", { name: "變更捷徑「Keep this label」的目標", exact: true });
   await expect(picker.getByRole("option", { name: /角色設定.txt/ })).toHaveAttribute("aria-selected", "true");
   await picker.getByRole("searchbox").fill("Next target");
@@ -73,34 +84,32 @@ test("healthy shortcut target editing stages Cancel/Escape, preserves fields, an
   await picker.getByRole("option", { name: /Next target.txt/ }).click();
   await picker.getByRole("button", { name: "取消", exact: true }).click();
   await expect(change).toBeFocused();
-  await change.click();
+  await change.click(); await page.getByRole("menuitem", { name: "變更目標" }).click();
   await picker.getByRole("option", { name: /Next target.txt/ }).click();
   await page.keyboard.press("Escape");
   await expect(change).toBeFocused();
-  await change.click();
+  await change.click(); await page.getByRole("menuitem", { name: "變更目標" }).click();
   await picker.getByRole("button", { name: "改指向這個", exact: true }).click(); // same target is a no-op
   await page.waitForTimeout(1200); expect(saves).toHaveLength(0);
   await expect(page.getByRole("button", { name: "復原", exact: true })).toBeDisabled();
-  await change.click();
+  await change.click(); await page.getByRole("menuitem", { name: "變更目標" }).click();
   await picker.getByRole("option", { name: /Next target.txt/ }).focus(); await page.keyboard.press("Space");
   await picker.getByRole("button", { name: "改指向這個", exact: true }).click();
   await expect.poll(() => explorerContent(saves)?.shortcuts[0]).toEqual({ ...original, target: { siteId: "site-1", id: "next", kind: "window" } });
   expect(saves).toHaveLength(1);
-  await expect(dialog.getByRole("toolbar", { name: "選取項目的操作" })).toContainText("Keep this label");
+  await expect(editorTile(dialog, "Keep this label").locator(".explorer-open")).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "復原", exact: true }).click();
   await expect.poll(() => explorerContent(saves)?.shortcuts[0]).toEqual(original);
   await page.getByRole("button", { name: "重做", exact: true }).click();
   await expect.poll(() => explorerContent(saves)?.shortcuts[0].target.id).toBe("next");
   await page.reload();
-  await page.getByRole("dialog", { name: "World.exe", exact: true }).getByRole("button", { name: "Keep this label", exact: true }).click();
-  await page.getByRole("button", { name: "變更目標", exact: true }).click();
+  await editorAction(page.getByRole("dialog", { name: "World.exe", exact: true }), "Keep this label", "變更目標");
   await expect(picker.getByRole("option", { name: /Next target.txt/ })).toHaveAttribute("aria-selected", "true");
 });
 
 test("target search with no results retains the visible pending selection without saving", async ({ page }) => {
   const { dialog, saves } = await openEditor(page, canonicalFixture(withContent([], [S("link", null, "Keep target")])));
-  await dialog.getByRole("button", { name: "Keep target", exact: true }).click();
-  await dialog.getByRole("button", { name: "變更目標", exact: true }).click();
+  await editorAction(dialog, "Keep target", "變更目標");
   const picker = page.getByRole("dialog", { name: "變更捷徑「Keep target」的目標", exact: true });
   await picker.getByRole("searchbox").fill("no matching target");
   await expect(picker.getByRole("option")).toHaveCount(0);
@@ -113,22 +122,22 @@ test("target search with no results retains the visible pending selection withou
 
 test("author creates, names and selects a folder, builds a nested folder, adds shortcuts from a picker and reloads", async ({ page }) => {
   const { dialog, saves } = await openEditor(page);
-  await dialog.getByRole("button", { name: "新增資料夾" }).click();
+  await dialog.getByRole("button", { name: /＋ 資料夾/ }).click();
   const rename = dialog.getByRole("textbox", { name: "資料夾名稱" });
   await expect(rename).toBeFocused();
   await page.keyboard.type("角色設定");
   await page.keyboard.press("Enter");
-  const folder = dialog.getByRole("button", { name: "角色設定", exact: true });
+  const folder = editorTile(dialog, "角色設定").locator(".explorer-open");
   await expect(folder).toHaveAttribute("aria-pressed", "true");
-  await expect(dialog.getByRole("toolbar", { name: "選取項目的操作" })).toContainText("角色設定");
+  await expect(dialog.getByRole("status").first()).toContainText("已選取 1 個項目");
 
   await folder.dblclick();
   await expect(dialog.getByRole("navigation", { name: "資料夾路徑" }).getByRole("button", { name: "角色設定" })).toHaveAttribute("aria-current", "page");
-  await dialog.getByRole("button", { name: "新增資料夾" }).click();
+  await dialog.getByRole("button", { name: /＋ 資料夾/ }).click();
   await page.keyboard.type("主角組");
   await page.keyboard.press("Enter");
 
-  await dialog.getByRole("button", { name: "建立捷徑" }).click();
+  await dialog.getByRole("button", { name: /＋ 捷徑/ }).click();
   const picker = page.getByRole("dialog", { name: "建立捷徑" });
   await picker.getByRole("option", { name: "角色設定.txt" }).click();
   await picker.getByRole("button", { name: "建立捷徑" }).click();
@@ -138,12 +147,12 @@ test("author creates, names and selects a folder, builds a nested folder, adds s
   await expect(dialog.getByRole("button", { name: "主角設定", exact: true })).toBeVisible();
 
   await dialog.getByRole("button", { name: "↑ 上一層" }).click();
-  await dialog.getByRole("button", { name: "建立捷徑" }).click();
+  await dialog.getByRole("button", { name: /＋ 捷徑/ }).click();
   await page.getByRole("dialog", { name: "建立捷徑" }).getByRole("option", { name: "角色設定.txt" }).dblclick();
   await expect.poll(() => { const c = explorerContent(saves); return c ? { folders: c.folders.length, shortcuts: c.shortcuts.length } : null; }).toEqual({ folders: 2, shortcuts: 2 });
   expect(explorerContent(saves)?.shortcuts.every((shortcut) => shortcut.target.id === "lore")).toBe(true);
   await page.reload();
-  await expect(page.getByRole("dialog", { name: "World.exe" }).getByRole("button", { name: "角色設定", exact: true })).toBeVisible();
+  await expect(editorTile(page.getByRole("dialog", { name: "World.exe" }), "角色設定")).toBeVisible();
 });
 
 test("a desktop author single-click selects, double-click or Enter opens; shortcuts show an arrow and their target", async ({ page }) => {
@@ -151,10 +160,11 @@ test("a desktop author single-click selects, double-click or Enter opens; shortc
   const tile = dialog.locator(".explorer-item").filter({ hasText: "主角設定" });
   await expect(tile.locator(".explorer-arrow")).toBeVisible();
   await expect(tile).toContainText("視窗：角色設定.txt");
-  await dialog.getByRole("button", { name: "角色", exact: true }).click();
-  await expect(dialog.getByRole("button", { name: "角色", exact: true })).toHaveAttribute("aria-pressed", "true");
+  const folder = editorTile(dialog, "角色").locator(".explorer-open");
+  await folder.click();
+  await expect(folder).toHaveAttribute("aria-pressed", "true");
   await expect(dialog.getByRole("navigation", { name: "資料夾路徑" }).getByRole("button", { name: "角色" })).toHaveCount(0); // single click did not open
-  await dialog.getByRole("button", { name: "角色", exact: true }).press("Enter");
+  await folder.press("Enter");
   await expect(dialog.getByRole("navigation", { name: "資料夾路徑" }).getByRole("button", { name: "角色" })).toBeVisible();
   await expect(dialog.getByRole("button", { name: "↑ 上一層" })).toBeEnabled();
   await dialog.getByRole("navigation", { name: "資料夾路徑" }).getByRole("button", { name: "桌面" }).click();
@@ -166,8 +176,7 @@ test("move dialog shows full paths for same-named folders and blocks impossible 
     [F("a", null, "角色"), F("a-main", "a", "主角"), F("a-main-sub", "a-main", "設定"), F("b-main", null, "主角", 1)],
     [S("link", null, "主角設定")]
   ));
-  await dialog.getByRole("button", { name: "主角設定", exact: true }).click();
-  await dialog.getByRole("button", { name: "移動到…" }).click();
+  await editorAction(dialog, "主角設定", "移動到…");
   const move = page.getByRole("dialog", { name: "移動「主角設定」到…" });
   await expect(move.getByRole("button", { name: /^桌面 \/ 角色 \/ 主角$/ })).toBeVisible();
   await expect(move.getByRole("button", { name: /^桌面 \/ 主角$/ })).toBeVisible();
@@ -175,11 +184,10 @@ test("move dialog shows full paths for same-named folders and blocks impossible 
   await move.getByRole("button", { name: /^桌面 \/ 角色 \/ 主角$/ }).click();
   await expect(move).toBeHidden();
   await expect.poll(() => explorerContent(saves)?.shortcuts[0].parentId).toBe("a-main");
-  await expect(dialog.getByRole("status")).toContainText("已把「主角設定」移到「桌面 / 角色 / 主角」");
+  await expect(dialog.getByRole("status").first()).toContainText("已移動 1 個項目到「桌面 / 角色 / 主角」");
 
   // a folder cannot be moved into itself or its own child
-  await dialog.getByRole("button", { name: "角色", exact: true }).click();
-  await dialog.getByRole("button", { name: "移動到…" }).click();
+  await editorAction(dialog, "角色", "移動到…");
   const folderMove = page.getByRole("dialog", { name: "移動「角色」到…" });
   await expect(folderMove.getByRole("button", { name: /^桌面 \/ 角色 \/ 主角 不能移到自己的子資料夾裡$/ })).toBeDisabled();
   await expect(folderMove.getByRole("button", { name: /^桌面 \/ 角色 不能移到自己裡面$/ })).toBeDisabled();
@@ -192,8 +200,8 @@ test("dragging a shortcut onto a folder moves it; the move dialog remains the ke
   const shortcut = dialog.locator(".explorer-item").filter({ hasText: "主角設定" });
   const folder = dialog.locator(".explorer-item").filter({ hasText: "角色" }).first();
   await shortcut.dragTo(folder);
+  await expect(dialog.getByRole("status").first()).toContainText("已移動 1 個項目到「桌面 / 角色」");
   await expect.poll(() => explorerContent(saves)?.shortcuts[0].parentId).toBe("chars");
-  await expect(dialog.getByRole("status")).toContainText("已把「主角設定」移到「桌面 / 角色」");
   // the breadcrumb is a drop target too
   await folder.getByRole("button", { name: "角色", exact: true }).dblclick();
   await dialog.locator(".explorer-item").filter({ hasText: "主角設定" }).dragTo(dialog.getByRole("navigation", { name: "資料夾路徑" }).getByRole("button", { name: "桌面" }));
@@ -202,10 +210,9 @@ test("dragging a shortcut onto a folder moves it; the move dialog remains the ke
 
 test("deleting a folder lists what goes with it, keeps targets, and can be undone", async ({ page }) => {
   const { dialog, saves } = await openEditor(page, withContent([F("chars", null, "角色"), F("sub", "chars", "主角")], [S("link", "chars", "主角設定"), S("other", null, "不受影響")]));
-  await dialog.getByRole("button", { name: "角色", exact: true }).click();
-  await dialog.getByRole("button", { name: "刪除" }).click();
-  const confirm = page.getByRole("dialog", { name: "刪除資料夾「角色」" });
-  await expect(confirm).toContainText("2 個項目也會一起移除");
+  await editorAction(dialog, "角色", "刪除");
+  const confirm = dialog.getByRole("alertdialog", { name: "刪除" });
+  await expect(confirm).toContainText("2 個資料夾及 1 個捷徑");
   await expect(confirm).toContainText("主角");
   await expect(confirm).toContainText("主角設定");
   await expect(confirm).not.toContainText("不受影響");
@@ -213,8 +220,8 @@ test("deleting a folder lists what goes with it, keeps targets, and can be undon
   await confirm.getByRole("button", { name: "取消" }).click();
   expect(explorerContent(saves)).toBeNull(); // cancel changes nothing
 
-  await dialog.getByRole("button", { name: "刪除" }).click();
-  await page.getByRole("dialog", { name: "刪除資料夾「角色」" }).getByRole("button", { name: "刪除", exact: true }).click();
+  await editorAction(dialog, "角色", "刪除");
+  await confirm.getByRole("button", { name: "刪除", exact: true }).click();
   await expect.poll(() => { const c = explorerContent(saves); return c ? [c.folders.length, c.shortcuts.length] : null; }).toEqual([0, 1]);
   expect(saves.at(-1)?.document.windows.some((window) => window.id === "lore")).toBe(true);
   await page.getByRole("button", { name: "復原" }).click();
@@ -223,34 +230,34 @@ test("deleting a folder lists what goes with it, keeps targets, and can be undon
 
 test("deleting a shortcut never deletes its target and creating a copy keeps the same target", async ({ page }) => {
   const { dialog, saves } = await openEditor(page, withContent([], [S("link", null, "主角設定")]));
-  await dialog.getByRole("button", { name: "主角設定", exact: true }).click();
-  await dialog.getByRole("button", { name: "建立副本捷徑" }).click();
+  await editorAction(dialog, "主角設定", "建立副本捷徑");
   await page.keyboard.type("第二個入口");
   await page.keyboard.press("Enter");
   await expect.poll(() => explorerContent(saves)?.shortcuts.map((shortcut) => shortcut.target.id)).toEqual(["lore", "lore"]);
-  await dialog.getByRole("button", { name: "刪除" }).click();
+  await dialog.getByRole("button", { name: "項目操作" }).click();
+  await page.getByRole("menuitem", { name: "刪除" }).click();
   await expect.poll(() => explorerContent(saves)?.shortcuts.length).toBe(1);
   expect(saves.at(-1)?.document.windows.some((window) => window.id === "lore")).toBe(true);
-  await expect(dialog.getByRole("status")).toContainText("原本的內容沒有被刪除");
+  await expect(dialog.getByRole("status").first()).toContainText("原本的視窗、OC 與貼文不會被刪除");
 });
 
 test("keyboard: F2 renames, Escape cancels, Delete removes a shortcut, Enter opens a folder", async ({ page }) => {
   const { dialog, saves } = await openEditor(page, withContent([F("chars", null, "角色")], [S("link", null, "主角設定")]));
-  const shortcut = dialog.getByRole("button", { name: "主角設定", exact: true });
+  const shortcut = editorTile(dialog, "主角設定").locator(".explorer-open");
   await shortcut.focus();
   await page.keyboard.press("F2");
   await page.keyboard.type("改名後");
   await page.keyboard.press("Escape");
-  await expect(dialog.getByRole("button", { name: "主角設定", exact: true })).toBeVisible();
-  await dialog.getByRole("button", { name: "主角設定", exact: true }).focus();
+  await expect(editorTile(dialog, "主角設定").locator(".explorer-open")).toBeVisible();
+  await editorTile(dialog, "主角設定").locator(".explorer-open").focus();
   await page.keyboard.press("F2");
   await page.keyboard.type("改名後");
   await page.keyboard.press("Enter");
   await expect.poll(() => explorerContent(saves)?.shortcuts[0].label).toBe("改名後");
-  await dialog.getByRole("button", { name: "改名後", exact: true }).focus();
+  await editorTile(dialog, "改名後").locator(".explorer-open").focus();
   await page.keyboard.press("Delete");
   await expect.poll(() => explorerContent(saves)?.shortcuts.length).toBe(0);
-  await dialog.getByRole("button", { name: "角色", exact: true }).focus();
+  await editorTile(dialog, "角色").locator(".explorer-open").focus();
   await page.keyboard.press("Enter");
   await expect(dialog.getByRole("navigation", { name: "資料夾路徑" })).toContainText("角色");
 });
@@ -313,7 +320,7 @@ test("confirming removes the target and exactly its shortcuts in one step, saves
   const reloaded = page.getByRole("dialog", { name: "World.exe" });
   await expect(reloaded).toBeVisible();
   await expect(reloaded.locator(".explorer-item").filter({ hasText: "備用" })).toContainText("視窗：備用設定.txt");
-  await expect(reloaded.getByRole("button", { name: "角色", exact: true })).toBeVisible();
+  await expect(editorTile(reloaded, "角色")).toBeVisible();
   void dialog;
 });
 
@@ -395,23 +402,26 @@ test("visitor search finds shortcuts across folders and shows where they live", 
   await expect(page.locator(".visitor-mobile").getByRole("dialog", { name: "角色設定.txt" })).toBeVisible();
 });
 
-test("phone editor: a tap opens an item, every item has a 44px ⋯ action button, and the action bar edits the selection", async ({ page }) => {
+test("phone editor: a tap opens an item, and select mode exposes a 44px action button for editing", async ({ page }) => {
   const { saves } = await openEditor(page, withContent([F("chars", null, "角色")], [S("link", null, "主角設定")]), { width: 1440, height: 900 }).then(async (ctx) => { await page.getByRole("button", { name: "手機版" }).click(); return ctx; });
   const phone = page.locator(".visitor-mobile.framed");
   await phone.getByRole("button", { name: "World.exe", exact: true }).click();
   await phone.getByRole("button", { name: "編輯內容" }).click();
-  const more = phone.getByRole("button", { name: "主角設定 的操作" });
+  await phone.getByRole("button", { name: "選取項目" }).click();
+  await editorTile(phone, "主角設定").locator(".explorer-open").click();
+  const more = phone.getByRole("button", { name: "項目操作" });
   const box = await more.boundingBox();
   expect(box!.width).toBeGreaterThanOrEqual(44);
   expect(box!.height).toBeGreaterThanOrEqual(44);
   await more.click();
-  await expect(phone.getByRole("toolbar", { name: "選取項目的操作" })).toContainText("主角設定");
-  await phone.getByRole("button", { name: "重新命名" }).click();
+  await expect(phone.getByRole("menu")).toBeVisible();
+  await phone.getByRole("menuitem", { name: "重新命名" }).click();
   await expect(phone.getByRole("textbox", { name: "捷徑名稱" })).toBeFocused();
   await page.keyboard.type("手機改名");
   await page.keyboard.press("Enter");
   await expect.poll(() => explorerContent(saves)?.shortcuts[0].label).toBe("手機改名");
-  await phone.getByRole("button", { name: "角色", exact: true }).click(); // tap opens the folder
+  await phone.getByRole("button", { name: "選取項目" }).click();
+  await editorTile(phone, "角色").locator(".explorer-open").click(); // tap opens the folder
   await expect(phone.getByRole("navigation", { name: "資料夾路徑" })).toContainText("角色");
 });
 
@@ -419,10 +429,10 @@ test("folder depth and the per-window item limits are explained instead of faili
   const chain = Array.from({ length: 8 }, (_, index) => F(`n${index}`, index ? `n${index - 1}` : null, `層${index + 1}`));
   const { dialog } = await openEditor(page, withContent(chain, []));
   for (let index = 0; index < 8; index += 1) {
-    await dialog.getByRole("button", { name: `層${index + 1}`, exact: true }).press("Enter");
+    await editorTile(dialog, `層${index + 1}`).locator(".explorer-open").press("Enter");
   }
-  await dialog.getByRole("button", { name: "新增資料夾" }).click();
-  await expect(dialog.getByRole("status")).toContainText("資料夾最多 8 層");
+  await dialog.getByRole("button", { name: /＋ 資料夾/ }).click();
+  await expect(dialog.getByRole("alert")).toContainText("資料夾最多 8 層");
 });
 
 test("desktop visitor: shortcuts to windows are not flagged broken and open the target window", async ({ page }) => {
@@ -471,10 +481,13 @@ test("320px author redirects an OC shortcut to an exact post, then tests it in v
   await page.locator(".m-icon").getByText("World.exe", { exact: true }).click();
   await page.getByRole("button", { name: "編輯內容", exact: true }).click();
   const world = page.getByRole("dialog", { name: "World.exe", exact: true });
-  await world.getByRole("button", { name: "主角 的操作", exact: true }).click();
-  await world.getByRole("button", { name: "變更目標", exact: true }).click();
+  await world.getByRole("button", { name: "選取項目" }).click();
+  await editorTile(world, "主角").locator(".explorer-open").click();
+  await world.getByRole("button", { name: "項目操作" }).click();
+  await world.getByRole("menuitem", { name: "變更目標" }).click();
   const picker = page.getByRole("dialog", { name: "變更捷徑「主角」的目標", exact: true });
-  await expect(picker.getByRole("option", { selected: true })).toContainText("OC:");
+  await expect(picker.getByRole("option", { selected: true })).toContainText("Retro User");
+  await expect(picker.locator(".folder-target-list")).toContainText("OC");
   await picker.getByRole("searchbox").fill(post.title);
   await picker.getByRole("option").filter({ hasText: post.title }).focus(); await page.keyboard.press("Enter");
   await expect(picker.getByRole("status")).toContainText(post.title);
@@ -558,8 +571,7 @@ test("deleting a shortcut target cleans the canonical draft before save, reload 
   explorer.content.shortcuts = [{ id: "lore-link", parentId: null, label: "主角設定", order: 0, visibility: "published", target: { siteId: "site-1", id: "lore", kind: "window" } }];
 
   const { saves } = await openEditor(page, document);
-  await expect(page.locator("#editor-right-panel").getByText("角色設定.txt", { exact: true })).toBeVisible();
-  await page.locator("#editor-right-panel").getByRole("button", { name: "刪除視窗" }).click();
+  await deleteLoreWindow(page);
   const confirmation = page.getByRole("dialog", { name: "這項刪除會影響 1 個捷徑" });
   await expect(confirmation.getByRole("list", { name: "受影響的捷徑" })).toContainText("主角設定");
   await confirmation.getByRole("button", { name: "刪除並移除 1 個捷徑" }).click();
@@ -590,3 +602,81 @@ test("deleting a shortcut target cleans the canonical draft before save, reload 
   await expect(publicExplorer).toBeVisible();
   await expect(publicExplorer.getByRole("button", { name: /主角設定/ })).toHaveCount(0);
 });
+
+test("inline folder target draft cancels, applies once, and undo restores the shortcut", async ({ page }, testInfo) => {
+  const document = withContent([], [S("link", null, "Keep this label")]);
+  const second = makeWindow("document", 2); second.id = "next"; second.title = "Next target.txt"; second.defaultOpen = false; document.windows.push(second);
+  const { dialog, saves } = await openEditor(page, canonicalFixture(document));
+  const tile = dialog.locator('.folder-tree-editor .explorer-item[data-item="link"]');
+  await dialog.locator(".retro-titlebar").click();
+  await tile.getByRole("button", { name: "Keep this label" }).click();
+  await dialog.getByRole("button", { name: "項目操作" }).click();
+  await page.getByRole("menuitem", { name: /變更目標/ }).click();
+  let picker = page.getByRole("dialog", { name: /變更捷徑.*目標/ });
+  await picker.getByRole("option", { name: /Next target.txt/ }).click();
+  expect(saves).toHaveLength(0);
+  await picker.getByRole("button", { name: "取消" }).click();
+  expect(saves).toHaveLength(0);
+  await dialog.getByRole("button", { name: "項目操作" }).click();
+  await page.getByRole("menuitem", { name: /變更目標/ }).click();
+  picker = page.getByRole("dialog", { name: /變更捷徑.*目標/ });
+  await picker.getByRole("option", { name: /Next target.txt/ }).click();
+  await picker.getByRole("button", { name: "改指向這個" }).click();
+  await expect.poll(() => explorerContent(saves)?.shortcuts[0].target.id).toBe("next");
+  await page.getByRole("button", { name: "復原", exact: true }).click();
+  await expect.poll(() => explorerContent(saves)?.shortcuts[0].target.id).toBe("lore");
+  await page.screenshot({ path: testInfo.outputPath("folder-inline-desktop.png") });
+});
+
+test("inline folder selection, cut paste and folder delete remain canonical", async ({ page }) => {
+  const { dialog, saves } = await openEditor(page, withContent([F("chars", null, "角色")], [S("a", null, "A"), S("b", null, "B")]));
+  const a = dialog.locator('.folder-tree-editor .explorer-item[data-item="a"] .explorer-open');
+  const b = dialog.locator('.folder-tree-editor .explorer-item[data-item="b"] .explorer-open');
+  await a.click(); await b.click({ modifiers: ["Meta"] });
+  await expect(a).toHaveAttribute("aria-pressed", "true"); await expect(b).toHaveAttribute("aria-pressed", "true");
+  await b.press("Meta+x");
+  await dialog.locator('.folder-tree .folder-tree-open').filter({ hasText: "角色" }).click();
+  await dialog.getByRole("button", { name: /貼上 2 個到這裡/ }).click();
+  await expect.poll(() => explorerContent(saves)?.shortcuts.map(item => item.parentId)).toEqual(["chars", "chars"]);
+  await dialog.getByRole("navigation", { name: "資料夾路徑" }).getByRole("button", { name: "桌面" }).click();
+  await dialog.locator('.folder-tree-editor .explorer-item[data-item="chars"] .explorer-open').click();
+  await dialog.getByRole("button", { name: "項目操作" }).click();
+  await page.getByRole("menuitem", { name: "刪除" }).click();
+  const confirm = dialog.getByRole("alertdialog", { name: "刪除" });
+  await expect(confirm).toContainText("2 個捷徑");
+  await confirm.getByRole("button", { name: "取消" }).click();
+  await expect(dialog.locator('.explorer-item[data-item="chars"]')).toBeVisible();
+  await dialog.getByRole("button", { name: "項目操作" }).click();
+  await page.getByRole("menuitem", { name: "刪除" }).click();
+  await confirm.getByRole("button", { name: "刪除" }).click();
+  await expect.poll(() => explorerContent(saves)?.folders.length).toBe(0);
+  await page.getByRole("button", { name: "復原", exact: true }).click();
+  await expect.poll(() => explorerContent(saves)?.folders.length).toBe(1);
+});
+
+for (const width of [1440, 320, 375, 390, 430]) {
+  test(`inline folder target picker fits ${width}px and cancel keeps the canonical shortcut`, async ({ page }, testInfo) => {
+    const { dialog, saves } = await openEditor(page, withContent([F("chars", null, "角色")], [S("link", null, "主角設定")]), { width, height: 780 });
+    if (width < 768) await dialog.getByRole("button", { name: "選取項目" }).click();
+    const tile = editorTile(dialog, "主角設定").locator(".explorer-open");
+    await tile.click();
+    await expect(tile).toHaveAttribute("aria-pressed", "true");
+    const actions = dialog.getByRole("button", { name: "項目操作" });
+    if (width < 768) expect((await actions.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    await actions.click();
+    await page.getByRole("menuitem", { name: "變更目標" }).click();
+    const picker = dialog.getByRole("dialog", { name: /變更捷徑.*目標/ });
+    await expect(picker.getByRole("option", { name: /角色設定.txt/ })).toHaveAttribute("aria-selected", "true");
+    const box = await picker.boundingBox();
+    expect(box!.x).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(width + 1);
+    await page.screenshot({ path: testInfo.outputPath(`folder-picker-${width}.png`) });
+    await picker.getByRole("searchbox").fill("沒有結果");
+    await expect(picker.getByRole("option")).toHaveCount(0);
+    await picker.getByRole("button", { name: "取消" }).click();
+    await expect(actions).toBeFocused();
+    expect(saves).toHaveLength(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+    await page.screenshot({ path: testInfo.outputPath(`folder-inline-${width}.png`) });
+  });
+}

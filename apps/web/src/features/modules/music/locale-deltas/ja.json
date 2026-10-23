@@ -1,0 +1,29 @@
+{
+  "music": {
+    "inline": {
+      "pasteLabel": "曲のリンクを貼り付けるか、音声ファイルをドロップ",
+      "pastePlaceholder": "YouTube、Spotify または https://…",
+      "uploadFiles": "音声をアップロード",
+      "dropAudio": "音声をドロップ（各 50 MB まで）",
+      "dropCover": "ドロップしてカバーを変更（8 MB まで）",
+      "blankTrack": "空の曲を追加",
+      "source": "音源",
+      "changeSource": "音源を変更",
+      "lyrics": "＋ 歌詞",
+      "character": "＋ キャラクターのテーマ曲",
+      "rights": "＋ 権利に関する説明",
+      "instructions": "曲を選択して編集。ドラッグまたは Alt＋↑↓ で並べ替え",
+      "dragging": "離して曲を並べ替え",
+      "missingSource": "{{count}} 曲に音源が必要です",
+      "missingRights": "アップロードした {{count}} 曲に権利の説明が必要です",
+      "count": "{{count}} 曲",
+      "limit": "追加できる曲は最大 100 曲です。",
+      "invalidAudio": "50 MB 以下の音声ファイルを選択してください。",
+      "invalidCover": "8 MB 以下の画像を選択してください。",
+      "coverUrl": "カバーの URL",
+      "noSelection": "リストから曲を選ぶか、曲を追加してください。",
+      "deleteTrack": "曲を削除：{{title}}",
+      "selectAndPreview": "{{title}}：Enter またはスペースで試聴"
+    }
+  }
+}

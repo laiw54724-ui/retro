@@ -79,7 +79,7 @@
 .about-field-add { display: flex; min-width: 0; margin-left: 18px; padding: 3px 5px; border: 1px dashed #808080; }
 .about-field-add input { width: 100%; color: #000080; }
 .about-editor .about-details-title { width: 100%; margin-top: 4px; text-decoration: underline; }
-.about-editor .about-bio { width: 100%; resize: vertical; line-height: 1.6; min-height: 48px; }
+.about-editor .about-bio { width: 100%; resize: none; line-height: 1.6; min-height: 48px; }
 .about-editor .about-quote { width: 100%; color: #7a7a7a; font-style: italic; }
 .about-editor .about-bar { min-width: 0; flex-wrap: wrap; }
 .about-editor .about-nickname { flex: 1; width: 80px; }
@@ -108,7 +108,7 @@
 
 .about-editor[data-mobile] button, .about-editor[data-mobile] input[type="range"] { min-height: 44px; min-width: 44px; }
 
-.about-editor textarea.about-direct { resize: vertical; white-space: pre-wrap; }
+.about-editor textarea.about-direct { resize: none; white-space: pre-wrap; }
 .about-editor .about-banner textarea { display: block; width: 100%; }
 
 .about-editor .about-avatar-toggle { min-height: 44px; }

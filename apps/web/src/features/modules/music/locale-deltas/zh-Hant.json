@@ -1,0 +1,29 @@
+{
+  "music": {
+    "inline": {
+      "pasteLabel": "貼上歌曲連結，或把音檔拖進來",
+      "pastePlaceholder": "YouTube、Spotify 或 https://…",
+      "uploadFiles": "上傳音檔",
+      "dropAudio": "放開加入音檔（每個最多 50 MB）",
+      "dropCover": "放開更換封面（最多 8 MB）",
+      "blankTrack": "新增空白曲目",
+      "source": "音源",
+      "changeSource": "更換音源",
+      "lyrics": "＋ 歌詞",
+      "character": "＋ 角色主題曲",
+      "rights": "＋ 版權說明",
+      "instructions": "選取曲目編輯；拖曳或 Alt＋↑↓ 排序",
+      "dragging": "放開以調整曲目順序",
+      "missingSource": "{{count}} 首曲目尚未設定音源",
+      "missingRights": "{{count}} 首上傳曲目需要版權說明",
+      "count": "{{count}} 首曲目",
+      "limit": "最多可加入 100 首曲目。",
+      "invalidAudio": "請選擇 50 MB 以內的音檔。",
+      "invalidCover": "請選擇 8 MB 以內的圖片。",
+      "coverUrl": "封面網址",
+      "noSelection": "從左側選取曲目，或加入一首歌曲。",
+      "deleteTrack": "刪除曲目：{{title}}",
+      "selectAndPreview": "{{title}}；Enter 或空白鍵試聽"
+    }
+  }
+}

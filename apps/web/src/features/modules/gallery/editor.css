@@ -11,7 +11,7 @@
 .gal-editor .gal-column-label { padding-left: 4px; font-size: 12px; }
 .gal-editor .gal-deselect { margin-left: auto; }
 .gal-editor .gal-add-url { display: flex; flex: none; align-items: start; gap: 4px; padding: 4px; background: #ffffe1; border-bottom: 1px solid #000; }
-.gal-editor .gal-add-url textarea { min-width: 0; flex: 1; resize: vertical; max-height: 90px; }
+.gal-editor .gal-add-url textarea { min-width: 0; flex: 1; resize: none; max-height: 90px; }
 .gal-editor .gal-upload-list { flex: none; max-height: 25%; overflow: auto; }
 .gal-editor .gal-upload-list:empty { display: none; }
 .gal-editor .gal-editor-workspace { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 4px; min-width: 0; min-height: 0; overflow: hidden; }
@@ -58,7 +58,7 @@
 .gal-editor[data-mobile] .mini-btn, .gal-editor[data-mobile] .gal-editor-properties input:not([type="file"]) { min-height: 44px; min-width: 44px; }
 .gal-editor[data-mobile] .gal-editor-properties input:not([type="file"]), .gal-editor[data-mobile] .gal-editor-properties textarea, .gal-editor[data-mobile] .gal-add-url textarea { font-size: 15px; }
 
-.gal-editor .gal-editor-properties textarea { field-sizing: fixed; max-height: 140px; resize: vertical; }
+.gal-editor .gal-editor-properties textarea { field-sizing: fixed; max-height: 140px; resize: none; }
 
 .gal-editor .gal-column-controls { display: flex; align-items: center; gap: 3px; }
 

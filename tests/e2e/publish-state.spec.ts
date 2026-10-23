@@ -12,8 +12,13 @@ import { igDocument } from "./ig-fixture";
  */
 const session = { access_token: "a.b.c", refresh_token: "r", expires_at: 4102444800, expires_in: 3600, token_type: "bearer", user: { id: "u", email: "x@y.z", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01" } };
 const SITE = "site-1";
-// The editor trusts `<API_URL>/api/assets` (the dev server is the API origin in these tests) as the published asset base.
-const ASSET_BASE = `http://127.0.0.1:${process.env.PLAYWRIGHT_PORT ?? 5173}/api/assets`;
+// The editor trusts `<API_URL>/api/assets`. Use this test project's server origin
+// so the fixture stays accurate when a focused suite runs on a different port.
+function publishedAssetBase() {
+  const baseURL = test.info().project.use.baseURL;
+  if (!baseURL) throw new Error("publish-state tests require a Playwright baseURL");
+  return `${new URL(baseURL).origin}/api/assets`;
+}
 const AVATAR_ASSET = "0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d";
 
 /** A published character with an uploaded avatar, plus private content that must never reach the published copy. */
@@ -33,7 +38,7 @@ function draftWithPrivateContentAndAsset(): SiteDocumentV2Input {
 }
 
 /** Same pipeline as the API's publish route, followed by a jsonb round-trip (keys come back reordered). */
-function publishLikeApi(draft: unknown, assetBase = ASSET_BASE): unknown {
+function publishLikeApi(draft: unknown, assetBase = publishedAssetBase()): unknown {
   const projected = projectPublicSiteDocument(draft, SITE);
   if (!projected.ok) throw new Error("draft is not publishable");
   const urls = new Map(collectAssetReferences(projected.document).map((id) => [id, `${assetBase}/published/demo/assets/${id}.png`]));
