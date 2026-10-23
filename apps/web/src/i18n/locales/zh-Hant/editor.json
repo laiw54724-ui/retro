@@ -374,7 +374,7 @@
     "worldBuildingFolders": "世界觀資料夾",
     "addFoldersAndShortcutsRight": "直接在視窗內新增資料夾與捷徑；捷徑只會開啟原視窗，刪除資料夾不會刪除作品。",
     "minesweeper": "掃雷",
-    "characterPopUp": "角色彈窗",
+    "characterPopUp": "歡迎彈窗",
     "visitorGuestbook": "訪客留言簿",
     "openMessagesInsideTheWindow": "在視窗內開啟留言並管理待審內容；留言不會寫入桌面文件。",
     "adjustSettingsAndPreviewDirectly": "直接在視窗內容中調整設定並預覽；訪客操作只保留在本次瀏覽。",

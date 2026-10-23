@@ -374,7 +374,7 @@
     "worldBuildingFolders": "世界観フォルダー",
     "addFoldersAndShortcutsRight": "ウィンドウ内でフォルダーとショートカットを直接追加できます。ショートカットは元のウィンドウを開くだけで、フォルダーを削除しても作品は削除されません。",
     "minesweeper": "マインスイーパー",
-    "characterPopUp": "キャラクターのポップアップ",
+    "characterPopUp": "ウェルカムポップアップ",
     "visitorGuestbook": "訪問者ゲストブック",
     "openMessagesInsideTheWindow": "ウィンドウ内でメッセージを開き、承認待ちのものを管理します。メッセージはデスクトップのドキュメントには書き込まれません。",
     "adjustSettingsAndPreviewDirectly": "ウィンドウの内容でそのまま設定を調整してプレビューできます。訪問者の操作はこの訪問中のみ有効です。",

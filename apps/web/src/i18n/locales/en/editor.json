@@ -374,7 +374,7 @@
     "worldBuildingFolders": "World-building folders",
     "addFoldersAndShortcutsRight": "Add folders and shortcuts right in the window; a shortcut only opens the original window, and deleting a folder doesn't delete the work.",
     "minesweeper": "Minesweeper",
-    "characterPopUp": "Character pop-up",
+    "characterPopUp": "Welcome popup",
     "visitorGuestbook": "Visitor guestbook",
     "openMessagesInsideTheWindow": "Open messages inside the window and manage those awaiting review; messages aren't written into the desktop document.",
     "adjustSettingsAndPreviewDirectly": "Adjust settings and preview directly in the window content; visitor actions stay within this visit only.",
