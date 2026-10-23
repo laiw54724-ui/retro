@@ -15,7 +15,9 @@ import { WindowChromeButton } from "../../components/window-chrome";
 import { WindowAppearanceEditor } from "../editor/WindowAppearanceEditor";
 import { WindowChromeEditor } from "../editor/WindowChromeEditor";
 import { ThemeAppearanceEditor } from "../editor/ThemeAppearanceEditor";
-import { AddWindowDialog } from "../editor/AddWindowDialog";
+import { BottomSheet, EditorStatusBar, InlineTextField, LongPressReorderGrid, UndoToast } from "../../components/editing";
+import { isFramelessImage } from "./ImageWindowShell";
+import { AddWindowCatalog } from "../editor/AddWindowDialog";
 import { useEditorStore } from "../editor/store";
 import { WindowRenderer } from "./WindowRenderer";
 import type { ProfileDirectoryEntry } from "../modules/types";
@@ -24,7 +26,7 @@ import { stopAllMedia, stopWindowMedia } from "../modules/music/mediaSession";
 import { LanguageSwitcher } from "../../components/LanguageSwitcher";
 import { useLocaleFormatting } from "../../i18n/format";
 
-type Sheet = "add" | "edit" | "icon" | "theme" | null;
+type Sheet = "add" | "edit" | "theme" | null;
 
 type Props = {
   document: SiteDocument;
@@ -74,8 +76,32 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const tv = useThemeView(theme);
   const [openId, setOpenId] = useState<string | null>(() => initialOpenId ?? (navigation?.openId && [...document.windows, ...(navigation.visitor?.source === document ? navigation.visitor.windows : [])].some((window) => window.id === navigation.openId) ? navigation.openId : null) ?? (mode === "visitor" ? document.windows.find((window) => window.type === "character-dialog" && window.content.autoShow)?.id ?? null : null));
   const [sheet, setSheet] = useState<Sheet>(null);
-  const [inlineEdit, setInlineEdit] = useState(false);
-  const iconRefs = useRef(new Map<string, HTMLButtonElement>());
+  const [inlineEdit, setInlineEdit] = useState(editor);
+  const [arranging, setArranging] = useState(false);
+  const [renaming, setRenaming] = useState<string | null>(null);
+  const [renameDraft, setRenameDraft] = useState("");
+  const [toast, setToast] = useState<{ id: string; message: string } | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<DesktopWindow | null>(null);
+  const pendingDeleteRef = useRef<{ window: DesktopWindow; siteId: string | undefined } | null>(null);
+  const flushDelete = () => {
+    const pending = pendingDeleteRef.current; pendingDeleteRef.current = null; setPendingDelete(null);
+    const current = useEditorStore.getState();
+    if (pending && current.siteId === pending.siteId && current.document?.windows.find(window => window.id === pending.window.id) === pending.window) current.deleteWindow(pending.window.id);
+  };
+  useEffect(() => () => flushDelete(), [siteId]);
+  useEffect(() => {
+    if (!editor || !pendingDelete) return;
+    const undoPending = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.isComposing || !(event.ctrlKey || event.metaKey) || event.shiftKey || event.key.toLowerCase() !== "z" || screenRef.current?.closest("[inert], [hidden]")) return;
+      if ((event.target as HTMLElement)?.closest("input,textarea,select,[contenteditable=true]")) return;
+      event.preventDefault(); event.stopImmediatePropagation(); pendingDeleteRef.current = null; setPendingDelete(null); setToast(null);
+      requestAnimationFrame(() => iconRefs.current.get(pendingDelete.id)?.focus());
+    };
+    globalThis.document.addEventListener("keydown", undoPending, true);
+    return () => globalThis.document.removeEventListener("keydown", undoPending, true);
+  }, [editor, pendingDelete]);
+  const deleteIcon = (window: DesktopWindow) => { flushDelete(); pendingDeleteRef.current = { window, siteId }; setPendingDelete(window); setOpenId(null); setSheet(null); setRenaming(null); store.select(null); setToast({ id: crypto.randomUUID(), message: t("mobileEditor.deleted", { title: window.title }) }); };
+  const iconRefs = useRef(new Map<string, HTMLElement>());
   const screenRef = useRef<HTMLDivElement | null>(null);
   const contentEditButton = useRef<HTMLButtonElement | null>(null);
   const music = useMusicPlayback();
@@ -85,8 +111,8 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const selected = document.windows.find((window) => window.id === store.selectedId) ?? null;
 
   useEffect(() => () => stopAllMedia(), []);
-  const open = (id: string, fromNavigation = false) => { if (!fromNavigation) visitor.clearReturns(); if (openId && openId !== id) stopWindowMedia(openId); if (navigation) navigation.openId = id; setOpenId(id); setInlineEdit(false); if (editor) store.select(id); };
-  const back = () => { const closingId = openId; if (closingId) stopWindowMedia(closingId); const previous = visitor.back(openId); const returning = previous && visitor.windows.some((window) => window.id === previous.windowId) ? previous : null; if (navigation) navigation.openId = returning?.windowId ?? null; setOpenId(returning?.windowId ?? null); setInlineEdit(false); if (returning) restoreNavigationFocus(returning.focusKey, screenRef.current); else if (closingId) requestAnimationFrame(() => iconRefs.current.get(closingId)?.focus()); };
+  const open = (id: string, fromNavigation = false) => { if (!fromNavigation) visitor.clearReturns(); if (openId && openId !== id) stopWindowMedia(openId); if (navigation) navigation.openId = id; setOpenId(id); setInlineEdit(editor); if (editor) store.select(id); };
+  const back = () => { const closingId = openId; if (closingId) stopWindowMedia(closingId); const previous = visitor.back(openId); const returning = previous && visitor.windows.some((window) => window.id === previous.windowId) ? previous : null; if (navigation) navigation.openId = returning?.windowId ?? null; setOpenId(returning?.windowId ?? null); setInlineEdit(editor); if (returning) restoreNavigationFocus(returning.focusKey, screenRef.current); else if (closingId) requestAnimationFrame(() => iconRefs.current.get(closingId)?.focus()); };
   useEffect(() => {
     if (!openId) return;
     // preventDefault marks the key as handled, so a surrounding preview does not also close on the same Escape
@@ -94,11 +120,11 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
       // The author screen stays mounted behind preview; it must not consume
       // Escape before the active visitor screen receives the same event.
       if (screenRef.current?.closest("[inert], [hidden], [aria-hidden='true']")) return;
-      if (event.key === "Escape" && !event.defaultPrevented) { event.preventDefault(); back(); }
+      if (event.key === "Escape" && !event.defaultPrevented && !event.isComposing && !sheet) { event.preventDefault(); back(); }
     };
     globalThis.document.addEventListener("keydown", escape);
     return () => globalThis.document.removeEventListener("keydown", escape);
-  }, [openId]);
+  }, [openId, sheet]);
   // Resizing a phone viewport must not leave the active field behind an inner
   // scroll clip. Keep the mounted editor and its draft/focus; scroll only fields
   // belonging to this author screen, never a modal or the visitor preview.
@@ -130,19 +156,23 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   }, [editor]);
 
   const body = (
-    <div ref={screenRef} tabIndex={-1} className={`m-screen${editor ? ` ${authoring.screen}` : ""}`} style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: "center", fontFamily: tv.fontFamily, color: tv.text }}>
+    <div ref={screenRef} tabIndex={-1} onKeyDown={event=>{ if(!editor || sheet || event.defaultPrevented || event.nativeEvent.isComposing || (event.target as HTMLElement).closest("input,textarea,select,[contenteditable=true]"))return; if(event.key==="Escape" && arranging){event.preventDefault();setArranging(false);setRenaming(null);} else if((event.key==="Delete" || event.key==="Backspace") && arranging){const id=(event.target as HTMLElement).closest<HTMLElement>("[data-reorder-id]")?.dataset.reorderId;const window=ordered.find(window=>window.id===id);if(window){event.preventDefault();deleteIcon(window);}} else if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==="z"&&pendingDelete){event.preventDefault();event.stopPropagation();pendingDeleteRef.current=null;setPendingDelete(null);setToast(null);} }} className={`m-screen${editor ? ` ${authoring.screen}` : ""}`} style={{ backgroundColor: tv.wall, backgroundImage: tv.wallImageCss, backgroundSize: tv.wallSize, backgroundPosition: "center", fontFamily: tv.fontFamily, color: tv.text }}>
       {framed ? <div className="m-status" style={{ background: tv.face, color: tv.text, fontFamily }}><time dateTime={now.toISOString()} title={formatDate(now, { dateStyle: "full" })} aria-label={common("desktop.clockLabel", { time: clock })}>{clock}</time><span>5G ▮▮▮</span></div> : null}
       {/* One return path: while an app is open its own title bar is the only header (site options live in its menu). */}
       {!openWindow ? (
         <div className="m-titlebar" style={{ background: tv.titleBg, color: tv.titleText, fontFamily }}>
-          <Icon name="computer" size={20} />
-          <span className="m-site">{document.siteName}</span>
-          {editor ? <span className="m-badge">{t("mobile.editing")}</span> : <LanguageSwitcher compact />}
+          {editor && arranging ? <><strong className="grow">{t("mobileEditor.arrange")}</strong><div className="seg" role="group" aria-label={t("mobileEditor.iconColumns")}>{([3,4] as const).map(n=><button key={n} type="button" className="w98-btn" aria-pressed={document.mobileColumns===n} onClick={()=>store.setMobileColumns(n)}>{n}</button>)}</div><button type="button" className="w98-btn" onClick={()=>{setArranging(false);setRenaming(null);}}>{t("editor.done")}</button></> : <><Icon name="computer" size={20} />{editor ? <MobileTitleField className="m-site m-inline-title" aria-label={t("mobileEditor.siteName")} value={document.siteName} maxLength={120} onValueChange={name => store.setSiteName(name,"mobile-site-name")} /> : <span className="m-site">{document.siteName}</span>}{editor ? <span className="m-badge">{t("mobile.editing")}</span> : <LanguageSwitcher compact />}</>}
+
         </div>
       ) : null}
 
       <div className="m-stage">
         <div className="m-scroll">
+          {editor ? <LongPressReorderGrid items={ordered.filter(window=>window.id!==pendingDelete?.id)} columns={document.mobileColumns} arranging={arranging} revision={store.document} onArrangeStart={()=>setArranging(true)} onReorder={ids=>{ if(pendingDelete){flushDelete();setToast(null);} store.reorderMobileIds(ids); }} onOpen={id=>{if(arranging){const window=ordered.find(window=>window.id===id);if(window){setRenameDraft(window.title);setRenaming(id);}}else open(id);}} cellRef={(id,node)=>{if(node)iconRefs.current.set(id,node);else iconRefs.current.delete(id);}} label={t("mobileEditor.desktopIcons")} renderGhost={window=><Icon name={window.icon} size={40}/>} renderCell={window=><>
+            <span className="m-tile" style={{background:tv.tileBg,boxShadow:tv.tileShadow}}><Icon name={window.icon} size={40}/></span>
+            {renaming===window.id ? <InlineTextField autoFocus className="m-icon-rename" aria-label={t("mobileEditor.iconName")} value={renameDraft} maxLength={160} onPointerDown={e=>e.stopPropagation()} onValueChange={setRenameDraft} onBlur={()=>{if(renameDraft.trim())store.updateWindow(window.id,current=>({...current,title:renameDraft.trim()}));setRenaming(null);}} onKeyDown={e=>{e.stopPropagation();if(e.key==='Escape'){e.preventDefault();setRenaming(null);requestAnimationFrame(()=>iconRefs.current.get(window.id)?.focus());}else if(e.key==='Enter'&&!e.nativeEvent.isComposing){e.preventDefault();if(renameDraft.trim())store.updateWindow(window.id,current=>({...current,title:renameDraft.trim()}));setRenaming(null);requestAnimationFrame(()=>iconRefs.current.get(window.id)?.focus());}}}/> : <span className="m-label" style={resolveDesktopLabelAppearance(theme,window.appearance)}>{window.title}</span>}
+            {arranging && renaming!==window.id ? <button type="button" className="m-icon-delete w98-btn" aria-label={t("mobileEditor.deleteNamed",{title:window.title})} onPointerDown={e=>e.stopPropagation()} onClick={e=>{e.stopPropagation();deleteIcon(window);}}>×</button>:null}
+          </>} /> : (
           <div className="mobile-icons m-grid" style={{ gridTemplateColumns: `repeat(${document.mobileColumns}, minmax(0, 1fr))` }}>
             {ordered.map((window) => (
               <button key={window.id} ref={(node) => { if (node) iconRefs.current.set(window.id, node); else iconRefs.current.delete(window.id); }} type="button" className="m-icon" data-window-id={window.id} aria-label={window.title} style={{ outline: editor && store.selectedId === window.id ? `2px dotted ${tv.text}` : "none" }} onClick={() => open(window.id)}>
@@ -151,6 +181,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
               </button>
             ))}
           </div>
+          )}
           {ordered.length === 0 ? (
             <div className="m-empty w98-window" style={{ fontFamily }}><strong>{t("mobile.emptyTitle")}</strong><span>{t(editor ? "mobile.emptyEditor" : "mobile.emptyVisitor")}</span></div>
           ) : null}
@@ -169,8 +200,11 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
               controlLabels={{ close: common("actions.close") }}
               onClose={back}
               titleBarLeading={<WindowChromeButton className="m-btn m-back" onClick={back}>‹ {visitor.hasReturn ? common("auth.back") : t("mobile.desktop")}</WindowChromeButton>}
+              slots={editor ? { titleBar: props => <div {...props.titleBarProps} className="retro-titlebar m-inline-titlebar">
+                <WindowChromeButton className="m-btn m-back" onClick={back}>‹ {t("mobile.desktop")}</WindowChromeButton><Icon name={openWindow.icon} size={16}/><MobileTitleField className="m-inline-title" aria-label={t("mobileEditor.windowTitle")} value={openWindow.title} maxLength={160} onValueChange={title=>{if(title.trim())store.updateWindow(openWindow.id,current=>({...current,title}),`mt${openWindow.id}`);}}/><WindowChromeButton ref={contentEditButton} className="m-btn m-window-settings" aria-label={t("mobile.editWindowTitle")} aria-expanded={sheet==="edit"} onClick={()=>setSheet("edit")}>⋯</WindowChromeButton>
+              </div> } : undefined}
               titleBarTrailing={editor
-                ? <WindowChromeButton ref={contentEditButton} className="m-btn m-edit-toggle" aria-pressed={inlineEdit} onClick={() => setInlineEdit(!inlineEdit)}>{t(inlineEdit ? "mobile.finishEditing" : "mobile.editWindow")}</WindowChromeButton>
+                ? <WindowChromeButton ref={isFramelessImage(openWindow) ? contentEditButton : undefined} className="m-btn m-window-settings" aria-label={t("mobile.editWindowTitle")} aria-expanded={sheet === "edit"} onClick={() => setSheet("edit")}>⋯</WindowChromeButton>
                 : <MobileSiteMenu label={t("mobile.siteMenu")} playing={music.windowId === openWindow.id && music.status === "playing"} playingLabel={musicText("playback.playing")} />}
             >
               <WindowRenderer
@@ -213,54 +247,28 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
         ) : null}
       </div>
 
-      {!editor ? null : (
-        <div className="m-toolbar" role="toolbar" aria-label={t("mobile.toolbar")} style={{ fontFamily, gridTemplateColumns: `repeat(${selected ? 5 : 4}, minmax(0, 1fr))` }}>
-          {([
-            ["add", "folder"], ...(selected ? [["icon", "photo"] as const] : []), ["edit", "doc"], ["theme", "palette"], ["preview", "star"]
-          ] as const).map(([id, icon]) => (
-            <button key={id} type="button" className="m-tool" aria-pressed={sheet === id} onClick={() => { if (id === "preview") onPreview?.(); else setSheet(sheet === id ? null : id); }}>
-              <Icon name={icon} size={22} />{id === "icon" ? t("rightPanel.icon") : t(`mobile.${id}`)}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {editor && sheet === "add" ? <AddWindowDialog onClose={() => setSheet(null)} onAdd={type => {
-        const previous = useEditorStore.getState().selectedId;
-        store.addWindow(type);
-        const id = useEditorStore.getState().selectedId;
-        setSheet(null);
-        if (id && id !== previous) {
-          open(id);
-          setInlineEdit(true);
-          requestAnimationFrame(() => contentEditButton.current?.focus({ preventScroll: true }));
-        }
-      }} /> : null}
-      {editor && sheet && sheet !== "add" ? (
-        <ModalDialog title={t(({ icon: "rightPanel.icon", edit: "mobile.editWindowTitle", theme: "mobile.theme" } as const)[sheet])} className="m-sheet" bodyClassName="m-sheet-body" width={520} onClose={() => setSheet(null)} actions={<button type="button" className="w98-btn primary" onClick={() => setSheet(null)}>{t("editor.done")}</button>}>
-          {sheet === "edit" && openWindow ? (
-            <button type="button" className="w98-btn m-return-content" onClick={() => {
-              // Keep the content editor mounted and preserve its mode, local drafts and scroll.
-              setSheet(null);
-              requestAnimationFrame(() => contentEditButton.current?.focus({ preventScroll: true }));
-            }}>{t("mobile.returnToContent", { title: openWindow.title })}</button>
-          ) : sheet === "edit" && selected ? <p className="w98-hint">{t("mobile.openWindowForContent")}</p> : null}
-          {sheet === "icon" && selected ? <IconPicker key={selected.id} siteId={siteId} value={selected.icon} upload={upload} mediaTarget={{ windowId: selected.id, windowType: selected.type }} size={28} label={selected.title} defaultValue={makeWindow(selected.type).icon} onChange={icon => store.updateWindow(selected.id, window => ({ ...window, icon }))} /> : null}
-          {sheet === "theme" ? <ThemeAppearanceEditor theme={document.theme} previewTheme={store.themePreview} onPreviewTheme={store.setThemePreview} onTheme={store.setTheme} upload={upload} /> : null}
-          {sheet === "edit" ? (
-            selected ? <MobileEdit key={selected.id} theme={theme} window={selected} count={ordered.length} siteId={siteId} upload={upload} /> : <span className="m-note">{t("mobileScreen.clickAnIconOnThe")}</span>
-          ) : null}
-          {sheet === "edit" ? (
-            <>
-              <div className="w98-field"><span className="w98-hint">{t("mobileEditor.iconColumns")}</span>
-                <div className="seg">{([3, 4] as const).map((count) => <button key={count} type="button" className={"w98-btn grow" + (document.mobileColumns === count ? " on" : "")} onClick={() => store.setMobileColumns(count)}>{t("layout.columnCount", { count })}</button>)}</div>
-              </div>
-              <label className="check-row m-check"><input type="checkbox" checked={store.versionedDocument?.seo?.indexing ?? true} onChange={(event) => store.setSeoIndexing(event.target.checked)} />{t("rightPanel.allowSearchEnginesToIndex")}</label>
-              <span className="w98-hint">{t("mobileScreen.turningThisOffOnlyOutputs")}</span>
-            </>
-          ) : null}
-        </ModalDialog>
-      ) : null}
+      {editor && !openWindow ? <>
+        <EditorStatusBar message={t(arranging ? "mobileEditor.arrangeHint" : "mobileEditor.homeHint")} count={t("mobileEditor.windowCount",{count:ordered.length-(pendingDelete?1:0)})} tv={tv} mobile />
+        {!arranging ? <div className="m-toolbar" role="toolbar" aria-label={t("mobile.toolbar")} style={{gridTemplateColumns:"repeat(4,minmax(0,1fr))"}}>
+          {([['add','folder'],['arrange','doc'],['theme','palette'],['preview','star']] as const).map(([id,icon])=><button key={id} type="button" className="m-tool" aria-pressed={sheet===id} onClick={()=>{if(id==='preview')onPreview?.();else if(id==='arrange')setArranging(true);else setSheet(id);}}><Icon name={icon} size={22}/>{id==='arrange'?t('mobileEditor.arrange'):t(`mobile.${id}`)}</button>)}
+        </div>:null}
+      </>:null}
+      {editor ? <BottomSheet open={sheet==='add'} title={t('authoring.add')} onClose={()=>setSheet(null)}>
+        <AddWindowCatalog onAdd={type=>{const before=useEditorStore.getState().selectedId;store.addWindow(type);const id=useEditorStore.getState().selectedId;setSheet(null);if(id && id!==before){open(id);setToast({id:crypto.randomUUID(),message:t('mobileEditor.added')});requestAnimationFrame(()=>screenRef.current?.querySelector<HTMLInputElement>('.m-inline-titlebar input')?.focus());}}}/>
+      </BottomSheet>:null}
+      {editor ? <BottomSheet open={sheet==='theme'} title={t('mobile.theme')} onClose={()=>setSheet(null)} actions={<button type="button" className="w98-btn" onClick={()=>setSheet(null)}>{t('editor.done')}</button>}>
+        <div className="mobile-quick-theme"><strong>{t('themeAppearanceEditor.wallpaper')}</strong><div className="mobile-wall-swatches">{['#008080','#ffd6e5','#c9b8f0','#a8e0cf','#9fd8f5','#ffe9b3','#1d1a3a','#c0c0c0'].map((wall,index)=><button key={wall} type="button" className="w98-btn" aria-label={t('mobileEditor.wallColor',{number:index+1})} aria-pressed={document.theme.wall===wall} style={{backgroundColor:wall}} onClick={()=>store.setTheme({...document.theme,wall,pattern:"none",wallImage:null})}/>)}</div><strong>{t('mobileEditor.titleColors')}</strong><div className="mobile-title-swatches">{[['#000080','#1084d0'],['#5b3fa8','#b39ddb'],['#1f7a5c','#5fbf9a'],['#bf360c','#ff8a65'],['#000000','#808080']].map(([titleFrom,titleTo],index)=><button key={titleFrom} type="button" className="w98-btn" aria-label={t('mobileEditor.titleColor',{number:index+1})} aria-pressed={document.theme.titleFrom===titleFrom} style={{background:`linear-gradient(90deg,${titleFrom},${titleTo})`}} onClick={()=>store.setTheme({...document.theme,titleFrom,titleTo})}/>)}</div></div>
+        <details><summary>{t('mobileEditor.moreThemeOptions')}</summary><label className="check-row m-check"><input type="checkbox" checked={store.versionedDocument?.seo?.indexing ?? true} onChange={event=>store.setSeoIndexing(event.target.checked)}/>{t('rightPanel.allowSearchEnginesToIndex')}</label><span className="w98-hint">{t('mobileScreen.turningThisOffOnlyOutputs')}</span><ThemeAppearanceEditor theme={document.theme} previewTheme={store.themePreview} onPreviewTheme={store.setThemePreview} onTheme={store.setTheme} upload={upload}/></details>
+      </BottomSheet>:null}
+      {editor ? <BottomSheet open={sheet==='edit'} title={t('mobile.editWindowTitle')} onClose={()=>setSheet(null)} actions={<button type="button" className="w98-btn" onClick={()=>setSheet(null)}>{t('editor.done')}</button>}>
+        {selected ? <>
+          <IconPicker key={selected.id} siteId={siteId} value={selected.icon} upload={upload} mediaTarget={{windowId:selected.id,windowType:selected.type}} size={28} label={selected.title} defaultValue={makeWindow(selected.type).icon} onChange={icon=>store.updateWindow(selected.id,window=>({...window,icon}))}/>
+          <label className="check-row m-check"><input type="checkbox" checked={selected.defaultOpen} onChange={e=>store.updateWindow(selected.id,window=>({...window,defaultOpen:e.target.checked}))}/>{t('mobileEditor.openByDefaultWhenVisitors')}</label>
+          <button type="button" className="w98-btn danger" onClick={()=>deleteIcon(selected)}>{t('inspectorContent.delete')}</button>
+          <details><summary>{t('mobileEditor.moreWindowOptions')}</summary><MobileEdit theme={theme} window={selected} count={ordered.length} siteId={siteId} upload={upload}/></details>
+        </>:null}
+      </BottomSheet>:null}
+      {editor && toast ? <UndoToast key={toast.id} message={toast.message} hidden={!!sheet} onUndo={pendingDelete ? ()=>{pendingDeleteRef.current=null;setPendingDelete(null);setToast(null);requestAnimationFrame(()=>iconRefs.current.get(pendingDelete.id)?.focus());}:undefined} onExpire={()=>{flushDelete();setToast(null);}}/>:null}
     </div>
   );
 
@@ -274,17 +282,12 @@ function MobileEdit({ theme, window, count, siteId, upload }: { theme: SiteDocum
   const patch = (change: Partial<DesktopWindow>, key?: string) => store.updateWindow(window.id, (current) => ({ ...current, ...change }) as DesktopWindow, key);
   return (
     <>
-      <label className="w98-field"><span className="w98-hint">{tr("mobileEditor.windowTitle")}</span><input className="w98-input m-input" value={window.title} onChange={(event) => patch({ title: event.target.value }, "mt" + window.id)} /></label>
       <WindowChromeEditor theme={theme} window={window} onChange={(chrome) => patch({ chrome })} />
       <WindowAppearanceEditor theme={theme} window={window} onChange={(appearance, historyKey) => patch({ appearance }, historyKey)} />
-      <span className="w98-hint">{tr("rightPanel.icon")}</span>
-      <IconPicker key={window.id} siteId={siteId} value={window.icon} upload={upload} mediaTarget={{ windowId: window.id, windowType: window.type }} size={28} label={window.title} defaultValue={makeWindow(window.type).icon} onChange={(icon) => patch({ icon })} />
-      <label className="check-row m-check"><input type="checkbox" checked={window.defaultOpen} onChange={(event) => patch({ defaultOpen: event.target.checked })} />{tr("mobileEditor.openByDefaultWhenVisitors")}</label>
       <div className="m-actions">
         <button type="button" className="w98-btn" disabled={window.layout.mobile.order === 0} onClick={() => store.reorderMobile(window.id, -1)}>{tr("mobileScreen.moveIconEarlier")}</button>
         <button type="button" className="w98-btn" disabled={window.layout.mobile.order >= count - 1} onClick={() => store.reorderMobile(window.id, 1)}>{tr("mobileScreen.moveIconLater")}</button>
         <button type="button" className="w98-btn" onClick={() => store.duplicateWindow(window.id)}>{tr("mobileScreen.duplicate")}</button>
-        <button type="button" className="w98-btn danger" onClick={() => store.deleteWindow(window.id)}>{tr("inspectorContent.delete")}</button>
       </div>
     </>
   );
@@ -320,4 +323,11 @@ function MobileSiteMenu({ label, playing, playingLabel }: { label: string; playi
       {open ? <div className="m-site-panel w98-window" role="group" aria-label={label}><LanguageSwitcher /></div> : null}
     </span>
   );
+}
+
+/** A temporarily blank required title is a local draft, not an invalid document. */
+function MobileTitleField(props: Parameters<typeof InlineTextField>[0]) {
+  const [draft, setDraft] = useState(String(props.value ?? ""));
+  useEffect(() => setDraft(String(props.value ?? "")), [props.value]);
+  return <InlineTextField {...props} value={draft} onKeyDown={event => { props.onKeyDown?.(event); if(event.defaultPrevented || event.nativeEvent.isComposing)return; if(event.key==="Escape" || event.key==="Enter" && !draft.trim()){event.preventDefault();event.stopPropagation();setDraft(String(props.value ?? ""));} }} onValueChange={value => { setDraft(value); if(value.trim()) props.onValueChange?.(value); }} />;
 }

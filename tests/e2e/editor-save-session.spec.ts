@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Page } from '@playwright/test';
 import { makeWindow, migrateSiteDocumentV2, normalizeDocument } from '../../packages/shared/src';
 import { documentFixture } from './fixture';
@@ -89,7 +90,7 @@ async function openAbout(page: Page, width = 1280) {
   await expect(page.locator('.editor-topbar')).toBeVisible();
   if (width < 768) {
     await page.getByRole('button', { name: 'About.exe', exact: true }).click();
-    await page.getByRole('button', { name: '編輯內容', exact: true }).click();
+    await enterContentEditor(page);
   }
   await expect(page.getByLabel('簡介', { exact: true })).toBeVisible();
 }

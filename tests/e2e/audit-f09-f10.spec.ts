@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Page, type Route } from "@playwright/test";
 import { makeWindow, type SiteDocument } from "@retrodesk/shared";
 import { documentFixture } from "./fixture";
@@ -26,7 +27,7 @@ async function openGame(page: Page, mobile: boolean) {
   await page.goto("/editor/site-1");
   if (mobile) {
     await page.getByRole("button", { name: "Minesweeper.exe", exact: true }).click();
-    await page.getByRole("button", { name: "編輯內容" }).click();
+    await enterContentEditor(page);
   }
   const dialog = page.getByRole("dialog", { name: "Minesweeper.exe" });
   await expect(dialog.getByRole("spinbutton", { name: "列", exact: true })).toBeVisible();

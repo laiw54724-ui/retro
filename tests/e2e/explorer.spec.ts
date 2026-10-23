@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { makeWindow, migrateSiteDocumentV2, projectPublicSiteDocument, type SiteDocument } from "@retrodesk/shared";
 import { documentFixture } from "./fixture";
@@ -28,7 +29,7 @@ async function openEditor(page: Page, draftDocument = explorerDocument(), viewpo
   await page.goto("/editor/site-1");
   if (viewport.width < 768) {
     await page.locator(".m-icon").getByText("World.exe", { exact: true }).click();
-    await page.getByRole("button", { name: "編輯內容", exact: true }).click();
+    await enterContentEditor(page);
   }
   const dialog = page.getByRole("dialog", { name: "World.exe" });
   await expect(dialog).toBeVisible();
@@ -406,7 +407,7 @@ test("phone editor: a tap opens an item, and select mode exposes a 44px action b
   const { saves } = await openEditor(page, withContent([F("chars", null, "角色")], [S("link", null, "主角設定")]), { width: 1440, height: 900 }).then(async (ctx) => { await page.getByRole("button", { name: "手機版" }).click(); return ctx; });
   const phone = page.locator(".visitor-mobile.framed");
   await phone.getByRole("button", { name: "World.exe", exact: true }).click();
-  await phone.getByRole("button", { name: "編輯內容" }).click();
+  await enterContentEditor(page, phone);
   await phone.getByRole("button", { name: "選取項目" }).click();
   await editorTile(phone, "主角設定").locator(".explorer-open").click();
   const more = phone.getByRole("button", { name: "項目操作" });
@@ -479,7 +480,7 @@ test("320px author redirects an OC shortcut to an exact post, then tests it in v
   const { saves } = await openEditor(page, document as unknown as SiteDocument);
   await page.setViewportSize({ width: 320, height: 844 });
   await page.locator(".m-icon").getByText("World.exe", { exact: true }).click();
-  await page.getByRole("button", { name: "編輯內容", exact: true }).click();
+  await enterContentEditor(page);
   const world = page.getByRole("dialog", { name: "World.exe", exact: true });
   await world.getByRole("button", { name: "選取項目" }).click();
   await editorTile(world, "主角").locator(".explorer-open").click();
@@ -549,7 +550,7 @@ test("phone editor: deleting a window that shortcuts point at asks first and fit
   await page.setViewportSize({ width: 390, height: 800 });
   await page.goto("/editor/site-1");
   await page.getByRole("button", { name: "角色設定.txt", exact: true }).click();
-  await page.getByRole("button", { name: "編輯內容" }).click();
+  await enterContentEditor(page);
   await page.getByRole("button", { name: "完成" }).click();
   await page.locator(".m-toolbar").getByRole("button", { name: "視窗設定" }).click();
   await page.getByRole("button", { name: "刪除", exact: true }).click();

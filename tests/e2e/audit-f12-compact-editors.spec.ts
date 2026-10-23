@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Page, type Locator } from "@playwright/test";
 import { makeWindow, migrateSiteDocumentV2, normalizeDocument } from "@retrodesk/shared";
 import { documentFixture } from "./fixture";
@@ -36,7 +37,7 @@ async function setup(page: Page, kind: Kind, width: number, publicOnly = false) 
   await page.goto(publicOnly ? "/@demo" : "/editor/site-1");
   if (width < 768) {
     await page.getByRole("button", { name: win.title, exact: true }).click();
-    if (!publicOnly) await page.getByRole("button", { name: "編輯內容", exact: true }).click();
+    if (!publicOnly) await enterContentEditor(page);
   }
   const surface = publicOnly ? page.locator(width < 768 ? ".visitor-mobile" : ".visitor-desktop") : page.locator("main");
   const dialog = surface.getByRole("dialog", { name: win.title, exact: true });

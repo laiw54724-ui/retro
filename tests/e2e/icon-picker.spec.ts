@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Page } from "@playwright/test";
 import { createAssetReference, makeWindow, migrateSiteDocumentV2, type SiteDocument } from "@retrodesk/shared";
 import { documentFixture, mockWindowsIconPack } from "./fixture";
@@ -285,9 +286,9 @@ for (const width of [320, 390]) {
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/editor/site-1");
     await page.getByRole("button", { name: "About.exe", exact: true }).click();
-    await page.getByRole("button", { name: "編輯內容" }).click();
+    await enterContentEditor(page);
     await page.getByRole("button", { name: "完成" }).click();
-    await page.locator(".m-toolbar").getByRole("button", { name: "視窗設定" }).click();
+    await page.getByRole("button", { name: "視窗設定", exact: true }).click();
     await page.getByRole("button", { name: "更換圖示…" }).click();
     const dialog = page.getByRole("dialog", { name: "選擇圖示" });
     await expect(dialog.locator(".ilib-grid .ilib-tile").first()).toBeVisible();

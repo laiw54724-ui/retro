@@ -6,14 +6,14 @@
 .link-destination, .links-editor-empty { margin:0; font-size:12px; line-height:1.5; overflow-wrap:anywhere; color:#404040; }
 .link-destination.is-problem { color:#842019; }
 .link-public-item > .link-destination { padding:4px 2px; }
-.links-inline-v2 { position:relative; display:flex; flex-direction:column; height:100%; min-height:0; overflow:hidden; color:#000; font-size:14px; }
+.links-inline-v2 { box-sizing:border-box; position:relative; display:flex; flex-direction:column; height:100%; min-height:0; overflow:hidden; color:#000; font-size:14px; }
 .link-paste-bar { flex:none; display:flex; flex-direction:column; gap:3px; padding:6px; background:#ffffe1; border-bottom:1px solid #000; font-size:12px; }
 .link-paste-bar > label { font-weight:700; }
 .link-paste-bar > div { display:flex; gap:4px; }
 .link-paste-input { flex:1; min-width:0; min-height:28px; padding:2px 8px; border:0; background:#fff; color:#000; box-shadow:var(--links-sunken); font:inherit; }
 .link-paste-bar button { flex:none; min-height:28px; padding:0 12px; border:1px solid #000; background:#000080; color:#fff; font:inherit; font-weight:700; cursor:pointer; }
 .link-paste-bar button:disabled { opacity:.6; cursor:default; }
-.link-editor-list { flex:1; min-height:0; overflow:auto; margin:4px; padding:10px 8px; background:#fff; box-shadow:var(--links-sunken); display:flex; flex-direction:column; gap:8px; }
+.link-editor-list { flex:1; min-width:0; min-height:0; overflow-y:auto; overflow-x:hidden; margin:4px; padding:10px 8px; background:#fff; box-shadow:var(--links-sunken); display:flex; flex-direction:column; gap:8px; }
 .link-editor-card { min-width:0; flex:none; display:flex; flex-direction:column; gap:3px; }
 .link-editor-line { display:flex; align-items:center; gap:4px; min-width:0; }
 .links-inline-v2 .link-tile.edit { flex:1; min-width:0; display:flex; align-items:center; gap:8px; padding:6px 8px 6px 6px; min-height:44px; }

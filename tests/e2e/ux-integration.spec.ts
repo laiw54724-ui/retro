@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test } from "@playwright/test";
 import { createStarterDocument, makeWindow, migrateSiteDocumentV2 } from "@retrodesk/shared";
 
@@ -36,7 +37,7 @@ for (const width of [320, 390, 430]) {
       });
       await page.goto("/editor/combined");
       await page.getByRole("button", { name: "Minesweeper.exe", exact: true }).tap();
-      await page.getByRole("button", { name: "編輯內容", exact: true }).tap();
+      await enterContentEditor(page);
       const rows = page.getByRole("spinbutton", { name: "列", exact: true });
       const status = page.locator(".save-text");
       await rows.fill("10");

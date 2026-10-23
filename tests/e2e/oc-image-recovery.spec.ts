@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Page } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import { createAssetReference, duplicateProfile, migrateSiteDocumentV2 } from "../../packages/shared/src";
@@ -29,7 +30,7 @@ async function open(page: Page, width = 1400) {
     return route.fulfill({ json: { asset } });
   });
   await page.setViewportSize({ width, height: 950 }); await page.goto("/editor/site-1");
-  if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯內容" }).click(); }
+  if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await enterContentEditor(page); }
   const win = page.getByRole("dialog", { name: "Instagram.exe", exact: true });
   await expect(win.getByRole("textbox", { name: "Handle", exact: true })).toBeVisible();
   return { win, calls, assets, saved: () => saved, profile: (id = "profile:ig") => saved.entities.profiles.find((p) => p.id === id)!, release: (name: string) => { const done = held.get(name); if (!done) throw new Error("not held"); held.delete(name); done(); } };

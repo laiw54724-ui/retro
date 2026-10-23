@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Page } from "@playwright/test";
 import { createStarterDocument, makeGalleryImage, makeWindow, migrateSiteDocumentV2 } from "../../packages/shared/src";
 
@@ -47,15 +48,17 @@ for (const width of [320, 375, 390, 430, 1440]) {
     await dialog.getByRole('button', { name: /^文件視窗/ }).click();
     await expect(dialog).toHaveCount(0);
     if (width < 768) {
-      await expect(page.locator('.m-edit-toggle')).toHaveAttribute('aria-pressed', 'true');
+      await expect(page.locator('.m-window-settings')).toBeVisible();
+      await expect(page.locator('.m-edit-toggle')).toHaveCount(0);
       await expect(page.locator('.m-win-body textarea').first()).toBeVisible();
-      const icon = page.locator('.m-toolbar').getByRole('button', { name: '圖示', exact: true });
+      const icon = page.getByRole('button', { name: '視窗設定', exact: true });
       await icon.click();
-      await expect(page.getByRole('dialog', { name: '圖示', exact: true })).toBeVisible();
-      await expect(page.getByLabel('視窗標題', { exact: true })).toHaveCount(0);
+      await expect(page.getByRole('dialog', { name: '視窗設定', exact: true })).toBeVisible();
+      await expect(page.getByLabel('視窗標題', { exact: true })).toHaveValue(/.+/);
       await page.keyboard.press('Escape');
       await expect(icon).toBeFocused();
-      await expect(page.locator('.m-edit-toggle')).toHaveAttribute('aria-pressed', 'true');
+      await expect(page.locator('.m-window-settings')).toBeVisible();
+      await expect(page.locator('.m-edit-toggle')).toHaveCount(0);
     } else {
       const toolbar = page.getByRole('toolbar', { name: '已選取元件操作' });
       await expect(toolbar).toBeVisible();
@@ -130,8 +133,9 @@ for (const [locale, addLabel, iconLabel] of [['en', 'Add', 'Icon']]) {
     await add.click();
     const dialog = page.getByRole('dialog', { name: locale === 'en' ? 'Add component' : locale === 'ja' ? 'コンポーネントを追加' : '구성 요소 추가', exact: true });
     await dialog.locator('.add-card').nth(1).click();
-    await expect(page.locator('.m-edit-toggle')).toHaveAttribute('aria-pressed', 'true');
-    for (const button of await page.locator('.m-toolbar button').all()) {
+    await expect(page.locator('.m-window-settings')).toBeVisible();
+      await expect(page.locator('.m-edit-toggle')).toHaveCount(0);
+    for (const button of await page.locator('.m-inline-titlebar button').all()) {
       await expect(button).toBeInViewport({ ratio: 1 });
       expect((await button.boundingBox())!.width).toBeGreaterThanOrEqual(44);
       expect(await button.evaluate(element => {
@@ -143,7 +147,7 @@ for (const [locale, addLabel, iconLabel] of [['en', 'Add', 'Icon']]) {
         });
       })).toBe(true);
     }
-    await expect(page.locator('.m-toolbar').getByRole('button', { name: iconLabel, exact: true })).toBeVisible();
+    await expect(page.locator('.m-window-settings')).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
     await page.screenshot({ path: test.info().outputPath(`phone-${locale}-320.png`) });
   });
@@ -193,12 +197,14 @@ test('adding the same module type does not carry unfinished input into the new w
   await page.setViewportSize({ width: 390, height: 844 });
   await fixture(page);
   await page.locator('.m-icon').click();
-  await page.locator('.m-edit-toggle').click();
+  await enterContentEditor(page);
   await page.locator('.gal-editor-toolbar button[aria-expanded]').click();
   await page.getByLabel('新增圖片網址', { exact: true }).fill('https://unfinished-old-window');
+  await page.locator('.m-back').click();
   await page.locator('.m-toolbar').getByRole('button', { name: '新增', exact: true }).click();
   await page.getByRole('dialog', { name: '新增元件', exact: true }).getByRole('button', { name: /^相簿視窗/ }).click();
-  await expect(page.locator('.m-edit-toggle')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.m-window-settings')).toBeVisible();
+      await expect(page.locator('.m-edit-toggle')).toHaveCount(0);
   await page.locator('.gal-editor-toolbar button[aria-expanded]').click();
   await expect(page.getByLabel('新增圖片網址', { exact: true })).toHaveValue('');
   await expect(page.locator('.m-icon')).toHaveCount(2);

@@ -244,3 +244,16 @@ describe("explorer shortcut integrity in the editor store", () => {
     expect(useEditorStore.getState().document?.windows.some((window) => window.id === "free")).toBe(false);
   });
 });
+
+
+describe("mobile handoff atomic reorder",()=>{
+ it("commits all IDs once, rejects incomplete/stale orders and preserves canonical entities through Undo",()=>{
+  const {legacy,versioned}=profileFixture();const second=makeWindow("links");second.id="second";second.layout.mobile.order=1;legacy.windows.push(second);versioned.windows.push(structuredClone(second));
+  const store=useEditorStore.getState();store.setSite("site-a","alice",legacy,1,null,null,"owner");store.setVersionedDocument(versioned);
+  const before=useEditorStore.getState();const ids=legacy.windows.map(window=>window.id);
+  store.reorderMobileIds(["missing",ids[0]]);store.reorderMobileIds([ids[0]]);store.reorderMobileIds([ids[0],ids[0]]);
+  expect(useEditorStore.getState().versionedDocument).toBe(before.versionedDocument);expect(useEditorStore.getState().past).toHaveLength(0);
+  store.reorderMobileIds([...ids].reverse());const after=useEditorStore.getState();expect(after.past).toHaveLength(1);expect(after.versionedDocument?.entities).toEqual(versioned.entities);expect(after.document?.windows.find(window=>window.id==="second")?.layout.mobile.order).toBe(0);
+  store.undo();expect(useEditorStore.getState().versionedDocument).toEqual(before.versionedDocument);store.redo();expect(useEditorStore.getState().versionedDocument).toEqual(after.versionedDocument);
+ });
+});

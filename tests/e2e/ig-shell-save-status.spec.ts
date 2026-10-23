@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Page } from '@playwright/test';
 import { migrateSiteDocumentV2 } from '../../packages/shared/src';
 import { igDocument } from './ig-fixture';
@@ -30,7 +31,7 @@ async function fixture(page: Page, width: number) {
   });
   await page.goto('/editor/ig-status');
   await page.getByRole('button', { name: 'Instagram.exe', exact: true }).click();
-  await page.getByRole('button', { name: '編輯內容', exact: true }).click();
+  await enterContentEditor(page);
   const win = page.getByRole('dialog', { name: 'Instagram.exe', exact: true });
   const handle = win.getByRole('textbox', { name: 'Handle', exact: true });
   await expect(handle).toHaveValue('retro');
@@ -45,7 +46,7 @@ for (const width of [320, 390, 430]) test(`local IG input qualifies saved after 
   await expect(status).toHaveClass(/dirty/);
   await state.win.getByRole('button', { name: '完成', exact: true }).click();
   await expect(status).toBeVisible(); await expect(status).toHaveText('有欄位未完成，暫不儲存');
-  await state.win.getByRole('button', { name: '編輯內容', exact: true }).click();
+  await enterContentEditor(page, state.win);
   await expect(state.handle).toHaveValue(''); await expect(state.handle).toHaveAttribute('aria-invalid', 'true');
   await expect(status).toHaveText('有欄位未完成，暫不儲存');
   expect(state.saves()).toBe(0);
@@ -71,6 +72,6 @@ test('local pending input does not mask saving/error/retry and becomes saved aft
   await expect(status).toHaveText('已儲存');
   expect(state.saves()).toBe(3);
   await state.win.getByRole('button', { name: '完成', exact: true }).click();
-  await state.win.getByRole('button', { name: '編輯內容', exact: true }).click();
+  await enterContentEditor(page, state.win);
   await expect(state.handle).toHaveValue('finished'); await expect(status).toHaveText('已儲存');
 });

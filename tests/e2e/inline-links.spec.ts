@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Page } from "@playwright/test";
 import { createStarterDocument, makeLink, makeWindow, migrateSiteDocumentV2 } from "../../packages/shared/src";
 
@@ -25,7 +26,7 @@ async function fixture(page: Page, width = 1440) {
   await page.goto("/editor/inline");
   if (width < 768) {
     await page.locator(".m-icon").getByText("Links.exe", { exact: true }).click();
-    await page.locator(".m-edit-toggle").click();
+    await enterContentEditor(page);
   } else {
     await page.getByRole("dialog", { name: "Links.exe", exact: true }).getByLabel("貼上網址，自動做成按鈕").click();
   }
@@ -174,7 +175,7 @@ test("direct mobile blank add keeps Escape inside the editor and back discards t
   await page.locator(".m-icon").getByText("About.exe", { exact: true }).click();
   await page.locator(".m-back").click();
   await page.locator(".m-icon").getByText("Links.exe", { exact: true }).click();
-  await page.locator(".m-edit-toggle").click();
+  await enterContentEditor(page);
   await first.locator(".link-destination-trigger").click();
   await expect(field).not.toHaveValue("https://example.com/unsubmitted");
   const win = saved().windows.find(win => win.id === "links");
