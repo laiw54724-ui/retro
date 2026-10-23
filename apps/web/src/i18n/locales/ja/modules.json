@@ -571,6 +571,8 @@
     "whenOffTheServerRejects": "オフにするとサーバーは新しいメッセージを受け付けません。承認済みのメッセージは保持され、オンに戻すと再び表示されます。",
     "messageModerationList": "メッセージ審査リスト",
     "approve": "承認",
+    "hide": "非表示",
+    "keyboardHint": "メッセージを選択：A 承認 · H 非表示 · Delete 削除",
     "reject": "拒否",
     "reportHandled": "報告を処理済み",
     "noMessagesYet": "メッセージはまだありません。",

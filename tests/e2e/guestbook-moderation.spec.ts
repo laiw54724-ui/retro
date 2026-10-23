@@ -71,7 +71,7 @@ test("owner filters real queue rows, retries a failed read, and locks only the a
   await expect(pending).toContainText("待審");
   await pending.getByRole("button", { name: "核准" }).click();
   await expect(pending.getByRole("button", { name: "核准" })).toBeDisabled();
-  await expect(pending.getByRole("button", { name: "拒絕" })).toBeDisabled();
+  await expect(pending.getByRole("button", { name: "隱藏" })).toBeDisabled();
   await expect(pending.getByRole("button", { name: "刪除" })).toBeDisabled();
   await expect(queue.locator("article", { hasText: "Public visitor" }).getByRole("button", { name: "刪除" })).toBeEnabled();
   expect(actions).toBe(2);
@@ -79,6 +79,65 @@ test("owner filters real queue rows, retries a failed read, and locks only the a
   await expect(pending).toContainText("已公開");
   await queue.getByRole("button", { name: "待審", exact: true }).click();
   await expect(queue.locator("article")).toHaveCount(1);
+});
+
+test("focused moderation card supports A, H and Delete without leaking actions from other controls", async ({ page }) => {
+  await owner(page);
+  let rows = [entry(1, "Keyboard visitor", "pending")];
+  const requests: Array<{ method: string; status?: string }> = [];
+  await page.route("**/api/sites/site-1/guestbook", (route) => route.fulfill({ json: { entries: rows } }));
+  await page.route(`**/api/sites/site-1/guestbook/${id(1)}`, async (route) => {
+    const method = route.request().method();
+    const status = method === "PUT" ? route.request().postDataJSON().status as string : undefined;
+    requests.push({ method, status });
+    if (method === "DELETE") { rows = []; return route.fulfill({ status: 204, body: "" }); }
+    rows = [{ ...rows[0], status: status as "approved" | "rejected" }];
+    return route.fulfill({ json: { entry: rows[0] } });
+  });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/editor/site-1");
+  const queue = page.getByRole("dialog", { name: "Guestbook.exe" }).locator(".guestbook-moderation");
+  const card = queue.locator("article", { hasText: "Keyboard visitor" });
+  await expect(card).toBeVisible();
+  await card.getByRole("button", { name: "核准" }).focus();
+  await page.keyboard.press("h");
+  expect(requests).toHaveLength(0);
+  await card.focus(); await page.keyboard.press("a");
+  await expect(card).toContainText("已公開");
+  await expect.poll(() => requests).toEqual([{ method: "PUT", status: "approved" }]);
+  await card.focus(); await page.keyboard.press("h");
+  await expect(card).toContainText("已拒絕");
+  await expect.poll(() => requests).toHaveLength(2);
+  expect(requests[1]).toEqual({ method: "PUT", status: "rejected" });
+  await card.focus(); await page.keyboard.press("Delete");
+  await expect(card).toHaveCount(0);
+  expect(requests[2]).toEqual({ method: "DELETE" });
+});
+
+test.describe("mobile owner queue", () => {
+  test.use({ hasTouch: true, isMobile: true });
+  for (const width of [320, 375, 390, 430]) {
+    test(`${width}px keeps the moderation cards ahead of settings with reachable actions`, async ({ page }, info) => {
+      await owner(page);
+      await page.route("**/api/sites/site-1/guestbook", (route) => route.fulfill({ json: { entries: [entry(1, "Pending visitor", "pending")] } }));
+      await page.setViewportSize({ width, height: 720 });
+      await page.goto("/editor/site-1");
+      await page.locator(".m-icon", { hasText: "Guestbook.exe" }).click();
+      await page.locator(".m-edit-toggle").click();
+      const queue = page.locator(".m-window .guestbook-moderation");
+      await expect(queue.locator("article")).toHaveCount(1);
+      const card = queue.locator("article");
+      await expect(card.getByRole("button", { name: "核准" })).toBeVisible();
+      const queueBox = await queue.boundingBox();
+      const settingsBox = await page.locator(".m-window .guestbook-settings").boundingBox();
+      if (!queueBox || !settingsBox) throw new Error("queue layout bounds");
+      expect(queueBox.y).toBeLessThan(settingsBox.y);
+      const approve = await card.getByRole("button", { name: "核准" }).boundingBox();
+      expect(approve?.height).toBeGreaterThanOrEqual(44);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      await page.screenshot({ path: info.outputPath(`guestbook-queue-${width}.png`), fullPage: false });
+    });
+  }
 });
 
 test.describe("touch visitor", () => {

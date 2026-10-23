@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocaleFormatting } from "../../../i18n/format";
 import { api, ApiError, type GuestbookEntry } from "../../../lib/api";
@@ -177,19 +177,38 @@ function OwnerGuestbook({ window, ctx, update }: ModuleProps<"guestbook">) {
   };
 
   const entries = loaded && loaded.siteId === ctx.siteId ? loaded.entries : [];
-  const filtered = entries.filter((entry) => filter === "all" || (filter === "reported" ? (entry.openReportCount ?? 0) > 0 : entry.status === filter));
+  const filtered = entries
+    .filter((entry) => filter === "all" || (filter === "reported" ? (entry.openReportCount ?? 0) > 0 : entry.status === filter))
+    .sort((a, b) => filter === "all" ? Number(b.status === "pending") - Number(a.status === "pending") : 0);
   const filters: ModerationFilter[] = ["all", "pending", "approved", "reported", "rejected"];
+  function cardKeyDown(event: KeyboardEvent<HTMLElement>, entry: GuestbookEntry) {
+    if (event.target !== event.currentTarget || event.altKey || event.ctrlKey || event.metaKey || rowLocks.current.has(`${ctx.siteId}:${entry.id}`)) return;
+    const action = event.key.toLowerCase() === "a" ? "approved" : event.key.toLowerCase() === "h" ? "rejected" : event.key === "Delete" ? "delete" : null;
+    if (!action || action === entry.status) return;
+    event.preventDefault();
+    void moderate(entry, action);
+  }
   return <div className="guestbook-app owner">
-    <fieldset className="guestbook-settings"><legend>{tr("guestbook.publicSettings")}</legend><label className="check-row"><input type="checkbox" checked={window.content.enabled} onChange={(event) => patch({ enabled: event.target.checked })} />{tr("guestbook.allowVisitorsToSubmitMessages")}</label><label>{tr("guestbook.note")}<textarea value={window.content.intro} onChange={(event) => patch({ intro: event.target.value }, `guestbook-intro-${window.id}`)} /></label></fieldset>
-    <p className="guestbook-note">{tr("guestbook.whenOffTheServerRejects")}</p>
     {message ? <p role="alert" className="guestbook-status">{message}</p> : null}
     <section className="guestbook-moderation" aria-label={tr("guestbook.messageModerationList")}>
       <div className="button-row" role="group" aria-label={tr("guestbook.messageModerationList")}>{filters.map((choice) => <button key={choice} type="button" className="w98-btn small" aria-pressed={filter === choice} onClick={() => setFilter(choice)}>{tr(`guestbook.${choice === "approved" ? "public" : choice}`)}</button>)}</div>
+      <p className="guestbook-shortcuts">{tr("guestbook.keyboardHint")}</p>
       {loadError ? <p role="alert">{loadError} <button type="button" className="w98-btn small" onClick={() => setReload((value) => value + 1)}>{tr("guestbook.retry")}</button></p> : null}
       {loading || loaded?.siteId !== ctx.siteId && !loadError ? <p role="status">{tr("guestbook.loading")}</p> : null}
-      {filtered.map((entry) => <article key={entry.id}><header><strong>{entry.displayName}</strong><span>{tr(`guestbook.${entry.status === "approved" ? "public" : entry.status}`)} · {tr("guestbook.reports", { count: entry.openReportCount ?? 0 })}</span></header><p>{entry.body}</p><div className="button-row"><button type="button" className="w98-btn small" disabled={busyRows.has(`${ctx.siteId}:${entry.id}`) || entry.status === "approved"} onClick={() => void moderate(entry, "approved")}>{tr("guestbook.approve")}</button><button type="button" className="w98-btn small" disabled={busyRows.has(`${ctx.siteId}:${entry.id}`) || entry.status === "rejected"} onClick={() => void moderate(entry, "rejected")}>{tr("guestbook.reject")}</button>{(entry.openReportCount ?? 0) > 0 ? <button type="button" className="w98-btn small" disabled={busyRows.has(`${ctx.siteId}:${entry.id}`)} onClick={() => void moderate(entry, "resolve")}>{tr("guestbook.reportHandled")}</button> : null}<button type="button" className="w98-btn small danger" disabled={busyRows.has(`${ctx.siteId}:${entry.id}`)} onClick={() => void moderate(entry, "delete")}>{tr("links.delete")}</button></div></article>)}
+      {filtered.map((entry) => <article key={entry.id} tabIndex={0} aria-keyshortcuts="A H Delete" className={entry.status === "pending" ? "guestbook-pending-card" : undefined} onKeyDown={(event) => cardKeyDown(event, entry)}>
+        <header><strong>{entry.displayName}</strong><span>{tr(`guestbook.${entry.status === "approved" ? "public" : entry.status}`)} · {tr("guestbook.reports", { count: entry.openReportCount ?? 0 })}</span></header>
+        <p>{entry.body}</p>
+        <div className="button-row">
+          <button type="button" className="w98-btn small" disabled={busyRows.has(`${ctx.siteId}:${entry.id}`) || entry.status === "approved"} onClick={() => void moderate(entry, "approved")}>{tr("guestbook.approve")}</button>
+          <button type="button" className="w98-btn small" disabled={busyRows.has(`${ctx.siteId}:${entry.id}`) || entry.status === "rejected"} onClick={() => void moderate(entry, "rejected")}>{tr("guestbook.hide")}</button>
+          {(entry.openReportCount ?? 0) > 0 ? <button type="button" className="w98-btn small" disabled={busyRows.has(`${ctx.siteId}:${entry.id}`)} onClick={() => void moderate(entry, "resolve")}>{tr("guestbook.reportHandled")}</button> : null}
+          <button type="button" className="w98-btn small danger" disabled={busyRows.has(`${ctx.siteId}:${entry.id}`)} onClick={() => void moderate(entry, "delete")}>{tr("links.delete")}</button>
+        </div>
+      </article>)}
       {!loading && !loadError && loaded?.siteId === ctx.siteId && !filtered.length ? <p>{entries.length ? tr("guestbook.noMatchingMessages") : tr("guestbook.noMessagesYet")}</p> : null}
     </section>
+    <fieldset className="guestbook-settings"><legend>{tr("guestbook.publicSettings")}</legend><label className="check-row"><input type="checkbox" checked={window.content.enabled} onChange={(event) => patch({ enabled: event.target.checked })} />{tr("guestbook.allowVisitorsToSubmitMessages")}</label><label>{tr("guestbook.note")}<textarea value={window.content.intro} onChange={(event) => patch({ intro: event.target.value }, `guestbook-intro-${window.id}`)} /></label></fieldset>
+    <p className="guestbook-note">{tr("guestbook.whenOffTheServerRejects")}</p>
   </div>;
 }
 

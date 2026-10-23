@@ -571,6 +571,8 @@
     "whenOffTheServerRejects": "關閉後伺服器會拒絕新留言；既有已核准留言仍保留，重新開啟後可見。",
     "messageModerationList": "留言審核列表",
     "approve": "核准",
+    "hide": "隱藏",
+    "keyboardHint": "選取留言：A 核准 · H 隱藏 · Delete 刪除",
     "reject": "拒絕",
     "reportHandled": "檢舉已處理",
     "noMessagesYet": "目前沒有留言。",

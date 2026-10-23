@@ -571,6 +571,8 @@
     "whenOffTheServerRejects": "When off, the server rejects new messages; existing approved messages are kept and become visible again when you turn it back on.",
     "messageModerationList": "Message moderation list",
     "approve": "Approve",
+    "hide": "Hide",
+    "keyboardHint": "Focus a message: A approve · H hide · Delete remove",
     "reject": "Reject",
     "reportHandled": "Report handled",
     "noMessagesYet": "No messages yet.",

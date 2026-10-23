@@ -571,6 +571,8 @@
     "whenOffTheServerRejects": "끄면 서버가 새 메시지를 거부합니다. 이미 승인된 메시지는 보존되며 다시 켜면 다시 표시됩니다.",
     "messageModerationList": "메시지 검토 목록",
     "approve": "승인",
+    "hide": "숨기기",
+    "keyboardHint": "메시지 선택: A 승인 · H 숨기기 · Delete 삭제",
     "reject": "거부",
     "reportHandled": "신고 처리됨",
     "noMessagesYet": "아직 메시지가 없습니다.",
