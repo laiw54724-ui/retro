@@ -69,6 +69,50 @@ function image(document: SiteDocumentV2Input) {
   return window;
 }
 
+for (const width of [1440, 320, 390]) {
+  test(`image focus is edited on the image and remains one Undo step at ${width}px`, async ({ page }, info) => {
+    const site = await fixture(page);
+    await page.setViewportSize({ width, height: 900 }); await page.goto("/editor/site-1");
+    if (width < 500) {
+      await page.getByRole("toolbar", { name: "Mobile editor tools" }).getByRole("button", { name: "Add", exact: true }).click();
+      await page.locator(".m-sheet .m-add").filter({ hasText: "Upload an image or use an image link" }).click();
+    } else {
+      await page.locator(".add-card").filter({ hasText: "Upload an image or use an image link" }).click();
+    }
+    const editor = page.getByRole("region", { name: "Image settings", exact: true });
+    await editor.getByLabel("Image URL", { exact: true }).fill(SOURCE);
+    await editor.getByLabel("Image URL", { exact: true }).press("Enter");
+    await editor.getByRole("combobox", { name: "Fit", exact: true }).selectOption("cover");
+    await editor.getByRole("toolbar", { name: "Image positioning tools" }).getByRole("button", { name: "Zoom in" }).click();
+    await expect.poll(() => site.saved().windows.find((item) => item.type === "image")?.content.crop?.zoom).toBe(1.1);
+    await editor.getByRole("button", { name: "Align left" }).click();
+    await expect.poll(() => image(site.saved()).content.crop?.x).toBe(0);
+    await editor.getByRole("button", { name: "Align horizontal center" }).click();
+    await expect.poll(() => image(site.saved()).content.crop?.x).toBe(50);
+    await page.screenshot({ path: info.outputPath(`image-on-canvas-${width}.png`), fullPage: false });
+    const stage = editor.locator("[data-testid='image-stage']");
+    const displayed = stage.locator("img");
+    await expect.poll(() => displayed.evaluate((node: HTMLImageElement) => node.naturalWidth)).toBeGreaterThan(0);
+    const bounds = await displayed.boundingBox(); if (!bounds) throw new Error("image bounds");
+    const x = bounds.x + bounds.width / 2, y = bounds.y + bounds.height / 2;
+    await page.mouse.move(x, y); await page.mouse.down();
+    const originalPosition = await displayed.evaluate((node) => node.style.left);
+    await page.mouse.move(x + 14, y, { steps: 5 });
+    await expect.poll(() => displayed.evaluate((node) => node.style.left)).not.toBe(originalPosition);
+    expect(image(site.saved()).content.crop?.x).toBe(50);
+    await page.mouse.up();
+    await expect.poll(() => image(site.saved()).content.crop?.x).not.toBe(50);
+    const dragged = image(site.saved()).content.crop?.x;
+    expect(dragged).toBeGreaterThanOrEqual(0); expect(dragged).toBeLessThanOrEqual(100);
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await expect.poll(() => image(site.saved()).content.crop?.x).toBe(50);
+    await page.getByRole("button", { name: "Redo", exact: true }).click();
+    await expect.poll(() => image(site.saved()).content.crop?.x).toBe(dragged);
+    const viewportWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    expect(viewportWidth).toBeLessThanOrEqual(width);
+  });
+}
+
 test("desktop Add → protected upload → Inspector → history/move → save/reload → projected public image", async ({ page }, info) => {
   const site = await fixture(page); const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));

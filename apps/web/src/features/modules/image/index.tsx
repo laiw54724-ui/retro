@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageContent, ImageCrop } from "@retrodesk/shared";
 import { FileUploadButton, ImageUrlInput } from "../ui";
@@ -5,6 +6,7 @@ import type { ModuleProps } from "../types";
 import { UploadProgressList, useMediaQueue, useWindowMedia } from "../../media/editorMedia";
 import { ImagePresentation } from "./presentation/ImagePresentation";
 import { DEFAULT_IMAGE_CROP } from "./presentation/placement";
+import { cropAfterDrag } from "./presentation/cropGesture";
 import { createImageContent, imageUploadOptions, patchImageContent } from "./model";
 import styles from "./ImageEditor.module.css";
 
@@ -22,6 +24,7 @@ export function ImageView({ window, ctx }: ModuleProps<"image">) {
 }
 
 const colorOf = (background: ImageContent["background"]) => typeof background === "object" ? background.color : "#ffffff";
+type Drag = { pointerId: number; source: string; startX: number; startY: number; crop: ImageCrop; latest: ImageCrop; stage: { width: number; height: number }; image: { width: number; height: number } };
 
 export function ImageInlineEditor({ window, ctx, update }: ModuleProps<"image">) {
   const { t } = useTranslation("modules");
@@ -30,22 +33,78 @@ export function ImageInlineEditor({ window, ctx, update }: ModuleProps<"image">)
   const cancelSourceUpload = () => queue?.invalidate(t("image.sourceChanged"), (entry) => entry.options.scope === `window:${window.id}:content` && entry.options.slot === "source");
   const content = window.content;
   const crop = content.crop ?? DEFAULT_IMAGE_CROP;
+  const drag = useRef<Drag | null>(null);
+  const [pendingCrop, setPendingCrop] = useState<ImageCrop | null>(null);
   const canUpload = !!(ctx.editing && ctx.siteId && ctx.upload);
   const key = (field: string) => `image:${window.id}:${field}`;
   const patch = (change: Partial<ImageContent>, field?: string) =>
     update((current) => patchImageContent(current, change), field ? key(field) : undefined);
   const patchCrop = (change: Partial<ImageCrop>, field: string) =>
     update((current) => patchImageContent(current, { crop: { ...(current.content.crop ?? DEFAULT_IMAGE_CROP), ...change } }), key(`crop:${field}`));
+  useEffect(() => { drag.current = null; setPendingCrop(null); }, [content.src, window.id]);
+
+  function startDrag(event: PointerEvent<HTMLDivElement>) {
+    if (!content.src || event.button !== 0 || drag.current || !(event.target instanceof HTMLImageElement)) return;
+    const stage = event.target.closest<HTMLElement>("[data-testid='image-stage']");
+    if (!stage || !event.target.naturalWidth || !event.target.naturalHeight) return;
+    const stageRect = stage.getBoundingClientRect();
+    const imageRect = event.target.getBoundingClientRect();
+    drag.current = {
+      pointerId: event.pointerId, source: content.src, startX: event.clientX, startY: event.clientY,
+      crop: { ...crop }, latest: { ...crop }, stage: { width: stageRect.width, height: stageRect.height },
+      image: { width: imageRect.width, height: imageRect.height }
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  }
+
+  function moveDrag(event: PointerEvent<HTMLDivElement>) {
+    const gesture = drag.current;
+    if (!gesture || gesture.pointerId !== event.pointerId || gesture.source !== content.src) return;
+    const delta = { x: event.clientX - gesture.startX, y: event.clientY - gesture.startY };
+    if (Math.abs(delta.x) + Math.abs(delta.y) < 3) return;
+    const next = cropAfterDrag(gesture.crop, delta, gesture.stage, gesture.image);
+    if (next.x === gesture.latest.x && next.y === gesture.latest.y) return;
+    gesture.latest = next;
+    setPendingCrop(next);
+  }
+
+  function endDrag(event: PointerEvent<HTMLDivElement>) {
+    const gesture = drag.current;
+    if (gesture?.pointerId !== event.pointerId) return;
+    drag.current = null;
+    setPendingCrop(null);
+    if (event.type === "pointerup" && gesture.source === content.src &&
+      (gesture.latest.x !== gesture.crop.x || gesture.latest.y !== gesture.crop.y)) {
+      update((current) => current.content.src === gesture.source
+        ? patchImageContent(current, { crop: gesture.latest }) : current);
+    }
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+  }
 
   return (
     <section className={styles.editor} aria-label={t("image.settings")}>
-      <div className={styles.preview}>
-        <ImagePresentation
-          source={content.src} alt={content.alt} caption={content.caption}
-          showCaption={content.showCaption} fit={content.fit} crop={content.crop}
-          background={content.background} pixelated={content.pixelated}
-          frame={content.frameMode} interaction={content.interactionMode} mode="editor"
-        />
+      <div className={styles.canvas}>
+        <div className={styles.preview} onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>
+          <ImagePresentation
+            source={content.src} alt={content.alt} caption={content.caption}
+            showCaption={content.showCaption} fit={content.fit} crop={pendingCrop ?? content.crop}
+            background={content.background} pixelated={content.pixelated}
+            frame={content.frameMode} interaction={content.interactionMode} mode="editor"
+          />
+        </div>
+        {content.src ? <div className={styles.canvasTools} role="toolbar" aria-label={t("image.canvasTools")}>
+          <span className={styles.dragHint}>{t("image.dragHint")}</span>
+          <button type="button" className="mini-btn" aria-label={t("image.alignLeft")} onClick={() => patchCrop({ x: 0 }, "x")}>←</button>
+          <button type="button" className="mini-btn" aria-label={t("image.alignCenter")} onClick={() => patchCrop({ x: 50 }, "x")}>↔</button>
+          <button type="button" className="mini-btn" aria-label={t("image.alignRight")} onClick={() => patchCrop({ x: 100 }, "x")}>→</button>
+          <button type="button" className="mini-btn" aria-label={t("image.alignTop")} onClick={() => patchCrop({ y: 0 }, "y")}>↑</button>
+          <button type="button" className="mini-btn" aria-label={t("image.alignMiddle")} onClick={() => patchCrop({ y: 50 }, "y")}>↕</button>
+          <button type="button" className="mini-btn" aria-label={t("image.alignBottom")} onClick={() => patchCrop({ y: 100 }, "y")}>↓</button>
+          <button type="button" className="mini-btn" aria-label={t("image.zoomOut")} disabled={crop.zoom <= 1} onClick={() => patchCrop({ zoom: Math.max(1, +(crop.zoom - 0.1).toFixed(1)) }, "zoom")}>−</button>
+          <span aria-hidden="true">{crop.zoom.toFixed(1)}×</span>
+          <button type="button" className="mini-btn" aria-label={t("image.zoomIn")} disabled={crop.zoom >= 4} onClick={() => patchCrop({ zoom: Math.min(4, +(crop.zoom + 0.1).toFixed(1)) }, "zoom")}>＋</button>
+        </div> : null}
       </div>
       <div className={styles.controls}>
         <fieldset className={styles.group}>
