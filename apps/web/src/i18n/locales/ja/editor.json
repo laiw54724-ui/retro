@@ -103,7 +103,7 @@
       "description": "スコアの記録や送信をしない訪問者向けミニゲーム"
     },
     "character-dialog": {
-      "label": "キャラクターのあいさつ",
+      "label": "ウェルカムポップアップ",
       "description": "閉じることができるキャラクターのウェルカムメッセージ"
     },
     "guestbook": {

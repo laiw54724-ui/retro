@@ -103,7 +103,7 @@
       "description": "점수를 기록하거나 전송하지 않는 방문자 미니 게임"
     },
     "character-dialog": {
-      "label": "캐릭터 인사말",
+      "label": "환영 팝업",
       "description": "방문자가 닫을 수 있는 캐릭터 환영 메시지"
     },
     "guestbook": {

@@ -5,7 +5,7 @@ import type { ModuleProps } from "../types";
 import { FileUploadButton, ImageUrlInput, FallbackImage } from "../ui";
 import { UploadProgressList, useWindowMedia } from "../../media/editorMedia";
 import { safeHref } from "../types";
-import { DestinationChip, EditorStatusBar, FileDropZone, InlineErrorBanner, InlineTextArea, InlineTextField, PopoverPanel } from "../../../components/editing";
+import { DestinationChip, EditorStatusBar, FileDropZone, InlineErrorBanner, InlineTextArea, InlineTextField, PopoverPanel, normalizePastedUrl } from "../../../components/editing";
 import "./editor.css";
 
 function CharacterDialog({ window, ctx, update, editing }: ModuleProps<"character-dialog"> & { editing: boolean }) {
@@ -16,6 +16,9 @@ function CharacterDialog({ window, ctx, update, editing }: ModuleProps<"characte
   const [linkUrl, setLinkUrl] = useState(content.linkUrl);
   const [panel, setPanel] = useState<"image" | "link" | null>(null);
   const [error, setError] = useState("");
+  const popupRef = useRef<HTMLDivElement>(null);
+  const addLinkButton = useRef<HTMLButtonElement>(null);
+  const hasLink = !!content.linkLabel || !!content.linkUrl;
   const rootRef = useRef<HTMLDivElement>(null);
   const imageButton = useRef<HTMLButtonElement>(null);
   const linkButton = useRef<HTMLButtonElement>(null);
@@ -74,7 +77,7 @@ function CharacterDialog({ window, ctx, update, editing }: ModuleProps<"characte
   };
   const closePanel = () => { setPanel(null); setLinkUrl(content.linkUrl); };
   const applyLink = () => {
-    const url = linkUrl.trim();
+    const url = normalizePastedUrl(linkUrl);
     if (url && safeHref(url) === "#") { setError(tr("document.enterAFullHttpHttps")); return; }
     patch({ linkUrl: url }); setError(""); setPanel(null);
     requestAnimationFrame(() => linkButton.current?.focus({ preventScroll: true }));
@@ -85,6 +88,19 @@ function CharacterDialog({ window, ctx, update, editing }: ModuleProps<"characte
   </>;
   return <div ref={rootRef} tabIndex={editing ? undefined : -1} data-mobile={editing && ctx.mobile || undefined} className={"character-dialog-app" + (editing ? " character-dialog-editor character-message-editor" : "")}>
     {editing ? <>
+      <div className="character-top-options">
+        <label className="character-auto-show"><input type="checkbox" checked={content.autoShow} onChange={event => patch({ autoShow: event.target.checked })} />{tr("characterDialog.shownOnceAutomaticallyForEach")}</label>
+        <button type="button" className="w98-btn" onClick={event => {
+          event.currentTarget.focus({ preventScroll: true });
+          if (!globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            popupRef.current?.getAnimations().forEach(animation => animation.cancel());
+            popupRef.current?.animate([{ transform: "scale(.8) translateY(12px)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 320, easing: "cubic-bezier(.2,1.4,.4,1)" });
+          }
+        }}>{tr("characterDialog.replay")}</button>
+      </div>
+      <div className="character-popup-stage">
+      <div ref={popupRef} className="character-popup" role="group" aria-label={tr("characterDialog.inlinePreview")}>
+      <div className="character-popup-title" style={{ background: ctx.tv.titleBg, color: ctx.tv.titleText }}><span>{tr("characterDialog.says", { name: content.characterName || tr("characterDialog.character") })}</span><span className="character-fake-close" aria-hidden="true">×</span></div>
       <div className="character-message-body">
         <FileDropZone className="character-image-drop" accept="image" maxBytes={8 * 1024 * 1024} disabled={!canUpload} tv={ctx.tv} mobile={ctx.mobile} overlayText={tr("characterDialog.dropImage")} onError={setError} onFiles={files => upload(files[0])}>
           {content.image ? <FallbackImage src={content.image} alt={content.characterName} className="character-dialog-image" /> : <div className="character-dialog-placeholder" aria-hidden="true">☺</div>}
@@ -92,25 +108,28 @@ function CharacterDialog({ window, ctx, update, editing }: ModuleProps<"characte
         </FileDropZone>
         <div className="character-dialog-copy">
           <InlineTextField className="character-name-input" aria-label={tr("characterDialog.characterName")} placeholder={tr("characterDialog.character")} value={content.characterName} maxLength={120} historyKey={`character-name-${window.id}`} onValueChange={(characterName, key) => patch({ characterName }, key)} />
-          <InlineTextArea className="character-message-input" aria-label={tr("characterDialog.message")} value={content.message} maxLength={2000} historyKey={`character-message-${window.id}`} onValueChange={(message, key) => patch({ message }, key)} />
+          <div className="character-speech-bubble"><InlineTextArea className="character-message-input" aria-label={tr("characterDialog.message")} value={content.message} maxLength={2000} historyKey={`character-message-${window.id}`} onValueChange={(message, key) => patch({ message }, key)} /></div>
+          <span className="character-message-count" data-long={content.message.length > 280 || undefined}>{content.message.length}/2000</span>
           <div className="character-action-row">
+            {hasLink ? <>
             <InlineTextField className="character-button-input" aria-label={tr("document.linkText")} placeholder={tr("characterDialog.addButton")} value={content.linkLabel} maxLength={120} historyKey={`character-link-label-${window.id}`} onValueChange={(linkLabel, key) => patch({ linkLabel }, key)} />
-            <DestinationChip ref={linkButton} aria-label={tr("characterDialog.safeLink")} text={content.linkUrl || tr("characterDialog.safeLink")} missing={!!content.linkLabel && !content.linkUrl} expanded={panel === "link"} mobile={ctx.mobile} tv={ctx.tv} onClick={() => { setLinkUrl(content.linkUrl); setPanel(panel === "link" ? null : "link"); }} />
+            <DestinationChip ref={linkButton} aria-label={tr("characterDialog.safeLink")} text={content.linkUrl || tr("characterDialog.safeLink")} missing={!!content.linkLabel && safeHref(content.linkUrl) === "#"} expanded={panel === "link"} mobile={ctx.mobile} tv={ctx.tv} onClick={() => { setLinkUrl(content.linkUrl); setPanel(panel === "link" ? null : "link"); }} /></> : <button ref={addLinkButton} type="button" className="w98-btn" onClick={() => { patch({ linkLabel: tr("characterDialog.more") }); setLinkUrl(content.linkUrl); setPanel("link"); }}>{tr("characterDialog.addLink")}</button>}
+            <span className="character-fake-ok" aria-hidden="true">{tr("characterDialog.ok")}</span>
           </div>
         </div>
       </div>
+      </div></div>
       <PopoverPanel open={panel === "image"} onClose={closePanel} triggerRef={imageButton} scopeRef={rootRef} keepMounted label={tr("characterDialog.imageTools")} tv={ctx.tv} mobile={ctx.mobile} data-character-panel="image">
         <div className="button-row"><FileUploadButton className="w98-btn" disabled={!canUpload} onFiles={files => upload(files[0])}>{tr("characterDialog.uploadCharacterImage")}</FileUploadButton>{content.image ? <button type="button" className="w98-btn danger" onClick={() => { media.cancel("image"); patch({ image: null, imageUrl: "" }); }}>{tr("characterDialog.removeCharacterImage")}</button> : null}</div>
         <ImageUrlInput visibleLabel raw={content.imageUrl} label={tr("document.imageUrl")} placeholder="https://" onEdit={() => media.cancel("image")} onCommit={(imageUrl, image) => patch({ imageUrl, image })} />
       </PopoverPanel>
       <PopoverPanel open={panel === "link"} onClose={closePanel} triggerRef={linkButton} scopeRef={rootRef} showDone={false} label={tr("characterDialog.safeLink")} tv={ctx.tv} mobile={ctx.mobile}>
         <label className="character-link-field">{tr("characterDialog.safeLink")}<input ref={linkInput} className="ie" value={linkUrl} maxLength={2048} onChange={event => setLinkUrl(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing && event.keyCode !== 229) { event.preventDefault(); applyLink(); } }} placeholder="https://" /></label>
-        <div className="button-row"><button type="button" className="w98-btn" onClick={applyLink}>{tr("navigationTargets.apply")}</button><button type="button" className="w98-btn" onClick={() => { closePanel(); requestAnimationFrame(() => linkButton.current?.focus({ preventScroll: true })); }}>{editorText("editor.cancel")}</button></div>
+        <div className="button-row"><button type="button" className="w98-btn danger" onClick={() => { patch({ linkLabel: "", linkUrl: "" }); setPanel(null); setLinkUrl(""); requestAnimationFrame(() => addLinkButton.current?.focus()); }}>{tr("characterDialog.removeLink")}</button><button type="button" className="w98-btn" onClick={applyLink}>{tr("navigationTargets.apply")}</button><button type="button" className="w98-btn" onClick={() => { closePanel(); requestAnimationFrame(() => linkButton.current?.focus({ preventScroll: true })); }}>{editorText("editor.cancel")}</button></div>
       </PopoverPanel>
       <UploadProgressList tasks={media.tasks} onRetry={media.retry} onDismiss={media.dismiss} />
-      <label className="character-auto-show"><input type="checkbox" checked={content.autoShow} onChange={event => patch({ autoShow: event.target.checked })} />{tr("characterDialog.shownOnceAutomaticallyForEach")}</label>
       <InlineErrorBanner message={error} onClose={() => setError("")} tv={ctx.tv} mobile={ctx.mobile} />
-      <EditorStatusBar message={tr("characterDialog.editHint")} tv={ctx.tv} mobile={ctx.mobile} />
+      <EditorStatusBar message={tr(!content.message ? "characterDialog.editHint" : hasLink && safeHref(content.linkUrl) === "#" ? "characterDialog.missingLink" : content.autoShow ? "characterDialog.autoHint" : "characterDialog.manualHint")} tv={ctx.tv} mobile={ctx.mobile} />
     </> : preview}
   </div>;
 }

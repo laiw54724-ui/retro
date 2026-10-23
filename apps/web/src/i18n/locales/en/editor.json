@@ -103,7 +103,7 @@
       "description": "A visitor mini-game with no score tracking or uploads"
     },
     "character-dialog": {
-      "label": "Character greeting",
+      "label": "Welcome popup",
       "description": "A character welcome message visitors can dismiss"
     },
     "guestbook": {

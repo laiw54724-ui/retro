@@ -103,7 +103,7 @@
       "description": "不記分、不上傳的訪客小遊戲"
     },
     "character-dialog": {
-      "label": "角色彈窗",
+      "label": "歡迎彈窗",
       "description": "可關閉的角色歡迎訊息"
     },
     "guestbook": {

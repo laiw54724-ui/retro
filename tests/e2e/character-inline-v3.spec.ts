@@ -95,3 +95,22 @@ test("delayed dropped portrait preserves newer message text and is one Undo step
   await page.getByRole("button", { name: "復原", exact: true }).click();
   await expect.poll(() => saved()).toMatchObject({ image: source, imageUrl: source, message: "Typed during upload" });
 });
+
+test('v2 welcome popup stage replays without canonical writes and removes a link in one Undo', async ({page}, info) => {
+  const backend=await setup(page,390), editor=backend.editor;
+  await expect(editor.getByRole('group',{name:'歡迎彈窗預覽（可直接編輯）',exact:true})).toBeVisible();
+  await expect(editor.locator('.character-popup-title')).toContainText('Snow');
+  const snapshot=()=>page.evaluate(async()=>{const {useEditorStore}=await import('/src/features/editor/store.ts'); const s=useEditorStore.getState();return {doc:s.versionedDocument,past:s.past.length,future:s.future.length};});
+  const before=await snapshot();
+  await editor.getByRole('button',{name:'播放出場',exact:true}).click();
+  await expect(editor.getByRole('button',{name:'播放出場',exact:true})).toBeFocused();
+  expect(await snapshot()).toEqual(before);
+  await editor.getByRole('button',{name:'安全連結',exact:true}).click();
+  await editor.getByRole('button',{name:'移除連結按鈕',exact:true}).click();
+  await expect.poll(()=>backend.saved()?.linkLabel).toBe('');
+  await expect.poll(()=>backend.saved()?.linkUrl).toBe('');
+  await page.getByRole('button',{name:'復原',exact:true}).click();
+  await expect.poll(()=>backend.saved()?.linkLabel).toBe('Explore');
+  await expect.poll(()=>backend.saved()?.linkUrl).toBe('https://example.com/old');
+  await page.screenshot({path:info.outputPath('welcome-v2-390.png')});
+});
