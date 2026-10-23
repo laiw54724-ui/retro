@@ -23,12 +23,12 @@ export function patchImageContent(window: WindowOf<"image">, change: Partial<Ima
   return { ...window, content: { ...window.content, ...change } };
 }
 
-export function imageUploadOptions(window: WindowOf<"image">): WindowUploadOptions<"image"> {
+export function imageUploadOptions(window: WindowOf<"image">, filename?: string): WindowUploadOptions<"image"> {
   const { src, srcUrl } = window.content;
   return {
     kind: "image",
     slot: "source",
     isCurrent: (current) => current.content.src === src && current.content.srcUrl === srcUrl,
-    apply: (current, stored) => patchImageContent(current, { src: stored, srcUrl: "" })
+    apply: (current, stored) => patchImageContent(current, { src: stored, srcUrl: "", crop: undefined, alt: current.content.alt || (filename ?? "").replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").slice(0, 300) })
   };
 }

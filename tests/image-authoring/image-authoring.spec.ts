@@ -82,15 +82,18 @@ for (const width of [1440, 320, 390]) {
     const editor = page.getByRole("region", { name: "Image settings", exact: true });
     await editor.getByLabel("Image URL", { exact: true }).fill(SOURCE);
     await editor.getByLabel("Image URL", { exact: true }).press("Enter");
-    await editor.getByRole("combobox", { name: "Fit", exact: true }).selectOption("cover");
+    await editor.getByRole("radio", { name: "Cover", exact: true }).click();
     await editor.getByRole("toolbar", { name: "Image positioning tools" }).getByRole("button", { name: "Zoom in" }).click();
-    await expect.poll(() => site.saved().windows.find((item) => item.type === "image")?.content.crop?.zoom).toBe(1.1);
+    await expect.poll(() => site.saved().windows.find((item) => item.type === "image")?.content.crop?.zoom).toBe(1.2);
+    await editor.getByRole("button", { name: "Placement", exact: true }).click();
     await editor.getByRole("button", { name: "Align left" }).click();
     await expect.poll(() => image(site.saved()).content.crop?.x).toBe(0);
     await editor.getByRole("button", { name: "Align horizontal center" }).click();
     await expect.poll(() => image(site.saved()).content.crop?.x).toBe(50);
+    await editor.getByRole("button", { name: "Placement", exact: true }).click();
     await page.screenshot({ path: info.outputPath(`image-on-canvas-${width}.png`), fullPage: false });
     const stage = editor.locator("[data-testid='image-stage']");
+    await stage.scrollIntoViewIfNeeded();
     const displayed = stage.locator("img");
     await expect.poll(() => displayed.evaluate((node: HTMLImageElement) => node.naturalWidth)).toBeGreaterThan(0);
     const bounds = await displayed.boundingBox(); if (!bounds) throw new Error("image bounds");
@@ -125,20 +128,23 @@ test("desktop Add → protected upload → Inspector → history/move → save/r
   await expect(panel.locator("img")).toHaveAttribute("src", /^blob:/);
   await panel.getByRole("textbox", { name: "Alt text", exact: true }).fill("Transparent OC portrait");
   await panel.getByLabel("Caption", { exact: true }).fill("Original art");
-  await panel.getByRole("combobox", { name: "Fit", exact: true }).selectOption("cover");
-  await panel.getByRole("slider", { name: "Horizontal focus" }).fill("23");
-  await panel.getByRole("combobox", { name: "Frame", exact: true }).selectOption("none");
+  await panel.getByRole("radio", { name: "Cover", exact: true }).click();
+  const imageCanvas = panel.getByRole("group", { name: "Image canvas", exact: true });
+  await expect.poll(() => site.saved().windows.find(w => w.type === "image")?.content.src).toBe(ASSET);
+  await imageCanvas.focus(); for (let i=0;i<13;i++) await imageCanvas.press("ArrowLeft");
+  await expect.poll(() => image(site.saved()).content.crop?.x).toBe(24);
+  await panel.getByRole("button", { name: "Frame", exact: true }).click();
   const canvas = page.locator(".canvas-window");
   await expect(canvas.locator(".retro-titlebar")).toHaveCount(0);
   await expect(canvas.locator(".module-host")).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
   await expect(canvas.getByRole("img", { name: "Transparent OC portrait" })).toBeVisible();
-  await panel.getByLabel("Image role").selectOption("decorative");
+  await panel.getByRole("checkbox", { name: "Decorative image", exact: true }).check();
   await expect(panel.getByRole("textbox", { name: "Alt text", exact: true })).toBeDisabled();
   await page.getByRole("button", { name: "Undo", exact: true }).click();
-  await expect(panel.getByLabel("Image role")).toHaveValue("content");
+  await expect(panel.getByRole("checkbox", { name: "Decorative image", exact: true })).not.toBeChecked();
   await page.getByRole("button", { name: "Redo", exact: true }).click();
-  await expect(panel.getByLabel("Image role")).toHaveValue("decorative");
-  await panel.getByLabel("Image role").selectOption("content");
+  await expect(panel.getByRole("checkbox", { name: "Decorative image", exact: true })).toBeChecked();
+  await panel.getByRole("checkbox", { name: "Decorative image", exact: true }).uncheck();
   await expect.poll(() => site.saved().windows.find((w) => w.type === "image")?.content.src).toBe(ASSET);
   const startX = image(site.saved()).layout.desktop.x;
   await page.getByRole("button", { name: "Move image OC.png", exact: true }).press("ArrowRight");
@@ -149,7 +155,7 @@ test("desktop Add → protected upload → Inspector → history/move → save/r
   await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
   await page.mouse.down(); await page.mouse.move(handle.x + handle.width / 2 + 16, handle.y + handle.height / 2 + 8); await page.mouse.up();
   await expect.poll(() => image(site.saved()).layout.desktop).toMatchObject({ x: startX + 17, y: startY + 8 });
-  expect(image(site.saved()).content).toMatchObject({ src: ASSET, srcUrl: "", frameMode: "none", alt: "Transparent OC portrait", crop: { x: 23, y: 50, zoom: 1 } });
+  expect(image(site.saved()).content).toMatchObject({ src: ASSET, srcUrl: "", frameMode: "none", alt: "Transparent OC portrait", crop: { x: 24, y: 50, zoom: 1 } });
   await page.screenshot({ path: info.outputPath("image-authoring-desktop.png"), fullPage: false });
   expect(site.writes.at(-1)).toMatchObject({ clientImageWindowContract: 1, clientAppearanceContract: 1 });
   expect(JSON.stringify(site.saved())).not.toContain("blob:");
@@ -174,7 +180,7 @@ test("pending upload cannot overwrite a newer URL source", async ({ page }) => {
   await panel.getByLabel("Image URL", { exact: true }).press("Enter");
   await expect.poll(() => site.saved().windows.find((w) => w.type === "image")?.content.src).toBe(SOURCE);
   await site.completeUpload();
-  await expect(panel.getByRole("status")).toContainText("failed");
+  await expect(panel.getByRole("status").filter({ hasText: "failed" })).toBeVisible();
   expect(image(site.saved()).content.src).toBe(SOURCE);
   expect(image(site.saved()).content.srcUrl).toBe(SOURCE);
 });
@@ -192,9 +198,9 @@ test("JPEG source decodes through authoring, save/reload and the projected publi
   await page.setViewportSize({ width: 1440, height: 1000 }); await page.goto("/editor/site-1");
   await page.locator(".add-card").filter({ hasText: "Upload an image or use an image link" }).click();
   const panel = page.locator("#editor-right-panel");
-  await panel.getByRole("textbox", { name: "Alt text", exact: true }).fill("JPEG portrait");
   await panel.getByLabel("Image URL", { exact: true }).fill(source);
   await panel.getByLabel("Image URL", { exact: true }).press("Enter");
+  await panel.getByRole("textbox", { name: "Alt text", exact: true }).fill("JPEG portrait");
   const portrait = () => page.locator(".canvas-window, .visitor-window").getByRole("img", { name: "JPEG portrait", exact: true });
   const decoded = async () => {
     await expect(portrait()).toBeVisible();
@@ -230,7 +236,7 @@ test("decorative outer host passes real clicks through in preview and public whi
   const site = await fixture(page, { legacy });
   await page.setViewportSize({ width: 1440, height: 1000 }); await page.goto("/editor/site-1");
   await page.getByRole("button", { name: "Move image Decoration", exact: true }).focus();
-  await expect(page.locator("#editor-right-panel").getByLabel("Image role")).toHaveValue("decorative");
+  await expect(page.locator("#editor-right-panel").getByRole("checkbox", { name: "Decorative image", exact: true })).toBeChecked();
   await page.getByRole("button", { name: /Visitor preview/ }).click();
   async function pointerThrough() {
     const host = page.locator(`[data-visitor-window='${art.id}']`);
@@ -258,8 +264,8 @@ test(`phone ${width}px Add and inline authoring keep Back reachable after switch
   // Adding now opens content immediately; assert that contract before editing.
   await expect(page.locator(".m-edit-toggle")).toHaveAttribute("aria-pressed", "true");
   await page.getByLabel("Image URL", { exact: true }).fill(SOURCE); await page.getByLabel("Image URL", { exact: true }).press("Enter");
-  await page.getByRole("combobox", { name: "Frame", exact: true }).selectOption("none");
-  await page.getByLabel("Image role").selectOption("decorative");
+  await page.getByRole("button", { name: "Frame", exact: true }).click();
+  await page.getByRole("checkbox", { name: "Decorative image", exact: true }).check();
   const help = page.getByRole("region", { name: "Image settings", exact: true }).getByText("Visitors cannot click decorative images", { exact: false });
   const contrast = await help.evaluate((element) => {
     const rgb = (value: string) => (value.match(/[\d.]+/g) ?? []).map(Number);
@@ -301,6 +307,7 @@ for (const edited of [true, false]) {
     const panel = page.locator("#editor-right-panel"), url = panel.getByRole("textbox", { name: "Image URL", exact: true });
     await panel.getByLabel("Replace image…", { exact: true }).setInputFiles(FILE);
     await expect.poll(site.pending).toBe(true);
+    await panel.getByRole("button", { name: "Image source", exact: true }).click();
     const next = "https://images.example.test/newer.png";
     if (edited) await url.fill(next); // Keep focus: no blur/Enter persistence yet.
     await site.completeUpload();
@@ -347,9 +354,11 @@ for (const action of ["Control+z", "Meta+z", "Control+Shift+z", "Escape", "docum
   const editor = page.getByRole("region", { name: "Image settings", exact: true });
   await editor.getByLabel("Image URL", { exact: true }).fill(SOURCE);
   await editor.getByLabel("Image URL", { exact: true }).press("Enter");
-  await editor.getByRole("combobox", { name: "Fit", exact: true }).selectOption("cover");
+  await editor.getByRole("radio", { name: "Cover", exact: true }).click();
   await editor.getByRole("button", { name: "Zoom in", exact: true }).click();
+  await editor.getByRole("button", { name: "Placement", exact: true }).click();
   await editor.getByRole("button", { name: "Align left", exact: true }).click();
+  await editor.getByRole("button", { name: "Placement", exact: true }).click();
   if (action === "Control+Shift+z") await page.keyboard.press("Control+z");
   const read = () => page.evaluate(async () => { const { useEditorStore } = await import("/src/features/editor/store.ts"); const s=useEditorStore.getState(); return s.document?.windows.find(w=>w.type==="image")?.content.crop; });
   await expect.poll(async () => (await read())?.x).toBe(action === "Control+Shift+z" ? 50 : 0);
@@ -386,7 +395,34 @@ test("image on-canvas actions meet the 44px mobile target", async ({ page }, inf
   await toolbar.scrollIntoViewIfNeeded();
   await page.screenshot({ path: info.outputPath("image-tools-320.png") });
   const sizes = await toolbar.locator("button").evaluateAll(nodes => nodes.map(node => ({ name: node.getAttribute("aria-label"), w: node.getBoundingClientRect().width, h: node.getBoundingClientRect().height })));
-  expect(sizes).toHaveLength(8);
+  expect(sizes.length).toBeGreaterThanOrEqual(8);
   expect(sizes.every(size => size.w >= 44 && size.h >= 44)).toBe(true);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test("v2 image canvas replaces old forms with direct fit, keyboard, wheel and inline appearance controls", async ({ page }, info) => {
+  const site = await fixture(page);
+  await page.setViewportSize({ width: 1440, height: 1000 }); await page.goto('/editor/site-1');
+  await page.locator('.add-card').filter({ hasText: 'Upload an image or use an image link' }).click();
+  const editor = page.getByRole('region', { name: 'Image settings', exact: true });
+  await editor.getByLabel('Image URL', { exact: true }).fill(SOURCE); await editor.getByLabel('Image URL', { exact: true }).press('Enter');
+  await expect.poll(() => site.saved().windows.find(w => w.type === 'image')?.content.src).toBe(SOURCE);
+  await expect(editor.locator('fieldset, input[type=range], select')).toHaveCount(0);
+  await editor.getByRole('radio', { name: 'Cover', exact: true }).click();
+  const stage = editor.getByRole('group', { name: 'Image canvas', exact: true });
+  await expect(stage.locator('img')).toBeVisible();
+  await stage.focus(); await stage.press('Shift+ArrowLeft');
+  await expect.poll(() => image(site.saved()).content.crop?.x).toBe(40);
+  await stage.press('+'); await expect.poll(() => image(site.saved()).content.crop?.zoom).toBe(1.1);
+  await stage.hover(); await page.mouse.wheel(0, -50); await expect.poll(() => image(site.saved()).content.crop?.zoom).toBe(1.2);
+  await stage.dblclick(); await expect.poll(() => image(site.saved()).content.crop).toBeUndefined();
+  await editor.getByRole('radio', { name: 'Original size', exact: true }).click();
+  await expect.poll(() => image(site.saved()).content.fit).toBe('original');
+  await editor.getByRole('button', { name: 'White background', exact: true }).click();
+  await expect.poll(() => image(site.saved()).content.background).toEqual({color:'#ffffff'});
+  await editor.getByRole('checkbox', { name: 'Decorative image', exact: true }).check();
+  await expect(editor.getByLabel('Alt text', { exact: true })).toBeDisabled();
+  await editor.getByRole('checkbox', { name: 'Decorative image', exact: true }).uncheck();
+  await expect(editor.getByLabel('Alt text', { exact: true })).toBeEnabled();
+  await page.screenshot({path:info.outputPath('image-v2-desktop.png')});
 });

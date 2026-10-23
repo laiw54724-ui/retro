@@ -103,7 +103,21 @@
     "checker": "체커보드",
     "solidColor": "단색",
     "color": "색상",
-    "pixelated": "픽셀 렌더링"
+    "pixelated": "픽셀 렌더링",
+    "canvas": "이미지 캔버스",
+    "dropReplace": "놓아서 이미지 교체",
+    "fileTooLarge": "이미지는 8 MB 미만이어야 합니다.",
+    "emptyHint": "이미지를 끌어 놓거나 파일을 선택하거나 이미지를 붙여넣으세요(Ctrl+V).",
+    "captionPlaceholder": "이미지 아래에 설명 추가",
+    "containHint": "전체 이미지를 표시합니다. 여백이 남을 수 있습니다.",
+    "coverHint": "캔버스를 채우고 넘치는 부분을 자릅니다. 드래그로 조정하세요.",
+    "originalHint": "원래 이미지 크기로 표시합니다.",
+    "whiteBackground": "흰색 배경",
+    "blackBackground": "검은색 배경",
+    "tealBackground": "청록색 배경",
+    "loadFailed": "이미지를 불러오지 못했습니다. 공개 링크인지 확인하거나 다른 이미지로 교체하세요.",
+    "canvasHint": "드래그로 위치 조정 · 휠 또는 ＋−로 확대/축소 · 두 번 클릭하여 초기화",
+    "missingAlt": "대체 텍스트가 없습니다. 이미지를 설명하거나 장식 이미지로 설정하세요."
   },
   "gallery": {
     "noImagesYet": "아직 이미지가 없습니다",

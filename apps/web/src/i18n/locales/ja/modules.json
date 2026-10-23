@@ -103,7 +103,21 @@
     "checker": "市松模様",
     "solidColor": "単色",
     "color": "色",
-    "pixelated": "ピクセル表示"
+    "pixelated": "ピクセル表示",
+    "canvas": "画像キャンバス",
+    "dropReplace": "ドロップして画像を置き換える",
+    "fileTooLarge": "画像は8 MB未満にしてください。",
+    "emptyHint": "画像をドロップ、ファイルを選択、または画像を貼り付け（Ctrl+V）。",
+    "captionPlaceholder": "画像の下にキャプションを追加",
+    "containHint": "画像全体を表示します。余白が残る場合があります。",
+    "coverHint": "キャンバスを埋めてはみ出た部分を切り抜きます。ドラッグで調整。",
+    "originalHint": "画像の元のピクセルサイズで表示します。",
+    "whiteBackground": "白い背景",
+    "blackBackground": "黒い背景",
+    "tealBackground": "青緑の背景",
+    "loadFailed": "画像を読み込めません。公開リンクを確認するか、別の画像に置き換えてください。",
+    "canvasHint": "ドラッグで位置調整 · ホイールか＋−で拡大縮小 · ダブルクリックでリセット",
+    "missingAlt": "代替テキストがありません。画像を説明するか装飾画像に設定してください。"
   },
   "gallery": {
     "noImagesYet": "画像はまだありません",

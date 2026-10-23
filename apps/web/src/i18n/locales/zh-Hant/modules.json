@@ -103,7 +103,21 @@
     "checker": "棋盤格",
     "solidColor": "純色",
     "color": "顏色",
-    "pixelated": "像素化顯示"
+    "pixelated": "像素化顯示",
+    "canvas": "圖片畫布",
+    "dropReplace": "放開就會換成這張圖",
+    "fileTooLarge": "圖片要小於 8 MB。",
+    "emptyHint": "拖一張圖進來、選檔案，或直接貼上圖片（Ctrl+V）。",
+    "captionPlaceholder": "加圖說（會顯示在圖片下方）",
+    "containHint": "整張圖都看得到，旁邊可能留白。",
+    "coverHint": "填滿畫布，多出來的部分裁掉，可拖曳調整。",
+    "originalHint": "照圖片原本的像素大小。",
+    "whiteBackground": "白色背景",
+    "blackBackground": "黑色背景",
+    "tealBackground": "桌面藍綠背景",
+    "loadFailed": "圖片讀不到，請確認連結是公開的圖片，或換一張圖。",
+    "canvasHint": "拖曳調整位置 · 滾輪或 ＋− 縮放 · 雙擊重設",
+    "missingAlt": "還沒寫替代文字，請描述圖片或標為裝飾圖片。"
   },
   "gallery": {
     "noImagesYet": "還沒有圖片",

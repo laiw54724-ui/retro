@@ -103,7 +103,21 @@
     "checker": "Checkerboard",
     "solidColor": "Solid color",
     "color": "Color",
-    "pixelated": "Pixelated rendering"
+    "pixelated": "Pixelated rendering",
+    "canvas": "Image canvas",
+    "dropReplace": "Drop to replace this image",
+    "fileTooLarge": "Images must be smaller than 8 MB.",
+    "emptyHint": "Drop an image, choose a file, or paste an image (Ctrl+V).",
+    "captionPlaceholder": "Add a caption below this image",
+    "containHint": "Show the whole image; empty space may remain.",
+    "coverHint": "Fill the canvas and crop the overflow; drag to adjust.",
+    "originalHint": "Use the original image dimensions.",
+    "whiteBackground": "White background",
+    "blackBackground": "Black background",
+    "tealBackground": "Teal background",
+    "loadFailed": "The image could not load. Check that its link is public, or replace it.",
+    "canvasHint": "Drag to position · wheel or +/− to zoom · double-click to reset",
+    "missingAlt": "Alt text is missing. Describe this image or mark it as decorative."
   },
   "gallery": {
     "noImagesYet": "No images yet",
