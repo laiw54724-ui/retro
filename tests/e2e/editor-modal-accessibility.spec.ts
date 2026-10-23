@@ -39,7 +39,7 @@ async function openEditor(page: Page, options: { publishError?: "version_conflic
   return { publishes: () => publishes, finishPublish: () => releasePublish?.(), reads: () => reads, saves: () => saves, draft: () => draft, setRemoteTitle: (title: string) => { draft = structuredClone(draft); draft.windows[0].title = title; version += 1; } };
 }
 
-const editTrigger = (page: Page) => page.locator(".m-toolbar").getByRole("button", { name: "視窗設定", exact: true });
+const editTrigger = (page: Page) => page.locator(".m-window-settings");
 const editDialog = (page: Page) => page.getByRole("dialog", { name: "視窗設定", exact: true });
 const publishDialog = (page: Page) => page.getByRole("dialog", { name: "發布 Retro Desktop", exact: true });
 
@@ -119,7 +119,8 @@ for (const width of [320, 390, 430]) {
     await expect(page.locator("#root")).toHaveAttribute("inert", "");
     await page.screenshot({ path: test.info().outputPath("edit-window.png") });
     await expectTabWrap(page, dialog);
-    const body = dialog.locator(".m-sheet-body");
+    await dialog.locator("summary").filter({hasText:"更多視窗設定"}).click();
+    const body = dialog.locator(".editing-sheet-body");
     await body.evaluate((element) => { element.scrollTop = element.scrollHeight; });
     expect(await body.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
     const bounds = (await dialog.boundingBox())!;
@@ -233,8 +234,9 @@ for (const width of [390, 1280]) {
     if (width === 390) {
       // An edit after cancel remains local: dismissing recovery must not clear the conflict pause.
       await page.locator(".m-icon").getByText("Notes.exe").click();
+      const title=page.getByRole("dialog",{name:"Notes.exe",exact:true}).getByRole("textbox",{name:"視窗標題",exact:true});
+      await title.fill("Retained local Notes.exe");await title.press("Enter");
       await editTrigger(page).click();
-      await editDialog(page).locator(".m-input").fill("Retained local Notes.exe");
       await editDialog(page).getByRole("button", { name: "關閉", exact: true }).click();
       await page.waitForTimeout(800);
       expect(backend.saves()).toBe(0);

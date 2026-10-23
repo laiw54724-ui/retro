@@ -118,9 +118,12 @@ for (const width of [320, 375, 390, 430]) test(`mobile ${width}px stays containe
   await expect(avatar).toBeVisible();
   await expect.poll(() => avatar.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
   await page.screenshot({ path: info.outputPath(`mobile-${width}.png`) });
-  await editor.getByRole("button", { name: "完成", exact: true }).click();
-  await expect(editor.locator(".about-view")).toBeVisible();
-  await editor.getByRole("button", { name: "關閉", exact: true }).click();
+  await editor.locator(".m-back").click();
+  await page.locator(".m-tool").filter({ hasText: "預覽" }).click();
+  const preview = page.locator(".preview-overlay");
+  await preview.getByRole("button", { name: "About.exe", exact: true }).click();
+  await expect(preview.locator(".about-view")).toBeVisible();
+  await preview.getByRole("button", { name: "‹ 回到編輯器", exact: true }).click();
   await page.getByRole("button", { name: "About.exe", exact: true }).click();
   await enterContentEditor(page);
   await expect(editor.getByLabel("暱稱", { exact: true })).toHaveValue("LongNickname".repeat(10));

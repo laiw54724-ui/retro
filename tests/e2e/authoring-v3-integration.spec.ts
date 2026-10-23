@@ -89,12 +89,11 @@ for (const width of [320, 375, 390, 430]) test(`combined IG draft survives phone
   const item = s.posts.locator("[data-ig-edit]").filter({ hasText: "p1" });
   await expect(item).toBeFocused();
   await item.click();
-  await enterContentEditor(page);
+  await s.win.getByRole("button", { name: "← 返回 IG 畫面", exact: true }).click();
   await expect(page.locator(".save-text")).toHaveText("有欄位未完成，暫不儲存");
-  await enterContentEditor(page);
   await s.win.getByRole("button", { name: "編輯個人檔案", exact: true }).click();
   await s.win.getByRole("button", { name: "管理貼文", exact: true }).click();
-  await item.click();
+  await expect(item).toHaveAttribute("aria-expanded", "true");
   await expect(pending).toHaveValue("https:");
   await s.win.getByRole("tab", { name: "▶ 預覽互動", exact: true }).click();
   await s.win.getByRole("button", { name: "← 返回編輯", exact: true }).click();

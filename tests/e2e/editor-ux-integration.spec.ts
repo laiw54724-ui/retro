@@ -33,7 +33,7 @@ async function fixture(page: Page, width: number) {
   return { docs, saves };
 }
 async function openTheme(page: Page, width: number) {
-  if (width < 768) { await page.getByRole("button", { name: "主題", exact: true }).click(); return page.getByRole("dialog", { name: "主題", exact: true }); }
+  if (width < 768) { await page.getByRole("button", { name: "主題", exact: true }).click(); const sheet=page.getByRole("dialog", { name: "主題", exact: true }); await sheet.locator("summary").filter({hasText:"更多主題設定"}).click(); return sheet; }
   await page.getByRole("tab", { name: "主題", exact: true }).click(); return page.locator(".left-panel2");
 }
 for (const width of [320, 390, 1440]) test(`pending image theme guards Stay and explicit Back discard at ${width}px`, async ({ page }, testInfo) => {

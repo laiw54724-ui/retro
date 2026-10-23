@@ -32,7 +32,10 @@ async function openSource(page: Page, source: "preview" | "public") {
     await page.goto("/editor/site-1");
     // Keep the author source mounted behind preview, with identical focus keys.
     await page.locator(".m-icon").getByText("First.exe", { exact: true }).click();
-    await page.locator(".m-tool", { hasText: "預覽" }).first().click();
+    // The direct owner editor has different markup from the visitor. Keep the
+    // deliberate duplicate-key negative fixture on its real shortcut button.
+    await page.locator('.folder-tree-editor .explorer-open[data-item-id="post"]').evaluate(node=>node.setAttribute('data-navigation-focus','explorer:first:shortcut:post'));
+    await page.getByRole("button", { name: /訪客預覽/ }).first().click();
   } else {
     const projection = projectPublicSiteDocument(doc, "site-1");
     if (!projection.ok) throw new Error("projection");

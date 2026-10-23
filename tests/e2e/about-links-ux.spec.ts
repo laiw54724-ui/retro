@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { makeLink, SiteDocumentSchema, type SiteDocument, type VersionedSiteDocumentInput } from "../../packages/shared/src";
 import { documentFixture } from "./fixture";
+import { enterContentEditor } from "./content-entry.fixture";
 
 const session = { access_token: "a.b.c", refresh_token: "r", expires_at: 4102444800, expires_in: 3600, token_type: "bearer", user: { id: "u", email: "x@y.z", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01" } };
 
@@ -44,7 +45,7 @@ async function expectLastControlAboveDone(dialog: Locator, control: Locator) {
   const bodyBox = await body.boundingBox();
   // The finish-editing action now lives in the window's title bar, so it can never cover a control; the last control
   // must still be fully reachable inside the scrolled content area.
-  const done = dialog.getByRole("button", { name: "完成", exact: true });
+  const done = dialog.locator(".m-back");
   await expect(done).toBeVisible();
   const doneBox = await done.boundingBox();
   if (!controlBox || !doneBox || !bodyBox) throw new Error("mobile control is missing");
@@ -167,21 +168,20 @@ for (const width of [320, 375, 390, 430]) {
     await mockEditor(page, document, width);
     await page.locator(".m-icon").getByText("About.exe", { exact: true }).click();
     const aboutDialog = page.getByRole("dialog", { name: "About.exe", exact: true });
-    const editAbout = aboutDialog.locator("..").getByRole("button", { name: "編輯內容", exact: true });
-    await expect(editAbout).toBeVisible();
-    await editAbout.click();
+    await enterContentEditor(page);
     await expectContained(aboutDialog.locator(".about-editor"));
     await expectContained(aboutDialog.locator(".about-editor"));
     await expectContained(aboutDialog.locator(".m-win-body"));
     await expectLastControlAboveDone(aboutDialog, aboutDialog.getByLabel("橫幅文字", { exact: true }));
-    await aboutDialog.locator("..").getByRole("button", { name: "完成", exact: true }).click();
-    await expectContained(aboutDialog.locator(".about-view"));
-    await aboutDialog.getByRole("button", { name: "關閉", exact: true }).click();
+    await aboutDialog.locator(".m-back").click();
+    await page.locator(".m-tool").filter({ hasText: "預覽" }).click();
+    const preview = page.locator(".preview-overlay");
+    await preview.getByRole("button", { name: "About.exe", exact: true }).click();
+    await expectContained(preview.locator(".about-view"));
+    await preview.getByRole("button", { name: "‹ 回到編輯器", exact: true }).click();
     await page.locator(".m-icon").getByText("Links.exe", { exact: true }).click();
     const linksDialog = page.getByRole("dialog", { name: "Links.exe", exact: true });
-    const editLinks = linksDialog.locator("..").getByRole("button", { name: "編輯內容", exact: true });
-    await expect(editLinks).toBeVisible();
-    await editLinks.click();
+    await enterContentEditor(page);
     await linksDialog.getByRole("button", { name: /^設定連結/ }).click();
     await linksDialog.getByRole("button", { name: "取消", exact: true }).click();
     await expectContained(linksDialog.locator(".links-editor"));

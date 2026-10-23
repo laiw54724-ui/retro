@@ -165,6 +165,7 @@ test("mobile chrome edits and reset remain local until Apply and retain custom a
   await page.getByRole("button", { name: "About.exe", exact: true }).click();
   await page.getByRole("button", { name: "視窗設定", exact: true }).click();
   const sheet = page.getByRole("dialog", { name: "視窗設定", exact: true });
+  await sheet.locator("summary").filter({hasText:"更多視窗設定"}).click();
   const editor = sheet.getByRole("group", { name: "視窗樣式", exact: true });
   const live = page.getByRole("dialog", { name: "About.exe", exact: true });
   await editor.getByRole("button", { name: /^Classic 95/ }).click();
@@ -180,11 +181,12 @@ test("mobile chrome edits and reset remain local until Apply and retain custom a
   await expect.poll(() => site.saved().windows[0].chrome?.preset).toBe("classic-95");
   await sheet.getByRole("button", { name: "關閉", exact: true }).click();
   await expect(live).toHaveAttribute("data-chrome-preset", "classic-95");
-  await expect(live.locator(".m-win-title .w98-icon")).toHaveCount(0);
+  await expect(live.locator(".m-inline-titlebar .w98-icon")).toHaveCount(0);
   await page.reload();
   await page.getByRole("button", { name: "About.exe", exact: true }).click();
   await expect(live).toHaveAttribute("data-chrome-preset", "classic-95");
   await page.getByRole("button", { name: "視窗設定", exact: true }).click();
+  await sheet.locator("summary").filter({hasText:"更多視窗設定"}).click();
   await editor.getByRole("button", { name: "重設視窗樣式", exact: true }).click();
   await expect(live).toHaveAttribute("data-chrome-preset", "classic-95");
   await page.waitForTimeout(800);
@@ -197,7 +199,7 @@ test("mobile chrome edits and reset remain local until Apply and retain custom a
   expect(site.saved().windows[0].layout).toEqual(site.initial.windows[0].layout);
   await sheet.getByRole("button", { name: "關閉", exact: true }).click();
   await expect(live).toHaveAttribute("data-chrome-preset", "classic-98");
-  await expect(live.locator(".m-win-title")).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await expect(live.locator(".m-inline-titlebar")).toHaveCSS("background-color", "rgb(255, 255, 255)");
 });
 
 const phoneCases: Array<{ width: number; preset: WindowChromePreset }> = [

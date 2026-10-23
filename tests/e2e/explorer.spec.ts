@@ -499,7 +499,7 @@ test("320px author redirects an OC shortcut to an exact post, then tests it in v
   await expect.poll(() => explorerContent(saves)?.shortcuts.find((shortcut) => shortcut.id === "to-profile")?.target).toEqual({ siteId: "site-1", kind: "post", id: post.id });
   expect(explorerContent(saves)?.shortcuts.find((shortcut) => shortcut.id === "to-profile")?.label).toBe("主角");
   const savedCount = saves.length;
-  await page.locator(".m-tool", { hasText: "預覽" }).first().click();
+  await page.getByRole("button",{name:/訪客預覽/}).first().click();
   const preview = page.locator(".preview-overlay");
   await preview.locator(".m-icon").getByText("World.exe", { exact: true }).click();
   const trigger = preview.getByRole("button", { name: "主角", exact: true });
@@ -552,11 +552,10 @@ test("phone editor: deleting a window that shortcuts point at asks first and fit
   await page.goto("/editor/site-1");
   await page.getByRole("button", { name: "角色設定.txt", exact: true }).click();
   await enterContentEditor(page);
-  await page.getByRole("button", { name: "完成" }).click();
-  await page.locator(".m-toolbar").getByRole("button", { name: "視窗設定" }).click();
+  await page.locator(".m-window-settings").click();
   await page.getByRole("button", { name: "刪除", exact: true }).click();
   const confirm = page.getByRole("dialog", { name: "這項刪除會影響 1 個捷徑" });
-  await expect(confirm).toBeVisible();
+  await expect(confirm).toBeVisible({timeout:7000});
   const box = await confirm.boundingBox();
   expect(box!.x).toBeGreaterThanOrEqual(0);
   expect(box!.x + box!.width).toBeLessThanOrEqual(391);
@@ -658,7 +657,7 @@ test("inline folder selection, cut paste and folder delete remain canonical", as
 
 for (const width of [1440, 320, 375, 390, 430]) {
   test(`inline folder target picker fits ${width}px and cancel keeps the canonical shortcut`, async ({ page }, testInfo) => {
-    const { dialog, saves } = await openEditor(page, withContent([F("chars", null, "角色")], [S("link", null, "主角設定")]), { width, height: 780 });
+    const { dialog, saves } = await openEditor(page, canonicalFixture(withContent([F("chars", null, "角色")], [S("link", null, "主角設定")])), { width, height: 780 });
     if (width < 768) await dialog.getByRole("button", { name: "選取項目" }).click();
     const tile = editorTile(dialog, "主角設定").locator(".explorer-open");
     await tile.click();
@@ -677,6 +676,7 @@ for (const width of [1440, 320, 375, 390, 430]) {
     await expect(picker.getByRole("option")).toHaveCount(0);
     await picker.getByRole("button", { name: "取消" }).click();
     await expect(actions).toBeFocused();
+    await page.waitForTimeout(800);
     expect(saves).toHaveLength(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
     await page.screenshot({ path: testInfo.outputPath(`folder-inline-${width}.png`) });

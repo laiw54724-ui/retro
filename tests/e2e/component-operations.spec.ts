@@ -40,6 +40,7 @@ for (const width of [1440, 320]) {
       await page.getByRole("button", { name: "Instagram.exe", exact: true }).click();
       await enterContentEditor(page);
     }
+    await page.getByRole("dialog",{name:"Instagram.exe",exact:true}).getByRole("button",{name:"編輯個人檔案",exact:true}).click();
     const profile = page.locator(".ig-profile-editor:visible");
     await profile.getByRole("button", { name: "展開角色設定" }).click();
     const names = profile.getByPlaceholder("欄位名稱");
@@ -59,6 +60,7 @@ for (const width of [1440, 320]) {
       await page.getByRole("button", { name: "Instagram.exe", exact: true }).click();
       await enterContentEditor(page);
     }
+    await page.getByRole("dialog",{name:"Instagram.exe",exact:true}).getByRole("button",{name:"編輯個人檔案",exact:true}).click();
     const reloaded = page.locator(".ig-profile-editor:visible");
     await reloaded.getByRole("button", { name: "展開角色設定" }).click();
     await expect(reloaded.getByPlaceholder("欄位名稱")).toHaveValue("職業");

@@ -44,7 +44,7 @@ for (const width of [320, 390, 430]) {
       await rows.press("Enter");
       await expect(status).toHaveText("已儲存");
       await expect.poll(() => saves).toBe(1);
-      const edit = page.locator(".m-toolbar").getByRole("button", { name: "視窗設定", exact: true });
+      const edit = page.locator(".m-window-settings");
       await edit.tap();
       const sheet = page.getByRole("dialog", { name: "視窗設定", exact: true });
       await expect(sheet).toBeVisible();

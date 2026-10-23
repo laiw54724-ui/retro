@@ -1,6 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 import { migrateSiteDocumentV2 } from "../../packages/shared/src";
 import { igDocument } from "../e2e/ig-fixture";
+import jaIg from "../../apps/web/src/i18n/locales/ja/instagram.json";
+import koIg from "../../apps/web/src/i18n/locales/ko/instagram.json";
+const igCatalogs={ja:jaIg,ko:koIg};
 
 // Real compiled app/resources. Only the private owner API/session is synthetic;
 // no translation modules, strings, selectors or locale flags are mocked.
@@ -46,8 +49,9 @@ for (const locale of ["ja", "ko"] as const) for (const width of [1440, 320]) {
     await expect(dialog.getByRole("heading", { name: text[locale].group, exact: true })).toBeVisible();
     await page.screenshot({ path: test.info().outputPath(`compiled-${locale}-catalog-${width}.png`) });
     await page.keyboard.press("Escape"); await expect(add).toBeFocused();
-    if (width < 768) { await page.locator(".m-icon").click(); await page.locator(".m-edit-toggle").click(); }
+    if (width < 768) { await page.locator(".m-icon").click(); await expect(page.locator(".m-window-settings")).toBeVisible(); await expect(page.locator(".m-edit-toggle")).toHaveCount(0); }
     const win = page.getByRole("dialog", { name: "Instagram.exe", exact: true });
+    await win.getByRole("button",{name:igCatalogs[locale].inlineApp.editProfile,exact:true}).click();
     await win.getByRole("button", { name: text[locale].manage, exact: true }).click();
     const posts = win.locator(".ig-canonical-posts");
     await posts.locator("[data-ig-edit]").filter({ hasText: "p1" }).click();

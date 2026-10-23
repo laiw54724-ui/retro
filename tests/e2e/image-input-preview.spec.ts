@@ -44,7 +44,7 @@ async function fixture(page: Page, windows: DesktopWindow[] = []) {
 }
 async function themePanel(page: Page, width: number) {
   await page.setViewportSize({ width, height: 900 }); await page.goto("/editor/site-1");
-  if (width < 768) { await page.getByRole("button", { name: "主題", exact: true }).click(); return page.getByRole("dialog", { name: "主題", exact: true }); }
+  if (width < 768) { await page.getByRole("button", { name: "主題", exact: true }).click(); const sheet=page.getByRole("dialog", { name: "主題", exact: true }); await sheet.locator("summary").filter({hasText:"更多主題設定"}).click(); return sheet; }
   await page.getByRole("tab", { name: "主題", exact: true }).click(); return page.locator(".left-panel2");
 }
 for (const width of [320, 390, 1440]) {
@@ -58,12 +58,13 @@ for (const width of [320, 390, 1440]) {
     await input.fill(SOURCE); await input.press("Enter");
     const canvas = page.locator(width < 768 ? ".m-screen:visible" : ".desktop-canvas");
     await expect(canvas).toHaveCSS("background-image", `url("${SOURCE}")`);
+    await panel.locator(".theme-wallpaper-preview").scrollIntoViewIfNeeded();
     await expect(panel.locator(".theme-wallpaper-preview")).toBeVisible();
     await page.waitForTimeout(800); expect(site.writes).toHaveLength(0);
     await expect(page.locator(".theme-preview-notice")).toContainText("尚未儲存");
     await panel.locator(".theme-wallpaper-preview").scrollIntoViewIfNeeded();
     if (width < 768) await input.evaluate((element) => {
-      const body = element.closest(".m-sheet-body");
+      const body = element.closest(".editing-sheet-body");
       if (body) body.scrollTop += element.getBoundingClientRect().top - body.getBoundingClientRect().top - 150;
     });
     await page.screenshot({ path: testInfo.outputPath(`theme-source-${width}.png`), fullPage: true });

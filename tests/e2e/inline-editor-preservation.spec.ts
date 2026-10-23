@@ -65,6 +65,11 @@ test("gallery composition confirmation does not insert and clear an unfinished U
 
 test("gallery deleting selected image keeps keyboard focus in its thumbnail list", async ({ page }) => {
   const { editor } = await openEditor(page, "gallery");
+  // This fixture's 700px window exceeds the canvas below the wrapped shell.
+  // Use the real view-state action; it must not resize the canonical window.
+  const before=await page.evaluate(async()=>{const {useEditorStore}=await import('/src/features/editor/store.ts');const s=useEditorStore.getState();return {document:s.document,past:s.past.length};});
+  await editor.getByRole("button",{name:"最大化",exact:true}).click();
+  expect(await page.evaluate(async()=>{const {useEditorStore}=await import('/src/features/editor/store.ts');const s=useEditorStore.getState();return {document:s.document,past:s.past.length};})).toEqual(before);
   await editor.getByRole("button", { name: "選取圖片 2：two", exact: true }).click();
   await editor.getByRole("button", { name: "刪除圖片", exact: true }).click();
   await expect(editor.getByRole("button", { name: "選取圖片 2：three", exact: true })).toBeFocused();
