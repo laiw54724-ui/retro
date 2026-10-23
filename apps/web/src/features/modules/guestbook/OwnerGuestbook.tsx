@@ -7,7 +7,9 @@ import type {ModuleProps} from '../types';
 import './owner.css';
 type Filter='pending'|'reported'|'approved'|'rejected'|'all';
 type Action='approved'|'rejected'|'resolve';
-type Pending={siteId:string;kind:'delete'|'status';rows:GuestbookEntry[]};
+type Pending={siteId:string;rows:GuestbookEntry[];id:number;message:string;expiresAt:number};
+type DeleteJob=Pending&{timer:ReturnType<typeof setTimeout>};
+type Toast={id:number;message:string;undo:boolean;deleting:boolean;expiresAt:number};
 const filters:Filter[]=['pending','reported','approved','rejected','all'];
 
 /** Owner-only API queue. Moderation is never written into the site document. */
@@ -16,7 +18,9 @@ export function OwnerGuestbook({window,ctx,update}:ModuleProps<'guestbook'>){
  const root=useRef<HTMLDivElement>(null),rowNodes=useRef(new Map<string,HTMLElement>()),tabs=useRef(new Map<Filter,HTMLButtonElement>());
  const [loaded,setLoaded]=useState<GuestbookEntry[]>([]),[loading,setLoading]=useState(true),[loadError,setLoadError]=useState(''),[error,setError]=useState(''),[reload,setReload]=useState(0);
  const [filter,setFilter]=useState<Filter>('pending'),[checked,setChecked]=useState<string[]>([]),[focused,setFocused]=useState<string|null>(null),[busy,setBusy]=useState<Set<string>>(new Set()),[hidden,setHidden]=useState<string[]>([]);
- const [toast,setToast]=useState<{id:number;message:string;undo:boolean}|null>(null);
+ const [toast,setToast]=useState<Toast|null>(null),[notice,setNotice]=useState('');
+ const toastRef=useRef(toast);toastRef.current=toast;
+ const deletes=useRef(new Map<number,DeleteJob>()),statusToast=useRef<Toast|null>(null),statusTimer=useRef<ReturnType<typeof setTimeout>|undefined>(undefined);
  const filterRef=useRef(filter);filterRef.current=filter;
  const pending=useRef<Pending|null>(null),locks=useRef(new Set<string>()),epoch=useRef(0),mounted=useRef(false),scope=useRef(ctx.siteId),toastId=useRef(0);
  scope.current=ctx.siteId;
@@ -25,7 +29,7 @@ export function OwnerGuestbook({window,ctx,update}:ModuleProps<'guestbook'>){
  const patch=(change:Partial<typeof window.content>,key?:string)=>update(current=>({...current,content:{...current.content,...change}}),key);
  const focus=(id:string|null,allowed?:()=>boolean)=>requestAnimationFrame(()=>{if(!mounted.current||allowed&&!allowed())return;(id?rowNodes.current.get(id):tabs.current.get(filter))?.focus({preventScroll:false});});
  const request=async(siteId:string,row:GuestbookEntry,action:Action|'delete')=>{
-   const key=`${siteId}:${row.id}`;if(locks.current.has(key))return false;
+   const key=`${siteId}:${row.id}`;if(locks.current.has(key)||action!=='delete'&&Array.from(deletes.current.values()).some(job=>job.siteId===siteId&&job.rows.some(entry=>entry.id===row.id)))return false;
    locks.current.add(key);epoch.current++;if(valid(siteId)){setLoading(false);setBusy(new Set(locks.current));}
    try{
      if(action==='delete')await api.deleteGuestbookEntry(siteId,row.id);
@@ -36,11 +40,21 @@ export function OwnerGuestbook({window,ctx,update}:ModuleProps<'guestbook'>){
    }catch{showError(siteId);return false;}
    finally{locks.current.delete(key);if(valid(siteId))setBusy(new Set(locks.current));}
  };
- const flush=()=>{
-   const p=pending.current;pending.current=null;
-   if(p?.kind==='delete')void(async()=>{for(const row of p.rows){await request(p.siteId,row,'delete');if(valid(p.siteId))setHidden(ids=>ids.filter(id=>id!==row.id));}})();
+ // Destructive operations own independent deadlines. A late API response may
+ // update status feedback, but can never replace or lose a queued deletion.
+ const showNextToast=()=>{
+   if(!mounted.current)return;
+   const job=Array.from(deletes.current.values()).at(-1),status=statusToast.current;
+   setToast(job?{id:job.id,message:job.message,undo:true,deleting:true,expiresAt:job.expiresAt}:status&&status.expiresAt>Date.now()?status:null);
  };
- useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;epoch.current++;flush();};},[]);
+ const clearStatus=()=>{clearTimeout(statusTimer.current);pending.current=null;statusToast.current=null;};
+ const commitDelete=(id:number)=>{
+   const job=deletes.current.get(id);if(!job)return;
+   deletes.current.delete(id);clearTimeout(job.timer);showNextToast();
+   void(async()=>{for(const row of job.rows){await request(job.siteId,row,'delete');if(valid(job.siteId))setHidden(ids=>ids.filter(id=>id!==row.id));}})();
+ };
+ const flush=()=>{for(const id of deletes.current.keys())commitDelete(id);};
+ useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;epoch.current++;clearStatus();flush();};},[]);
  useEffect(()=>{
    const siteId=ctx.siteId;if(!siteId){setLoading(false);return;}
    const version=++epoch.current;setLoading(true);setLoadError('');
@@ -53,27 +67,35 @@ export function OwnerGuestbook({window,ctx,update}:ModuleProps<'guestbook'>){
  const ids=rows.map(row=>row.id),selected=checked.filter(id=>ids.includes(id));
  const nextFocus=(removed:string[])=>{const index=rows.findIndex(row=>removed.includes(row.id)),rest=rows.filter(row=>!removed.includes(row.id));return(rest[index]??rest[index-1])?.id??null;};
  const moderate=async(selectedRows:GuestbookEntry[],action:Action)=>{
-   const siteId=ctx.siteId;if(!siteId)return;const activeBefore=globalThis.document.activeElement,startingFilter=filter;const retainFocus=()=>filterRef.current===startingFilter&&(globalThis.document.activeElement===activeBefore||globalThis.document.activeElement===globalThis.document.body&&!activeBefore?.isConnected);flush();setToast(null);setError('');
+   const siteId=ctx.siteId;if(!siteId)return;const activeBefore=globalThis.document.activeElement,startingFilter=filter;const retainFocus=()=>filterRef.current===startingFilter&&(globalThis.document.activeElement===activeBefore||globalThis.document.activeElement===globalThis.document.body&&!activeBefore?.isConnected);clearStatus();showNextToast();setError('');
    const actionable=selectedRows.filter(row=>!locks.current.has(`${siteId}:${row.id}`)&&(action==='resolve'?(row.openReportCount??0)>0:row.status!==action));
    const changed:GuestbookEntry[]=[];const next=nextFocus(actionable.map(row=>row.id));
    for(const row of actionable){if(await request(siteId,row,action))changed.push(row);}
    if(!valid(siteId)||!changed.length)return;
    setChecked(current=>current.filter(id=>!changed.some(row=>row.id===id)));
    const undo=action!=='resolve'&&changed.every(row=>row.status==='approved'||row.status==='rejected');
-   pending.current=undo?{siteId,kind:'status',rows:changed}:null;
-   setToast({id:++toastId.current,message:tr(action==='approved'?'guestbook.queue.published':action==='rejected'?'guestbook.queue.hidden':'guestbook.queue.resolved',{count:changed.length}),undo});
+   const id=++toastId.current,message=tr(action==='approved'?'guestbook.queue.published':action==='rejected'?'guestbook.queue.hidden':'guestbook.queue.resolved',{count:changed.length}),expiresAt=Date.now()+5000;
+   pending.current=undo?{siteId,rows:changed,id,message,expiresAt}:null;
+   statusToast.current={id,message,undo,deleting:false,expiresAt};
+   clearTimeout(statusTimer.current);statusTimer.current=setTimeout(()=>{if(statusToast.current?.id===id){clearStatus();showNextToast();}},5000);
+   setNotice(message);showNextToast();
    if(filter!=='all'&&filter!==action){setFocused(next);focus(next,retainFocus);}
  };
  const remove=(selectedRows:GuestbookEntry[])=>{
    const siteId=ctx.siteId;if(!siteId)return;
-   const eligible=selectedRows.filter(row=>!locks.current.has(`${siteId}:${row.id}`)&&!hidden.includes(row.id));if(!eligible.length)return;
-   flush();const ids=eligible.map(row=>row.id),next=nextFocus(ids);pending.current={siteId,kind:'delete',rows:eligible};
-   epoch.current++;setLoading(false);setHidden(current=>[...current,...ids]);setChecked(current=>current.filter(id=>!ids.includes(id)));setFocused(next);focus(next);
-   setToast({id:++toastId.current,message:tr('guestbook.queue.deleted',{count:ids.length}),undo:true});
+   const eligible=selectedRows.filter(row=>!locks.current.has(`${siteId}:${row.id}`)&&!hidden.includes(row.id)&&!Array.from(deletes.current.values()).some(job=>job.rows.some(entry=>entry.id===row.id)));if(!eligible.length)return;
+   clearStatus();const ids=eligible.map(row=>row.id),next=nextFocus(ids),id=++toastId.current,message=tr('guestbook.queue.deleted',{count:ids.length});
+   deletes.current.set(id,{siteId,rows:eligible,id,message,expiresAt:Date.now()+5000,timer:setTimeout(()=>commitDelete(id),5000)});
+   // Move focus before removing its DOM node so an immediate keyboard Undo
+   // stays inside the queue, including WebKit's transient body-focus interval.
+   (next?rowNodes.current.get(next):tabs.current.get(filter))?.focus();
+   epoch.current++;setLoading(false);setHidden(current=>[...current,...ids]);setChecked(current=>current.filter(id=>!ids.includes(id)));setFocused(next);
+   showNextToast();
  };
  const undo=async()=>{
-   const p=pending.current;if(!p)return;pending.current=null;setToast(null);
-   if(p.kind==='delete'){setHidden(current=>current.filter(id=>!p.rows.some(row=>row.id===id)));focus(p.rows[0]?.id??null);return;}
+   const current=toastRef.current;
+   if(current?.deleting){const job=deletes.current.get(current.id);if(!job)return;deletes.current.delete(current.id);clearTimeout(job.timer);setHidden(ids=>ids.filter(id=>!job.rows.some(row=>row.id===id)));showNextToast();focus(job.rows[0]?.id??null);return;}
+   const p=pending.current;if(!p||p.id!==current?.id)return;clearStatus();showNextToast();
    for(const row of p.rows){if(row.status==='approved'||row.status==='rejected')await request(p.siteId,row,row.status);}
    if(valid(p.siteId))focus(p.rows[0]?.id??null);
  };
@@ -87,7 +109,7 @@ export function OwnerGuestbook({window,ctx,update}:ModuleProps<'guestbook'>){
  };
  const ago=(createdAt:string)=>{const delta=(Date.now()-new Date(createdAt).getTime())/60000;const unit=delta<60?'minute':delta<1440?'hour':'day';return new Intl.RelativeTimeFormat(i18n.resolvedLanguage??'en',{numeric:'auto'}).format(-Math.max(0,Math.floor(delta/(unit==='day'?1440:unit==='hour'?60:1))),unit);};
  const name=(choice:Filter)=>tr(`guestbook.${choice==='approved'?'public':choice}`);
- return <div ref={root} className="guestbook-app owner guestbook-queue-v2" onKeyDown={event=>{if((event.ctrlKey||event.metaKey)&&!event.shiftKey&&event.key.toLowerCase()==='z'&&pending.current&&!(event.target as HTMLElement).closest('input,textarea,select,[contenteditable=true]')){event.preventDefault();event.stopPropagation();void undo();}}}>
+ return <div ref={root} className="guestbook-app owner guestbook-queue-v2" onKeyDown={event=>{if((event.ctrlKey||event.metaKey)&&!event.shiftKey&&event.key.toLowerCase()==='z'&&(pending.current||toast?.deleting)&&!(event.target as HTMLElement).closest('input,textarea,select,[contenteditable=true]')){event.preventDefault();event.stopPropagation();void undo();}}}>
    <div className="guestbook-settings"><label className="check-row"><input type="checkbox" checked={window.content.enabled} onChange={event=>patch({enabled:event.target.checked})}/>{tr('guestbook.allowVisitorsToSubmitMessages')}<span className="guestbook-open-chip">{tr(window.content.enabled?'guestbook.queue.open':'guestbook.queue.closed')}</span></label><InlineTextArea value={window.content.intro} aria-label={tr('guestbook.note')} placeholder={tr('guestbook.queue.introPlaceholder')} maxLength={1000} onValueChange={intro=>patch({intro},`guestbook-intro-${window.id}`)}/>{!window.content.enabled?<p className="guestbook-note">{tr('guestbook.whenOffTheServerRejects')}</p>:null}</div>
    <section className="guestbook-moderation" aria-label={tr('guestbook.messageModerationList')}>
      <div className="guestbook-tabs" role="tablist" aria-label={tr('guestbook.messageModerationList')}>{filters.map(choice=><button key={choice} ref={node=>{if(node)tabs.current.set(choice,node);else tabs.current.delete(choice);}} type="button" role="tab" aria-selected={filter===choice} aria-controls={listId} tabIndex={filter===choice?0:-1} className="w98-btn small" onClick={()=>{setFilter(choice);setChecked([]);setFocused(null);}} onKeyDown={event=>{let index=filters.indexOf(choice);if(event.key==='ArrowRight')index=(index+1)%filters.length;else if(event.key==='ArrowLeft')index=(index-1+filters.length)%filters.length;else if(event.key==='Home')index=0;else if(event.key==='End')index=filters.length-1;else return;event.preventDefault();setFilter(filters[index]);setChecked([]);tabs.current.get(filters[index])?.focus();}}>{name(choice)}{all.filter(row=>matches(row,choice)).length>0?<span className="guestbook-count-chip">{all.filter(row=>matches(row,choice)).length}</span>:null}</button>)}</div>
@@ -104,8 +126,8 @@ export function OwnerGuestbook({window,ctx,update}:ModuleProps<'guestbook'>){
        </article>;})}
      </div>
    </section>
-   <EditorStatusBar message={tr('guestbook.queue.keyboardHint')} count={tr('guestbook.queue.total',{count:all.length})} tv={ctx.tv} mobile={ctx.mobile}/>
-   {toast?<UndoToast key={toast.id} message={toast.message} onUndo={toast.undo?()=>void undo():undefined} onExpire={()=>{flush();setToast(null);}}/>:null}
+   <EditorStatusBar temporaryMessage={notice} message={tr('guestbook.queue.keyboardHint')} count={tr('guestbook.queue.total',{count:all.length})} tv={ctx.tv} mobile={ctx.mobile}/>
+   {toast?<UndoToast key={toast.id} message={toast.message} onUndo={toast.undo?()=>void undo():undefined} duration={Math.max(1,toast.expiresAt-Date.now())} onExpire={()=>{if(toast.deleting)commitDelete(toast.id);else if(statusToast.current?.id===toast.id){clearStatus();showNextToast();}}}/>:null}
    <InlineErrorBanner message={error} onClose={()=>setError('')} tv={ctx.tv} mobile={ctx.mobile}/>
  </div>;
 }
