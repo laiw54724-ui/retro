@@ -132,9 +132,10 @@ function GalleryEditorSession({ window, ctx, update }: ModuleProps<"gallery">) {
   function deleteSelected() {
     if (!selected) return;
     const neighbor = images[selectedIndex + 1] ?? images[selectedIndex - 1];
+    // Focus the surviving control during the delete action, including taps in WebKit.
+    (thumb(neighbor?.id) ?? urlToggle.current)?.focus();
     setImages((list) => list.filter((item) => item.id !== selected.id));
     setActiveId(neighbor?.id ?? null);
-    restoreFocusUnlessMoved(() => thumb(neighbor?.id) ?? urlToggle.current);
   }
 
   function clearDrag() { setDragId(null); setOver(null); setDropping(false); }

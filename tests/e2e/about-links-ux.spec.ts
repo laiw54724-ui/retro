@@ -39,7 +39,7 @@ async function expectContained(surface: Locator) {
 
 async function expectLastControlAboveDone(dialog: Locator, control: Locator) {
   const body = dialog.locator(".m-win-body");
-  await body.evaluate((element) => { element.scrollTop = element.scrollHeight; element.querySelector(".link-editor-list")?.scrollTo(0, 99999); });
+  await body.evaluate((element) => { element.scrollTop = element.scrollHeight; element.querySelector(".link-editor-list")?.scrollTo(0, 99999); element.querySelector(".about-editor-scroll")?.scrollTo(0, 99999); });
   const controlBox = await control.boundingBox();
   const bodyBox = await body.boundingBox();
   // The finish-editing action now lives in the window's title bar, so it can never cover a control; the last control
@@ -59,11 +59,10 @@ test("about groups retain edited fields, undo deletion, save, reload and render 
   await about.getByLabel("簡介", { exact: true }).fill("網站、角色與日常創作。\n歡迎來到我的桌面。");
   await about.getByLabel("引言", { exact: true }).fill("把喜歡的事慢慢做好。");
   await about.getByLabel("橫幅文字", { exact: true }).fill("作品整理中");
-  await about.locator("summary").filter({ hasText: "基本資料" }).click();
-  await about.locator("summary").filter({ hasText: "自訂欄位" }).click();
   await about.getByLabel("欄位名稱", { exact: true }).fill("創作類型");
   await about.getByLabel("欄位內容", { exact: true }).fill("網站與角色故事");
-  await about.getByRole("button", { name: "新增欄位" }).click();
+  await about.getByLabel("＋ 新增欄位", { exact: true }).fill("喜歡的作品");
+  await about.getByLabel("＋ 新增欄位", { exact: true }).press("Enter");
   await about.getByLabel("欄位名稱", { exact: true }).last().fill("喜歡的作品");
   await about.getByLabel("欄位內容", { exact: true }).last().fill("長篇故事");
   await about.getByRole("button", { name: "刪除欄位", exact: true }).first().click();
@@ -72,11 +71,10 @@ test("about groups retain edited fields, undo deletion, save, reload and render 
   await expect(about.getByLabel("欄位名稱", { exact: true })).toHaveCount(2);
   await expect(about.getByLabel("欄位內容", { exact: true }).first()).toHaveValue("網站與角色故事");
 
-  await about.locator("summary").filter({ hasText: "社群連結" }).click();
-  await about.getByRole("button", { name: "新增社群" }).click();
+  await about.getByLabel("＋ 新增社群", { exact: true }).fill("https://example.com/portfolio");
+  await about.getByLabel("＋ 新增社群", { exact: true }).press("Enter");
   await about.getByLabel("社群名稱", { exact: true }).fill("作品集");
   await about.getByLabel("社群網址", { exact: true }).fill("https://example.com/portfolio");
-  await about.locator("summary").filter({ hasText: "基本資料" }).click();
   await expect(about.getByLabel("暱稱", { exact: true })).toHaveValue("被子的創作桌面");
   await expect.poll(() => {
     const window = saves.at(-1)?.windows.find((candidate) => candidate.id === "about");
@@ -86,7 +84,6 @@ test("about groups retain edited fields, undo deletion, save, reload and render 
   await page.reload();
   await expect(about.getByLabel("暱稱", { exact: true })).toHaveValue("被子的創作桌面");
   await expect(about.getByLabel("引言", { exact: true })).toHaveValue("把喜歡的事慢慢做好。");
-  await about.locator("summary").filter({ hasText: "自訂欄位" }).click();
   await expect(about.getByLabel("欄位內容", { exact: true }).first()).toHaveValue("網站與角色故事");
 
   await mockPublic(page, savedDocument());
@@ -174,11 +171,9 @@ for (const width of [320, 375, 390, 430]) {
     await expect(editAbout).toBeVisible();
     await editAbout.click();
     await expectContained(aboutDialog.locator(".about-editor"));
-    await aboutDialog.locator("summary").filter({ hasText: "自訂欄位" }).click();
-    await aboutDialog.locator("summary").filter({ hasText: "社群連結" }).click();
     await expectContained(aboutDialog.locator(".about-editor"));
     await expectContained(aboutDialog.locator(".m-win-body"));
-    await expectLastControlAboveDone(aboutDialog, aboutDialog.getByRole("button", { name: "新增社群" }));
+    await expectLastControlAboveDone(aboutDialog, aboutDialog.getByLabel("橫幅文字", { exact: true }));
     await aboutDialog.locator("..").getByRole("button", { name: "完成", exact: true }).click();
     await expectContained(aboutDialog.locator(".about-view"));
     await aboutDialog.getByRole("button", { name: "關閉", exact: true }).click();

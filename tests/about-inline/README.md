@@ -17,7 +17,7 @@ ABOUT_TEST_PORT=5607 ABOUT_TEST_OUTPUT=../../evidence/about-adjacent pnpm exec p
 
 The dedicated suite covers direct edit/save/reload/public projection, Undo, inferred social labels, field key/value focus, Alt+arrow and drag sorting, Escape/Close/toggle cancellation persisted through autosave, 50-item deletion focus, IME, rejected uploads, delayed upload target isolation, URL supersession and retry. Both Chromium and WebKit run desktop and 320/375/390/430px viewport cases. The narrow desktop crop case is 340px wide.
 
-`locale-deltas/*.json` under the about module must be deep-merged into the shared language catalogs by the integration owner. The main screenshot fixtures inject the supplied Traditional Chinese delta into their isolated browser i18n instance, without changing the product loader. A separate browser test verifies the unmerged translated fallback state. Screenshots under this directory show the intended integrated translation state.
+Integration now resolves all About inline strings from the four official `modules.json` catalogs. The browser fixture no longer injects translation resources; its catalog case exercises the product dictionary. Module delta files remain the original delivery receipt.
 
 ## Results
 
@@ -36,7 +36,7 @@ Shared renderer, schema, ModuleProps, media queue, deployment configuration, fla
 
 ## Integration work / unverified
 
-- Merge the four about locale deltas before release. Runtime loader and catalogs are deliberately not edited here.
-- Legacy shared `about-links-ux.spec.ts` and the about cases in `inline-editor-preservation.spec.ts` still target the removed details/summary/add-button UI. The integration owner must update these shared selectors: direct fields require no section expansion; add field/social through the labeled input + Enter; open avatar controls with `.about-avatar-toggle`. Their about behavior is covered by the dedicated suite here. The legacy about upload test in `media-tasks.spec.ts` similarly needs to open the avatar panel; the equivalent delayed upload flow is covered here.
+- The integration branch has merged the four locale deltas without changing the loader.
+- Shared integration selectors now use direct fields, add inputs + Enter, and the avatar toggle. Original persistence, draft, upload and focus assertions remain. Combined-tree validation is tracked separately from these original branch results.
 - No live remote publish/upload, physical Safari/iOS/Android, or OS/browser zoom verification. Local WebKit/viewport results do not establish physical-device coverage.
 - No merge or deployment; this candidate is intended for the integrator's combined-tree gate.

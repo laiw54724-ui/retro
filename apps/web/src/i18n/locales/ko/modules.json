@@ -353,7 +353,18 @@
     "customFieldsCount": "사용자 지정 항목({{count}})",
     "fieldN": "항목 {{n}}",
     "socialsCount": "SNS 링크({{count}})",
-    "socialN": "SNS {{n}}"
+    "socialN": "SNS {{n}}",
+    "inline": {
+      "pasteSocial": "＋ 소셜 URL 붙여넣기",
+      "dropAvatar": "여기에 사진을 놓으세요",
+      "addField": "＋ 항목 추가 (예: 생일)",
+      "addBanner": "＋ 배너 추가",
+      "close": "닫기",
+      "reorder": "드래그로 순서 변경 · Alt+↑/↓",
+      "dragStatus": "원하는 위치에 놓으세요",
+      "socialStatus": "소셜 이름과 URL 편집 · ×로 삭제",
+      "editStatus": "텍스트 직접 편집 · Enter로 다음 칸 이동 · ⋮⋮ 드래그로 순서 변경"
+    }
   },
   "explorer": {
     "untitledWindow": "(제목 없는 창)",

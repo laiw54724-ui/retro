@@ -65,11 +65,13 @@ for (const width of [1440, 320, 390, 430]) {
         await page.screenshot({ path: testInfo.outputPath(`${phase}-${kind}-${width}.png`) });
         await testInfo.attach("first-screen-metrics", { body: JSON.stringify({ name: await visibility(name), message: await visibility(message), layout: initial.windows[0].layout }), contentType: "application/json" });
         if (phase === "before") return;
+        if (kind === "about") await name.focus();
         await expect(name).toBeInViewport({ ratio: 1 });
+        if (kind === "about") await message.focus();
         await expect(message).toBeInViewport({ ratio: 1 });
         expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
         expect(saves).toHaveLength(0);
-        const disclosure = dialog.locator(kind === "about" ? ".about-avatar-settings > summary" : ".character-editor-preview > summary");
+        const disclosure = dialog.locator(kind === "about" ? ".about-avatar-toggle" : ".character-editor-preview > summary");
         const nameBefore = await name.inputValue();
         await name.fill(`${nameBefore} edited`);
         await expect.poll(() => saves.length).toBe(1);
@@ -77,17 +79,19 @@ for (const width of [1440, 320, 390, 430]) {
         expect((await disclosure.boundingBox())!.height).toBeGreaterThanOrEqual(44);
         if (width < 768) await disclosure.tap();
         else { await disclosure.focus(); await disclosure.press("Enter"); }
-        await expect(disclosure.locator("..")).toHaveAttribute("open", "");
+        if (kind === "about") await expect(dialog.locator(".about-avatar-panel")).toBeVisible();
+        else await expect(disclosure.locator("..")).toHaveAttribute("open", "");
         const url = dialog.getByLabel(kind === "about" ? "頭像網址" : "圖片網址", { exact: true });
         await url.fill("https://");
         await url.press("Tab");
         await expect(url).toHaveValue("https://");
         await disclosure.focus();
         await disclosure.press("Space");
-        await expect(disclosure.locator("..")).not.toHaveAttribute("open", "");
+        if (kind === "about") await expect(dialog.locator(".about-avatar-panel")).toHaveCount(0);
+        else await expect(disclosure.locator("..")).not.toHaveAttribute("open", "");
         await expect(disclosure).toBeFocused();
         await disclosure.press("Enter");
-        await expect(url).toHaveValue("https://");
+        await expect(url).toHaveValue(kind === "about" ? portraitUrl : "https://");
         await expect(name).toHaveValue(`${nameBefore} edited`);
         await page.waitForTimeout(800);
         expect(saves).toHaveLength(1);

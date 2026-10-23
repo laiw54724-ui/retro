@@ -107,3 +107,8 @@
 .module-host.module-about:has(> .about-editor:not([data-mobile])) { height: 100%; min-height: 0; }
 
 .about-editor[data-mobile] button, .about-editor[data-mobile] input[type="range"] { min-height: 44px; min-width: 44px; }
+
+.about-editor textarea.about-direct { resize: vertical; white-space: pre-wrap; }
+.about-editor .about-banner textarea { display: block; width: 100%; }
+
+.about-editor .about-avatar-toggle { min-height: 44px; }

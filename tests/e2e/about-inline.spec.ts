@@ -1,11 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
 import { randomUUID } from "node:crypto";
-import zhDelta from "../../apps/web/src/features/modules/about/locale-deltas/zh-Hant.json";
 import { createAssetReference, makeWindow, migrateSiteDocumentV2, normalizeDocument, projectPublicSiteDocument } from "../../packages/shared/src";
 import { documentFixture } from "./fixture";
 const session = { access_token: "a.b.c", refresh_token: "r", expires_at: 4102444800, expires_in: 3600, token_type: "bearer", user: { id: "u", email: "x@y.z", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01" } };
 const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg==", "base64");
-async function open(page: Page, { width = 1280, hold = "", failOnce = "", long = false, cap = false, windowWidth = 560, withDeltas = true } = {}) {
+async function open(page: Page, { width = 1280, hold = "", failOnce = "", long = false, cap = false, windowWidth = 560, multiline = false } = {}) {
   const about = makeWindow("about");
   about.id = "about"; about.title = "About.exe"; about.defaultOpen = true;
   about.layout.desktop = { ...about.layout.desktop, x: 20, y: 20, w: windowWidth, h: 580, z: 2 };
@@ -13,6 +12,7 @@ async function open(page: Page, { width = 1280, hold = "", failOnce = "", long =
   about.content.fields = [{ id: "first", key: "Role", value: long ? "LongCustomField".repeat(25) : "Creator" }];
   about.content.socials = long ? [{ id: "social", label: "LongSocialName".repeat(7), url: `https://example.com/${"portfolio".repeat(80)}` }] : [];
   if (cap) { about.content.fields = Array.from({ length: 50 }, (_, i) => ({ id: `f${i}`, key: `Key ${i}`, value: "Value" })); about.content.socials = Array.from({ length: 50 }, (_, i) => ({ id: `s${i}`, label: `Social ${i}`, url: "https://example.com" })); }
+  if (multiline) { about.content.fields[0].value = "Line 1\nLine 2"; about.content.quote = "Quote 1\nQuote 2"; about.content.banner = "Banner 1\nBanner 2"; }
   const second = structuredClone(about); second.id = "second"; second.title = "Second.exe"; second.layout.desktop = { ...about.layout.desktop, x: 600, z: 1 };
   const migrated = migrateSiteDocumentV2(normalizeDocument({ ...documentFixture, windows: [about, second] }), { siteId: "site-1" });
   if (!migrated.ok) throw new Error("migration");
@@ -34,12 +34,6 @@ async function open(page: Page, { width = 1280, hold = "", failOnce = "", long =
     return route.fulfill({ json: { asset: { id, url: createAssetReference(id), kind: "image", name, mimeType: "image/png", size: PNG.length, createdAt: "2026-10-22T00:00:00Z" } } });
   });
   await page.setViewportSize({ width, height: 900 }); await page.goto("/editor/site-1");
-  if (withDeltas) await page.evaluate(async delta => {
-    const path = "/src/i18n/index.ts";
-    const { i18n } = await import(path);
-    i18n.addResourceBundle("zh-Hant", "modules", delta, true, true);
-    await i18n.changeLanguage("zh-Hant");
-  }, zhDelta);
   if (width < 768) { await page.getByRole("button", { name: "About.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯內容", exact: true }).click(); }
   const editor = page.getByRole("dialog", { name: "About.exe", exact: true });
   await expect(editor.locator(".about-editor")).toBeVisible();
@@ -203,12 +197,12 @@ test("narrow desktop crop and field drag stay contained", async ({ page }, info)
 });
 
 
-test("unmerged locale deltas retain existing translated controls without missing-key errors", async ({ page }) => {
-  const { editor } = await open(page, { withDeltas: false });
-  await expect(editor.locator(".about-add-social")).toHaveAttribute("placeholder", "＋ 新增社群");
+test("integrated catalog supplies translated controls without missing-key errors", async ({ page }) => {
+  const { editor } = await open(page);
+  await expect(editor.locator(".about-add-social")).toHaveAttribute("placeholder", "＋ 貼社群網址");
   await expect(editor.locator(".about-editor")).not.toContainText("發生錯誤");
   await editor.locator(".about-avatar-toggle").click();
-  await expect(editor.locator(".about-avatar-panel").getByRole("button", { name: "取消", exact: true })).toBeVisible();
+  await expect(editor.locator(".about-avatar-panel").getByRole("button", { name: "關閉", exact: true })).toBeVisible();
 });
 
 
@@ -223,4 +217,31 @@ test("avatar drops reject non-images and oversized files without starting upload
     expect(site.calls).toHaveLength(0);
     await site.editor.locator(".about-inline-error button").click();
   }
+});
+
+test("existing multiline card content survives inline editing", async ({ page }) => {
+  const site = await open(page, { multiline: true });
+  for (const [label, value] of [["欄位內容", "Line 1\nLine 2"], ["引言", "Quote 1\nQuote 2"], ["橫幅文字", "Banner 1\nBanner 2"]]) {
+    const field = site.editor.getByLabel(label, { exact: true });
+    await expect(field).toHaveValue(value);
+    await field.focus();
+    await field.evaluate(element => { const input = element as HTMLTextAreaElement; input.setSelectionRange(input.value.length, input.value.length); });
+    await page.keyboard.insertText("!");
+    await expect(field).toHaveValue(value + "!");
+  }
+  await expect.poll(() => site.saved().fields[0].value).toBe("Line 1\nLine 2!");
+  await expect.poll(() => site.saved().quote).toBe("Quote 1\nQuote 2!");
+  await expect.poll(() => site.saved().banner).toBe("Banner 1\nBanner 2!");
+  await page.reload();
+  await expect(site.editor.getByLabel("欄位內容", { exact: true })).toHaveValue("Line 1\nLine 2!");
+  await expect(site.editor.getByLabel("引言", { exact: true })).toHaveValue("Quote 1\nQuote 2!");
+  await expect(site.editor.getByLabel("橫幅文字", { exact: true })).toHaveValue("Banner 1\nBanner 2!");
+});
+test("opening avatar then immediate Escape closes only its panel", async ({ page }) => {
+  const { editor } = await open(page, { width: 375 });
+  await editor.locator(".about-avatar-toggle").click();
+  await page.keyboard.press("Escape");
+  await expect(editor).toBeVisible();
+  await expect(editor.locator(".about-avatar-panel")).toHaveCount(0);
+  await expect(editor.locator(".about-avatar-toggle")).toBeFocused();
 });

@@ -132,10 +132,12 @@ test('adding the same module type does not carry unfinished input into the new w
   await fixture(page);
   await page.locator('.m-icon').click();
   await page.locator('.m-edit-toggle').click();
+  await page.locator('.gal-editor-toolbar button[aria-expanded]').click();
   await page.getByLabel('新增圖片網址', { exact: true }).fill('https://unfinished-old-window');
   await page.locator('.m-toolbar').getByRole('button', { name: '新增', exact: true }).click();
   await page.getByRole('dialog', { name: '新增元件', exact: true }).getByRole('button', { name: /^相簿視窗/ }).click();
   await expect(page.locator('.m-edit-toggle')).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('.gal-editor-toolbar button[aria-expanded]').click();
   await expect(page.getByLabel('新增圖片網址', { exact: true })).toHaveValue('');
   await expect(page.locator('.m-icon')).toHaveCount(2);
 });

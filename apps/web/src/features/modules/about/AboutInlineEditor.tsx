@@ -33,10 +33,10 @@ function AboutCardEditor({ window, ctx, update }: ModuleProps<"about">) {
   const restoreAvatarFocus = useRef(false);
   const newFieldInput = useRef<HTMLInputElement>(null);
   const socialInput = useRef<HTMLInputElement>(null);
-  const fieldValues = useRef(new Map<string, HTMLInputElement>());
+  const fieldValues = useRef(new Map<string, HTMLTextAreaElement>());
   const pendingField = useRef<string | null>(null);
   const pendingAddFocus = useRef<"field" | "social" | null>(null);
-  const bio = useRef<HTMLTextAreaElement>(null);
+  const editor = useRef<HTMLDivElement>(null);
   const composing = useRef(false);
   // Locale deltas are merged by the integration branch; retain translated legacy fallbacks.
   const text = (key: string, fallback: ParseKeys<"modules">): string => {
@@ -55,8 +55,8 @@ function AboutCardEditor({ window, ctx, update }: ModuleProps<"about">) {
     }
   }, [content.fields, content.socials]);
   useLayoutEffect(() => {
-    if (bio.current) { bio.current.style.height = "auto"; bio.current.style.height = `${bio.current.scrollHeight}px`; }
-  }, [content.bio, ctx.mobile]);
+    editor.current?.querySelectorAll("textarea").forEach(field => { field.style.height = "auto"; field.style.height = `${field.scrollHeight}px`; });
+  }, [content.bio, content.quote, content.banner, content.fields, ctx.mobile]);
   const enter = (event: KeyboardEvent) => event.key === "Enter" && !composing.current && !event.nativeEvent.isComposing && event.keyCode !== 229;
   useLayoutEffect(() => {
     if (!avatarOpen && restoreAvatarFocus.current) { restoreAvatarFocus.current = false; avatarButton.current?.focus(); }
@@ -103,7 +103,17 @@ function AboutCardEditor({ window, ctx, update }: ModuleProps<"about">) {
   }
   const status = dragId ? text("dragStatus", "about.forExampleAFormOf") : focus?.startsWith("social:") ? text("socialStatus", "about.visitorsCanOpenThisLink") : text("editStatus", "about.editTheCardContentExpand");
   return (
-    <div className="about editing about-editor" onCompositionStart={() => { composing.current = true; }} onCompositionEnd={() => { composing.current = false; }} data-mobile={ctx.mobile || undefined} style={{ background: tv.face, color: tv.text }}>
+    <div ref={editor} onFocusCapture={event => {
+      const target = event.target as HTMLElement;
+      requestAnimationFrame(() => {
+        if (document.activeElement !== target || !editor.current?.contains(target)) return;
+        const host = ctx.mobile ? editor.current.closest(".m-win-body") : editor.current.querySelector(".about-editor-scroll");
+        if (!host) return;
+        const bounds = host.getBoundingClientRect(), field = target.getBoundingClientRect();
+        if (field.bottom > bounds.bottom - 4) host.scrollTop += field.bottom - bounds.bottom + 4;
+        else if (field.top < bounds.top + 4) host.scrollTop -= bounds.top - field.top + 4;
+      });
+    }} onKeyDown={event => { if (avatarOpen && event.key === "Escape" && event.currentTarget.contains(event.target as Node)) { event.preventDefault(); event.stopPropagation(); closeAvatar(); } }} className="about editing about-editor" onCompositionStart={() => { composing.current = true; }} onCompositionEnd={() => { composing.current = false; }} data-mobile={ctx.mobile || undefined} style={{ background: tv.face, color: tv.text }}>
       <div className="about-editor-scroll">
         <div className="about-socials">
           {content.socials.map((social, index) => {
@@ -128,7 +138,7 @@ function AboutCardEditor({ window, ctx, update }: ModuleProps<"about">) {
               onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setAvatarOver(false); }}
               onDrop={event => { if (!event.dataTransfer.files.length) return; event.preventDefault(); event.stopPropagation(); setAvatarOver(false); uploadAvatar(event.dataTransfer.files[0]); }}>
               {content.avatar ? <AvatarImage src={content.avatar} crop={content.avatarCrop} alt={tr("about.avatarPreview")} /> : <span className="about-avatar-empty">{text("dropAvatar", "about.noAvatarSetYet")}</span>}
-              <button ref={avatarButton} type="button" className="mini-btn wide about-avatar-toggle" aria-expanded={avatarOpen} onMouseDown={event => { if (avatarOpen) event.preventDefault(); }} onClick={() => { if (avatarOpen) closeAvatar(); else setAvatarOpen(true); }}>{content.avatar ? tr("about.changeAvatar") : tr("about.uploadAvatar")}</button>
+              <button ref={avatarButton} type="button" className="mini-btn wide about-avatar-toggle" aria-expanded={avatarOpen} onMouseDown={event => { if (avatarOpen) event.preventDefault(); }} onClick={event => { if (avatarOpen) closeAvatar(); else { event.currentTarget.focus({ preventScroll: true }); setAvatarOpen(true); } }}>{content.avatar ? tr("about.changeAvatar") : tr("about.uploadAvatar")}</button>
             </div>
             {avatarOpen ? <div className="about-avatar-panel" role="group" aria-label={tr("about.avatarSettings")} style={{ background: tv.face, boxShadow: tv.bevel }} onKeyDown={event => { if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); closeAvatar(); } }}>
               <FilePick onFiles={files => uploadAvatar(files[0])}>{content.avatar ? tr("about.changeAvatar") : tr("about.uploadAvatar")}</FilePick>
@@ -150,7 +160,7 @@ function AboutCardEditor({ window, ctx, update }: ModuleProps<"about">) {
               <div className="about-field" style={{ border: `1px solid ${tv.shadow}` }}>
                 <input className="about-direct about-field-key" value={field.key} size={Math.min(12, Math.max(3, field.key.length + 1))} maxLength={100} aria-label={tr("about.fieldName")} placeholder={tr("about.fieldName")} onChange={event => { const value = event.currentTarget.value; setFields(list => list.map(item => item.id === field.id ? { ...item, key: value } : item), `field:${field.id}:key`); }} onKeyDown={event => { if (enter(event)) { event.preventDefault(); fieldValues.current.get(field.id)?.focus(); } }} />
                 <span>: </span>
-                <input ref={element => { if (element) fieldValues.current.set(field.id, element); else fieldValues.current.delete(field.id); }} className="about-direct about-field-value" value={field.value} maxLength={500} aria-label={tr("about.fieldContent")} placeholder={tr("about.content")} onChange={event => { const value = event.currentTarget.value; setFields(list => list.map(item => item.id === field.id ? { ...item, value } : item), `field:${field.id}:value`); }} onKeyDown={event => { if (enter(event)) { event.preventDefault(); newFieldInput.current?.focus(); } }} />
+                <textarea rows={1} ref={element => { if (element) fieldValues.current.set(field.id, element); else fieldValues.current.delete(field.id); }} className="about-direct about-field-value" value={field.value} maxLength={500} aria-label={tr("about.fieldContent")} placeholder={tr("about.content")} onChange={event => { const value = event.currentTarget.value; setFields(list => list.map(item => item.id === field.id ? { ...item, value } : item), `field:${field.id}:value`); }} onKeyDown={event => { if (enter(event) && !event.shiftKey) { event.preventDefault(); newFieldInput.current?.focus(); } }} />
               </div>
               <MiniBtn label={tr("about.deleteField")} danger onClick={() => { pendingAddFocus.current = "field"; setFields(list => list.filter(item => item.id !== field.id)); }}>×</MiniBtn>
             </div>)}
@@ -159,13 +169,13 @@ function AboutCardEditor({ window, ctx, update }: ModuleProps<"about">) {
             </div>
             {content.fields.length >= 50 ? <span>{tr("about.youveReachedTheLimitOf")}</span> : null}
             <input className="about-direct about-details-title" value={content.detailsTitle} maxLength={100} aria-label={tr("about.tagline")} onChange={event => patch({ detailsTitle: event.currentTarget.value }, "details-title")} />
-            <textarea ref={bio} className="about-direct about-bio" rows={2} value={content.bio} maxLength={5000} placeholder={tr("about.introduceYourselfOneLinePer")} aria-label={tr("about.bio")} onChange={event => patch({ bio: event.currentTarget.value }, "bio")} />
-            <input className="about-direct about-quote" value={content.quote} maxLength={500} placeholder={tr("about.aLineYoudLikeTo")} aria-label={tr("about.quote")} onChange={event => patch({ quote: event.currentTarget.value }, "quote")} />
+            <textarea className="about-direct about-bio" rows={2} value={content.bio} maxLength={5000} placeholder={tr("about.introduceYourselfOneLinePer")} aria-label={tr("about.bio")} onChange={event => patch({ bio: event.currentTarget.value }, "bio")} />
+            <textarea rows={1} className="about-direct about-quote" value={content.quote} maxLength={500} placeholder={tr("about.aLineYoudLikeTo")} aria-label={tr("about.quote")} onChange={event => patch({ quote: event.currentTarget.value }, "quote")} />
           </div>
         </div>
         <div className="about-foot">
           <div className="about-bar" style={{ boxShadow: tv.sunken }}><span>‹</span><input className="about-direct about-nickname" value={content.nickname} maxLength={160} aria-label={tr("about.nickname")} onChange={event => patch({ nickname: event.currentTarget.value }, "nickname")} /><span className="about-time">{new Date().toTimeString().slice(0, 5)}</span></div>
-          <div className="about-banner" data-empty={!content.banner || undefined}><input className="about-direct" value={content.banner} maxLength={500} placeholder={text("addBanner", "about.bannerTextOptional")} aria-label={tr("about.bannerText")} onChange={event => patch({ banner: event.currentTarget.value }, "banner")} /></div>
+          <div className="about-banner" data-empty={!content.banner || undefined}><textarea rows={1} className="about-direct" value={content.banner} maxLength={500} placeholder={text("addBanner", "about.bannerTextOptional")} aria-label={tr("about.bannerText")} onChange={event => patch({ banner: event.currentTarget.value }, "banner")} /></div>
         </div>
         <UploadTaskList tasks={media.tasks} onRetry={media.retry} onDismiss={media.dismiss} />
       </div>

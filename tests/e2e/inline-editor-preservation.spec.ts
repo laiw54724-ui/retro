@@ -43,6 +43,7 @@ async function openEditor(page: Page, type: "document" | "gallery" | "about", wi
 
 test("gallery composition confirmation does not insert and clear an unfinished URL", async ({ page }) => {
   const { editor } = await openEditor(page, "gallery");
+  await editor.locator(".gal-editor-toolbar button[aria-expanded]").click();
   const input = editor.getByLabel("新增圖片網址", { exact: true });
   await input.fill("https://assets.test/composing.png");
   await input.dispatchEvent("compositionstart", { data: "" });
@@ -57,6 +58,7 @@ test("gallery composition confirmation does not insert and clear an unfinished U
   await expect(editor.locator(".gal-editor-thumb")).toHaveCount(3);
   await input.press("Enter");
   await expect(editor.locator(".gal-editor-thumb")).toHaveCount(4);
+  await editor.locator(".gal-editor-toolbar button[aria-expanded]").click();
   await expect(input).toHaveValue("");
 });
 
@@ -74,24 +76,24 @@ test("gallery deleting selected image keeps keyboard focus in its thumbnail list
   await editor.getByRole("button", { name: "刪除圖片", exact: true }).click();
   await expect(editor.locator('[data-image-id="one"]')).toBeFocused();
   await editor.getByRole("button", { name: "刪除圖片", exact: true }).click();
-  await expect(editor.getByLabel("新增圖片網址", { exact: true })).toBeFocused();
+  await expect(editor.locator(".gal-editor-toolbar button[aria-expanded]")).toBeFocused();
 });
 
 test("document deleting selected block keeps keyboard focus on the next block", async ({ page }) => {
   const { editor } = await openEditor(page, "document");
   await editor.locator('[data-block-id="one"] img').click();
   await expect(editor.getByLabel("圖片網址", { exact: true })).toBeVisible();
-  await editor.getByRole("button", { name: "刪除區塊", exact: true }).click();
-  await expect(editor.locator('[data-block-id="two"]')).toBeFocused();
+  await editor.locator('.doc-block[data-active="true"]').getByRole("button", { name: "刪除區塊", exact: true }).click();
+  await expect(editor.locator('[data-block-id="two"] [data-primary]')).toBeFocused();
   await page.getByRole("button", { name: "復原", exact: true }).click();
   await expect(editor.locator('[data-block-id="one"]')).toBeVisible();
   await expect(editor.getByLabel("段落", { exact: true })).toHaveValue("Keep this paragraph");
   await page.getByRole("button", { name: "重做", exact: true }).click();
   await expect(editor.locator('[data-block-id="one"]')).toHaveCount(0);
-  await editor.getByRole("button", { name: "刪除區塊", exact: true }).click();
+  await editor.locator('.doc-block[data-active="true"]').getByRole("button", { name: "刪除區塊", exact: true }).click();
   await expect(editor.locator('[data-block-id="three"]')).toBeFocused();
-  await editor.getByRole("button", { name: "刪除區塊", exact: true }).click();
-  await expect(editor.locator('.add-bar button').first()).toBeFocused();
+  await editor.locator('.doc-block[data-active="true"]').getByRole("button", { name: "刪除區塊", exact: true }).click();
+  await expect(editor.locator(".doc-append")).toBeFocused();
 });
 
 for (const width of [320, 390, 430]) {
@@ -145,8 +147,8 @@ for (const width of [320, 390, 430]) {
     await image.locator("img").tap();
     await expect(image.getByLabel("圖說", { exact: true })).toHaveValue("Original legacy caption");
     await expect(image.getByLabel("替代文字", { exact: true })).toHaveValue("Independent description");
-    await editor.getByRole("button", { name: "刪除區塊", exact: true }).tap();
-    await expect(editor.locator('[data-block-id="two"]')).toBeFocused();
+    await editor.locator('.doc-block[data-active="true"]').getByRole("button", { name: "刪除區塊", exact: true }).tap();
+    await expect(editor.locator('[data-block-id="two"] [data-primary]')).toBeFocused();
   });
 
   test(`About text and custom fields retain focus and persist at ${width}px`, async ({ page }, testInfo) => {
@@ -157,8 +159,8 @@ for (const width of [320, 390, 430]) {
     await nickname.fill("LongNickname".repeat(12));
     await expect(nickname).toBeFocused();
     await editor.getByLabel("簡介", { exact: true }).fill("About text\n".repeat(40));
-    await editor.locator(".about-editor-section > summary").filter({ hasText: "自訂欄位" }).tap();
-    await editor.getByRole("button", { name: "＋ 新增欄位", exact: true }).tap();
+    await editor.getByLabel("＋ 新增欄位", { exact: true }).fill("新欄位");
+    await editor.getByLabel("＋ 新增欄位", { exact: true }).press("Enter");
     const key = editor.getByLabel("欄位名稱", { exact: true }).last();
     await key.fill("自訂欄位".repeat(20));
     await expect(key).toBeFocused();
@@ -170,7 +172,6 @@ for (const width of [320, 390, 430]) {
     await reopenMobile(page, "about.exe");
     await expect(nickname).toHaveValue("LongNickname".repeat(12));
     await expect(editor.getByLabel("簡介", { exact: true })).toHaveValue("About text\n".repeat(40));
-    await editor.locator(".about-editor-section > summary").filter({ hasText: "自訂欄位" }).tap();
     await expect(editor.getByLabel("欄位名稱", { exact: true }).last()).toHaveValue("自訂欄位".repeat(20));
     await expect(editor.getByLabel("欄位內容", { exact: true }).last()).toHaveValue("LongValue".repeat(50));
   });

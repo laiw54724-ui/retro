@@ -353,7 +353,18 @@
     "customFieldsCount": "Custom fields ({{count}})",
     "fieldN": "Field {{n}}",
     "socialsCount": "Social links ({{count}})",
-    "socialN": "Social {{n}}"
+    "socialN": "Social {{n}}",
+    "inline": {
+      "pasteSocial": "＋ Paste a social URL",
+      "dropAvatar": "Drop a photo here",
+      "addField": "＋ Add a field (e.g. birthday)",
+      "addBanner": "＋ Add a banner",
+      "close": "Close",
+      "reorder": "Drag to reorder · Alt+↑/↓",
+      "dragStatus": "Drop at the desired position",
+      "socialStatus": "Edit the social name and URL · × deletes",
+      "editStatus": "Edit any text · Enter moves to the next field · Drag ⋮⋮ to reorder"
+    }
   },
   "explorer": {
     "untitledWindow": "(Untitled window)",
