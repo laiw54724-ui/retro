@@ -335,7 +335,7 @@ test.describe("desktop touch chrome", () => {
   test("layout overlay leaves the entire enlarged control target clickable", async ({ page }) => {
     const site = await mockCanonicalSite(page);
     await page.goto("/editor/site-1");
-    await page.locator(".icon-layer").click({ position: { x: 600, y: 440 } });
+    await page.locator(".icon-layer").click({ position: { x: 90, y: 440 } });
     await page.getByRole("button", { name: "▦ 進入桌面排版模式", exact: true }).click();
     const live = page.getByRole("dialog", { name: "About.exe", exact: true });
     for (const name of ["最小化", "最大化", "關閉"]) {

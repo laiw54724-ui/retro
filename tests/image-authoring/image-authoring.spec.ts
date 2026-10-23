@@ -283,7 +283,7 @@ test("shell Edit content opens the existing Image inspector after the sidebar is
   await page.getByRole("button", { name: "Add component", exact: true }).click();
   await page.getByRole("dialog", { name: "Add component", exact: true }).getByRole("button", { name: /Upload an image or use an image link/ }).click();
   await page.getByRole("button", { name: "Collapse Right properties panel", exact: true }).click();
-  await page.getByRole("group", { name: "Selected component actions" }).getByRole("button", { name: "Edit content", exact: true }).click();
+  await page.getByRole("toolbar", { name: "Selected component actions" }).getByRole("button", { name: "Edit content", exact: true }).click();
   await expect(page.locator("#editor-right-panel").getByLabel("Image URL", { exact: true })).toBeVisible();
 });
 
@@ -293,5 +293,5 @@ test("shell Image content entry stays disabled without the compatible writer", a
   await fixture(page, { legacy, advertisement: { appearanceP2: 1 } });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/editor/site-1");
-  await expect(page.getByRole("group", { name: "Selected component actions" }).getByRole("button", { name: "Edit content", exact: true })).toBeDisabled();
+  await expect(page.getByRole("toolbar", { name: "Selected component actions" }).getByRole("button", { name: "Edit content", exact: true })).toBeDisabled();
 });

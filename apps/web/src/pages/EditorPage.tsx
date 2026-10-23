@@ -666,6 +666,8 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
   const layoutMode = store.layoutMode && store.device === "desktop";
   const actions = collaborationActions(store.accessRole);
+  const selectedMaximized = !!selected && store.viewState[selected.id] === "max";
+  const selectedActions = selected && !layoutMode ? <WindowActionBar title={selected.title} imageWindow={selected.type === "image"} editing={selected.type !== "image" && !readWindows.has(selected.id)} onEdit={editSelectedContent} onDone={() => setReadWindows(current => new Set(current).add(selected.id))} onIcon={() => openInspector("icon")} onSettings={() => openInspector("general")} onDuplicate={() => store.duplicateWindow(selected.id)} onDelete={() => store.deleteWindow(selected.id)} /> : null;
   function closeCollaboration() {
     setCollaborationOpen(false);
     window.requestAnimationFrame(() => collaborationButtonRef.current?.focus());
@@ -781,10 +783,12 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         <section className={`editor-stage2 ${shellStyles.stage}`}>
           {store.device === "desktop" && !layoutMode ? <div className={shellStyles.bar}>
             <button type="button" className="w98-btn primary" onClick={() => setAddOpen(true)}>{t("authoring.add")}</button>
-            {selected ? <WindowActionBar title={selected.title} imageWindow={selected.type === "image"} editing={selected.type !== "image" && !readWindows.has(selected.id)} onEdit={editSelectedContent} onDone={() => setReadWindows(current => new Set(current).add(selected.id))} onIcon={() => openInspector("icon")} onSettings={() => openInspector("general")} /> : <span className="w98-hint">{t("authoring.selectHint")}</span>}
+            {selectedMaximized ? selectedActions : null}
+            {!selected ? <span className="w98-hint">{t("authoring.selectHint")}</span> : null}
           </div> : null}
           {store.device === "desktop" ? (
             <DesktopCanvas
+              windowActions={selectedMaximized ? undefined : selectedActions}
               readWindowIds={readWindows}
               siteId={siteId}
               upload={uploadImage}

@@ -265,7 +265,7 @@ test("keyboard: F2 renames, Escape cancels, Delete removes a shortcut, Enter ope
 async function deleteLoreWindow(page: Page) {
   await page.getByRole("tab", { name: "視窗" }).click();
   await page.locator(".layer").filter({ hasText: "角色設定.txt" }).getByRole("button", { name: /角色設定\.txt/ }).click();
-  await page.getByRole("button", { name: "刪除視窗" }).click();
+  await page.locator("#editor-right-panel").getByRole("button", { name: "刪除視窗" }).click();
 }
 
 test("deleting a target lists the affected shortcuts first; cancel changes nothing and never blocks saving", async ({ page }, testInfo) => {
