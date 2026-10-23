@@ -9,6 +9,7 @@ import { DEFAULT_IMAGE_CROP } from "./presentation/placement";
 import { cropAfterDrag } from "./presentation/cropGesture";
 import { createImageContent, imageUploadOptions, patchImageContent } from "./model";
 import styles from "./ImageEditor.module.css";
+import { useEditorStore } from "../../editor/store";
 
 export { createImageContent };
 
@@ -24,7 +25,7 @@ export function ImageView({ window, ctx }: ModuleProps<"image">) {
 }
 
 const colorOf = (background: ImageContent["background"]) => typeof background === "object" ? background.color : "#ffffff";
-type Drag = { pointerId: number; source: string; startX: number; startY: number; crop: ImageCrop; latest: ImageCrop; stage: { width: number; height: number }; image: { width: number; height: number } };
+type Drag = { document: unknown; siteId: string | null; selectedId: string | null; content: ImageContent; pointerId: number; source: string; startX: number; startY: number; crop: ImageCrop; latest: ImageCrop; stage: { width: number; height: number }; image: { width: number; height: number } };
 
 export function ImageInlineEditor({ window, ctx, update }: ModuleProps<"image">) {
   const { t } = useTranslation("modules");
@@ -34,6 +35,7 @@ export function ImageInlineEditor({ window, ctx, update }: ModuleProps<"image">)
   const content = window.content;
   const crop = content.crop ?? DEFAULT_IMAGE_CROP;
   const drag = useRef<Drag | null>(null);
+  const surface = useRef<HTMLDivElement>(null);
   const [pendingCrop, setPendingCrop] = useState<ImageCrop | null>(null);
   const canUpload = !!(ctx.editing && ctx.siteId && ctx.upload);
   const key = (field: string) => `image:${window.id}:${field}`;
@@ -41,7 +43,23 @@ export function ImageInlineEditor({ window, ctx, update }: ModuleProps<"image">)
     update((current) => patchImageContent(current, change), field ? key(field) : undefined);
   const patchCrop = (change: Partial<ImageCrop>, field: string) =>
     update((current) => patchImageContent(current, { crop: { ...(current.content.crop ?? DEFAULT_IMAGE_CROP), ...change } }), key(`crop:${field}`));
-  useEffect(() => { drag.current = null; setPendingCrop(null); }, [content.src, window.id]);
+  function cancelDrag() {
+    const gesture = drag.current;
+    drag.current = null;
+    setPendingCrop(null);
+    if (gesture && surface.current?.hasPointerCapture(gesture.pointerId)) surface.current.releasePointerCapture(gesture.pointerId);
+  }
+  useEffect(() => {
+    const unsubscribe = useEditorStore.subscribe((next, before) => {
+      if (next.document !== before.document || next.versionedDocument !== before.versionedDocument || next.siteId !== before.siteId || next.selectedId !== before.selectedId || next.device !== before.device) cancelDrag();
+    });
+    const historyKey = (event: globalThis.KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && ["z", "y"].includes(event.key.toLowerCase()) || event.key === "Escape") cancelDrag();
+    };
+    document.addEventListener("keydown", historyKey, true);
+    return () => { unsubscribe(); document.removeEventListener("keydown", historyKey, true); cancelDrag(); };
+  }, []);
+  useEffect(cancelDrag, [content.src, window.id, ctx.siteId, ctx.editing]);
 
   function startDrag(event: PointerEvent<HTMLDivElement>) {
     if (!content.src || event.button !== 0 || drag.current || !(event.target instanceof HTMLImageElement)) return;
@@ -49,7 +67,9 @@ export function ImageInlineEditor({ window, ctx, update }: ModuleProps<"image">)
     if (!stage || !event.target.naturalWidth || !event.target.naturalHeight) return;
     const stageRect = stage.getBoundingClientRect();
     const imageRect = event.target.getBoundingClientRect();
+    const state = useEditorStore.getState();
     drag.current = {
+      document: state.versionedDocument ?? state.document, siteId: state.siteId, selectedId: state.selectedId, content,
       pointerId: event.pointerId, source: content.src, startX: event.clientX, startY: event.clientY,
       crop: { ...crop }, latest: { ...crop }, stage: { width: stageRect.width, height: stageRect.height },
       image: { width: imageRect.width, height: imageRect.height }
@@ -74,9 +94,10 @@ export function ImageInlineEditor({ window, ctx, update }: ModuleProps<"image">)
     if (gesture?.pointerId !== event.pointerId) return;
     drag.current = null;
     setPendingCrop(null);
-    if (event.type === "pointerup" && gesture.source === content.src &&
+    const state = useEditorStore.getState();
+    if (event.type === "pointerup" && gesture.document === (state.versionedDocument ?? state.document) && gesture.siteId === state.siteId && gesture.selectedId === state.selectedId && gesture.source === content.src &&
       (gesture.latest.x !== gesture.crop.x || gesture.latest.y !== gesture.crop.y)) {
-      update((current) => current.content.src === gesture.source
+      update((current) => current.content === gesture.content && current.content.src === gesture.source
         ? patchImageContent(current, { crop: gesture.latest }) : current);
     }
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
@@ -85,7 +106,7 @@ export function ImageInlineEditor({ window, ctx, update }: ModuleProps<"image">)
   return (
     <section className={styles.editor} aria-label={t("image.settings")}>
       <div className={styles.canvas}>
-        <div className={styles.preview} onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>
+        <div ref={surface} className={styles.preview} onLostPointerCapture={cancelDrag} onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>
           <ImagePresentation
             source={content.src} alt={content.alt} caption={content.caption}
             showCaption={content.showCaption} fit={content.fit} crop={pendingCrop ?? content.crop}

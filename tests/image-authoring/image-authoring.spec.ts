@@ -339,3 +339,54 @@ test("shell Image content entry stays disabled without the compatible writer", a
   await page.goto("/editor/site-1");
   await expect(page.getByRole("group", { name: "Selected component actions" }).getByRole("button", { name: "Edit content", exact: true })).toBeDisabled();
 });
+
+for (const action of ["Control+z", "Meta+z", "Control+Shift+z", "Escape", "document", "selection", "pointercancel"]) test(`crop drag is invalidated by ${action} without a stale release commit`, async ({ page }) => {
+  const site = await fixture(page);
+  await page.setViewportSize({ width: 1440, height: 900 }); await page.goto("/editor/site-1");
+  await page.locator(".add-card").filter({ hasText: "Upload an image or use an image link" }).click();
+  const editor = page.getByRole("region", { name: "Image settings", exact: true });
+  await editor.getByLabel("Image URL", { exact: true }).fill(SOURCE);
+  await editor.getByLabel("Image URL", { exact: true }).press("Enter");
+  await editor.getByRole("combobox", { name: "Fit", exact: true }).selectOption("cover");
+  await editor.getByRole("button", { name: "Zoom in", exact: true }).click();
+  await editor.getByRole("button", { name: "Align left", exact: true }).click();
+  if (action === "Control+Shift+z") await page.keyboard.press("Control+z");
+  const read = () => page.evaluate(async () => { const { useEditorStore } = await import("/src/features/editor/store.ts"); const s=useEditorStore.getState(); return s.document?.windows.find(w=>w.type==="image")?.content.crop; });
+  await expect.poll(async () => (await read())?.x).toBe(action === "Control+Shift+z" ? 50 : 0);
+  const displayed = editor.locator("[data-testid='image-stage'] img");
+  await expect.poll(() => displayed.evaluate((node: HTMLImageElement) => node.naturalWidth)).toBeGreaterThan(0);
+  const stage = editor.locator("[data-testid='image-stage']");
+  await stage.scrollIntoViewIfNeeded();
+  const b = await stage.boundingBox(); if (!b) throw new Error("stage bounds");
+  const before = await displayed.evaluate(node => node.style.left);
+  await page.mouse.move(b.x+b.width/2,b.y+b.height/2); await page.mouse.down();
+  await page.mouse.move(b.x+b.width/2-14,b.y+b.height/2,{steps:4});
+  await expect.poll(() => displayed.evaluate(node => node.style.left)).not.toBe(before);
+  if (action === "document") await page.evaluate(async () => { const {useEditorStore}=await import("/src/features/editor/store.ts");useEditorStore.getState().setSiteName("Changed while dragging"); });
+  else if (action === "selection") await page.evaluate(async () => { const {useEditorStore}=await import("/src/features/editor/store.ts");useEditorStore.getState().select(null); });
+  else if (action === "pointercancel") await displayed.dispatchEvent("pointercancel", {pointerId:1,bubbles:true});
+  else await page.keyboard.press(action);
+  const undone = await read();
+  const historyBeforeRelease = await page.evaluate(async () => { const {useEditorStore}=await import("/src/features/editor/store.ts"); const s=useEditorStore.getState(); return {document:s.versionedDocument,past:s.past.length,future:s.future.length}; });
+  await page.mouse.up();
+  expect(await page.evaluate(async () => { const {useEditorStore}=await import("/src/features/editor/store.ts"); const s=useEditorStore.getState(); return {document:s.versionedDocument,past:s.past.length,future:s.future.length}; })).toEqual(historyBeforeRelease);
+  const released = await read();
+  expect(released).toEqual(undone);
+});
+
+test("image on-canvas actions meet the 44px mobile target", async ({ page }, info) => {
+  await fixture(page);
+  await page.setViewportSize({ width: 320, height: 900 }); await page.goto("/editor/site-1");
+  await page.getByRole("toolbar", { name: "Mobile editor tools" }).getByRole("button", { name: "Add", exact: true }).click();
+  await page.locator(".m-sheet .m-add").filter({ hasText: "Upload an image or use an image link" }).click();
+  const editor = page.getByRole("region", { name: "Image settings", exact: true });
+  await editor.getByLabel("Image URL", { exact: true }).fill(SOURCE);
+  await editor.getByLabel("Image URL", { exact: true }).press("Enter");
+  const toolbar = editor.getByRole("toolbar", { name: "Image positioning tools" });
+  await toolbar.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: info.outputPath("image-tools-320.png") });
+  const sizes = await toolbar.locator("button").evaluateAll(nodes => nodes.map(node => ({ name: node.getAttribute("aria-label"), w: node.getBoundingClientRect().width, h: node.getBoundingClientRect().height })));
+  expect(sizes).toHaveLength(8);
+  expect(sizes.every(size => size.w >= 44 && size.h >= 44)).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
