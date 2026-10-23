@@ -43,7 +43,20 @@
     "button": "按鈕",
     "hyperlink": "超連結",
     "list": "清單",
-    "divider": "分隔線"
+    "divider": "分隔線",
+    "inline": {
+      "paragraphStyle": "段落樣式",
+      "insert": "插入",
+      "reorder": "拖曳排序 · Alt+↑/↓",
+      "typeOrSlash": "輸入 / 插入其他區塊",
+      "dropImage": "拖曳圖片到這裡，或選擇檔案…",
+      "imagesOnly": "只能拖曳圖片檔進文件。",
+      "fileTooLarge": "請選擇不超過 8 MB 的圖片。",
+      "tooLongToConvert": "文字超過所選樣式的長度限制，請先縮短內容。",
+      "dragHint": "拖到插入線的位置後放開",
+      "status": "Enter 新增段落 · / 插入 · Alt+↑/↓ 排序",
+      "count": "{{count}} 個區塊"
+    }
   },
   "image": {
     "sourceChanged": "圖片來源已編輯，先前的上傳不會取代它。",
@@ -121,7 +134,20 @@
     "selectImage": "選取圖片 {{n}}：{{title}}",
     "countOfMax_one": "{{count}} / 200 張",
     "countOfMax_other": "{{count}} / 200 張",
-    "altNotCaption": "替代文字不會顯示為圖說。"
+    "altNotCaption": "替代文字不會顯示為圖說。",
+    "inline": {
+      "pasteUrls": "貼網址…",
+      "deselect": "取消選取",
+      "urlsPlaceholder": "貼上圖片網址，每行一張（支援 Google 雲端公開連結）。Shift+Enter 換行。",
+      "invalidUrls": "請貼上以 https:// 開頭的有效圖片網址。",
+      "skippedUrls": "部分行不是有效的 HTTPS 圖片網址，已略過。",
+      "invalidFiles": "只能加入 8 MB 以內的圖片，無效檔案已略過。",
+      "emptyDrop": "把照片拖進來，或點一下選擇。可以一次選多張。",
+      "dropHere": "放開就會加入相簿",
+      "sorting": "拖到想放的位置後放開（藍線是插入位置）",
+      "selectionHint": "拖曳縮圖排序 · ← → 切換 · Alt+← → 移動 · Delete 刪除",
+      "browseHint": "點縮圖編輯標題和連結，拖曳可以排序"
+    }
   },
   "lightbox": {
     "imageViewer": "圖片檢視",
@@ -156,7 +182,29 @@
     "newLink": "新連結",
     "addLink": "＋ 新增連結",
     "youveReachedTheLimitOf": "已達 100 個連結上限。",
-    "linkN": "第 {{n}} 個連結"
+    "linkN": "第 {{n}} 個連結",
+    "inline": {
+      "mailLabel": "寄信給我",
+      "invalidPaste": "這看起來不像網址。試試 https://… 或 email。",
+      "imageOnly": "請選擇圖片檔。",
+      "imageTooLarge": "圖片要小於 8 MB。",
+      "pasteLabel": "貼上網址，自動做成按鈕",
+      "add": "＋ 加入",
+      "preview": "會建立：{{name}} 按鈕（之後都能改）",
+      "reorder": "拖曳排序（Alt+↑/↓）",
+      "changeColor": "換顏色",
+      "fullLibrary": "完整圖庫…",
+      "colorHint": "按鈕顏色（文字會自動變黑或白）",
+      "blank": "＋ 空白按鈕",
+      "dragHint": "拖到想放的位置後放開",
+      "missing": "{{count}} 個按鈕還沒設定目的地（紅色標示）",
+      "hint": "直接改字 · 點圖示／色球 · 拖 ⋮⋮ 排序",
+      "count": "{{count}} 個連結",
+      "openUrl": "開啟網址",
+      "openWindow": "打開我桌面上的視窗",
+      "noWindows": "桌面上還沒有其他視窗。",
+      "done": "完成"
+    }
   },
   "iconPicker": {
     "builtIn": "{{v1}}（內建）",
@@ -305,7 +353,18 @@
     "customFieldsCount": "自訂欄位（{{count}}）",
     "fieldN": "欄位 {{n}}",
     "socialsCount": "社群連結（{{count}}）",
-    "socialN": "社群 {{n}}"
+    "socialN": "社群 {{n}}",
+    "inline": {
+      "pasteSocial": "＋ 貼社群網址",
+      "dropAvatar": "把照片拖到這裡",
+      "addField": "＋ 新增欄位（例如：生日）",
+      "addBanner": "＋ 加一條橫幅",
+      "close": "關閉",
+      "reorder": "拖曳排序 · Alt+↑/↓",
+      "dragStatus": "拖到想放的位置後放開",
+      "socialStatus": "改社群名稱與網址 · × 刪除",
+      "editStatus": "直接改字 · Enter 跳到下一格 · 拖 ⋮⋮ 排序"
+    }
   },
   "explorer": {
     "untitledWindow": "（未命名視窗）",
@@ -356,7 +415,32 @@
     "deletedTheFolderTheOriginal": "已刪除資料夾「{{name}}」。原本的內容沒有被刪除，可以用「復原」找回。",
     "folderName": "資料夾名稱",
     "shortcutName": "捷徑名稱",
-    "folderEmpty": "這個資料夾是空的。"
+    "folderEmpty": "這個資料夾是空的。",
+    "inline": {
+      "tree": "資料夾樹",
+      "search": "搜尋資料夾與捷徑",
+      "selectMode": "選取項目",
+      "actions": "項目操作",
+      "open": "開啟",
+      "cut": "剪下",
+      "paste": "貼上 {{count}} 個到這裡",
+      "cutStatus": "已剪下 {{count}} 個項目，到目的資料夾貼上",
+      "moved": "已移動 {{count}} 個項目到「{{path}}」",
+      "selected": "已選取 {{count}} 個項目",
+      "count": "{{count}} 個項目",
+      "dragHint": "拖到資料夾、左邊的樹或上方路徑上放開",
+      "hint": "拖曳整理 · 雙擊開資料夾 · Ctrl/Shift 多選 · 右鍵看更多",
+      "touchHint": "點資料夾開啟 · 用「選取項目」整理或改名",
+      "renameHint": "輸入名稱 · Enter 確定 · Esc 取消",
+      "broken": "{{count}} 個捷徑目標不存在，開啟項目操作可修復",
+      "confirmDelete": "刪除選取項目？將刪除 {{folders}} 個資料夾及 {{shortcuts}} 個捷徑。原本的視窗和貼文不會被刪除。",
+      "deleted": "已刪除 {{count}} 個項目；原本的視窗與貼文保留，可復原",
+      "noResults": "沒有符合的項目",
+      "expand": "展開 {{name}}",
+      "collapse": "收合 {{name}}",
+      "searchTarget": "搜尋視窗、OC、貼文",
+      "changeIcon": "換圖示…"
+    }
   },
   "explorerDialogs": {
     "search": "搜尋",
@@ -426,7 +510,21 @@
     "textLabel": "文字：{{content}}",
     "imageLabel": "圖片：{{alt}}",
     "blank": "空白",
-    "untitled": "未命名"
+    "untitled": "未命名",
+    "inline": {
+      "invalidImage": "請選擇 8 MB 以下的圖片。",
+      "dropImages": "放開以加入圖片",
+      "resize": "調整大小：{{handle}}",
+      "smallerText": "縮小字級",
+      "largerText": "放大字級",
+      "replaceImage": "換圖…",
+      "selectedCount": "已選 {{count}} 個",
+      "dragHint": "拖曳移動 · 按住 Alt 暫停吸附",
+      "lockedHint": "物件已鎖定 · 解鎖後可移動與縮放",
+      "selectionHint": "方向鍵移動 · Shift 多選 · Enter 編輯文字",
+      "emptyHint": "點選物件或拖入圖片 · 貼上文字或圖片",
+      "preciseGeometry": "精確位置與尺寸"
+    }
   },
   "export": {
     "thisBrowserDoesntSupportCanvas": "瀏覽器不支援 Canvas 匯出",

@@ -43,6 +43,7 @@ for (const width of [320, 375, 390, 430]) {
     await fixture(page);
     await page.locator(".m-icon").click();
     await page.locator(".m-edit-toggle").click();
+    await page.locator(".gal-editor-toolbar button[aria-expanded]").click();
     const input = page.getByLabel("新增圖片網址", { exact: true });
     await input.fill("https://unfinished");
     await input.focus();
@@ -94,7 +95,8 @@ test("English visual-viewport-only resize retains input, chrome and height throu
   await fixture(page);
   await page.locator(".m-icon").click();
   await page.locator(".m-edit-toggle").click();
-  const input = page.locator("#gallery-url-gallery");
+  await page.locator(".gal-editor-toolbar button[aria-expanded]").click();
+  const input = page.locator(".gal-add-url textarea");
   await input.fill("https://unfinished");
   await page.addStyleTag({ content: ":root { --m-safe-bottom: 34px; }" });
   const resizeVisual = async (height: number, scale: number) => page.evaluate(({ height, scale }) => {

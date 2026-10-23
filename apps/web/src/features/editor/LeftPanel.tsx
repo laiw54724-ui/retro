@@ -6,7 +6,7 @@ import { AddWindowCatalog } from "./AddWindowDialog";
 
 import { useEditorStore } from "./store";
 import { ThemeAppearanceEditor } from "./ThemeAppearanceEditor";
-import { FilePick } from "../modules/ui";
+import { FileUploadButton } from "../modules/ui";
 import { useLocaleFormatting } from "../../i18n/format";
 
 type Tab = "add" | "layers" | "theme";

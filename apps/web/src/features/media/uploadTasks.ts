@@ -6,6 +6,8 @@ export type UploadStatus = "queued" | "uploading" | "completed" | "failed";
 export type UploadTask = {
   id: string;
   scope: string;
+  /** Target field, exposed without file bytes so editors can count pending additions. */
+  slot?: string;
   name: string;
   status: UploadStatus;
   attempts: number;
@@ -71,7 +73,7 @@ export class UploadTaskQueue {
     }
     const id = crypto.randomUUID();
     this.entries.set(id, {
-      view: { id, scope: options.scope, name: file.name, status: "queued", attempts: 0, retryable: false, error: "" },
+      view: { id, scope: options.scope, slot: options.slot, name: file.name, status: "queued", attempts: 0, retryable: false, error: "" },
       file, options, applying: false
     });
     this.emit();

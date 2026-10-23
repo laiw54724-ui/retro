@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type SyntheticEvent } from "react";
 import type { ImageCrop } from "@retrodesk/shared";
 import { useAssetSourceState } from "../../../../lib/assetSource";
-import { SafeImg } from "../../ui";
+import { FallbackImage } from "../../ui";
 import { imagePlacement, type ImageFit, type ImageSize } from "./placement";
 import styles from "./ImagePresentation.module.css";
 
@@ -94,7 +94,7 @@ export function ImagePresentation({
         onErrorCapture={imageFailed}
         data-testid="image-stage"
       >
-        {resolved && !failed ? <SafeImg key={resolved} src={resolved} alt={decorative ? "" : alt} className={styles.image} style={imageStyle} compact /> : null}
+        {resolved && !failed ? <FallbackImage key={resolved} src={resolved} alt={decorative ? "" : alt} className={styles.image} style={imageStyle} compact /> : null}
         {!source ? <span className={styles.state} role={pointerThrough ? undefined : "status"}>No image</span> : null}
         {source && !failed && !placement ? <span className={styles.state} role={pointerThrough ? undefined : "status"}>Loading image</span> : null}
         {failed ? <span className={styles.state} role={pointerThrough ? undefined : "alert"}>Image unavailable</span> : null}

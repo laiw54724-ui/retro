@@ -98,6 +98,7 @@ async function openEditor(page: Page, document: SiteDocument) {
   await page.goto("/editor/site-1");
   const player = page.getByRole("dialog", { name: "Music.exe" });
   await expect(player).toBeVisible();
+  await player.locator(".music-source-chip").click();
   return { player, saves };
 }
 

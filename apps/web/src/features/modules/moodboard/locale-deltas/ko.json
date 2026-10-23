@@ -1,0 +1,18 @@
+{
+  "moodboard": {
+    "inline": {
+      "invalidImage": "8 MB 이하의 이미지를 선택하세요.",
+      "dropImages": "놓아서 이미지 추가",
+      "resize": "크기 조절: {{handle}}",
+      "smallerText": "글자 크기 줄이기",
+      "largerText": "글자 크기 늘리기",
+      "replaceImage": "이미지 교체…",
+      "selectedCount": "{{count}}개 선택됨",
+      "dragHint": "드래그하여 이동 · Alt 키로 맞춤 일시 중지",
+      "lockedHint": "잠긴 개체 · 이동하거나 크기를 조절하려면 잠금 해제",
+      "selectionHint": "방향키로 이동 · Shift로 다중 선택 · Enter로 텍스트 편집",
+      "emptyHint": "개체 선택 또는 이미지 끌어오기 · 텍스트나 이미지 붙여넣기",
+      "preciseGeometry": "정확한 위치와 크기"
+    }
+  }
+}

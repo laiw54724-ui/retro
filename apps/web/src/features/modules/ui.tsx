@@ -7,7 +7,7 @@ import { useAssetSourceState } from "../../lib/assetSource";
 
 export const imageFailText = () => i18n.t("modules:ui.imageFailed");
 
-export function MiniBtn({ children, label, danger, on, ...rest }: { children: ReactNode; label: string; danger?: boolean; on?: boolean } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+export function CompactButton({ children, label, danger, on, ...rest }: { children: ReactNode; label: string; danger?: boolean; on?: boolean } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button type="button" aria-label={label} title={label} className={"mini-btn" + (danger ? " danger" : "") + (on ? " on" : "")} {...rest}>
       {children}
@@ -16,7 +16,7 @@ export function MiniBtn({ children, label, danger, on, ...rest }: { children: Re
 }
 
 /** Hidden file input wrapped in a button-like label. Resets so picking the same file twice still fires. */
-export function FilePick({ children, onFiles, multiple, disabled, className = "mini-btn wide", title, accept = "image/jpeg,image/png,image/webp,image/gif" }: { children: ReactNode; onFiles: (files: File[]) => void; multiple?: boolean; disabled?: boolean; className?: string; title?: string; accept?: string }) {
+export function FileUploadButton({ children, onFiles, multiple, disabled, className = "mini-btn wide", title, accept = "image/jpeg,image/png,image/webp,image/gif" }: { children: ReactNode; onFiles: (files: File[]) => void; multiple?: boolean; disabled?: boolean; className?: string; title?: string; accept?: string }) {
   const id = useId();
   function change(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
@@ -32,7 +32,7 @@ export function FilePick({ children, onFiles, multiple, disabled, className = "m
 }
 
 /** <img> that swaps to a clear message if the URL cannot be loaded. */
-export function SafeImg({ src, alt, className, style, compact }: { src: string; alt: string; className?: string; style?: React.CSSProperties; compact?: boolean }) {
+export function FallbackImage({ src, alt, className, style, compact }: { src: string; alt: string; className?: string; style?: React.CSSProperties; compact?: boolean }) {
   const { t: tr } = useTranslation("modules");
   const [failedSource, setFailedSource] = useState<string | null>(null);
   const { source: resolved, status } = useAssetSourceState(src);
@@ -45,7 +45,7 @@ export function SafeImg({ src, alt, className, style, compact }: { src: string; 
  * Text field for an image link. Commits on blur/Enter: stores the raw input in `srcUrl`
  * and the normalised URL (Google Drive etc.) in `src`.
  */
-export function ImageUrlField({ raw, placeholder, label, onCommit, onEdit, className = "ie small", maxLength = 2048, visibleLabel = false, draftState }: {
+export function ImageUrlInput({ raw, placeholder, label, onCommit, onEdit, className = "ie small", maxLength = 2048, visibleLabel = false, draftState }: {
   raw: string;
   placeholder: string;
   label: string;
@@ -106,3 +106,6 @@ export function ImageUrlField({ raw, placeholder, label, onCommit, onEdit, class
     </>
   );
 }
+
+// Compatibility names retained for one release.
+export { CompactButton as MiniBtn, FileUploadButton as FilePick, ImageUrlInput as ImageUrlField, FallbackImage as SafeImg };

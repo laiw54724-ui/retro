@@ -129,11 +129,12 @@ for (const type of ["about", "document", "gallery", "character-dialog", "moodboa
   const site = await fixture(page, [window]);
   await page.setViewportSize({ width: 1440, height: 950 }); await page.goto("/editor/site-1");
   const module = page.locator(".canvas-window");
-  if (type === "about") await module.locator(".about-avatar-settings > summary").click();
+  if (type === "about") await module.locator(".about-avatar-toggle").click();
   if (type === "document") await module.locator(".doc-block").first().click();
   if (type === "gallery") await module.locator("[data-image-id]").first().click();
   await module.locator('input[type="file"]').last().setInputFiles(FILE);
   await expect.poll(site.pending).toBe(true);
+  if (type === "about") await module.locator(".about-avatar-toggle").click();
   const input = module.getByRole("textbox", { name: type === "about" ? "頭像網址" : "圖片網址", exact: true });
   const next = "https://images.example.test/newer.png";
   await input.fill(next); await site.finish();

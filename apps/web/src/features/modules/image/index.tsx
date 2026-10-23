@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
 import type { ImageContent, ImageCrop } from "@retrodesk/shared";
-import { FilePick, ImageUrlField } from "../ui";
+import { FileUploadButton, ImageUrlInput } from "../ui";
 import type { ModuleProps } from "../types";
-import { UploadTaskList, useMediaQueue, useWindowMedia } from "../../media/editorMedia";
+import { UploadProgressList, useMediaQueue, useWindowMedia } from "../../media/editorMedia";
 import { ImagePresentation } from "./presentation/ImagePresentation";
 import { DEFAULT_IMAGE_CROP } from "./presentation/placement";
 import { createImageContent, imageUploadOptions, patchImageContent } from "./model";
@@ -51,15 +51,15 @@ export function ImageInlineEditor({ window, ctx, update }: ModuleProps<"image">)
         <fieldset className={styles.group}>
           <legend>{t("image.source")}</legend>
           <div className={styles.row}>
-            {canUpload ? <FilePick onFiles={(files) => { if (files[0]) media.upload(files[0], imageUploadOptions(window)); }}>
+            {canUpload ? <FileUploadButton onFiles={(files) => { if (files[0]) media.upload(files[0], imageUploadOptions(window)); }}>
               {content.src ? t("image.replace") : t("image.upload")}
-            </FilePick> : null}
+            </FileUploadButton> : null}
             {content.src ? <button type="button" className="mini-btn wide" onClick={() => patch({ src: null, srcUrl: "" })}>{t("image.remove")}</button> : null}
           </div>
           <label className={styles.field}>{t("image.url")}
-            <ImageUrlField onEdit={cancelSourceUpload} raw={content.srcUrl} label={t("image.url")} placeholder="https://" onCommit={(srcUrl, src) => patch({ srcUrl, src })} />
+            <ImageUrlInput onEdit={cancelSourceUpload} raw={content.srcUrl} label={t("image.url")} placeholder="https://" onCommit={(srcUrl, src) => patch({ srcUrl, src })} />
           </label>
-          <UploadTaskList tasks={media.tasks} onRetry={media.retry} onDismiss={media.dismiss} />
+          <UploadProgressList tasks={media.tasks} onRetry={media.retry} onDismiss={media.dismiss} />
         </fieldset>
 
         <fieldset className={styles.group}>

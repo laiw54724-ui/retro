@@ -7,7 +7,7 @@ import { i18n } from "../../i18n";
 import { useTranslation } from "react-i18next";
 import { THEME_PRESETS, isAssetReference, type RetroTheme } from "@retrodesk/shared";
 import { isDark, mixHex, themeView, useThemeView } from "../../lib/themeView";
-import { FilePick, ImageUrlField, SafeImg } from "../modules/ui";
+import { FileUploadButton, ImageUrlInput, FallbackImage } from "../modules/ui";
 import { useEditorStore } from "./store";
 import { didMediaHistoryChange } from "../media/windowMediaSession";
 import { AppearanceColorInput } from "./AppearanceColorInput";
@@ -88,12 +88,12 @@ export function ThemeAppearanceEditor({ theme, onTheme, upload, previewTheme, on
         <div className="swatches">{WALLS.map((color) => <button key={color} type="button" aria-label={tr("themeAppearanceEditor.wallpaperColor", { color })} aria-pressed={draft.wall === color} className="swatch sq26" style={{ background: color, outline: draft.wall === color ? "2px solid #000080" : "none" }} onClick={() => setWall(color)} />)}</div>
         <span className="w98-hint">{tr("themeAppearanceEditor.pattern")}</span>
         <div className="swatches">{patterns.map(([id, label]) => <button key={id} type="button" className={"mini-btn wide" + (draft.pattern === id ? " on" : "")} onClick={() => { invalidateUpload(); patch({ pattern: id }); }}>{label}</button>)}</div>
-        <FilePick disabled={!upload} className="w98-btn small block" onFiles={(files) => void uploadWall(files[0])}>{tr("themeAppearanceEditor.uploadWallpaperImage")}</FilePick>
-        <label className="image-source-field"><span>{tr("imageInput.imageUrl")}</span><ImageUrlField key={sourceRevision} raw={isAssetReference(draft.wallImage) ? "" : draft.wallImage ?? ""} label={tr("imageInput.imageUrl")} placeholder="https://" onEdit={invalidateUpload} onCommit={(_raw, src) => { invalidateUpload(); patch({ wallImage: src, pattern: src ? "image" : "none" }); }} /></label>
+        <FileUploadButton disabled={!upload} className="w98-btn small block" onFiles={(files) => void uploadWall(files[0])}>{tr("themeAppearanceEditor.uploadWallpaperImage")}</FileUploadButton>
+        <label className="image-source-field"><span>{tr("imageInput.imageUrl")}</span><ImageUrlInput key={sourceRevision} raw={isAssetReference(draft.wallImage) ? "" : draft.wallImage ?? ""} label={tr("imageInput.imageUrl")} placeholder="https://" onEdit={invalidateUpload} onCommit={(_raw, src) => { invalidateUpload(); patch({ wallImage: src, pattern: src ? "image" : "none" }); }} /></label>
         {draft.wallImage ? <button type="button" className="w98-btn small" onClick={() => { invalidateUpload(); setSourceRevision((value) => value + 1); patch({ wallImage: null, pattern: "none" }); }}>{tr("imageInput.removeImage")}</button> : null}
         <p className="w98-hint">{tr("imageInput.commitHint")}</p>
         {uploadStatus ? <p role={uploadStatus === "failed" ? "alert" : "status"}>{tr(uploadStatus === "loading" ? "imageInput.uploading" : "imageInput.uploadFailed")}</p> : null}
-        {draft.wallImage ? <SafeImg src={draft.wallImage} alt={tr("themeAppearanceEditor.themePreview")} className="theme-wallpaper-preview" /> : null}
+        {draft.wallImage ? <FallbackImage src={draft.wallImage} alt={tr("themeAppearanceEditor.themePreview")} className="theme-wallpaper-preview" /> : null}
       </fieldset>
       <fieldset className="w98-fieldset"><legend>{tr("themeAppearanceEditor.windowTitleBars")}</legend>
         <div className="color-fields">

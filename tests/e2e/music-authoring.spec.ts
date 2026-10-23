@@ -89,21 +89,34 @@ async function mockMedia(page: Page, { width = 1440, failOnce = "", hold = "" } 
 
 const audioFile = (name = "theme.wav") => ({ name, mimeType: "audio/wav", buffer: Buffer.from("RIFF0000WAVEfmt ") });
 const select = (player: ReturnType<Page["locator"]>, title: string) => player.locator(".music-authoring-track").filter({ hasText: title }).click();
+const openSource = async (player: ReturnType<Page["locator"]>) => {
+  await player.getByRole("button", { name: "更換音源" }).click();
+  await expect(player.getByLabel("貼上連結或上傳檔案")).toBeVisible();
+};
+const openCoverUrl = async (player: ReturnType<Page["locator"]>) => {
+  await player.getByRole("button", { name: "封面網址" }).click();
+  await expect(player.getByRole("textbox", { name: "封面圖片網址" })).toBeVisible();
+};
 
 test("selected editor keeps unfinished source/cover drafts, order, keyboard selection and reload", async ({ page }) => {
   const site = await mockMedia(page); const player = site.player;
   await expect(player.locator(".music-track-editor")).toHaveCount(1);
   // An invalid draft must not replace the saved source.
+  await openSource(player);
   await player.getByLabel("貼上連結或上傳檔案").fill("not a url yet");
-  await player.getByLabel("封面圖片網址").fill("unfinished cover");
+  await openCoverUrl(player);
+  await player.getByRole("textbox", { name: "封面圖片網址" }).fill("unfinished cover");
   await select(player, "Second");
   await expect(player.getByLabel("曲名")).toHaveValue("Second");
   const first = player.locator(".music-authoring-track").filter({ hasText: "First" });
   await first.focus(); await page.keyboard.press("Enter");
+  await openSource(player);
   await expect(player.getByLabel("貼上連結或上傳檔案")).toHaveValue("not a url yet");
-  await expect(player.getByLabel("封面圖片網址")).toHaveValue("unfinished cover");
+  await openCoverUrl(player);
+  await expect(player.getByRole("textbox", { name: "封面圖片網址" })).toHaveValue("unfinished cover");
   await select(player, "Second");
-  await player.getByRole("button", { name: "往前", exact: true }).click();
+  await player.locator(".music-authoring-track").filter({ hasText: "Second" }).locator(".editing-sort-handle").focus();
+  await page.keyboard.press("Alt+ArrowUp");
   await expect(player.getByLabel("曲名")).toHaveValue("Second");
   await expect.poll(() => site.tracks().map((track) => track.title)).toEqual(["Second", "First"]);
   await page.reload();
@@ -114,9 +127,10 @@ test("selected editor keeps unfinished source/cover drafts, order, keyboard sele
 
 test("per-track audio failure retries alone and preserves a successful cover and newer edits", async ({ page }, testInfo) => {
   const site = await mockMedia(page, { hold: "cover.png", failOnce: "theme.wav" }); const player = site.player;
-  await player.getByLabel("上傳封面…", { exact: true }).setInputFiles(pickedFile("cover.png"));
+  await player.locator(".music-cover-drop input[type=file]").setInputFiles(pickedFile("cover.png"));
   await expect(player.locator('[data-upload-state="uploading"]')).toHaveCount(1);
   await select(player, "Second");
+  await openSource(player);
   await player.locator('.music-source-field input[type=file]').setInputFiles(audioFile());
   await expect(player.locator('[data-upload-state="queued"]')).toHaveCount(1);
   site.release("cover.png");
@@ -143,10 +157,11 @@ for (const change of ["source draft", "delete", "undo", "window"] as const) {
   test(`late audio cannot overwrite after ${change}`, async ({ page }) => {
     const site = await mockMedia(page, { hold: "late.wav" }); const player = site.player;
     await player.getByLabel("演出者").fill("Changed before upload");
+    await openSource(player);
     await player.locator('.music-source-field input[type=file]').setInputFiles(audioFile("late.wav"));
     await expect.poll(() => site.calls).toEqual(["late.wav"]);
     if (change === "source draft") await player.getByLabel("貼上連結或上傳檔案").fill("unfinished source");
-    if (change === "delete") await player.getByRole("button", { name: "刪除", exact: true }).click();
+    if (change === "delete") await player.getByRole("button", { name: "刪除曲目：First" }).click();
     if (change === "undo") await page.getByRole("button", { name: "復原", exact: true }).click();
     if (change === "window") {
       await page.locator(".task-items").getByRole("button", { name: "Music B", exact: true }).click();
@@ -171,6 +186,7 @@ for (const width of [320, 390]) {
   test(`selected-track editing and upload failure fit ${width}px`, async ({ page }, testInfo) => {
     const site = await mockMedia(page, { width, failOnce: "theme.wav" }); const player = site.player;
     await player.getByLabel("曲名").fill("LongTitle".repeat(18));
+    await openSource(player);
     await player.locator('.music-source-field input[type=file]').setInputFiles(audioFile());
     await expect(player.locator('[data-upload-state="failed"]')).toHaveCount(1);
     await expect(player.getByRole("button", { name: "重試 theme.wav", exact: true })).toBeVisible();
@@ -183,6 +199,7 @@ for (const width of [320, 390]) {
 
 test("failed preparation stays beside the uploaded track and retries without uploading again", async ({ page }) => {
   const site = await mockMedia(page); const player = site.player;
+  await openSource(player);
   await player.locator('.music-source-field input[type=file]').setInputFiles(audioFile());
   await expect.poll(() => site.tracks()[0].source.kind).toBe("uploadedAudio");
   site.failProtected(); await page.reload();
@@ -196,10 +213,12 @@ test("failed preparation stays beside the uploaded track and retries without upl
 test("undo clears a hidden unfinished draft before returning to its track", async ({ page }) => {
   const site = await mockMedia(page); const player = site.player;
   await player.getByLabel("演出者").fill("Undo this edit");
+  await openSource(player);
   await player.getByLabel("貼上連結或上傳檔案").fill("unfinished draft");
   await select(player, "Second");
   await page.getByRole("button", { name: "復原", exact: true }).click();
   await select(player, "First");
+  await openSource(player);
   await expect(player.getByLabel("貼上連結或上傳檔案")).toHaveValue("https://media.test/theme.mp3");
 });
 
@@ -227,6 +246,7 @@ async function installFakeMedia(page: Page) {
 test("upload completion stops a restarted old preview and selection stops the previous track", async ({ page }) => {
   await installFakeMedia(page);
   const site = await mockMedia(page, { hold: "late.wav" }); const player = site.player;
+  await openSource(player);
   await player.locator('.music-source-field input[type=file]').setInputFiles(audioFile("late.wav"));
   await expect.poll(() => site.calls).toEqual(["late.wav"]);
   await player.getByRole("button", { name: "▶ 試聽", exact: true }).click();

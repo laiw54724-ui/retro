@@ -1,0 +1,18 @@
+{
+  "moodboard": {
+    "inline": {
+      "invalidImage": "8 MB 以下の画像を選択してください。",
+      "dropImages": "ドロップして画像を追加",
+      "resize": "サイズ変更：{{handle}}",
+      "smallerText": "文字を小さく",
+      "largerText": "文字を大きく",
+      "replaceImage": "画像を変更…",
+      "selectedCount": "{{count}} 個を選択中",
+      "dragHint": "ドラッグで移動 · Alt でスナップを一時停止",
+      "lockedHint": "ロック中 · 移動やサイズ変更にはロック解除が必要です",
+      "selectionHint": "矢印キーで移動 · Shift で複数選択 · Enter で文字を編集",
+      "emptyHint": "選択または画像をドロップ · 文字や画像を貼り付け",
+      "preciseGeometry": "位置とサイズを指定"
+    }
+  }
+}

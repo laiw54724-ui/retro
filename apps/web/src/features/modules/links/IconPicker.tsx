@@ -11,8 +11,8 @@ import { hasLibraryIdShape, libraryNameOf, resolveLibraryIcon } from "../../../l
 import { Icon } from "../../../components/Icon";
 import { ModalDialog } from "../../../components/ModalDialog";
 import { hasWindowsIconPack, WINDOWS_ICON_PACK_SOURCE as WINDOWS_ICON_SOURCE, WINDOWS_ICON_PACK_INSTALL_COMMAND } from "../../../lib/optionalIconPack";
-import { FilePick, MiniBtn } from "../ui";
-import { UploadTaskList, useMediaQueue } from "../../media/editorMedia";
+import { FileUploadButton, CompactButton } from "../ui";
+import { UploadProgressList, useMediaQueue } from "../../media/editorMedia";
 import { useEditorStore } from "../../editor/store";
 import { iconTargetKey, observeIconSelection, type IconMediaTarget } from "../../media/iconSelectionSession";
 
@@ -371,17 +371,17 @@ function IconLibraryDialog({ siteId, value, onChange, upload, defaultValue, defa
             <div className="ilib-upload">
               {!siteId ? <span className="w98-hint">{tr("iconPicker.saveTheDesktopFirstTo")}</span> : null}
               <div className="ie-row">
-                {upload && queue && siteId ? <FilePick onFiles={(files) => addFiles(files.slice(0, 1), true)}>{tr("iconPicker.uploadOne")}</FilePick> : null}
-                {upload && queue && siteId ? <FilePick multiple onFiles={(files) => addFiles(files, false)}>{tr("iconPicker.uploadAnIconPack")}</FilePick> : null}
+                {upload && queue && siteId ? <FileUploadButton onFiles={(files) => addFiles(files.slice(0, 1), true)}>{tr("iconPicker.uploadOne")}</FileUploadButton> : null}
+                {upload && queue && siteId ? <FileUploadButton multiple onFiles={(files) => addFiles(files, false)}>{tr("iconPicker.uploadAnIconPack")}</FileUploadButton> : null}
               </div>
               <div className="image-source-field"><label htmlFor={`${dialogId}-url`}>{tr("iconPicker.iconUrl")}</label><div className="ie-row">
                 <input id={`${dialogId}-url`} className="ie small grow" value={url} placeholder={tr("iconPicker.orPasteAnIconUrl")} aria-label={tr("iconPicker.iconUrl")} onChange={(event) => { selectionGeneration.current += 1; queue?.invalidate(tr("iconPicker.aDifferentIconWasChosen"), (entry) => entry.options.scope === scope && entry.options.slot === "single"); setUrl(event.target.value); }} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); useUrl(); } }} />
-                <MiniBtn label={tr("iconPicker.useUrl")} className="mini-btn wide" onClick={useUrl}>{tr("iconPicker.use")}</MiniBtn>
+                <CompactButton label={tr("iconPicker.useUrl")} className="mini-btn wide" onClick={useUrl}>{tr("iconPicker.use")}</CompactButton>
               </div></div>
             </div>
           ) : null}
           {category === "windows" ? <span className="w98-hint icon-attribution">{tr("iconPicker.sourceLabel")}<a href={WINDOWS_ICON_SOURCE}>{WINDOWS_ICON_SOURCE.replace("https://github.com/", "")}</a>{tr("iconPicker.sentenceEnd")}{tr("iconPicker.rightsNote")}</span> : null}
-          <UploadTaskList tasks={ownTasks} onRetry={(id) => queue?.retry(id)} onDismiss={(id) => queue?.dismiss(id)} />
+          <UploadProgressList tasks={ownTasks} onRetry={(id) => queue?.retry(id)} onDismiss={(id) => queue?.dismiss(id)} />
           <span role="status" className="w98-hint">{status}</span>
         </div>
 

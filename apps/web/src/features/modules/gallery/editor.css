@@ -1,24 +1,65 @@
-.gal-editor { container-type: inline-size; min-width: 0; }
-.gal-editor .gal-editor-toolbar { gap: 6px; }
-.gal-editor .gal-add-url input { min-width: 0; flex-basis: 140px; }
-.gal-editor .gal-editor-workspace { display: grid; gap: 12px; min-width: 0; }
-.gal-editor .gal-editor-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(74px, 1fr)); gap: 6px; max-height: 220px; overflow: auto; padding: 3px; align-content: start; }
-.gal-editor .gal-editor-thumb { display: flex; flex-direction: column; gap: 3px; min-width: 0; padding: 4px; border: 1px solid transparent; color: inherit; background: transparent; cursor: pointer; }
-.gal-editor .gal-editor-thumb[aria-pressed="true"] { border: 2px solid currentColor; padding: 3px; }
+/* Bound only the authoring gallery; visitor layout and lightbox stay unchanged. */
+.retro-window-body:has(> .module-gallery .gal-editor),
+.m-win-body:has(> .module-gallery .gal-editor) { display: flex; flex-direction: column; }
+.module-gallery:has(.gal-editor) { flex: 1; display: flex; flex-direction: column; min-height: 260px; min-width: 0; }
+.gal-wrap.gal-editor { container-type: inline-size; flex: 1; min-height: 0; min-width: 0; padding: 0; gap: 0; overflow: hidden; background: var(--gal-face); color: var(--gal-text); font-size: 13px; }
+.gal-editor .gal-editor-toolbar { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 3px; padding: 4px; box-shadow: inset 0 -1px var(--gal-shadow), inset 0 -2px #fff; }
+.gal-editor .mini-btn { min-height: 26px; height: auto; min-width: 26px; color: var(--gal-text); background: var(--gal-face); box-shadow: var(--gal-bevel); }
+.gal-editor .mini-btn.on { box-shadow: var(--gal-pressed); }
+.gal-editor .mini-btn.danger { color: #b00020; }
+.gal-editor .mini-btn:disabled { opacity: .5; }
+.gal-editor .gal-column-label { padding-left: 4px; font-size: 12px; }
+.gal-editor .gal-deselect { margin-left: auto; }
+.gal-editor .gal-add-url { display: flex; flex: none; align-items: start; gap: 4px; padding: 4px; background: #ffffe1; border-bottom: 1px solid #000; }
+.gal-editor .gal-add-url textarea { min-width: 0; flex: 1; resize: none; max-height: 90px; }
+.gal-editor .gal-upload-list { flex: none; max-height: 25%; overflow: auto; }
+.gal-editor .gal-upload-list:empty { display: none; }
+.gal-editor .gal-editor-workspace { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 4px; min-width: 0; min-height: 0; overflow: hidden; }
+.gal-editor .gal-editor-grid-scroll { flex: 1 1 0; min-width: 0; min-height: 64px; overflow: auto; padding: 8px; background: #fff; color: #111; box-shadow: var(--gal-sunken); }
+.gal-editor .gal-editor-list { display: grid; grid-template-columns: repeat(var(--gal-columns), minmax(0, 1fr)); gap: 8px; align-content: start; }
+.gal-editor .gal-editor-thumb { position: relative; display: flex; flex-direction: column; gap: 3px; min-width: 0; padding: 3px; border: 0; color: inherit; background: transparent; cursor: grab; text-align: left; }
+.gal-editor .gal-editor-thumb[aria-pressed="true"] { background: #d8d8ff; outline: 1px dotted #000080; outline-offset: -1px; }
+.gal-editor .gal-editor-thumb[data-dragging] { opacity: .35; }
+.gal-editor .gal-editor-thumb[data-drop="before"] { box-shadow: inset 3px 0 #000080; }
+.gal-editor .gal-editor-thumb[data-drop="after"] { box-shadow: inset -3px 0 #000080; }
+.gal-editor .gal-thumb { position: relative; overflow: hidden; pointer-events: none; }
+.gal-editor .gal-thumb-number, .gal-editor .gal-thumb-link { position: absolute; top: 4px; padding: 0 4px; font-size: 10px; border: 1px solid #000; }
+.gal-editor .gal-thumb-number { left: 4px; background: #ffffe1; color: #000; }
+.gal-editor .gal-thumb-link { right: 4px; background: #000080; color: #fff; }
 .gal-editor .gal-editor-thumb-title { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
-.gal-editor .gal-editor-properties { display: flex; flex-direction: column; gap: 7px; min-width: 0; padding: 8px; border: 1px solid #808080; }
-.gal-editor .gal-editor-properties label { display: flex; flex-direction: column; gap: 3px; min-width: 0; font-size: 12px; }
-.gal-editor .gal-editor-properties input, .gal-editor .gal-editor-properties textarea { width: 100%; max-width: 100%; min-width: 0; }
+.gal-editor .gal-add { height: 100%; min-height: 44px; padding: 4px; }
+.gal-editor .gal-end-drop[data-drop] { outline: 3px solid #000080; outline-offset: -3px; }
+.gal-editor .gal-editor-empty { display: grid; place-items: center; min-height: 150px; height: 100%; padding: 16px; border: 2px dashed var(--gal-shadow); text-align: center; cursor: pointer; }
+.gal-editor .gal-editor-properties { flex: 0 1 48%; display: flex; flex-direction: column; gap: 6px; min-height: 0; min-width: 0; overflow: auto; padding: 6px; box-shadow: var(--gal-bevel); scroll-padding: 8px; }
+.gal-editor .gal-property-heading { flex: none; padding: 3px 6px; background: #000080; color: #fff; font-size: 12px; }
+.gal-editor .gal-property-preview { flex: none; height: 72px; padding: 2px; background: #fff; box-shadow: var(--gal-sunken); overflow: hidden; }
+.gal-editor .gal-editor-properties label { display: flex; flex-direction: column; gap: 3px; min-width: 0; font-size: 12px; flex-shrink: 0; }
+.gal-editor .gal-editor-properties input:not([type="file"]), .gal-editor .gal-editor-properties textarea { width: 100%; max-width: 100%; min-width: 0; }
 .gal-editor .gal-editor-properties .w98-hint, .gal-editor .gal-editor-empty { margin: 0; overflow-wrap: anywhere; }
-.gal-editor button:focus-visible, .gal-editor label:focus-within { outline: 2px solid currentColor; outline-offset: 2px; }
+.gal-editor .gal-editor-properties > * { flex-shrink: 0; }
+.gal-editor .gal-editor-properties .ie { background: transparent; border: 1px solid transparent; }
+.gal-editor .gal-editor-properties .ie:hover { background: #f5f5ff; }
+.gal-editor .gal-editor-properties .ie:focus { background: #fff; border: 1px dotted #000080; outline: none; }
+.gal-editor .gal-editor-status { flex: none; display: flex; gap: 3px; padding: 2px 3px; min-height: 22px; font-size: 11px; }
+.gal-editor .gal-editor-status > span { padding: 1px 6px; box-shadow: var(--gal-sunken); white-space: nowrap; }
+.gal-editor .gal-editor-status > span:first-child { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.gal-editor .gal-drop-overlay { position: absolute; inset: 4px; display: grid; place-items: center; text-align: center; padding: 8px; pointer-events: none; border: 3px dashed #000080; background: rgba(0,0,128,.06); color: #000080; font-weight: bold; z-index: 2; }
+.gal-editor .gal-editor-error { position: absolute; left: 8px; right: 8px; bottom: 28px; z-index: 3; display: flex; gap: 8px; align-items: center; padding: 6px 8px; background: #fff; border: 1px solid #b00020; color: #8a0018; font-size: 12px; overflow-wrap: anywhere; }
+.gal-editor .gal-editor-error > span { flex: 1; min-width: 0; }
+.gal-editor button:focus-visible, .gal-editor label:focus-within { outline: 2px solid #000080; outline-offset: -2px; }
 .gal-editor label[aria-disabled="true"] { opacity: .55; cursor: default; }
 .module-gallery .gal-wrap .lb-cap { overflow-wrap: anywhere; }
-.m-win-body .gal-editor { padding-bottom: 76px; }
-@container (min-width: 480px) {
-  .gal-editor .gal-editor-workspace { grid-template-columns: minmax(150px, 1fr) minmax(230px, 1.4fr); }
-  .gal-editor .gal-editor-list { max-height: 420px; }
+@container (min-width: 560px) {
+  .gal-editor .gal-editor-workspace { flex-direction: row; }
+  .gal-editor .gal-editor-properties { flex: 0 0 220px; }
+  .gal-editor .gal-property-preview { height: 120px; }
 }
-@media (max-width: 600px) {
-  .gal-editor { padding: 10px; }
-  .gal-editor .mini-btn { min-height: 32px; }
-}
+.gal-editor[data-mobile] { font-size: 15px; }
+.gal-editor[data-mobile] .mini-btn, .gal-editor[data-mobile] .gal-editor-properties input:not([type="file"]) { min-height: 44px; min-width: 44px; }
+.gal-editor[data-mobile] .gal-editor-properties input:not([type="file"]), .gal-editor[data-mobile] .gal-editor-properties textarea, .gal-editor[data-mobile] .gal-add-url textarea { font-size: 15px; }
+
+.gal-editor .gal-editor-properties textarea { field-sizing: fixed; max-height: 140px; resize: none; }
+
+.gal-editor .gal-column-controls { display: flex; align-items: center; gap: 3px; }
+
+.gal-editor .gal-replace-row > label { flex: 1; justify-content: center; text-align: center; }

@@ -781,5 +781,15 @@
       "interaction": "交流と音楽",
       "organize": "整理とナビゲーション"
     }
+  },
+  "editing": {
+    "done": "完了",
+    "close": "閉じる",
+    "add": "＋ 追加",
+    "reorder": "ドラッグして並べ替え",
+    "moved": "{{position}} 番目に移動しました",
+    "invalidFile": "{{size}} MB 以下の{{kind}}ファイルを選択してください。",
+    "image": "画像",
+    "audio": "音声"
   }
 }

@@ -17,7 +17,7 @@ import { MobileScreen } from "../features/site/MobileScreen";
 import mobileAuthoring from "../features/site/MobileAuthoring.module.css";
 import { LeftPanel } from "../features/editor/LeftPanel";
 import { AddWindowDialog } from "../features/editor/AddWindowDialog";
-import { SelectionToolbar } from "../features/editor/SelectionToolbar";
+import { WindowActionBar } from "../features/editor/WindowActionBar";
 import shellStyles from "../features/editor/AuthoringShell.module.css";
 import { RightPanel, type InspectorTab } from "../features/editor/RightPanel";
 import { buildPreviewModel, shareableEntities } from "../features/editor/previewModel";
@@ -781,7 +781,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         <section className={`editor-stage2 ${shellStyles.stage}`}>
           {store.device === "desktop" && !layoutMode ? <div className={shellStyles.bar}>
             <button type="button" className="w98-btn primary" onClick={() => setAddOpen(true)}>{t("authoring.add")}</button>
-            {selected ? <SelectionToolbar title={selected.title} imageWindow={selected.type === "image"} editing={selected.type !== "image" && !readWindows.has(selected.id)} onEdit={editSelectedContent} onDone={() => setReadWindows(current => new Set(current).add(selected.id))} onIcon={() => openInspector("icon")} onSettings={() => openInspector("general")} /> : <span className="w98-hint">{t("authoring.selectHint")}</span>}
+            {selected ? <WindowActionBar title={selected.title} imageWindow={selected.type === "image"} editing={selected.type !== "image" && !readWindows.has(selected.id)} onEdit={editSelectedContent} onDone={() => setReadWindows(current => new Set(current).add(selected.id))} onIcon={() => openInspector("icon")} onSettings={() => openInspector("general")} /> : <span className="w98-hint">{t("authoring.selectHint")}</span>}
           </div> : null}
           {store.device === "desktop" ? (
             <DesktopCanvas

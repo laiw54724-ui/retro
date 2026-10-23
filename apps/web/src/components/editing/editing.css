@@ -1,0 +1,52 @@
+.editing-text { border: none; background: transparent; font: inherit; color: inherit; padding: 2px 4px; outline: none; min-width: 0; box-sizing: border-box; }
+.editing-text:hover { background: #f5f5ff; }
+.editing-text:focus { background: #fff; outline: 1px dotted #000; outline-offset: -1px; }
+.editing-textarea { field-sizing: content; resize: none; white-space: pre-wrap; }
+.editing-status { flex-shrink: 0; display: flex; gap: 3px; padding: 2px 3px; min-height: 22px; font-size: 11px; color: var(--editing-text,#000); box-sizing: border-box; }
+.editing-status > span { padding: 0 8px; display: flex; align-items: center; box-shadow: var(--editing-sunken,inset 1px 1px #808080,inset -1px -1px #fff); }
+.editing-status > [role=status] { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; display: block; }
+.editing-count { flex-shrink: 0; }
+.editing-error { position: absolute; left: 8px; right: 8px; bottom: 30px; z-index: 50; display: flex; gap: 8px; align-items: center; padding: 6px 8px; background: #fff; border: 1px solid #b00020; color: #8a0018; font-size: 12px; }
+.editing-error > span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.editing-error button, .editing-popover-done, .editing-selection-bar button { border: 0; background: var(--editing-face,#c0c0c0); color: var(--editing-text,#000); box-shadow: var(--editing-bevel,inset -1px -1px #0a0a0a,inset 1px 1px #fff); min-height: 22px; padding: 0 6px; font: inherit; cursor: pointer; }
+.editing-error button { min-width: 22px; flex-shrink: 0; }
+.editing-destination { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; min-width: 0; padding: 2px 6px; border: 1px solid var(--editing-shadow,#808080); background: #fff; color: #000080; font-size: 11px; cursor: pointer; }
+.editing-destination > span:not(.editing-destination-text) { flex-shrink: 0; }
+.editing-destination-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.editing-destination[data-missing] { background: #fff0f0; border-color: #b00020; color: #8a0018; }
+.editing-paste { flex-shrink: 0; display: flex; flex-direction: column; gap: 3px; padding: 6px; background: #ffffe1; color: #000; border-bottom: 1px solid #000; font-size: 12px; }
+.editing-paste > label { font-weight: 700; }
+.editing-paste-row { display: flex; gap: 4px; min-width: 0; flex-wrap: wrap; }
+.editing-paste-row > input { flex: 1; min-width: 80px; min-height: 28px; padding: 2px 8px; background: #fff; color: #000; border: none; box-shadow: var(--editing-sunken,inset 1px 1px #808080,inset -1px -1px #fff); font: inherit; }
+.editing-paste-row > button { flex-shrink: 0; white-space: nowrap; padding: 0 12px; min-height: 28px; background: #000080; color: #fff; border: 1px solid #000; font: inherit; font-weight: 700; }
+.editing-paste-preview { color: #404040; overflow-wrap: anywhere; }
+.editing-paste-preview[data-invalid] { color: #8a0018; }
+.editing-drop { position: relative; min-width: 0; }
+.editing-drop[data-file-over] { outline: 3px dashed #000080; outline-offset: -3px; }
+.editing-drop-overlay { position: absolute; inset: 4px; z-index: 40; display: grid; place-items: center; background: rgba(255,255,225,.92); border: 3px dashed #000080; font-weight: 700; text-align: center; padding: 8px; pointer-events: none; color: #000080; }
+.editing-popover { display: flex; flex-direction: column; gap: 6px; padding: 6px; min-width: 0; background: var(--editing-face,#c0c0c0); color: var(--editing-text,#000); box-shadow: var(--editing-bevel,inset -1px -1px #0a0a0a,inset 1px 1px #fff); }
+.editing-popover[data-floating] { position: absolute; z-index: 40; max-width: calc(100% - 8px); box-shadow: var(--editing-bevel,inset -1px -1px #0a0a0a,inset 1px 1px #fff),2px 2px 0 #0005; }
+.editing-popover-title { font-size: 12px; }
+.editing-popover-done { align-self: flex-end; padding: 0 12px; }
+.editing-sortable { min-width: 0; }
+.editing-sort-row { position: relative; min-width: 0; }
+.editing-sort-row[data-dragging] { opacity: .35; }
+.editing-sort-row[data-drop=before] { box-shadow: inset 0 3px #000080; }
+.editing-sort-row[data-drop=after] { box-shadow: inset 0 -3px #000080; }
+.editing-sort-handle { flex-shrink: 0; border: 0; background: transparent; color: #808080; width: 16px; padding: 0; font-size: 12px; letter-spacing: -2px; opacity: .4; cursor: grab; }
+.editing-sort-row:focus-within .editing-sort-handle { opacity: 1; }
+.editing-sort-end[data-drop] { outline: 2px dashed #000080; outline-offset: -2px; }
+.editing-context-menu { position: absolute; z-index: 60; min-width: min(170px,100%); max-width: calc(100% - 8px); max-height: calc(100% - 8px); overflow: auto; padding: 2px; background: var(--editing-face,#c0c0c0); color: var(--editing-text,#000); box-shadow: var(--editing-bevel,inset -1px -1px #0a0a0a,inset 1px 1px #fff),2px 2px 0 #0005; }
+.editing-context-menu button { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 16px; min-height: 24px; padding: 0 8px 0 18px; border: none; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.editing-context-menu button[data-primary] { font-weight: 700; }
+.editing-context-menu button[data-danger] { color: #b00020; }
+.editing-context-menu button:disabled { color: #808080; cursor: default; }
+.editing-context-menu button:not(:disabled):is(:hover,:focus) { background: #000080; color: #fff; outline: none; }
+.editing-context-menu [role=separator], .editing-selection-bar [role=separator] { border-top: 1px solid #808080; border-bottom: 1px solid #fff; margin: 3px 2px; }
+.editing-menu-shortcut { opacity: .7; }
+.editing-selection-bar { position: absolute; z-index: 40; display: flex; flex-wrap: wrap; align-items: center; gap: 2px; max-width: calc(100% - 8px); padding: 2px; background: var(--editing-face,#c0c0c0); color: var(--editing-text,#000); box-shadow: var(--editing-bevel,inset -1px -1px #0a0a0a,inset 1px 1px #fff),2px 2px 0 #0005; }
+.editing-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+[data-mobile] :is(.editing-text,.editing-paste-row input), .editing-text[data-mobile] { font-size: 15px; min-height: 44px; }
+[data-mobile] :is(.editing-sort-handle,.editing-context-menu button,.editing-selection-bar button,.editing-popover button,.editing-error button,.editing-paste-row button), .editing-destination[data-mobile] { min-height: 44px; min-width: 44px; }
+
+.editing-popover, .editing-context-menu, .editing-selection-bar, .editing-destination { box-sizing: border-box; }

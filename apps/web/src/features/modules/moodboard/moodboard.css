@@ -27,3 +27,33 @@
   .moodboard-editor .moodboard-alignment .w98-btn,
   .moodboard-editor .moodboard-geometry input { min-height: 44px; }
 }
+
+.freeform-board-editor.moodboard-editor { display:flex; flex-direction:column; height:100%; min-height:380px; padding:0; overflow:hidden; position:relative; background:#c0c0c0; }
+.freeform-board-editor .moodboard-toolbar { flex:none; padding:4px; margin:0; gap:4px; border-bottom:1px solid #808080; }
+.freeform-board-editor .moodboard-toolbar .w98-btn { min-height:28px; padding:3px 6px; }
+.freeform-board-editor input[type=color] { width:26px; height:26px; padding:1px; flex:none; }
+.freeform-board-editor .moodboard-export { margin-left:auto; }
+.freeform-board-editor .moodboard-workspace { position:relative; display:block; flex:1; min-height:260px; overflow:hidden; background:#808080; box-shadow:inset 1px 1px #000,inset -1px -1px #fff; }
+.freeform-board-editor .moodboard-stage.editing { position:absolute; max-height:none; border:0; box-shadow:2px 2px #000; transform-origin:0 0; touch-action:none; }
+.freeform-board-editor .moodboard-element { touch-action:none; }
+.freeform-board-editor .moodboard-element.selected { outline-style:dashed; outline-offset:-1px; }
+.freeform-board-editor .moodboard-element.selected.locked { outline-color:#808080; }
+.freeform-board-editor .moodboard-inline-text { box-sizing:border-box; width:100%; min-height:100%; max-height:100%; padding:0; border:0; border-radius:0; background:transparent; outline:1px solid #000080; line-height:1.15; resize:none; overflow:auto; }
+.moodboard-selection-box { position:absolute; border:1px dashed #000080; box-sizing:border-box; pointer-events:none; z-index:10001; }
+.moodboard-selection-box.locked { border-color:#808080; }
+.moodboard-handle { position:absolute; display:block; width:9px; height:9px; min-height:0; padding:0; border:1px solid #000080; background:white; pointer-events:auto; touch-action:none; }
+.handle-nw{left:-5px;top:-5px;cursor:nwse-resize}.handle-n{left:calc(50% - 5px);top:-5px;cursor:ns-resize}.handle-ne{right:-5px;top:-5px;cursor:nesw-resize}.handle-e{right:-5px;top:calc(50% - 5px);cursor:ew-resize}.handle-se{right:-5px;bottom:-5px;cursor:nwse-resize}.handle-s{left:calc(50% - 5px);bottom:-5px;cursor:ns-resize}.handle-sw{left:-5px;bottom:-5px;cursor:nesw-resize}.handle-w{left:-5px;top:calc(50% - 5px);cursor:ew-resize}
+.moodboard-guide { position:absolute; background:#ff00ff; pointer-events:none; z-index:10002; }.moodboard-guide.vertical{width:1px}.moodboard-guide.horizontal{height:1px}
+.freeform-board-editor .moodboard-floating { z-index:10003; display:flex; align-items:center; flex-wrap:wrap; gap:3px; max-width:calc(100% - 8px); padding:3px; box-sizing:border-box; }
+.freeform-board-editor .moodboard-floating button { min-height:26px; min-width:24px; padding:2px 4px; font-size:11px; white-space:nowrap; }
+.freeform-board-editor .moodboard-floating button[aria-pressed=true]{background:#000080;color:white}
+.freeform-board-editor .editing-status { flex:none; min-width:0; align-items:center; flex-wrap:wrap; }
+.freeform-board-editor .editing-status > [role=status] { min-width:0; overflow-wrap:anywhere; font-size:11px; }
+.moodboard-geometry-trigger { flex:none; background:transparent; border:0; padding:3px; text-decoration:underline; color:#000080; font-size:11px; }
+.freeform-board-editor .moodboard-properties-panel,.freeform-board-editor .moodboard-source-panel { flex:none; max-height:210px; overflow:auto; padding:6px; }
+.freeform-board-editor .moodboard-properties-panel label{display:grid;gap:3px;min-width:0}
+.freeform-board-editor .moodboard-properties-panel input,.freeform-board-editor .moodboard-source-panel input { min-width:0; width:100%;box-sizing:border-box; }
+.freeform-board-editor .media-upload-tasks { flex:none; max-height:100px; overflow:auto; margin:0; }
+.freeform-board-editor[data-mobile] .moodboard-toolbar .w98-btn,.freeform-board-editor[data-mobile] .moodboard-toolbar label,.freeform-board-editor[data-mobile] .moodboard-floating button,.freeform-board-editor[data-mobile] .moodboard-geometry-trigger { min-height:44px; }
+.freeform-board-editor[data-mobile] .moodboard-floating { gap:2px; }.freeform-board-editor[data-mobile] .moodboard-floating button{padding:2px 5px}
+.freeform-board-editor[data-mobile] .moodboard-workspace { min-height:250px; }

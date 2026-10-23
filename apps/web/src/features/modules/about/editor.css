@@ -35,174 +35,80 @@
   flex-shrink: 0;
 }
 
-.about-editor {
-  gap: 8px;
-  padding: 10px;
-}
-
-/* Keep the final control above the phone editor's floating Done button. */
-.m-win-body .about-editor {
-  padding-bottom: 76px;
-}
-
-.about-editor-intro,
-.about-editor-hint,
-.about-editor-empty {
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.5;
-  color: #404040;
-}
-
-.about-editor-section {
-  min-width: 0;
-  border: 1px solid #808080;
-  background: #f4f4f4;
-  color: #111;
-}
-
-.about-editor-section > summary {
-  padding: 9px;
-  min-height: 38px;
-  cursor: pointer;
-  font-weight: 700;
-  background: #dfdfdf;
-  box-shadow: inset 1px 1px #fff;
-}
-
-.about-editor-section > summary:focus-visible {
-  outline: 2px solid #000080;
-  outline-offset: -3px;
-}
-
-.about-editor-section-body {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px;
-  min-width: 0;
-}
-
-.about-editor-basics {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 10px;
-}
-
-.about-editor .about-avatar {
-  width: 56px;
-  height: 56px;
-  align-self: start;
-  display: grid;
-  place-items: center;
-}
-
-.about-avatar-empty {
-  padding: 3px;
-  font-size: 10px;
-  text-align: center;
-  background: #ffffffcc;
-}
-
-.about-editor label:not(.mini-btn),
-.about-editor-item {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  min-width: 0;
-}
-
-.about-editor label > span {
-  font-size: 12px;
-  color: #404040;
-}
-
-.about-editor .ie {
-  min-height: 32px;
-  padding: 5px 7px;
-  font-size: 14px;
-}
-
-.about-editor textarea.ie {
-  max-height: 220px;
-  overflow: auto;
-}
-
-.about-editor .mini-btn,
-.about-editor .ie-add {
-  min-height: 32px;
-  height: auto;
-  font-size: 12px;
-}
-
-.about-editor .mini-btn[aria-pressed="true"] {
-  box-shadow: var(--w98-pressed);
-  font-weight: 700;
-}
-
-.about-editor-item {
-  margin: 0;
-  padding: 8px;
-  border: 1px solid #aaa;
-  background: #fff;
-}
-
-.about-editor-item > legend {
-  padding: 0 4px;
-  color: #404040;
-  font-size: 12px;
-}
-
-.about-editor-item > .mini-btn {
-  align-self: flex-end;
-}
-
-.about-editor .ie-add:disabled {
-  color: #666;
-  cursor: not-allowed;
-}
-
 @container (max-width: 460px) {
-  .about-view .about-main,
-  .about-editor-basics {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .about-view .about-avatar {
-    width: min(200px, 100%);
-    justify-self: center;
-  }
-
-  .about-editor .mini-btn,
-  .about-editor .ie-add,
-  .about-editor-section > summary {
-    min-height: 44px;
-  }
+  .about-view .about-main { grid-template-columns: minmax(0, 1fr); }
+  .about-view .about-avatar { width: min(200px, 100%); justify-self: center; }
 }
 
-/* Authoring only: the primary fields remain first at the saved window size. */
-.about-editor-heading {
-  display: grid;
-  grid-template-columns: 56px minmax(0, 1fr);
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
+/* Authoring styles stay scoped so the visitor card remains unchanged. */
+.about-editor { position: relative; height: 100%; min-height: 0; overflow: hidden; font-size: 14px; }
+.about-editor-scroll { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; }
+.about-editor-scroll > .about-socials, .about-editor-scroll > .about-foot { flex-shrink: 0; }
+.about-editor-scroll > .about-main { flex: 1 0 auto; }
+.about-editor .about-main { grid-template-columns: minmax(110px, 38%) minmax(0, 1fr); }
+.about-editor .about-direct { min-width: 0; max-width: 100%; border: 0; padding: 1px 2px; background: transparent; color: inherit; font: inherit; box-shadow: none; border-radius: 0; }
+.about-editor .about-direct:hover { background: #f5f5ff; }
+.about-editor .about-direct:focus { background: #fff; outline: 1px dotted #000; outline-offset: -1px; }
+.about-editor .about-socials { gap: 4px 14px; }
+.about-social-edit { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 2px; min-width: 0; max-width: 100%; }
+.about-editor .about-social-name { text-decoration: underline; font-size: 15px; }
+.about-social-tools { display: none; flex-wrap: wrap; align-items: center; gap: 2px; min-width: 0; max-width: 100%; }
+.about-social-edit:focus-within .about-social-tools, .about-social-edit[data-open] .about-social-tools { display: flex; }
+.about-editor .about-social-url { width: 130px; background: #fff; color: #000080; font-size: 11px; }
+.about-social-tools .ie-error { flex-basis: 100%; }
+.about-editor .about-add-social { width: 150px; border-bottom: 1px dashed #808080; color: #000080; font-size: 12px; }
+.about-avatar-column { min-width: 0; position: relative; align-self: start; }
+.about-editor .about-avatar { width: 100%; background: repeating-linear-gradient(45deg, #ededed 0 8px, #dcdcdc 8px 16px); }
+.about-avatar-drop[data-over] { outline: 3px dashed #000080; outline-offset: -3px; }
+.about-avatar-empty { position: absolute; inset: 0 0 40px; display: grid; place-items: center; padding: 8px; text-align: center; font-size: 11px; color: #404040; }
+.about-avatar-toggle { position: absolute; left: 6px; bottom: 6px; max-width: calc(100% - 12px); }
+.about-avatar-panel { display: flex; flex-direction: column; gap: 6px; padding: 6px; margin-top: 4px; min-width: 0; color: #111; }
+.about-avatar-panel .ie { width: 100%; min-width: 0; }
+.about-avatar-panel .mini-btn { white-space: normal; height: auto; }
+.about-editor .mini-btn { min-width: 22px; min-height: 24px; font-size: 11px; }
+.about-field-row { display: flex; align-items: center; gap: 2px; min-width: 0; }
+.about-editor .about-field { flex: 1; min-width: 0; display: flex; align-items: center; padding: 3px 5px; }
+.about-editor .about-field-key { flex: 0 1 auto; max-width: 44%; }
+.about-editor .about-field-value { flex: 1; width: 0; }
+.about-drag { flex: 0 0 16px; width: 16px; border: 0; padding: 0; background: transparent; color: #808080; cursor: grab; letter-spacing: -2px; }
+.about-field-row > .mini-btn, .about-drag { opacity: .4; }
+.about-field-row:focus-within > .mini-btn, .about-field-row:focus-within .about-drag, .about-field-row:hover > .mini-btn { opacity: 1; }
+.about-field-row[data-dragging] { opacity: .35; }
+.about-field-row[data-drop="before"], .about-field-add[data-drop] { box-shadow: inset 0 3px #000080; }
+.about-field-row[data-drop="after"] { box-shadow: inset 0 -3px #000080; }
+.about-field-add { display: flex; min-width: 0; margin-left: 18px; padding: 3px 5px; border: 1px dashed #808080; }
+.about-field-add input { width: 100%; color: #000080; }
+.about-editor .about-details-title { width: 100%; margin-top: 4px; text-decoration: underline; }
+.about-editor .about-bio { width: 100%; resize: none; line-height: 1.6; min-height: 48px; }
+.about-editor .about-quote { width: 100%; color: #7a7a7a; font-style: italic; }
+.about-editor .about-bar { min-width: 0; flex-wrap: wrap; }
+.about-editor .about-nickname { flex: 1; width: 80px; }
+.about-editor .about-time { flex-shrink: 0; font-size: 12px; }
+.about-editor .about-banner { min-width: 0; }
+.about-editor .about-banner[data-empty] { background: transparent; border: 1px dashed #808080; }
+.about-editor-status { flex-shrink: 0; margin: 2px 3px; min-height: 22px; padding: 3px 8px; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.about-inline-error { display: flex; align-items: center; gap: 8px; margin: 4px 8px; padding: 6px 8px; background: #fff; border: 1px solid #b00020; color: #8a0018; font-size: 12px; }
+.about-inline-error > span { flex: 1; min-width: 0; }
+.about-editor[data-mobile] { font-size: 15px; height: auto; min-height: 100%; padding-bottom: 76px; overflow: visible; }
+.about-editor[data-mobile] .about-main { grid-template-columns: minmax(0, 1fr); }
+.about-editor[data-mobile] .about-avatar-column { width: min(220px, 100%); justify-self: center; }
+.about-editor[data-mobile] .about-direct, .about-editor[data-mobile] .ie { min-height: 44px; font-size: 15px; }
+.about-editor[data-mobile] .mini-btn, .about-editor[data-mobile] .about-drag { min-width: 44px; min-height: 44px; }
+.about-editor[data-mobile] .about-field { flex-wrap: wrap; }
+.about-editor[data-mobile] .about-field-key { max-width: 44%; }
+.about-editor[data-mobile] .about-editor-status { white-space: normal; }
+.about-editor[data-mobile] .about-editor-scroll { overflow: visible; }
 
-.about-avatar-settings > summary {
-  min-height: 44px;
-  padding: 10px 6px;
-  cursor: pointer;
-  border: 1px solid #aaa;
-  background: #dfdfdf;
-  font-weight: 700;
-}
+.about-avatar-panel .crop-editor { min-width: 0; max-width: 100%; }
+.about-avatar-panel .crop-frame { width: min(140px, 100%); height: auto; aspect-ratio: 1; }
 
-.about-avatar-settings > summary:focus-visible {
-  outline: 2px solid #000080;
-  outline-offset: -3px;
-}
+.about-avatar-panel .crop-zoom input { min-width: 0; width: 100%; }
 
-.about-avatar-settings > .about-edit-avatar {
-  padding-top: 8px;
-}
+.module-host.module-about:has(> .about-editor:not([data-mobile])) { height: 100%; min-height: 0; }
+
+.about-editor[data-mobile] button, .about-editor[data-mobile] input[type="range"] { min-height: 44px; min-width: 44px; }
+
+.about-editor textarea.about-direct { resize: none; white-space: pre-wrap; }
+.about-editor .about-banner textarea { display: block; width: 100%; }
+
+.about-editor .about-avatar-toggle { min-height: 44px; }

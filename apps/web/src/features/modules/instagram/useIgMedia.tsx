@@ -2,7 +2,7 @@ import { patchPostMedia, projectV2ToLegacyDocument } from "@retrodesk/shared";
 import { useEditorStore } from "../../editor/store";
 import type { UploadTaskQueue } from "../../media/uploadTasks";
 import { useTranslation } from "react-i18next";
-import { UploadTaskList, useMediaQueue } from "../../media/editorMedia";
+import { UploadProgressList, useMediaQueue } from "../../media/editorMedia";
 import { canonicalMediaScope, enqueueCanonicalMedia, type CanonicalMediaTarget } from "../../media/canonicalMedia";
 import type { ModuleProps } from "../types";
 
@@ -65,7 +65,7 @@ export function useIgMedia({ window, ctx }: ModuleProps<"instagram">) {
     isPending: (kind: CanonicalMediaTarget["kind"], entityId: string) => tasks.some((task) => scopes(kind, entityId).includes(task.scope) && (task.status === "queued" || task.status === "uploading")),
     taskList: (kind: CanonicalMediaTarget["kind"], entityId: string) => {
       const entityScopes = scopes(kind, entityId);
-      return <UploadTaskList tasks={tasks.filter((task) => entityScopes.includes(task.scope))} onRetry={(id) => queue?.retry(id)} onDismiss={(id) => queue?.dismiss(id)}
+      return <UploadProgressList tasks={tasks.filter((task) => entityScopes.includes(task.scope))} onRetry={(id) => queue?.retry(id)} onDismiss={(id) => queue?.dismiss(id)}
         onCancel={(id) => queue?.invalidate(t("batchMedia.cancelled"), (entry) => entry.view.id === id && entityScopes.includes(entry.options.scope))} />;
     }
   };

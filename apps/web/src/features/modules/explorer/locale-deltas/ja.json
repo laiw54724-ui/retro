@@ -1,0 +1,29 @@
+{
+  "explorer": {
+    "inline": {
+      "tree": "フォルダーツリー",
+      "search": "フォルダーとショートカットを検索",
+      "selectMode": "項目を選択",
+      "actions": "項目の操作",
+      "open": "開く",
+      "cut": "切り取り",
+      "paste": "ここに{{count}}項目を貼り付け",
+      "cutStatus": "{{count}}項目を切り取りました。移動先に貼り付けてください",
+      "moved": "{{count}}項目を「{{path}}」に移動しました",
+      "selected": "{{count}}項目を選択中",
+      "count": "{{count}}項目",
+      "dragHint": "フォルダー、ツリー、上部のパスにドロップ",
+      "hint": "ドラッグで整理 · ダブルクリックで開く · Ctrl/Shiftで複数選択 · 右クリックで操作",
+      "touchHint": "タップで開く ·「項目を選択」で整理や名前変更",
+      "renameHint": "名前を入力 · Enterで確定 · Escでキャンセル",
+      "broken": "{{count}}個のリンク先がありません。項目の操作から修復できます",
+      "confirmDelete": "選択項目を削除しますか？フォルダー{{folders}}個とショートカット{{shortcuts}}個を削除します。元のウィンドウと投稿は残ります。",
+      "deleted": "{{count}}項目を削除しました。元のウィンドウと投稿は残ります。元に戻せます",
+      "noResults": "一致する項目がありません",
+      "expand": "{{name}}を展開",
+      "collapse": "{{name}}を折りたたむ",
+      "searchTarget": "ウィンドウ・OC・投稿を検索",
+      "changeIcon": "アイコンを変更…"
+    }
+  }
+}

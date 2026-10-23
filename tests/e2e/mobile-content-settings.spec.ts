@@ -62,9 +62,10 @@ for (const width of [320, 390, 430]) {
     const backend = await openEditor(page);
     await page.locator(".m-icon").tap();
     await page.getByRole("button", { name: "編輯內容", exact: true }).tap();
+    await page.locator(".gal-editor-toolbar button[aria-expanded]").click();
     const input = page.getByLabel("新增圖片網址", { exact: true });
     await input.fill("https://unfinished");
-    const body = page.locator(".m-win-body");
+    const body = page.locator(".gal-editor-grid-scroll");
     const scroll = await body.evaluate(element => { element.scrollTop = 180; return element.scrollTop; });
     expect(scroll).toBeGreaterThan(0);
     const node = await input.elementHandle();

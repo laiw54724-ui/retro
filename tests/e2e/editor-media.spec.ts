@@ -36,7 +36,7 @@ test("clearing a field pauses autosave quietly without an error popup", async ({
 test("pasting a Google Drive link previews it and the avatar can be repositioned inline", async ({ page }) => {
   await openEditor(page);
   const about = page.getByRole("dialog", { name: "About.exe" });
-  await about.locator(".about-avatar-settings > summary").click();
+  await about.locator(".about-avatar-toggle").click();
   const field = about.getByLabel("頭像網址");
   await field.fill(`https://drive.google.com/file/d/${DRIVE_ID}/view?usp=sharing`);
   await field.press("Enter");
@@ -52,7 +52,7 @@ test("pasting a Google Drive link previews it and the avatar can be repositioned
 test("rejects non-https avatar links with a visible reason", async ({ page }) => {
   await openEditor(page);
   const about = page.getByRole("dialog", { name: "About.exe" });
-  await about.locator(".about-avatar-settings > summary").click();
+  await about.locator(".about-avatar-toggle").click();
   const field = about.getByLabel("頭像網址");
   await field.fill("javascript:alert(1)");
   await field.press("Enter");

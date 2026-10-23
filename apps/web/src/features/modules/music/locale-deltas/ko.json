@@ -1,0 +1,29 @@
+{
+  "music": {
+    "inline": {
+      "pasteLabel": "곡 링크를 붙여넣거나 오디오 파일을 놓으세요",
+      "pastePlaceholder": "YouTube, Spotify 또는 https://…",
+      "uploadFiles": "오디오 업로드",
+      "dropAudio": "오디오 놓기 (파일당 최대 50 MB)",
+      "dropCover": "놓아서 표지 변경 (최대 8 MB)",
+      "blankTrack": "빈 곡 추가",
+      "source": "음원",
+      "changeSource": "음원 변경",
+      "lyrics": "＋ 가사",
+      "character": "＋ 캐릭터 테마곡",
+      "rights": "＋ 저작권 설명",
+      "instructions": "곡을 선택하여 편집; 드래그 또는 Alt＋↑↓로 순서 변경",
+      "dragging": "놓아서 곡 순서 변경",
+      "missingSource": "음원이 필요한 곡 {{count}}개",
+      "missingRights": "저작권 설명이 필요한 업로드 곡 {{count}}개",
+      "count": "{{count}}곡",
+      "limit": "최대 100곡을 추가할 수 있습니다.",
+      "invalidAudio": "50 MB 이하의 오디오 파일을 선택하세요.",
+      "invalidCover": "8 MB 이하의 이미지를 선택하세요.",
+      "coverUrl": "표지 URL",
+      "noSelection": "목록에서 곡을 선택하거나 곡을 추가하세요.",
+      "deleteTrack": "곡 삭제: {{title}}",
+      "selectAndPreview": "{{title}}; Enter 또는 스페이스로 미리 듣기"
+    }
+  }
+}

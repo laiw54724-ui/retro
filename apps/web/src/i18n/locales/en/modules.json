@@ -43,7 +43,20 @@
     "button": "Button",
     "hyperlink": "Hyperlink",
     "list": "List",
-    "divider": "Divider"
+    "divider": "Divider",
+    "inline": {
+      "paragraphStyle": "Paragraph style",
+      "insert": "Insert",
+      "reorder": "Drag to reorder · Alt+↑/↓",
+      "typeOrSlash": "Type / to insert a block",
+      "dropImage": "Drop an image here, or choose a file…",
+      "imagesOnly": "Only image files can be dropped into the document.",
+      "fileTooLarge": "Choose an image no larger than 8 MB.",
+      "tooLongToConvert": "This text is too long for the selected style. Shorten it first.",
+      "dragHint": "Release at the insertion line to move the block",
+      "status": "Enter: new paragraph · /: insert · Alt+↑/↓: reorder",
+      "count": "{{count}} blocks"
+    }
   },
   "image": {
     "sourceChanged": "The image source was edited. The previous upload will not replace it.",
@@ -121,7 +134,20 @@
     "selectImage": "Select image {{n}}: {{title}}",
     "countOfMax_one": "{{count}} / 200 image",
     "countOfMax_other": "{{count}} / 200 images",
-    "altNotCaption": "Alt text isn't shown as a caption."
+    "altNotCaption": "Alt text isn't shown as a caption.",
+    "inline": {
+      "pasteUrls": "Paste URLs…",
+      "deselect": "Deselect",
+      "urlsPlaceholder": "Paste image URLs, one per line (public Google Drive links supported). Shift+Enter adds a line.",
+      "invalidUrls": "Please paste valid image URLs starting with https://.",
+      "skippedUrls": "Some lines were not valid HTTPS image URLs and were skipped.",
+      "invalidFiles": "Only images up to 8 MB can be added. Invalid files were skipped.",
+      "emptyDrop": "Drop photos here, or click to choose. You can select multiple images.",
+      "dropHere": "Release to add to the gallery",
+      "sorting": "Drag to reorder; the blue line marks the insertion point",
+      "selectionHint": "Drag thumbnails to sort · ← → select · Alt+← → move · Delete remove",
+      "browseHint": "Select a thumbnail to edit its title and link; drag to reorder"
+    }
   },
   "lightbox": {
     "imageViewer": "Image viewer",
@@ -156,7 +182,29 @@
     "newLink": "New link",
     "addLink": "＋ Add link",
     "youveReachedTheLimitOf": "You've reached the limit of 100 links.",
-    "linkN": "Link {{n}}"
+    "linkN": "Link {{n}}",
+    "inline": {
+      "mailLabel": "Email me",
+      "invalidPaste": "This does not look like a URL. Try https://… or an email address.",
+      "imageOnly": "Choose an image file.",
+      "imageTooLarge": "Images must be no larger than 8 MB.",
+      "pasteLabel": "Paste a URL to make a button",
+      "add": "＋ Add",
+      "preview": "Will create: {{name}} button (editable later)",
+      "reorder": "Reorder (drag or Alt+↑/↓)",
+      "changeColor": "Change color",
+      "fullLibrary": "Full icon library…",
+      "colorHint": "Button color (text switches to black or white)",
+      "blank": "＋ Blank button",
+      "dragHint": "Drop in the desired position",
+      "missing": "{{count}} buttons need a destination (marked in red)",
+      "hint": "Edit text · Pick an icon or color · Drag ⋮⋮ to reorder",
+      "count": "{{count}} links",
+      "openUrl": "Open a URL",
+      "openWindow": "Open a window on my desktop",
+      "noWindows": "There are no other windows yet.",
+      "done": "Done"
+    }
   },
   "iconPicker": {
     "builtIn": "{{v1}} (built-in)",
@@ -305,7 +353,18 @@
     "customFieldsCount": "Custom fields ({{count}})",
     "fieldN": "Field {{n}}",
     "socialsCount": "Social links ({{count}})",
-    "socialN": "Social {{n}}"
+    "socialN": "Social {{n}}",
+    "inline": {
+      "pasteSocial": "＋ Paste a social URL",
+      "dropAvatar": "Drop a photo here",
+      "addField": "＋ Add a field (e.g. birthday)",
+      "addBanner": "＋ Add a banner",
+      "close": "Close",
+      "reorder": "Drag to reorder · Alt+↑/↓",
+      "dragStatus": "Drop at the desired position",
+      "socialStatus": "Edit the social name and URL · × deletes",
+      "editStatus": "Edit any text · Enter moves to the next field · Drag ⋮⋮ to reorder"
+    }
   },
   "explorer": {
     "untitledWindow": "(Untitled window)",
@@ -356,7 +415,32 @@
     "deletedTheFolderTheOriginal": "Deleted the folder \"{{name}}\". The original content wasn't deleted; you can bring it back with Undo.",
     "folderName": "Folder name",
     "shortcutName": "Shortcut name",
-    "folderEmpty": "This folder is empty."
+    "folderEmpty": "This folder is empty.",
+    "inline": {
+      "tree": "Folder tree",
+      "search": "Search folders and shortcuts",
+      "selectMode": "Select items",
+      "actions": "Item actions",
+      "open": "Open",
+      "cut": "Cut",
+      "paste": "Paste {{count}} items here",
+      "cutStatus": "Cut {{count}} items; paste them into a destination folder",
+      "moved": "Moved {{count}} items to “{{path}}”",
+      "selected": "{{count}} items selected",
+      "count": "{{count}} items",
+      "dragHint": "Drop onto a folder, the tree, or a path segment",
+      "hint": "Drag to organize · Double-click folders · Ctrl/Shift to select · Right-click for actions",
+      "touchHint": "Tap folders to open · Use Select items to organize or rename",
+      "renameHint": "Enter a name · Enter to confirm · Esc to cancel",
+      "broken": "{{count}} shortcut targets are missing; repair them from Item actions",
+      "confirmDelete": "Delete selected items? This removes {{folders}} folders and {{shortcuts}} shortcuts. Original windows and posts are kept.",
+      "deleted": "Deleted {{count}} items; original windows and posts remain. Undo is available.",
+      "noResults": "No matching items",
+      "expand": "Expand {{name}}",
+      "collapse": "Collapse {{name}}",
+      "searchTarget": "Search windows, characters, and posts",
+      "changeIcon": "Change icon…"
+    }
   },
   "explorerDialogs": {
     "search": "Search",
@@ -426,7 +510,21 @@
     "textLabel": "Text: {{content}}",
     "imageLabel": "Image: {{alt}}",
     "blank": "Blank",
-    "untitled": "Untitled"
+    "untitled": "Untitled",
+    "inline": {
+      "invalidImage": "Choose an image up to 8 MB.",
+      "dropImages": "Drop to add images",
+      "resize": "Resize: {{handle}}",
+      "smallerText": "Decrease font size",
+      "largerText": "Increase font size",
+      "replaceImage": "Replace image…",
+      "selectedCount": "{{count}} selected",
+      "dragHint": "Drag to move · Hold Alt to disable snapping",
+      "lockedHint": "Object locked · Unlock to move or resize",
+      "selectionHint": "Arrow keys move · Shift to select more · Enter to edit text",
+      "emptyHint": "Select an object or drop images · Paste text or images",
+      "preciseGeometry": "Precise position and size"
+    }
   },
   "export": {
     "thisBrowserDoesntSupportCanvas": "This browser doesn't support Canvas export",

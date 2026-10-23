@@ -32,20 +32,23 @@ test("author creates Chinese moodboard content, drags it, undoes and reloads", a
   const board = page.getByRole("dialog", { name: "Moodboard.exe" });
   await board.getByRole("button", { name: "文字", exact: true }).click();
   await board.getByRole("textbox", { name: "文字", exact: true }).fill("角色世界觀・中文輸入");
+  await board.getByRole("textbox", { name: "文字", exact: true }).press("Escape");
   const element = board.getByRole("button", { name: /選取文字/ });
   const before = await element.boundingBox();
   if (!before) throw new Error("missing moodboard element box");
-  await element.hover();
-  await page.mouse.down(); await page.mouse.move(before.x + 90, before.y + 70, { steps: 4 }); await page.mouse.up();
+  await page.keyboard.down("Alt"); await page.mouse.move(before.x + 5, before.y + 5);
+  await page.mouse.down(); await page.mouse.move(before.x + 90, before.y + 70, { steps: 4 }); await page.mouse.up(); await page.keyboard.up("Alt");
   const moved = await element.boundingBox();
   expect(moved?.x).toBeGreaterThan(before.x + 20);
   await page.getByRole("button", { name: "復原" }).click();
   const undone = await element.boundingBox();
   expect(Math.abs((undone?.x ?? 0) - before.x)).toBeLessThan(4);
   await page.getByRole("button", { name: /選取文字/ }).click();
-  await board.getByRole("button", { name: "→" }).click();
+  await element.press("ArrowRight");
   await expect.poll(() => saves.at(-1)?.document.windows.some((window) => window.type === "moodboard" && window.content.elements.some((item) => item.kind === "text" && item.content === "角色世界觀・中文輸入"))).toBe(true);
   await page.reload();
+  await page.getByRole("button", { name: /選取文字/ }).focus();
+  await page.getByRole("button", { name: /選取文字/ }).press("Enter");
   await expect(page.getByRole("dialog", { name: "Moodboard.exe" }).getByRole("textbox", { name: "文字", exact: true })).toHaveValue("角色世界觀・中文輸入");
 });
 

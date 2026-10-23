@@ -127,3 +127,63 @@
 .m-win-body .document-editor {
   padding-bottom: 76px;
 }
+
+/* Inline WordPad surface: only the paper scrolls inside the bounded host. */
+.retro-window-body:has(> .module-document > .document-editor), .m-win-body:has(> .module-document > .document-editor) { overflow: hidden; display: flex; flex-direction: column; }
+.document-editor { position: relative; flex: 1; display: flex; flex-direction: column; min-height: 0; height: 100%; overflow: hidden; font-size: 14px; }
+.m-win-body .document-editor { padding-bottom: 0; }
+.document-editor .doc-format-toolbar { display: flex; flex-wrap: wrap; align-items: center; flex: none; gap: 3px; padding: 3px 4px; box-shadow: inset 0 -1px var(--doc-shadow), inset 0 -2px #fff; font-size: 12px; }
+.document-editor .doc-format-toolbar .mini-btn, .document-editor .doc-format-toolbar select { min-height: 24px; min-width: 24px; height: 24px; padding: 0 4px; font: inherit; }
+.document-editor .doc-format-toolbar select { background: #fff; border: 0; box-shadow: var(--doc-sunken); max-width: 125px; }
+.document-editor .mini-btn { background: var(--doc-face); box-shadow: var(--doc-bevel); }
+.document-editor .mini-btn.on { box-shadow: var(--doc-pressed); }
+.document-editor .doc-toolbar-divider { height: 20px; width: 2px; border-left: 1px solid var(--doc-shadow); border-right: 1px solid #fff; margin: 0 2px; }
+.document-editor .doc-align-icon { display: flex; flex-direction: column; gap: 2px; width: 14px; }
+.document-editor .doc-align-icon i { width: 100%; height: 2px; background: currentColor; }
+.document-editor .doc-align-icon i:nth-child(2) { width: 65%; }
+.document-editor .doc-align-icon i:last-child { width: 85%; }
+.document-editor .doc-align-icon.center { align-items: center; }
+.document-editor .doc-align-icon.right { align-items: flex-end; }
+.document-editor .doc-page { flex: 1; min-height: 0; overflow: auto; margin: 4px; background: #fff; box-shadow: var(--doc-sunken); }
+.document-editor .doc-edit-blocks { gap: 6px; padding: 14px 6px; min-height: 100%; }
+.document-editor .doc-block { flex-direction: row; align-items: flex-start; gap: 2px; border: 0; padding: 0; }
+.document-editor .doc-block-content { flex: 1; min-width: 0; }
+.document-editor .doc-block[data-dragging="true"] { opacity: .35; }
+.document-editor [data-drop="before"] { box-shadow: inset 0 3px #000080; }
+.document-editor [data-drop="after"] { box-shadow: inset 0 -3px #000080; }
+.document-editor .doc-drag-handle { flex: none; width: 18px; padding: 6px 0; border: 0; background: transparent; color: #808080; opacity: .4; letter-spacing: -2px; cursor: grab; }
+.document-editor .doc-delete { flex: none; width: 20px; min-width: 20px; min-height: 20px; height: 20px; margin-top: 2px; padding: 0; color: #b00020; opacity: 0; }
+.document-editor .doc-block[data-active="true"] .doc-drag-handle, .document-editor .doc-block[data-active="true"] .doc-delete, .document-editor .doc-delete:focus-visible { opacity: 1; }
+.document-editor .ie { background: transparent; outline: none; min-height: 26px; line-height: 1.7; }
+.document-editor .ie:hover { background: #f5f5ff; }
+.document-editor .ie:focus { background: #fff; outline: 1px dotted #000; outline-offset: -1px; }
+.document-editor textarea.ie { overflow: hidden; }
+.document-editor .ie.heading { font-size: 20px; font-weight: 700; line-height: 1.3; }
+.document-editor .doc-list-editor { position: relative; }
+.document-editor .doc-list-editor textarea { padding-left: 22px; }
+.document-editor .doc-list-bullets { position: absolute; top: 1px; left: 6px; line-height: 1.7; white-space: pre; pointer-events: none; }
+.document-editor .doc-fig { margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.document-editor .doc-block-settings { margin-top: 0; padding: 4px; border: 0; gap: 4px; }
+.document-editor .doc-block-settings small { font-size: 11px; line-height: 1.5; color: #404040; }
+.document-editor .doc-image-actions { display: flex; flex-wrap: wrap; gap: 4px; }
+.document-editor .doc-image-drop { display: grid; place-items: center; min-height: 120px; border: 2px dashed #808080; }
+.document-editor .doc-image-drop:has(:focus-visible) { outline: 2px solid #000080; }
+.document-editor .doc-image-drop > label { white-space: normal; height: auto; text-align: center; }
+.document-editor .doc-divider { border: 0; background: transparent; width: 100%; min-height: 28px; padding: 4px; }
+.document-editor .doc-append { flex: 1; min-height: 48px; margin-left: 20px; padding: 4px; border: 0; background: transparent; color: #808080; text-align: left; cursor: text; }
+.document-editor .doc-insert-menu { position: absolute; z-index: 20; top: 34px; left: 24px; max-width: calc(100% - 32px); max-height: calc(100% - 60px); overflow: auto; min-width: 150px; background: var(--doc-face); padding: 2px; box-shadow: var(--doc-bevel), 2px 2px #0004; }
+.document-editor .doc-insert-menu button { display: block; border: 0; background: transparent; color: inherit; width: 100%; min-height: 30px; text-align: left; padding: 4px 8px; font: inherit; }
+.document-editor .doc-insert-menu button:focus, .document-editor .doc-insert-menu button:hover { background: #000080; color: #fff; outline: none; }
+.document-editor .doc-status { display: flex; flex: none; height: 22px; gap: 3px; padding: 2px 3px; font-size: 11px; color: #000; }
+.document-editor .doc-status span { box-shadow: var(--doc-sunken); padding: 0 8px; display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.document-editor .doc-status span:first-child { flex: 1; min-width: 0; }
+.document-editor .doc-error { position: absolute; bottom: 30px; left: 8px; right: 8px; z-index: 30; display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: white; border: 1px solid #b00020; color: #8a0018; font-size: 12px; }
+.document-editor .doc-error span { flex: 1; }
+.document-editor [data-primary]:focus-visible, .document-editor .doc-append:focus-visible { outline: 1px dotted #000; outline-offset: -1px; }
+.document-editor[data-mobile="true"] { font-size: 15px; }
+.document-editor[data-mobile="true"] .doc-edit-blocks { padding-bottom: 76px; font-size: 15px; }
+.document-editor[data-mobile="true"] .mini-btn, .document-editor[data-mobile="true"] select, .document-editor[data-mobile="true"] input, .document-editor[data-mobile="true"] textarea, .document-editor[data-mobile="true"] .doc-drag-handle, .document-editor[data-mobile="true"] .doc-divider, .document-editor[data-mobile="true"] .doc-insert-menu button { min-height: 44px; }
+.document-editor[data-mobile="true"] .mini-btn, .document-editor[data-mobile="true"] .doc-drag-handle { min-width: 44px; }
+.document-editor[data-mobile="true"] .doc-insert-menu { top: 98px; max-height: calc(100% - 124px); }
+
+.module-host.module-document:has(> .document-editor) { display: flex; flex-direction: column; flex: 1; width: 100%; height: 100%; min-height: 0; overflow: hidden; }

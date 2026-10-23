@@ -1,3 +1,4 @@
+import { FolderTreeEditor } from "./FolderTreeEditor";
 import { targetCatalog } from "../../navigation/targetCatalog";
 import { useEffect, useId, useMemo, useRef, useState, type DragEvent, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
@@ -258,7 +259,7 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
           aria-label={name}
           aria-describedby={descId}
           aria-pressed={editing ? isSelected : undefined}
-          onClick={() => activate(item)}
+          onClick={(event) => { if (!editing) event.currentTarget.focus({ preventScroll: true }); activate(item); }}
           onDoubleClick={() => { if (editing && !coarse) openItem(item); }}
           onKeyDown={(event) => onItemKey(event, item)}
         >
@@ -294,7 +295,7 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
       ) : null}
 
       {search ? (
-        <ul className="explorer-results" aria-label={tr("explorer.searchResults")}>{searchResults.map((shortcut) => <li key={shortcut.id}><button type="button" data-navigation-focus={`explorer:${window.id}:shortcut:${shortcut.id}`} onClick={() => openShortcut(shortcut)}>▣ {shortcut.label}</button><small>{pathLabel(content.folders, shortcut.parentId)}</small></li>)}</ul>
+        <ul className="explorer-results" aria-label={tr("explorer.searchResults")}>{searchResults.map((shortcut) => <li key={shortcut.id}><button type="button" data-navigation-focus={`explorer:${window.id}:shortcut:${shortcut.id}`} onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); openShortcut(shortcut); }}>▣ {shortcut.label}</button><small>{pathLabel(content.folders, shortcut.parentId)}</small></li>)}</ul>
       ) : (
         <div className="explorer-grid" role="list" aria-label={active?.name ?? rootLabel()} onClick={(event) => { if (event.target === event.currentTarget) select(null); }}>
           {folders.map((folder) => renderTile({ kind: "folder", id: folder.id }, folder.name, tr("explorer.folderItems", { v1: folderItemCount(folder.id) }), { glyph: "📁", icon: folder.icon, draft: folder.visibility === "draft" }))}
@@ -351,4 +352,4 @@ function ExplorerBrowser({ window, ctx, update, editing }: ModuleProps<"explorer
 }
 
 export function ExplorerView(props: ModuleProps<"explorer">) { return <ExplorerBrowser {...props} editing={false} />; }
-export function ExplorerInlineEditor(props: ModuleProps<"explorer">) { return <ExplorerBrowser {...props} editing />; }
+export function ExplorerInlineEditor(props: ModuleProps<"explorer">) { return <FolderTreeEditor {...props} />; }

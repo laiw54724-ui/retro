@@ -1,4 +1,4 @@
-import { IgImageUrlField as ImageUrlField } from "./IgImageUrlField";
+import { IgImageUrlField as ImageUrlInput } from "./IgImageUrlField";
 import { useIgPendingEntities, useIgSessionValue } from "./useIgSessionValue";
 import { useId } from "react";
 import { useIgEntityEditor } from "./useIgEntityEditor";
@@ -28,7 +28,7 @@ import {
   type SiteDocumentV2Input
 } from "@retrodesk/shared";
 import type { ModuleProps } from "../types";
-import { FilePick } from "../ui";
+import { FileUploadButton } from "../ui";
 import { AvatarImage, DEFAULT_CROP } from "../../../components/AvatarImage";
 import { igEditorScope, useIgEditorState } from "./useIgEditorState";
 import { DEFAULT_POST_EDITOR_FILTERS, hasPostEditorFilters, selectPostEditorRows, type PostEditorFilters } from "./postEditorFilters";
@@ -182,10 +182,10 @@ export function CanonicalPostEditor({ props }: Props) {
             <span className="ig-thumb sq48 ph">{item.src ? <AvatarImage src={item.src} crop={item.crop} alt={item.alt} /> : null}</span>
             <div className="ig-col grow">
               <div className={styles.replacement}>
-                <FilePick disabled={!media.canUpload} className="w98-btn small" onFiles={files => media.replacePostImage(post.id, item.id, files[0])}>{tr("authoring.replaceImage", { n: mediaIndex + 1 })}</FilePick>
+                <FileUploadButton disabled={!media.canUpload} className="w98-btn small" onFiles={files => media.replacePostImage(post.id, item.id, files[0])}>{tr("authoring.replaceImage", { n: mediaIndex + 1 })}</FileUploadButton>
                 <small className="w98-hint">{tr("authoring.replacementHint")}</small>
               </div>
-              <ImageUrlField draftKey={`${scope}:${post.id}:${item.id}:source`} visibleLabel raw={item.srcUrl} placeholder={tr("canonicalPostEditor.imageUrl")} label={tr("canonicalPostEditor.urlOfImage", { v1: mediaIndex + 1 })} className="w98-input compact" onEdit={() => media.cancelPostReplacement(post.id, item.id)} onCommit={(raw, src) => mutate((document) => run(patchPostMedia(document, post.id, item.id, { src, srcUrl: raw }, { siteId }), document))} />
+              <ImageUrlInput draftKey={`${scope}:${post.id}:${item.id}:source`} visibleLabel raw={item.srcUrl} placeholder={tr("canonicalPostEditor.imageUrl")} label={tr("canonicalPostEditor.urlOfImage", { v1: mediaIndex + 1 })} className="w98-input compact" onEdit={() => media.cancelPostReplacement(post.id, item.id)} onCommit={(raw, src) => mutate((document) => run(patchPostMedia(document, post.id, item.id, { src, srcUrl: raw }, { siteId }), document))} />
               <input className="w98-input compact" aria-label={tr("canonicalPostEditor.altTextOfImage", { v1: mediaIndex + 1 })} value={item.alt} placeholder={tr("canonicalPostEditor.altTextMakesTheImage")} onChange={(event) => mutate((document) => run(patchPostMedia(document, post.id, item.id, { alt: event.target.value }, { siteId }), document), `media-alt-${item.id}`)} />
               <div className="ig-media-crop-controls" role="group" aria-label={tr("canonicalPostEditor.thumbnailCropOfImage", { v1: mediaIndex + 1 })}>
                 <label><span>{tr("canonicalPostEditor.horizontal")}</span><input type="range" min={0} max={100} value={(item.crop ?? DEFAULT_CROP).x} aria-label={tr("canonicalPostEditor.horizontalCropOfImage", { v1: mediaIndex + 1 })} onChange={(event) => mutate((document) => run(patchPostMedia(document, post.id, item.id, { crop: { ...(item.crop ?? DEFAULT_CROP), x: Number(event.target.value) } }, { siteId }), document), `media-crop-x-${item.id}`)} /></label>
@@ -204,7 +204,7 @@ export function CanonicalPostEditor({ props }: Props) {
           </div>)}
           {post.media.length < 10 ? <>
             <div className="ie-row">
-              <FilePick multiple disabled={!media.canUpload} className="w98-btn small" onFiles={(files) => uploadFiles(post.id, files)}>{post.media.length ? tr("canonicalPostEditor.uploadMoreImages") : tr("authoring.chooseImages")}</FilePick>
+              <FileUploadButton multiple disabled={!media.canUpload} className="w98-btn small" onFiles={(files) => uploadFiles(post.id, files)}>{post.media.length ? tr("canonicalPostEditor.uploadMoreImages") : tr("authoring.chooseImages")}</FileUploadButton>
               <label className={`ig-col grow ${sourceStyles.url}`}><span className="w98-hint">{tr("canonicalPostEditor.addCarouselImageUrl")}</span><input className="w98-input compact" aria-label={tr("canonicalPostEditor.addCarouselImageUrl")} value={mediaUrls[post.id] ?? ""} onChange={(event) => setMediaUrls((current) => ({ ...current, [post.id]: event.target.value }))} placeholder={tr("canonicalPostEditor.orPasteACarouselImage")} /></label>
               <button type="button" className="w98-btn small" onClick={() => {
                 const raw = mediaUrls[post.id] ?? "";

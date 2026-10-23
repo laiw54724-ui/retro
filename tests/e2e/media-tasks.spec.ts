@@ -289,6 +289,7 @@ test("avatar upload preserves newer name edits and reloads its protected preview
   const site = await mockMedia(page, { hold: "avatar.png" });
   await page.locator(".task-items").getByRole("button", { name: "About.exe", exact: true }).click();
   const about = page.getByRole("dialog", { name: "About.exe", exact: true });
+  await about.locator(".about-avatar-toggle").click();
   await about.getByLabel("上傳頭像", { exact: true }).setInputFiles(pickedFile("avatar.png"));
   await expect.poll(() => site.calls).toEqual(["avatar.png"]);
   await about.getByLabel("暱稱", { exact: true }).fill("New name during upload");

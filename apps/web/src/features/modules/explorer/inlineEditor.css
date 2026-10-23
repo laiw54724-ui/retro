@@ -1,0 +1,56 @@
+.module-host.module-explorer:has(> .folder-tree-editor){height:100%;min-height:0}
+.folder-tree-editor.explorer-shell{position:relative;height:100%;min-height:0;gap:0;padding:0;overflow:hidden;font-size:12px}
+.folder-tree-editor .explorer-address{flex-shrink:0;flex-wrap:wrap;border-width:0 0 1px;padding:4px;background:inherit;overflow:visible}
+.folder-tree-editor .explorer-address nav{flex:1;min-width:80px;min-height:28px;overflow:auto;background:#fff;color:#111;box-shadow:inset 1px 1px #808080,inset -1px -1px #fff}
+.folder-tree-editor .explorer-address input{width:120px;min-width:80px;max-width:100%;min-height:28px;box-sizing:border-box}
+.folder-tree-editor .explorer-authoring{flex-shrink:0;gap:4px;padding:4px;border-bottom:1px solid #808080}
+.folder-tree-editor .explorer-authoring .w98-btn{min-height:28px;font-size:12px;padding:0 8px}
+.folder-workspace{display:flex;flex:1;min-height:0;min-width:0;background:#fff;color:#111}
+.folder-tree{flex:0 0 160px;min-width:0;overflow:auto;border-right:2px solid #808080;padding:4px;box-sizing:border-box}
+.folder-tree-node{display:flex;align-items:center;min-height:24px;white-space:nowrap}
+.folder-tree-open{display:flex;align-items:center;gap:5px;min-height:24px;padding:2px 4px;border:0;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer}
+.folder-tree-open[aria-current=page]{background:#000080;color:#fff}
+.folder-tree-expand{flex-shrink:0;width:16px;height:16px;padding:0;border:1px solid #808080;background:#fff;color:#111;font:12px monospace}
+.folder-tree-expand:disabled{border-color:transparent}
+.folder-tree-node[data-draft]{opacity:.6}
+.folder-items-pane{flex:1;min-width:0;overflow:auto;position:relative}
+.folder-tree-editor .explorer-grid{grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:4px;padding:8px;min-height:100%;box-sizing:border-box}
+.folder-tree-editor .explorer-item{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:4px 2px;border:1px solid transparent;background:transparent;text-align:center;gap:2px}
+.folder-tree-editor .explorer-item.selected{background:#000080;color:#fff;border:1px dotted #fff}
+.folder-tree-editor .explorer-open{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;min-height:64px;padding:0;text-align:center}
+.folder-tree-editor .explorer-open strong{max-width:100%;font-weight:400;text-align:center}
+.folder-tree-editor .explorer-desc{font-size:10px;padding:0;max-width:100%;text-align:center}
+.folder-tree-editor .explorer-desc[data-broken]{color:#8a0018;font-weight:700}
+.folder-tree-editor .explorer-item.selected .explorer-desc[data-broken]{color:#ffd0d0}
+.folder-tree-editor .explorer-rename{box-sizing:border-box;min-height:26px;width:100%;margin:0;text-align:center;font:inherit;color:#111;background:#fff}
+.folder-tree-editor .explorer-icon{height:36px;width:40px;display:flex;align-items:center;justify-content:center}
+.folder-inline-icon{position:relative;display:inline-block;flex-shrink:0;width:28px;height:21px;background:#ffe496;border:1px solid #b88b2b;box-shadow:inset 1px 1px #fff0bc;box-sizing:border-box}
+.folder-inline-icon:before{content:"";position:absolute;top:-5px;left:-1px;width:13px;height:5px;background:#ffe496;border:1px solid #b88b2b;border-bottom:0}
+.folder-tree-node .folder-inline-icon{width:16px;height:12px;margin-top:4px}
+.folder-tree-node .folder-inline-icon:before{width:8px;height:3px;top:-3px}
+.folder-tree-editor [data-cut]{opacity:.45}
+.folder-tree-editor [data-drop]{outline:2px dashed #000080;outline-offset:-2px;background:#e6e6ff;color:#000}
+.folder-broken{position:absolute;right:-2px;top:-2px;background:#a00000;color:#fff;border:1px solid #fff;width:15px;height:15px;font:bold 12px/15px sans-serif}
+.folder-tree-editor .explorer-status{margin:0;padding:2px 3px;border:0;background:inherit;font-size:11px;min-height:22px}
+.folder-target-panel{top:76px;left:8px;width:320px;max-height:calc(100% - 110px);overflow:auto}
+.folder-target-panel>input{width:100%;min-height:30px;box-sizing:border-box}
+.folder-target-panel>p{font-size:11px;margin:0;overflow-wrap:anywhere}
+.folder-target-list{overflow:auto;min-height:40px;max-height:250px;background:#fff;color:#111;border:1px solid #808080}
+.folder-target-list section>strong{display:block;background:#eee;padding:4px 8px;font-size:11px}
+.folder-target-list button{display:block;width:100%;padding:6px 10px;min-height:30px;border:0;background:#fff;color:inherit;text-align:left;font:inherit;overflow-wrap:anywhere}
+.folder-target-list button[aria-selected=true]{background:#e0e0e0;color:#111}
+.folder-target-list button:is(:hover,:focus-visible){background:#000080;color:#fff}
+.folder-delete-confirm{position:absolute;left:8px;right:8px;bottom:30px;z-index:45;display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px;background:#ffffe1;border:1px solid #b88b2b;color:#111;box-shadow:2px 2px #0005}
+.folder-delete-confirm p{flex:1 1 180px;margin:0;overflow-wrap:anywhere}
+.folder-delete-confirm ul{flex:1 1 100%;max-height:96px;overflow:auto;margin:0;padding-left:22px}
+.folder-tree-editor .explorer-results{padding:8px}
+.folder-tree-editor .explorer-results button{display:flex;flex-direction:column;gap:3px;min-height:40px;border:1px solid #aaa;background:#fff;color:#111;padding:6px}
+.folder-tree-editor[data-mobile] .explorer-address{gap:2px}
+.folder-tree-editor[data-mobile] .explorer-address input{flex:1 1 90px;min-height:44px}
+.folder-tree-editor[data-mobile] .explorer-address nav{flex-basis:calc(100% - 90px);min-height:44px}
+.folder-tree-editor[data-mobile] .explorer-address button,.folder-tree-editor[data-mobile] .explorer-authoring .w98-btn{min-height:44px}
+.folder-tree-editor[data-mobile] .explorer-grid{grid-template-columns:repeat(auto-fill,minmax(86px,1fr))}
+.folder-tree-editor[data-mobile] .explorer-open{min-height:74px}
+.folder-tree-editor[data-mobile] .explorer-rename{min-height:44px;font-size:15px}
+.folder-tree-editor[data-mobile] .folder-target-panel{top:100px;max-height:calc(100% - 132px)}
+.folder-tree-editor[data-mobile] .folder-target-list button,.folder-tree-editor[data-mobile] .folder-delete-confirm button{min-height:44px}

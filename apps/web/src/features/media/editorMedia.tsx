@@ -36,6 +36,7 @@ export function useWindowMedia<T extends DesktopWindow["type"]>(window: WindowOf
   const scope = `window:${window.id}:content`;
   return {
     tasks: tasks.filter((task) => task.scope === scope),
+    getTasks: () => queue?.getSnapshot().filter((task) => task.scope === scope) ?? [],
     upload: (file: File, options: WindowUploadOptions<T>) => {
       if (!queue || !ctx.siteId || !ctx.upload || !ctx.editing) return;
       enqueueWindowUpload(queue, useEditorStore, { siteId: ctx.siteId, windowId: window.id, windowType: window.type, scope }, file, ctx.upload, options);
@@ -48,7 +49,7 @@ export function useWindowMedia<T extends DesktopWindow["type"]>(window: WindowOf
 
 const statusLabels = () => ({ queued: i18n.t("editor:editorMedia.queued"), uploading: i18n.t("editor:editorMedia.uploading"), completed: i18n.t("editor:editor.done"), failed: i18n.t("editor:editorMedia.failed") } as const);
 
-export function UploadTaskList({ tasks, onRetry, onDismiss, onCancel }: { tasks: readonly UploadTask[]; onRetry: (id: string) => void; onDismiss: (id: string) => void; onCancel?: (id: string) => void }) {
+export function UploadProgressList({ tasks, onRetry, onDismiss, onCancel }: { tasks: readonly UploadTask[]; onRetry: (id: string) => void; onDismiss: (id: string) => void; onCancel?: (id: string) => void }) {
   const { t: tr } = useTranslation("editor");
   if (!tasks.length) return null;
   const count = (status: UploadTask["status"]) => tasks.filter((task) => task.status === status).length;
@@ -74,3 +75,6 @@ export function UploadTaskList({ tasks, onRetry, onDismiss, onCancel }: { tasks:
     </section>
   );
 }
+
+// Compatibility name retained for one release.
+export { UploadProgressList as UploadTaskList };
