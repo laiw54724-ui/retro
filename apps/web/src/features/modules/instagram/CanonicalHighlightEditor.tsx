@@ -1,6 +1,6 @@
 import { IgImageUrlField as ImageUrlInput } from "./IgImageUrlField";
 import { useIgPendingEntities, useIgSessionValue } from "./useIgSessionValue";
-import { useId } from "react";
+import { useEffect, useId } from "react";
 import styles from "./ocEditor.module.css";
 import sourceStyles from "./ImageSourceFields.module.css";
 import { useIgEntityEditor } from "./useIgEntityEditor";
@@ -23,10 +23,10 @@ import { FileUploadButton, FallbackImage } from "../ui";
 import { useIgMedia } from "./useIgMedia";
 import { igEditorScope, useIgEditorState } from "./useIgEditorState";
 
-type Props = { props: ModuleProps<"instagram"> };
+type Props = { props: ModuleProps<"instagram">; openRequest?: { token: number; entityId?: string } };
 type Result = { ok: boolean; document?: SiteDocumentV2Input; diagnostics?: Array<{ message: string }> };
 
-export function CanonicalHighlightEditor({ props }: Props) {
+export function CanonicalHighlightEditor({ props, openRequest }: Props) {
   const { t: tr } = useTranslation("instagram");
   const { ctx } = props;
   const profileId = ctx.profileId;
@@ -35,6 +35,11 @@ export function CanonicalHighlightEditor({ props }: Props) {
   const editorId = useId();
   const { hasPending, discardPending } = useIgPendingEntities(scope, "frame-urls");
   const { root, openId, setOpenId, wasOpened } = useIgEntityEditor(scope, highlights.map((item) => item.id));
+  useEffect(() => {
+    if (openRequest?.entityId && highlights.some((item) => item.id === openRequest.entityId)) {
+      setOpenId(openRequest.entityId, { focusField: true });
+    }
+  }, [openRequest?.token]);
   const [query, setQuery] = useIgEditorState(scope, "");
   const [urls, setUrls] = useIgSessionValue<Record<string, string>>(`${scope}:frame-urls`, {});
   const [error, setError] = useIgEditorState(scope, "");

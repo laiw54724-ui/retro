@@ -38,7 +38,7 @@ export const registry: Registry = {
   moodboard: { type: "moodboard", schemaVersion: 1, label: "Moodboard 畫板", description: "用圖片、文字與色塊組成角色靈感板", icon: "photo", capabilities: { ...defaultCapabilities, links: false }, mobile: { mode: "window", icon: "photo" }, create: (index) => factory("moodboard", index), View: MoodboardView, InlineEditor: MoodboardInlineEditor },
   explorer: { type: "explorer", schemaVersion: 1, label: "世界觀資料夾", description: "用多層資料夾整理桌面視窗與角色設定", icon: "doc", capabilities: { ...defaultCapabilities, uploads: false }, mobile: { mode: "window", icon: "doc" }, create: (index) => factory("explorer", index), View: ExplorerView, InlineEditor: ExplorerInlineEditor },
   minesweeper: { type: "minesweeper", schemaVersion: 1, label: "掃雷", description: "不記分、不上傳的訪客小遊戲", icon: "star", capabilities: { ...defaultCapabilities, links: false, uploads: false }, mobile: { mode: "window", icon: "star" }, create: (index) => factory("minesweeper", index), View: MinesweeperView, InlineEditor: MinesweeperInlineEditor },
-  "character-dialog": { type: "character-dialog", schemaVersion: 1, label: "角色彈窗", description: "可關閉的角色歡迎訊息", icon: "user", capabilities: defaultCapabilities, mobile: { mode: "window", icon: "user" }, create: (index) => factory("character-dialog", index), View: CharacterDialogView, InlineEditor: CharacterDialogInlineEditor },
+  "character-dialog": { type: "character-dialog", schemaVersion: 1, label: "歡迎彈窗", description: "可關閉的角色歡迎訊息", icon: "user", capabilities: defaultCapabilities, mobile: { mode: "window", icon: "user" }, create: (index) => factory("character-dialog", index), View: CharacterDialogView, InlineEditor: CharacterDialogInlineEditor },
   guestbook: { type: "guestbook", schemaVersion: 1, label: "訪客留言簿", description: "預設待審的公開純文字留言", icon: "doc", capabilities: { ...defaultCapabilities, links: false, uploads: false }, mobile: { mode: "window", icon: "doc" }, create: (index) => factory("guestbook", index), View: GuestbookView, InlineEditor: GuestbookInlineEditor }
 };
 
@@ -70,7 +70,7 @@ export function renderModule({ window, ctx, editing, update }: RenderModuleOptio
     case "image": {
       const props: ModuleProps<"image"> = { window, ctx, update: (recipe, key) => update((current) => recipe(current as WindowOf<"image">), key) };
       if (editing && ctx.imageAuthoring && IMAGE_WINDOW_CREATION_ENABLED) return createElement(registry.image.InlineEditor, props);
-      // Canvas images remain visual objects; controls live in the Inspector or phone editor.
+      // Readers and incompatible writers always retain the presentation-only path.
       return createElement("div", { style: { height: "100%", minHeight: 0, display: "grid", gridTemplateRows: "minmax(0, 1fr)" } }, createElement(registry.image.View, props));
     }
     case "document": {

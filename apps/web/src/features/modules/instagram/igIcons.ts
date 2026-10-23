@@ -16,6 +16,7 @@ export function igIcons(color: string): Record<string, string> {
     send: S("<path d='M22 2 11 13'/><path d='M22 2 15 22l-4-9-9-4z'/>"),
     bookmark: S(bookmark), bookmarkFill: S(bookmark, color, color),
     home: S(home), homeFill: S(home, color, color),
+    plus: S("<rect x='3' y='3' width='18' height='18' rx='3'/><path d='M12 7v10M7 12h10'/>"),
     search: S("<circle cx='11' cy='11' r='7'/><path d='M21 21l-4.3-4.3'/>"),
     grid: S("<rect x='3' y='3' width='18' height='18'/><path d='M3 9h18M3 15h18M9 3v18M15 3v18'/>"),
     list: S("<rect x='3' y='3' width='18' height='8'/><rect x='3' y='14' width='18' height='7'/>"),

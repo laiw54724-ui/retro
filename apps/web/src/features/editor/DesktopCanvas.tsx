@@ -1,5 +1,5 @@
 import { resolveDesktopLabelAppearance } from "../../lib/windowAppearance";
-import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { useEffect, useRef, useState, type PointerEvent, type ReactNode, type RefObject } from "react";
 import { useTranslation } from "react-i18next";
 import type { CollectionEntityV2, DesktopWindow, PostEntityV2, ProfileEntityV2, SiteDocumentV2Input } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
@@ -12,6 +12,7 @@ import type { ProfileDirectoryEntry } from "../modules/types";
 import { useMusicPlayback } from "../modules/music/audioCoordinator";
 import { stopAllMedia, stopWindowMedia } from "../modules/music/mediaSession";
 import styles from "./DesktopCanvas.module.css";
+import { FloatingWindowActions } from "./FloatingWindowActions";
 
 const TASKBAR_H = 36;
 const GRID = 8;
@@ -29,6 +30,8 @@ function setGeo(el: HTMLElement, text: string) {
 }
 
 type Props = {
+  windowActions?: ReactNode;
+  actionsDock?: RefObject<HTMLDivElement | null>;
   readWindowIds?: ReadonlySet<string>;
   siteId?: string;
   upload?: (file: File, kind?: "image" | "icon" | "audio") => Promise<string | null>;
@@ -49,7 +52,7 @@ type Props = {
   socialDocument?: SiteDocumentV2Input;
 };
 
-export function DesktopCanvas({ readWindowIds, siteId, upload, profiles, posts, collections, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
+export function DesktopCanvas({ windowActions, actionsDock, readWindowIds, siteId, upload, profiles, posts, collections, profileId, profileIdsByWindow, onProfileSelect, onProfileAdd, onProfileDuplicate, onProfileChange, onProfileDelete, profileDeleteBlocked, profileDeleteGuardById, profileDirectory, updateContent, socialDocument }: Props) {
   const { t: tr } = useTranslation("editor");
   const document = useEditorStore((s) => s.document)!;
   const selectedId = useEditorStore((s) => s.selectedId);
@@ -222,6 +225,7 @@ export function DesktopCanvas({ readWindowIds, siteId, upload, profiles, posts, 
               key={"icon-" + win.id}
               type="button"
               className="deskicon"
+              data-selected={isSel || undefined}
               aria-label={tr("desktopCanvas.open", { title: win.title })}
               style={{ left: layout.iconX, top: layout.iconY, zIndex: isSel ? 2 : 1, outline: isSel ? `1px dotted ${tv.text}` : "none", cursor: layoutMode ? "grab" : "pointer" }}
               onClick={() => iconClick(win.id)}
@@ -302,10 +306,11 @@ export function DesktopCanvas({ readWindowIds, siteId, upload, profiles, posts, 
         );
       })}
 
-      {selected && !layoutMode && !view[selected.id] ? (
+      {selected && !windowActions && !layoutMode && !view[selected.id] ? (
         <div className="sel-tag" style={{ left: selected.layout.desktop.x, top: Math.max(0, selected.layout.desktop.y - 22), zIndex: 99990 }}>{tr("desktopCanvas.selectedDragTheTitleBar")}</div>
       ) : null}
 
+      {windowActions && selectedId && !layoutMode ? <FloatingWindowActions canvasRef={canvasRef} dockRef={actionsDock} anchorKey={`${selectedId}:${selectedView ?? "open"}`}>{windowActions}</FloatingWindowActions> : null}
       {layoutMode ? (
         <div className="layout-toolbar w98-window" role="toolbar" aria-label={tr("desktopCanvas.layoutMode")}>
           <strong>{tr("desktopCanvas.layoutMode2")}</strong>

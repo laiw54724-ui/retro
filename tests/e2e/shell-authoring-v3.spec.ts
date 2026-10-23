@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Page } from "@playwright/test";
 import { createStarterDocument, makeGalleryImage, makeWindow, migrateSiteDocumentV2 } from "../../packages/shared/src";
 
@@ -47,17 +48,19 @@ for (const width of [320, 375, 390, 430, 1440]) {
     await dialog.getByRole('button', { name: /^文件視窗/ }).click();
     await expect(dialog).toHaveCount(0);
     if (width < 768) {
-      await expect(page.locator('.m-edit-toggle')).toHaveAttribute('aria-pressed', 'true');
+      await expect(page.locator('.m-window-settings')).toBeVisible();
+      await expect(page.locator('.m-edit-toggle')).toHaveCount(0);
       await expect(page.locator('.m-win-body textarea').first()).toBeVisible();
-      const icon = page.locator('.m-toolbar').getByRole('button', { name: '圖示', exact: true });
+      const icon = page.getByRole('button', { name: '視窗設定', exact: true });
       await icon.click();
-      await expect(page.getByRole('dialog', { name: '圖示', exact: true })).toBeVisible();
-      await expect(page.getByLabel('視窗標題', { exact: true })).toHaveCount(0);
+      await expect(page.getByRole('dialog', { name: '視窗設定', exact: true })).toBeVisible();
+      await expect(page.getByLabel('視窗標題', { exact: true })).toHaveValue(/.+/);
       await page.keyboard.press('Escape');
       await expect(icon).toBeFocused();
-      await expect(page.locator('.m-edit-toggle')).toHaveAttribute('aria-pressed', 'true');
+      await expect(page.locator('.m-window-settings')).toBeVisible();
+      await expect(page.locator('.m-edit-toggle')).toHaveCount(0);
     } else {
-      const toolbar = page.getByRole('group', { name: '已選取元件操作' });
+      const toolbar = page.getByRole('toolbar', { name: '已選取元件操作' });
       await expect(toolbar).toBeVisible();
       await toolbar.getByRole('button', { name: '完成', exact: true }).click();
       await expect(page.locator('.canvas-window.selected textarea')).toHaveCount(0);
@@ -81,11 +84,44 @@ test('fixed add survives collapsed sidebars and Done returns keyboard focus', as
   await page.getByRole('button', { name: '收合右側屬性欄', exact: true }).click();
   await page.getByRole('button', { name: '新增元件', exact: true }).click();
   await page.getByRole('dialog', { name: '新增元件', exact: true }).getByRole('button', { name: /^文件視窗/ }).click();
-  const toolbar = page.getByRole('group', { name: '已選取元件操作' });
+  const toolbar = page.getByRole('toolbar', { name: '已選取元件操作' });
   await toolbar.getByRole('button', { name: '完成', exact: true }).click();
   await expect(toolbar.getByRole('button', { name: '編輯內容', exact: true })).toBeFocused();
   await toolbar.getByRole('button', { name: '圖示', exact: true }).click();
   await expect(page.locator('#editor-right-panel').getByRole('tab', { name: '圖示', exact: true })).toHaveAttribute('aria-selected', 'true');
+});
+
+test('selected window actions float with the window and keep duplicate/delete undoable', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await fixture(page);
+  await page.locator('.deskicon').click();
+  const toolbar = page.getByRole('toolbar', { name: '已選取元件操作', exact: true });
+  await expect(toolbar).toBeVisible();
+  expect(await toolbar.evaluate(node => !!node.closest('.desktop-canvas'))).toBe(true);
+  const before = await toolbar.boundingBox();
+  const title = await page.getByRole('dialog', { name: 'Gallery.exe', exact: true }).locator('.retro-titlebar').boundingBox();
+  if (!before || !title) throw new Error('floating action bounds');
+  await page.mouse.move(title.x + 70, title.y + title.height / 2);
+  await page.mouse.down(); await page.mouse.move(title.x + 150, title.y + title.height / 2 + 80, { steps: 5 }); await page.mouse.up();
+  await expect.poll(async () => (await toolbar.boundingBox())?.y).not.toBe(before.y);
+  const bar = await toolbar.boundingBox(), canvas = await page.locator('.desktop-canvas').boundingBox();
+  if (!bar || !canvas) throw new Error('canvas action bounds');
+  expect(bar.x).toBeGreaterThanOrEqual(canvas.x); expect(bar.x + bar.width).toBeLessThanOrEqual(canvas.x + canvas.width);
+  expect(bar.y).toBeGreaterThanOrEqual(canvas.y); expect(bar.y + bar.height).toBeLessThanOrEqual(canvas.y + canvas.height - 36);
+  await toolbar.getByRole('button', { name: '編輯內容', exact: true }).focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(toolbar.getByRole('button', { name: '圖示', exact: true })).toBeFocused();
+  await page.screenshot({ path: test.info().outputPath('floating-window-actions.png') });
+  await toolbar.getByRole('button', { name: '複製視窗', exact: true }).click();
+  await expect(page.locator('.deskicon')).toHaveCount(2);
+  await page.getByRole('button', { name: '復原', exact: true }).click();
+  await expect(page.locator('.deskicon')).toHaveCount(1);
+  await page.locator('.deskicon').click();
+  await toolbar.getByRole('button', { name: '刪除視窗', exact: true }).click();
+  await expect(page.locator('.deskicon')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '新增元件', exact: true })).toBeFocused();
+  await page.getByRole('button', { name: '復原', exact: true }).click();
+  await expect(page.locator('.deskicon')).toHaveCount(1);
 });
 
 for (const [locale, addLabel, iconLabel] of [['en', 'Add', 'Icon']]) {
@@ -97,8 +133,9 @@ for (const [locale, addLabel, iconLabel] of [['en', 'Add', 'Icon']]) {
     await add.click();
     const dialog = page.getByRole('dialog', { name: locale === 'en' ? 'Add component' : locale === 'ja' ? 'コンポーネントを追加' : '구성 요소 추가', exact: true });
     await dialog.locator('.add-card').nth(1).click();
-    await expect(page.locator('.m-edit-toggle')).toHaveAttribute('aria-pressed', 'true');
-    for (const button of await page.locator('.m-toolbar button').all()) {
+    await expect(page.locator('.m-window-settings')).toBeVisible();
+      await expect(page.locator('.m-edit-toggle')).toHaveCount(0);
+    for (const button of await page.locator('.m-inline-titlebar button').all()) {
       await expect(button).toBeInViewport({ ratio: 1 });
       expect((await button.boundingBox())!.width).toBeGreaterThanOrEqual(44);
       expect(await button.evaluate(element => {
@@ -110,11 +147,28 @@ for (const [locale, addLabel, iconLabel] of [['en', 'Add', 'Icon']]) {
         });
       })).toBe(true);
     }
-    await expect(page.locator('.m-toolbar').getByRole('button', { name: iconLabel, exact: true })).toBeVisible();
+    await expect(page.locator('.m-window-settings')).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
     await page.screenshot({ path: test.info().outputPath(`phone-${locale}-320.png`) });
   });
 }
+
+test('short desktop docks actions without covering content and restores focused actions on return', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await fixture(page);
+  await page.locator('.deskicon').click();
+  const toolbar = page.getByRole('toolbar', { name: '已選取元件操作' });
+  await expect.poll(() => toolbar.evaluate(node => !!node.closest('.desktop-canvas'))).toBe(true);
+  await toolbar.getByRole('button', { name: '圖示', exact: true }).focus();
+  await page.setViewportSize({ width: 1440, height: 550 });
+  await expect.poll(() => toolbar.evaluate(node => !!node.closest('.desktop-canvas'))).toBe(false);
+  await expect(toolbar.getByRole('button', { name: '圖示', exact: true })).toBeFocused();
+  const upload = page.getByRole('dialog', { name: 'Gallery.exe', exact: true }).locator('label').filter({ has: page.getByRole('button', { name: '上傳圖片（可多選）', exact: true }) });
+  expect(await upload.evaluate(node => { const r = node.getBoundingClientRect(); return node.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)); })).toBe(true);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await expect.poll(() => toolbar.evaluate(node => !!node.closest('.desktop-canvas'))).toBe(true);
+  await expect(toolbar.getByRole('button', { name: '圖示', exact: true })).toBeFocused();
+});
 
 test('Edit content preserves a maximized window', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -123,20 +177,34 @@ test('Edit content preserves a maximized window', async ({ page }) => {
   const window = page.getByRole('dialog', { name: 'Gallery.exe', exact: true });
   await window.getByRole('button', { name: '最大化', exact: true }).click();
   const maximized = await page.locator('.canvas-window.selected').boundingBox();
-  await page.getByRole('group', { name: '已選取元件操作' }).getByRole('button', { name: '編輯內容', exact: true }).click();
+  await page.getByRole('toolbar', { name: '已選取元件操作' }).getByRole('button', { name: '編輯內容', exact: true }).click();
   await expect.poll(() => page.locator('.canvas-window.selected').boundingBox()).toEqual(maximized);
+  for (const width of [1440, 900]) {
+    await page.setViewportSize({ width, height: 900 });
+    const toolbar = page.getByRole('toolbar', { name: '已選取元件操作' });
+    await expect(toolbar).toBeInViewport({ ratio: 1 });
+    for (const button of await toolbar.getByRole('button').all()) await expect(button).toBeInViewport({ ratio: 1 });
+    // Maximized windows dock actions above the canvas so content controls stay usable.
+    expect(await toolbar.evaluate(node => !!node.closest('.desktop-canvas'))).toBe(false);
+    const galleryUpload = window.locator('label').filter({ has: page.getByRole('button', { name: '上傳圖片（可多選）', exact: true }) });
+    await expect(galleryUpload).toBeVisible();
+    expect(await galleryUpload.evaluate(node => { const r = node.getBoundingClientRect(); return node.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)); })).toBe(true);
+    await page.screenshot({ path: test.info().outputPath(`maximized-actions-${width}.png`) });
+  }
 });
 
 test('adding the same module type does not carry unfinished input into the new window', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await fixture(page);
   await page.locator('.m-icon').click();
-  await page.locator('.m-edit-toggle').click();
+  await enterContentEditor(page);
   await page.locator('.gal-editor-toolbar button[aria-expanded]').click();
   await page.getByLabel('新增圖片網址', { exact: true }).fill('https://unfinished-old-window');
+  await page.locator('.m-back').click();
   await page.locator('.m-toolbar').getByRole('button', { name: '新增', exact: true }).click();
   await page.getByRole('dialog', { name: '新增元件', exact: true }).getByRole('button', { name: /^相簿視窗/ }).click();
-  await expect(page.locator('.m-edit-toggle')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.m-window-settings')).toBeVisible();
+      await expect(page.locator('.m-edit-toggle')).toHaveCount(0);
   await page.locator('.gal-editor-toolbar button[aria-expanded]').click();
   await expect(page.getByLabel('新增圖片網址', { exact: true })).toHaveValue('');
   await expect(page.locator('.m-icon')).toHaveCount(2);

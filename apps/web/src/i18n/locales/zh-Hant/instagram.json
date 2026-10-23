@@ -1,4 +1,24 @@
 {
+  "inlineApp": {
+    "authoringApp": "Instagram 角色編輯視窗",
+    "visitorView": "訪客檢視",
+    "actingAs": "以角色操作",
+    "visitorHint": "只顯示可公開的草稿內容；互動不會儲存。",
+    "draftHint": "按讚、留言與追蹤會存入網站草稿，不會發布。",
+    "backToCharacter": "回到角色操作",
+    "viewAsVisitor": "以訪客檢視",
+    "noPublicCharacter": "目前沒有可供訪客查看的公開角色。",
+    "commentAs": "以 @{{handle}} 身分留言…",
+    "newHighlight": "新增精選",
+    "editProfile": "編輯個人檔案",
+    "following": "追蹤中",
+    "follow": "追蹤",
+    "editPost": "編輯貼文",
+    "createFailed": "無法建立草稿，請再試一次。",
+    "editHighlight": "編輯精選",
+    "manageFields": "管理編輯欄位",
+    "backToApp": "← 返回 IG 畫面"
+  },
   "canonicalCollectionEditor": {
     "couldntUpdateTheCollectionPlease": "合集更新失敗，請再試一次。",
     "newCollection": "新合集",
@@ -454,5 +474,23 @@
     "replaceImage": "替換圖片 {{n}}",
     "replacementHint": "上傳成功後才替換原圖。",
     "chooseImages": "選擇圖片（可多選）"
+  },
+  "composer": {
+    "newPost": "新貼文",
+    "cancel": "取消",
+    "next": "下一步",
+    "finish": "完成",
+    "backToPhotos": "← 返回選圖",
+    "choosePhotos": "從裝置選擇照片",
+    "photoHint": "可多選，最多 10 張（輪播）",
+    "add": "加入",
+    "photos": "已選照片",
+    "photo": "照片 {{n}}",
+    "removePhoto": "移除照片 {{n}}",
+    "remove": "移除",
+    "date": "日期",
+    "keepDraft": "存成草稿（先不公開）",
+    "saveHint": "完成後才加入網站草稿；網站仍需另行發布。",
+    "limit": "每則貼文最多 10 張圖片，包含等待中的上傳。"
   }
 }

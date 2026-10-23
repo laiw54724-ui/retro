@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -152,7 +153,7 @@ for (const width of [320, 390, 430]) {
   test(`phone: Escape ends the tour first (not the open app) at ${width}px`, async ({ page }) => {
     await openEditor(page, width);
     await page.getByRole("button", { name: "Instagram.exe", exact: true }).click();
-    await page.getByRole("button", { name: "編輯內容", exact: true }).click();
+    await enterContentEditor(page);
     await helpButton(page).click();
     await page.getByRole("dialog", { name: "你想了解什麼？" }).locator('[data-help-topic="instagram-organize"]').getByRole("button", { name: "開始導覽" }).click();
     await expect(card(page)).toBeVisible();

@@ -1,4 +1,24 @@
 {
+  "inlineApp": {
+    "authoringApp": "Instagram 캐릭터 편집 화면",
+    "visitorView": "방문자 보기",
+    "actingAs": "작업할 캐릭터",
+    "visitorHint": "공개 가능한 초안 콘텐츠만 표시하며, 상호작용은 저장되지 않습니다.",
+    "draftHint": "좋아요, 댓글, 팔로우는 사이트 초안에 저장되며 게시되지 않습니다.",
+    "backToCharacter": "캐릭터 작업으로 돌아가기",
+    "viewAsVisitor": "방문자로 보기",
+    "noPublicCharacter": "방문자에게 보일 공개 캐릭터가 아직 없습니다.",
+    "commentAs": "@{{handle}}(으)로 댓글 달기…",
+    "newHighlight": "새 하이라이트",
+    "editProfile": "프로필 편집",
+    "following": "팔로잉",
+    "follow": "팔로우",
+    "editPost": "게시물 편집",
+    "createFailed": "초안을 만들지 못했습니다. 다시 시도해 주세요.",
+    "editHighlight": "하이라이트 편집",
+    "manageFields": "편집 항목 관리",
+    "backToApp": "← IG 화면으로 돌아가기"
+  },
   "canonicalCollectionEditor": {
     "couldntUpdateTheCollectionPlease": "컬렉션을 업데이트하지 못했습니다. 다시 시도해 주세요.",
     "newCollection": "새 컬렉션",
@@ -454,5 +474,23 @@
     "replaceImage": "이미지 {{n}} 교체",
     "replacementHint": "업로드가 성공할 때까지 원본 이미지를 유지합니다.",
     "chooseImages": "이미지 선택 (여러 장 가능)"
+  },
+  "composer": {
+    "newPost": "새 게시물",
+    "cancel": "취소",
+    "next": "다음",
+    "finish": "완료",
+    "backToPhotos": "← 사진 선택으로 돌아가기",
+    "choosePhotos": "기기에서 사진 선택",
+    "photoHint": "최대 10장의 사진을 선택할 수 있습니다",
+    "add": "추가",
+    "photos": "선택한 사진",
+    "photo": "사진 {{n}}",
+    "removePhoto": "사진 {{n}} 삭제",
+    "remove": "삭제",
+    "date": "날짜",
+    "keepDraft": "초안으로 저장 (아직 공개하지 않음)",
+    "saveHint": "완료하면 사이트 초안에 추가됩니다. 사이트 게시는 별도로 해야 합니다.",
+    "limit": "대기 중인 업로드를 포함해 게시물당 사진은 최대 10장입니다."
   }
 }

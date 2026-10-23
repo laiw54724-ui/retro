@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { makeWindow, migrateSiteDocumentV2, normalizeDocument, projectPublicSiteDocument, type SiteDocumentV2Input } from "../../packages/shared/src";
 import { documentFixture } from "./fixture";
@@ -50,7 +51,7 @@ async function openDocument(page: Page, options: { width?: number; long?: boolea
   await page.goto("/editor/site-1");
   if (width < 768) {
     await page.getByRole("button", { name: "Document.exe", exact: true }).click();
-    await page.getByRole("button", { name: "編輯內容" }).click();
+    await enterContentEditor(page);
   }
   const dialog = page.getByRole("dialog", { name: "Document.exe", exact: true });
   await expect(dialog.locator(".document-editor")).toBeVisible();

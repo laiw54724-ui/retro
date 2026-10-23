@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Page } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import { createAssetReference, duplicateProfile, migrateSiteDocumentV2 } from "../../packages/shared/src";
@@ -27,8 +28,10 @@ async function open(page: Page, width = 1400) {
     return route.fulfill({ json: { asset } });
   });
   await page.setViewportSize({ width, height: 950 }); await page.goto("/editor/site-1");
-  if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯內容" }).click(); }
-  const win = page.getByRole("dialog", { name: "Instagram.exe", exact: true }); await expect(win.getByRole("textbox", { name: "Handle", exact: true })).toBeVisible();
+  if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await enterContentEditor(page); }
+  const win = page.getByRole("dialog", { name: "Instagram.exe", exact: true });
+  await win.getByRole("region", { name: "Instagram 角色編輯視窗" }).getByRole("button", { name: "管理編輯欄位" }).click();
+  await expect(win.getByRole("textbox", { name: "Handle", exact: true })).toBeVisible();
 
   const posts = win.locator(".ig-canonical-posts");
   return { win, posts, calls, assets, saved: () => saved, post: (title: string) => saved.entities.posts.find((post) => post.title === title)!, src: (name: string) => assets.find((asset) => asset.name === name)!.url,

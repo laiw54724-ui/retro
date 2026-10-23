@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { createStarterDocument, makeGalleryImage, makeWindow, migrateSiteDocumentV2 } from "../../packages/shared/src";
 
@@ -42,7 +43,7 @@ for (const width of [320, 375, 390, 430]) {
     await page.setViewportSize({ width, height: 844 });
     await fixture(page);
     await page.locator(".m-icon").click();
-    await page.locator(".m-edit-toggle").click();
+    await enterContentEditor(page);
     await page.locator(".gal-editor-toolbar button[aria-expanded]").click();
     const input = page.getByLabel("新增圖片網址", { exact: true });
     await input.fill("https://unfinished");
@@ -54,21 +55,20 @@ for (const width of [320, 375, 390, 430]) {
     await expect(input).toBeInViewport({ ratio: 1 });
     await expect(input).toHaveValue("https://unfinished");
     const publish = page.getByRole("button", { name: "發布", exact: true });
-    for (const control of [publish, page.getByRole("button", { name: "復原", exact: true }), page.getByRole("button", { name: "重做", exact: true }), page.locator(".save-text"), page.locator(".m-edit-toggle"), page.locator(".m-back")]) await fullyVisible(control, width, 420);
+    for (const control of [publish, page.getByRole("button", { name: "復原", exact: true }), page.getByRole("button", { name: "重做", exact: true }), page.locator(".save-text"), page.locator(".m-window-settings"), page.locator(".m-back")]) await fullyVisible(control, width, 420);
     expect((await publish.boundingBox())!.height).toBeGreaterThanOrEqual(44);
     const body = (await page.locator(".m-win-body").boundingBox())!;
     const field = (await input.boundingBox())!;
-    const toolbar = (await page.locator(".m-toolbar").boundingBox())!;
+    await expect(page.locator(".m-toolbar")).toHaveCount(0);
     expect(field.y).toBeGreaterThanOrEqual(body.y);
     expect(field.y + field.height).toBeLessThanOrEqual(body.y + body.height);
-    expect(body.y + body.height).toBeLessThanOrEqual(toolbar.y);
-    expect(toolbar.y + toolbar.height).toBeLessThanOrEqual(420 - 34);
+    expect(body.y + body.height).toBeLessThanOrEqual(420 - 34);
     await page.screenshot({ path: test.info().outputPath(`short-${width}.png`) });
-    const settings = page.locator(".m-toolbar").getByRole("button", { name: "視窗設定", exact: true });
+    const settings = page.getByRole("button", { name: "視窗設定", exact: true });
     await settings.click();
     await page.keyboard.press("Escape");
     await expect(settings).toBeFocused();
-    await expect(page.locator(".m-edit-toggle")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator(".m-window-settings")).toBeVisible();
     await expect(input).toHaveValue("https://unfinished");
     await page.setViewportSize({ width, height: 844 });
     await page.screenshot({ path: test.info().outputPath(`phone-${width}.png`) });
@@ -83,7 +83,7 @@ test("desktop keeps its full authoring toolbar and phone preview", async ({ page
   await page.getByRole("button", { name: "手機版", exact: true }).click();
   await page.locator(".m-icon").click();
   await expect(page.locator(".m-status")).toBeVisible();
-  await expect(page.locator(".m-edit-toggle")).toHaveAccessibleName("編輯內容");
+  await expect(page.locator(".m-window-settings")).toHaveAccessibleName("視窗設定");
   await page.screenshot({ path: test.info().outputPath("desktop-phone-preview.png") });
 });
 
@@ -94,7 +94,7 @@ test("English visual-viewport-only resize retains input, chrome and height throu
   await page.addInitScript(() => localStorage.setItem("retrodesk:locale", "en"));
   await fixture(page);
   await page.locator(".m-icon").click();
-  await page.locator(".m-edit-toggle").click();
+  await enterContentEditor(page);
   await page.locator(".gal-editor-toolbar button[aria-expanded]").click();
   const input = page.locator(".gal-add-url textarea");
   await input.fill("https://unfinished");
@@ -109,11 +109,10 @@ test("English visual-viewport-only resize retains input, chrome and height throu
   await expect(page.locator(".editor-app")).toHaveCSS("height", "420px");
   await expect(input).toBeFocused();
   await expect(input).toBeInViewport({ ratio: 1 });
-  for (const control of [input, page.locator(".m-edit-toggle"), page.locator(".m-back"), page.getByRole("button", { name: "Publish", exact: true })]) await fullyVisible(control, 320, 420);
+  for (const control of [input, page.locator(".m-window-settings"), page.locator(".m-back"), page.getByRole("button", { name: "Publish", exact: true })]) await fullyVisible(control, 320, 420);
   const body = (await page.locator(".m-win-body").boundingBox())!;
-  const toolbar = (await page.locator(".m-toolbar").boundingBox())!;
-  expect(body.y + body.height).toBeLessThanOrEqual(toolbar.y);
-  expect(toolbar.y + toolbar.height).toBeLessThanOrEqual(420 - 34);
+  await expect(page.locator(".m-toolbar")).toHaveCount(0);
+  expect(body.y + body.height).toBeLessThanOrEqual(420 - 34);
   await page.screenshot({ path: test.info().outputPath("english-visual-viewport-420.png") });
   await resizeVisual(210, 2);
   await expect(page.locator(".editor-app")).toHaveCSS("height", "420px");

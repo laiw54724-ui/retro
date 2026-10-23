@@ -151,29 +151,15 @@ test.describe("phone editor shell", () => {
     await expect(page.locator(".m-screen")).toBeVisible({ timeout: 15000 });
   }
 
-  test("the edit/finish control is in the app's title bar, not floating over its content", async ({ page }) => {
-    await openEditor(page);
-    await page.getByRole("button", { name: "About.exe", exact: true }).click();
-    await shot(page, "editor-About-390");
-    await expect(page.locator(".m-fab")).toHaveCount(0);
-    await expect(page.locator(".m-titlebar")).toBeHidden();
-    const toggle = page.getByRole("button", { name: "編輯內容", exact: true });
-    const rect = await box(toggle);
-    expect(rect.height).toBeGreaterThanOrEqual(43.5);
-    // it sits in the title bar row, above the content
-    expect(rect.y + rect.height).toBeLessThanOrEqual((await box(page.locator(".m-win-body"))).y + 1);
-    await toggle.click();
-    await expect(page.getByRole("button", { name: "完成", exact: true })).toHaveAttribute("aria-pressed", "true");
-    await shot(page, "editor-About-editing-390");
-    await page.getByRole("button", { name: "完成", exact: true }).click();
-    await expect(page.getByRole("button", { name: "編輯內容", exact: true })).toBeVisible();
-    // the editor's own toolbar stays reachable above the home indicator
-    await expect(page.getByRole("toolbar")).toBeVisible();
-    await page.getByRole("button", { name: /‹ 桌面/ }).click();
-    await expect(page.locator(".m-titlebar")).toBeVisible();
-    await page.locator(".m-toolbar").getByRole("button", { name: "視窗設定", exact: true }).click();
-    await expect(page.locator(".m-sheet").getByRole("checkbox", { name: "訪客進入時預設開啟（僅桌面版）", exact: true })).toBeVisible();
+  test("direct editing uses a title-bar settings sheet without obscuring content", async ({ page }) => {
+    await openEditor(page);await page.getByRole("button",{name:"About.exe",exact:true}).click();
+    await expect(page.locator(".m-fab")).toHaveCount(0);await expect(page.locator(".m-titlebar")).toBeHidden();await expect(page.locator(".m-edit-toggle")).toHaveCount(0);
+    const settings=page.getByRole("button",{name:"視窗設定",exact:true}),rect=await box(settings);expect(rect.height).toBeGreaterThanOrEqual(43.5);expect(rect.y+rect.height).toBeLessThanOrEqual((await box(page.locator(".m-win-body"))).y+1);
+    await expect(page.locator(".about-editor")).toBeVisible();await expect(page.locator(".m-toolbar")).toHaveCount(0);await settings.click();
+    await expect(page.locator(".m-sheet").getByRole("checkbox",{name:"訪客進入時預設開啟（僅桌面版）",exact:true})).toBeVisible();await page.keyboard.press("Escape");await expect(settings).toBeFocused();await expect(page.locator(".about-editor")).toBeVisible();
+    await page.locator(".m-back").click();await expect(page.locator(".m-titlebar")).toBeVisible();await expect(page.locator(".m-toolbar button")).toHaveCount(4);
   });
+
 });
 
 test.describe("phone startup contract (#71 defaultOpen)", () => {

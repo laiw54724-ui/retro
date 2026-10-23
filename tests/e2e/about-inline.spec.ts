@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Page } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import { createAssetReference, makeWindow, migrateSiteDocumentV2, normalizeDocument, projectPublicSiteDocument } from "../../packages/shared/src";
@@ -34,7 +35,7 @@ async function open(page: Page, { width = 1280, hold = "", failOnce = "", long =
     return route.fulfill({ json: { asset: { id, url: createAssetReference(id), kind: "image", name, mimeType: "image/png", size: PNG.length, createdAt: "2026-10-22T00:00:00Z" } } });
   });
   await page.setViewportSize({ width, height: 900 }); await page.goto("/editor/site-1");
-  if (width < 768) { await page.getByRole("button", { name: "About.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯內容", exact: true }).click(); }
+  if (width < 768) { await page.getByRole("button", { name: "About.exe", exact: true }).click(); await enterContentEditor(page); }
   const editor = page.getByRole("dialog", { name: "About.exe", exact: true });
   await expect(editor.locator(".about-editor")).toBeVisible();
   return { editor, calls, document: () => draft, release: () => release(), saved: (id = "about") => { const window = draft.windows.find(w => w.id === id); if (window?.type !== "about") throw new Error("missing about"); return window.content; } };
@@ -121,7 +122,7 @@ for (const width of [320, 375, 390, 430]) test(`mobile ${width}px stays containe
   await expect(editor.locator(".about-view")).toBeVisible();
   await editor.getByRole("button", { name: "關閉", exact: true }).click();
   await page.getByRole("button", { name: "About.exe", exact: true }).click();
-  await page.getByRole("button", { name: "編輯內容", exact: true }).click();
+  await enterContentEditor(page);
   await expect(editor.getByLabel("暱稱", { exact: true })).toHaveValue("LongNickname".repeat(10));
 });
 

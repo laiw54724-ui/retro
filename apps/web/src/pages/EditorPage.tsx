@@ -111,16 +111,14 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   function editSelectedContent() {
     const id = store.selectedId;
     if (!id) return;
-    if (store.document?.windows.find(window => window.id === id)?.type === "image") {
-      openInspector("general");
-      return;
-    }
     if (store.viewState[id] === "min" || store.viewState[id] === "closed") store.setViewState(id, null);
     setReadWindows(current => { const next = new Set(current); next.delete(id); return next; });
-    requestAnimationFrame(() => globalThis.document.querySelector<HTMLElement>(".canvas-window.selected .retro-window-body input, .canvas-window.selected .retro-window-body textarea, .canvas-window.selected .retro-window-body button, .canvas-window.selected .retro-window-body [contenteditable='true']")?.focus());
+    requestAnimationFrame(() => globalThis.document.querySelector<HTMLElement>(".canvas-window.selected .module-host input, .canvas-window.selected .module-host textarea, .canvas-window.selected .module-host button, .canvas-window.selected .module-host [contenteditable='true']")?.focus());
   }
 
   const editorAppRef = useRef<HTMLElement | null>(null);
+  const actionsDockRef = useRef<HTMLDivElement | null>(null);
+  const addWindowButtonRef = useRef<HTMLButtonElement | null>(null);
   useEffect(() => {
     const app = editorAppRef.current;
     const viewport = window.visualViewport;
@@ -666,6 +664,13 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
   const layoutMode = store.layoutMode && store.device === "desktop";
   const actions = collaborationActions(store.accessRole);
+  function deleteSelectedWindow(id: string) {
+    store.deleteWindow(id);
+    requestAnimationFrame(() => {
+      if (!useEditorStore.getState().selectedId) addWindowButtonRef.current?.focus();
+    });
+  }
+  const selectedActions = selected && !layoutMode ? <WindowActionBar title={selected.title} imageWindow={selected.type === "image"} editing={!readWindows.has(selected.id)} onEdit={editSelectedContent} onDone={() => setReadWindows(current => new Set(current).add(selected.id))} onIcon={() => openInspector("icon")} onSettings={() => openInspector("general")} onDuplicate={() => store.duplicateWindow(selected.id)} onDelete={() => deleteSelectedWindow(selected.id)} /> : null;
   function closeCollaboration() {
     setCollaborationOpen(false);
     window.requestAnimationFrame(() => collaborationButtonRef.current?.focus());
@@ -780,11 +785,14 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
         <section className={`editor-stage2 ${shellStyles.stage}`}>
           {store.device === "desktop" && !layoutMode ? <div className={shellStyles.bar}>
-            <button type="button" className="w98-btn primary" onClick={() => setAddOpen(true)}>{t("authoring.add")}</button>
-            {selected ? <WindowActionBar title={selected.title} imageWindow={selected.type === "image"} editing={selected.type !== "image" && !readWindows.has(selected.id)} onEdit={editSelectedContent} onDone={() => setReadWindows(current => new Set(current).add(selected.id))} onIcon={() => openInspector("icon")} onSettings={() => openInspector("general")} /> : <span className="w98-hint">{t("authoring.selectHint")}</span>}
+            <button ref={addWindowButtonRef} type="button" className="w98-btn primary" onClick={() => setAddOpen(true)}>{t("authoring.add")}</button>
+            <div ref={actionsDockRef} className={shellStyles.docked} />
+            {!selected ? <span className="w98-hint">{t("authoring.selectHint")}</span> : null}
           </div> : null}
           {store.device === "desktop" ? (
             <DesktopCanvas
+              windowActions={selectedActions}
+              actionsDock={actionsDockRef}
               readWindowIds={readWindows}
               siteId={siteId}
               upload={uploadImage}

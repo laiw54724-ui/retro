@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Page } from "@playwright/test";
 import { makeWindow, type SiteDocument } from "@retrodesk/shared";
 import { documentFixture } from "./fixture";
@@ -33,7 +34,7 @@ test(`owner selects difficulties, customizes them, and reaches the board at ${wi
   await page.setViewportSize({ width, height: 800 });
   await page.goto("/editor/site-1");
   await page.getByRole("button", { name: "Minesweeper.exe", exact: true }).click();
-  await page.getByRole("button", { name: "編輯內容" }).click();
+  await enterContentEditor(page);
   const dialog = page.getByRole("dialog", { name: "Minesweeper.exe" });
   await dialog.getByRole("button", { name: "初級難度" }).click();
   await expect(dialog.getByRole("gridcell")).toHaveCount(25);

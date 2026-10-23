@@ -49,8 +49,9 @@ type EditorState = {
   focusWindow: (id: string) => void;
   setDevice: (device: "desktop" | "mobile") => void;
   reorderMobile: (id: string, direction: -1 | 1) => void;
+  reorderMobileIds: (ids: string[]) => void;
   setMobileColumns: (columns: 3 | 4) => void;
-  setSiteName: (name: string) => void;
+  setSiteName: (name: string, historyKey?: string) => void;
   setSeoIndexing: (indexing: boolean) => void;
   themePreview: SiteDocument["theme"] | null;
   setThemePreview: (theme: SiteDocument["theme"] | null) => void;
@@ -281,11 +282,18 @@ export const useEditorStore = create<EditorState>((set) => ({
     };
     return withHistory(state, document, { selectedId: id });
   }),
+  reorderMobileIds: (ids) => set((state) => {
+    if (!state.document || ids.length !== state.document.windows.length || new Set(ids).size !== ids.length || state.document.windows.some(window => !ids.includes(window.id))) return {};
+    const ordered = [...state.document.windows].sort((a,b) => a.layout.mobile.order-b.layout.mobile.order);
+    if (ordered.every((window,index) => window.id === ids[index])) return {};
+    const order = new Map(ids.map((id,index) => [id,index]));
+    return withHistory(state, { ...state.document, windows: state.document.windows.map(window => ({ ...window, layout: { ...window.layout, mobile: { ...window.layout.mobile, order: order.get(window.id)! } } })) });
+  }),
   setMobileColumns: (columns) => set((state) => state.document
     ? withHistory(state, { ...state.document, mobileColumns: columns })
     : {}),
-  setSiteName: (siteName) => set((state) => state.document
-    ? withHistory(state, { ...state.document, siteName })
+  setSiteName: (siteName, historyKey) => set((state) => state.document
+    ? withHistory(state, { ...state.document, siteName }, {}, historyKey)
     : {}),
   setSeoIndexing: (indexing) => set((state) => state.document && state.versionedDocument
     ? withHistory(state, state.document, {}, undefined, { ...state.versionedDocument, seo: { indexing } })

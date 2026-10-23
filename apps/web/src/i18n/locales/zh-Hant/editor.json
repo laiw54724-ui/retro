@@ -103,7 +103,7 @@
       "description": "不記分、不上傳的訪客小遊戲"
     },
     "character-dialog": {
-      "label": "角色彈窗",
+      "label": "歡迎彈窗",
       "description": "可關閉的角色歡迎訊息"
     },
     "guestbook": {
@@ -188,7 +188,23 @@
     "add": "新增",
     "edit": "編輯",
     "theme": "主題",
-    "preview": "預覽"
+    "preview": "預覽",
+    "siteName": "網站名稱",
+    "arrange": "整理",
+    "moved": "已移到第 {{position}} 個",
+    "deleted": "已移除「{{title}}」，5 秒內可復原。",
+    "desktopIcons": "桌面圖示",
+    "iconName": "圖示名稱",
+    "deleteNamed": "刪除 {{title}}",
+    "arrangeHint": "拖曳排序 · 點圖示改名 · 點 × 刪除",
+    "homeHint": "點圖示編輯內容 · 長按圖示可以整理",
+    "windowCount": "{{count}} 個視窗",
+    "added": "已新增視窗，放在桌面最後一個。",
+    "wallColor": "桌布顏色 {{number}}",
+    "titleColor": "標題列顏色 {{number}}",
+    "titleColors": "標題列顏色",
+    "moreThemeOptions": "更多主題設定",
+    "moreWindowOptions": "更多視窗設定"
   },
   "desktopCanvas": {
     "snapOn": "對齊格線 {{size}}px：開",
@@ -374,7 +390,7 @@
     "worldBuildingFolders": "世界觀資料夾",
     "addFoldersAndShortcutsRight": "直接在視窗內新增資料夾與捷徑；捷徑只會開啟原視窗，刪除資料夾不會刪除作品。",
     "minesweeper": "掃雷",
-    "characterPopUp": "角色彈窗",
+    "characterPopUp": "歡迎彈窗",
     "visitorGuestbook": "訪客留言簿",
     "openMessagesInsideTheWindow": "在視窗內開啟留言並管理待審內容；留言不會寫入桌面文件。",
     "adjustSettingsAndPreviewDirectly": "直接在視窗內容中調整設定並預覽；訪客操作只保留在本次瀏覽。",
@@ -383,7 +399,8 @@
     "displayName": "顯示名稱",
     "extraText": "補充文字",
     "uploadPostImages": "+ 上傳貼文圖片",
-    "postDescription": "貼文說明"
+    "postDescription": "貼文說明",
+    "editImageOnCanvas": "直接在桌面上的圖片視窗內編輯。"
   },
   "windowChromeEditor": {
     "solidTitle3dBorder": "純色標題・立體框線",

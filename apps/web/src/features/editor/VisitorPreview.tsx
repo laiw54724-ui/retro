@@ -57,14 +57,14 @@ export function VisitorPreview({ publishable, draft, sample, username = "", site
   const view = device ?? (phone ? "mobile" : "desktop");
   const tv = useThemeView(model?.document.theme ?? ({} as never));
 
-  useEffect(() => lockBackground(), []);
-
-  // Focus: move into the preview, give it back to the opener on close.
+  // Capture the opener before making the editor inert. WebKit drops focus from
+  // buttons inside an inert subtree; capturing afterward loses the real opener.
+  // Release inert before returning focus for the same reason.
   useEffect(() => {
-    const doc = globalThis.document;
     const previous = currentOpener();
+    const unlock = lockBackground();
     root.current?.querySelector<HTMLElement>("[data-autofocus]")?.focus();
-    return () => { if (previous?.isConnected) previous.focus(); };
+    return () => { unlock(); if (previous?.isConnected) previous.focus(); };
   }, []);
 
   // Escape: bubble phase on window, after lightboxes/dialogs (capture + stopPropagation) and inner layers (preventDefault).

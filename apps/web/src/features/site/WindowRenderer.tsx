@@ -78,7 +78,7 @@ export function WindowRenderer({ window: win, theme, onOpenWindow, allWindows, o
   const resolvedProfileId = profileIdsByWindow?.[win.id] ?? profileId;
   const profileThemeOverride = profiles?.find((profile) => profile.id === resolvedProfileId)?.themeOverride;
   const ctx: ModuleCtx = {
-    theme, tv, editing: editing && !!onUpdate, mobile, siteId, imageAuthoring: imageWriter && (imageControls || mobile),
+    theme, tv, editing: editing && !!onUpdate, mobile, siteId, imageAuthoring: imageWriter && editing && !!onUpdate,
     windows: (allWindows ?? []).map((candidate) => ({ id: candidate.id, title: candidate.title })), initialPostId, navigation, canShareEntity, viewDrafts, publicShareBaseUrl, siteHandle,
     onLink, onNavigate: onNavigate ? (target) => editing ? { ok: false, reason: "unavailable" } : onNavigate(target, win.id) : undefined, navigationRequest, navigationSiteId, upload, profiles, posts, collections, profileId: resolvedProfileId, profileThemeOverride,
     onProfileSelect: (id) => onProfileSelect?.(id, win.id),

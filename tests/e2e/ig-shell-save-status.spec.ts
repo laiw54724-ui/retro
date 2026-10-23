@@ -1,3 +1,4 @@
+import { enterContentEditor } from "./content-entry.fixture";
 import { expect, test, type Page } from '@playwright/test';
 import { migrateSiteDocumentV2 } from '../../packages/shared/src';
 import { igDocument } from './ig-fixture';
@@ -30,8 +31,9 @@ async function fixture(page: Page, width: number) {
   });
   await page.goto('/editor/ig-status');
   await page.getByRole('button', { name: 'Instagram.exe', exact: true }).click();
-  await page.getByRole('button', { name: '編輯內容', exact: true }).click();
+  await enterContentEditor(page);
   const win = page.getByRole('dialog', { name: 'Instagram.exe', exact: true });
+  await win.getByRole('button', { name: '編輯個人檔案', exact: true }).click();
   const handle = win.getByRole('textbox', { name: 'Handle', exact: true });
   await expect(handle).toHaveValue('retro');
   return { win, handle, saves: () => saves, fail: (value: boolean) => { fail = value; }, hold: () => { hold = true; }, release: () => { hold = false; release?.(); } };
@@ -43,9 +45,10 @@ for (const width of [320, 390, 430]) test(`local IG input qualifies saved after 
   await state.handle.fill(''); await state.handle.press('Enter');
   await expect(status).toHaveText('有欄位未完成，暫不儲存');
   await expect(status).toHaveClass(/dirty/);
-  await state.win.getByRole('button', { name: '完成', exact: true }).click();
+  await state.win.getByRole('button', { name: "← 返回 IG 畫面", exact: true }).click();
   await expect(status).toBeVisible(); await expect(status).toHaveText('有欄位未完成，暫不儲存');
-  await state.win.getByRole('button', { name: '編輯內容', exact: true }).click();
+  await enterContentEditor(page, state.win);
+  await state.win.getByRole('button', { name: '編輯個人檔案', exact: true }).click();
   await expect(state.handle).toHaveValue(''); await expect(state.handle).toHaveAttribute('aria-invalid', 'true');
   await expect(status).toHaveText('有欄位未完成，暫不儲存');
   expect(state.saves()).toBe(0);
@@ -70,7 +73,8 @@ test('local pending input does not mask saving/error/retry and becomes saved aft
   await state.handle.fill('finished'); await state.handle.press('Enter');
   await expect(status).toHaveText('已儲存');
   expect(state.saves()).toBe(3);
-  await state.win.getByRole('button', { name: '完成', exact: true }).click();
-  await state.win.getByRole('button', { name: '編輯內容', exact: true }).click();
+  await state.win.getByRole('button', { name: "← 返回 IG 畫面", exact: true }).click();
+  await enterContentEditor(page, state.win);
+  await state.win.getByRole('button', { name: '編輯個人檔案', exact: true }).click();
   await expect(state.handle).toHaveValue('finished'); await expect(status).toHaveText('已儲存');
 });
