@@ -36,6 +36,7 @@ export function useWindowMedia<T extends DesktopWindow["type"]>(window: WindowOf
   const scope = `window:${window.id}:content`;
   return {
     tasks: tasks.filter((task) => task.scope === scope),
+    getTasks: () => queue?.getSnapshot().filter((task) => task.scope === scope) ?? [],
     upload: (file: File, options: WindowUploadOptions<T>) => {
       if (!queue || !ctx.siteId || !ctx.upload || !ctx.editing) return;
       enqueueWindowUpload(queue, useEditorStore, { siteId: ctx.siteId, windowId: window.id, windowType: window.type, scope }, file, ctx.upload, options);

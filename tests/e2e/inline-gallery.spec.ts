@@ -1,6 +1,75 @@
 import { expect, test } from "@playwright/test";
 import { mockGallery, pickedFile } from "./inline-gallery.fixture";
 
+test("pending gallery upload keeps its last capacity slot ahead of a pasted URL", async ({ page }) => {
+  const site = await mockGallery(page, { imageCount: 199, hold: "reserved.png" });
+  const editor = site.gallery.locator(".gal-editor");
+  await site.gallery.getByLabel("上傳圖片（可多選）", { exact: true }).setInputFiles(pickedFile("reserved.png"));
+  await expect.poll(() => site.calls).toEqual(["reserved.png"]);
+  await site.gallery.getByRole("button", { name: "貼網址…", exact: true }).click();
+  const urls = site.gallery.getByRole("textbox", { name: "新增圖片網址", exact: true });
+  await urls.fill("https://assets.test/race.png");
+  await urls.press("Enter");
+  expect(site.images()).toHaveLength(199);
+  await expect(editor.locator(".gal-editor-error")).toBeVisible();
+  site.release("reserved.png");
+  await expect.poll(() => site.images().length).toBe(200);
+  expect(site.images().at(-1)?.title).toBe("reserved");
+  await expect(editor.locator('[data-upload-state="completed"]')).toHaveCount(1);
+});
+
+test("failed and cancelled gallery uploads release capacity without losing retry or URL edits", async ({ page }) => {
+  const site = await mockGallery(page, { imageCount: 199, failOnce: "retry.png", hold: "cancel.png" });
+  const editor = site.gallery.locator(".gal-editor");
+  await site.gallery.getByLabel("上傳圖片（可多選）", { exact: true }).setInputFiles(pickedFile("retry.png"));
+  await expect(editor.getByRole("button", { name: "重試 retry.png", exact: true })).toBeVisible();
+  await site.gallery.getByRole("button", { name: "貼網址…", exact: true }).click();
+  const urls = site.gallery.getByRole("textbox", { name: "新增圖片網址", exact: true });
+  await urls.fill("https://assets.test/after-failure.png");
+  await urls.press("Enter");
+  await expect.poll(() => site.images().length).toBe(200);
+  await editor.getByRole("button", { name: "重試 retry.png", exact: true }).click();
+  await expect(editor.locator(".gal-editor-error")).toBeVisible();
+  expect(site.calls).toEqual(["retry.png"]);
+  await editor.locator(".gal-editor-error").getByRole("button", { name: "關閉" }).click();
+  await site.gallery.getByRole("button", { name: "刪除圖片", exact: true }).click();
+  await expect.poll(() => site.images().length).toBe(199);
+  await editor.getByRole("button", { name: "重試 retry.png", exact: true }).click();
+  await expect.poll(() => site.images().at(-1)?.title).toBe("retry");
+  expect(site.calls).toEqual(["retry.png", "retry.png"]);
+  await editor.locator(".gal-editor-thumb").last().click();
+  await site.gallery.getByRole("button", { name: "刪除圖片", exact: true }).click();
+  await expect.poll(() => site.images().length).toBe(199);
+  await site.gallery.getByLabel("上傳圖片（可多選）", { exact: true }).setInputFiles(pickedFile("cancel.png"));
+  await expect.poll(() => site.calls.at(-1)).toBe("cancel.png");
+  await editor.getByRole("button", { name: "取消 cancel.png", exact: true }).click();
+  await expect(editor.locator('[data-upload-state="failed"]')).toHaveCount(1);
+  await site.gallery.getByRole("button", { name: "貼網址…", exact: true }).click();
+  await urls.fill("https://assets.test/after-cancel.png");
+  await urls.press("Enter");
+  await expect.poll(() => site.images().length).toBe(200);
+  site.release("cancel.png");
+  expect(site.images().at(-1)?.src).toBe("https://assets.test/after-cancel.png");
+});
+
+test("gallery capacity reservations stay with their source window after switching", async ({ page }) => {
+  const site = await mockGallery(page, { imageCount: 199, hold: "window-a.png" });
+  await site.gallery.getByLabel("上傳圖片（可多選）", { exact: true }).setInputFiles(pickedFile("window-a.png"));
+  await expect.poll(() => site.calls).toEqual(["window-a.png"]);
+  await page.locator(".task-items").getByRole("button", { name: "Gallery B", exact: true }).click();
+  const other = page.getByRole("dialog", { name: "Gallery B", exact: true });
+  await expect(other.locator(".gal-editor")).toBeVisible();
+  await other.getByRole("button", { name: "貼網址…", exact: true }).click();
+  const urls = other.getByRole("textbox", { name: "新增圖片網址", exact: true });
+  await urls.fill("https://assets.test/window-b.png");
+  await urls.press("Enter");
+  await expect.poll(() => site.images("gallery-b").length).toBe(2);
+  site.release("window-a.png");
+  await expect.poll(() => site.images().length).toBe(200);
+  expect(site.images().at(-1)?.title).toBe("window-a");
+  expect(site.images("gallery-b").at(-1)?.src).toBe("https://assets.test/window-b.png");
+});
+
 for (const width of [1440, 320, 375, 390, 430]) {
   test(`gallery inline controls, focus and screenshots at ${width}px`, async ({ page }, info) => {
     const site = await mockGallery(page, { long: true, width });

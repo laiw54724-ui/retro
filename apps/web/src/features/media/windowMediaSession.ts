@@ -25,6 +25,8 @@ export type WindowUploadOptions<T extends DesktopWindow["type"]> = {
   kind?: UploadKind;
   slot: string;
   isCurrent?: (current: WindowOf<T>) => boolean;
+  /** A temporary capacity constraint checked only when the stored asset is committed. */
+  canApply?: (current: WindowOf<T>) => boolean;
   apply: (current: WindowOf<T>, stored: string) => WindowOf<T>;
 };
 
@@ -52,7 +54,7 @@ export function enqueueWindowUpload<T extends DesktopWindow["type"]>(queue: Uplo
       store.getState().updateWindow(target.windowId, (current) => {
         if (current.type !== target.windowType || current.id !== target.windowId) return current;
         const typed = current as WindowOf<T>;
-        if (options.isCurrent && !options.isCurrent(typed)) return current;
+        if ((options.isCurrent && !options.isCurrent(typed)) || (options.canApply && !options.canApply(typed))) return current;
         applied = true;
         return options.apply(typed, stored);
       });

@@ -127,6 +127,29 @@ afterEach(() => {
 });
 
 describe("media uploads bound to editor sessions", () => {
+  it("checks a temporary gallery capacity limit at commit without treating it as a stale target", async () => {
+    const queue = session();
+    const upload = transport();
+    const pendingId = "pending-image";
+    const taskId = enqueueWindowUpload(queue, useEditorStore, {
+      siteId: SITE_ID, windowId: GALLERY_A, windowType: "gallery", scope: `${SITE_ID}:${GALLERY_A}`,
+    }, new File(["image"], "pending.png", { type: "image/png" }), upload.upload, {
+      slot: `add:${pendingId}`,
+      isCurrent: (current) => !current.content.images.some((image) => image.id === pendingId),
+      canApply: (current) => current.content.images.length < 2,
+      apply: (current, src) => ({ ...current, content: { ...current.content, images: [...current.content.images, makeGalleryImage({ id: pendingId, src })] } }),
+    });
+    await upload.started;
+    useEditorStore.getState().updateWindow(GALLERY_A, (current) => current.type === "gallery" ? {
+      ...current, content: { ...current.content, images: [...current.content.images, makeGalleryImage({ id: "newer-image" })] },
+    } : current);
+    expect(queue.getSnapshot().find((task) => task.id === taskId)?.status).toBe("uploading");
+    upload.finish(STORED_ASSET);
+    await queue.whenIdle();
+    expectDiscarded(queue, taskId);
+    expect(gallery().content.images.map((image) => image.id)).toEqual([IMAGE_ID, "newer-image"]);
+  });
+
   it("writes to the original window when selection changes to another gallery with the same image id", async () => {
     const queue = session();
     const upload = transport();

@@ -10,7 +10,7 @@ const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
 const session = { access_token: "a.b.c", refresh_token: "r", expires_at: 4102444800, expires_in: 3600, token_type: "bearer", user: { id: "u", email: "x@y.z", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01" } };
 export const pickedFile = (name: string) => ({ name, mimeType: "image/png", buffer: PNG });
 
-function fixture(long = false, legacyAlt = false) {
+function fixture(long = false, legacyAlt = false, imageCount = 0) {
   const gallery = makeWindow("gallery");
   if (gallery.type !== "gallery") throw new Error("gallery fixture");
   gallery.id = "gallery-a";
@@ -20,7 +20,7 @@ function fixture(long = false, legacyAlt = false) {
   gallery.content.images = long ? [
     makeGalleryImage({ id: "broken", title: "LongImageTitle".repeat(14), caption: "LongVisibleCaption".repeat(45), alt: legacyAlt ? undefined : "DetailedImageDescription".repeat(12), src: "https://assets.test/broken.png", href: "https://example.com/" + "destination".repeat(100) }),
     makeGalleryImage({ id: "empty", title: "沒有圖片", src: null })
-  ] : [];
+  ] : Array.from({ length: imageCount }, (_, index) => makeGalleryImage({ id: `image-${index}`, title: `Image ${index}` }));
   const other = structuredClone(gallery);
   other.id = "gallery-b";
   other.title = "Gallery B";
@@ -45,8 +45,8 @@ function fixture(long = false, legacyAlt = false) {
   return migrated.document;
 }
 
-export async function mockGallery(page: Page, { long = false, legacyAlt = false, width = 1440, wide = true, failOnce = "", hold = "" } = {}) {
-  let draft = fixture(long, legacyAlt);
+export async function mockGallery(page: Page, { long = false, legacyAlt = false, imageCount = 0, width = 1440, wide = true, failOnce = "", hold = "" } = {}) {
+  let draft = fixture(long, legacyAlt, imageCount);
   if (wide) draft.windows[0].layout.desktop.w = 760;
   let published = structuredClone(draft);
   let version = 1;

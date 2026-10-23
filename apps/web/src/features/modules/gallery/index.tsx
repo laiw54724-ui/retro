@@ -62,6 +62,9 @@ function GalleryEditorSession({ window, ctx, update }: ModuleProps<"gallery">) {
   const urlToggle = useRef<HTMLButtonElement>(null);
   const composingUrl = useRef(false);
   const images = window.content.images;
+  const pendingAdds = (tasks: typeof media.tasks) => tasks.filter((task) => task.slot?.startsWith("add:") && (task.status === "queued" || task.status === "uploading")).length;
+  const remaining = (tasks: typeof media.tasks) => Math.max(0, 200 - images.length - pendingAdds(tasks));
+  const availableNow = remaining(media.tasks);
   const selected = activeId === undefined ? images[0] : images.find((image) => image.id === activeId);
   const selectedIndex = selected ? images.findIndex((image) => image.id === selected.id) : -1;
   const historyKey = (field: string, id: string) => `gallery:${window.id}:${id}:${field}`;
@@ -75,7 +78,7 @@ function GalleryEditorSession({ window, ctx, update }: ModuleProps<"gallery">) {
 
   function addFiles(files: File[], beforeId?: string) {
     const valid = files.filter(validGalleryFile);
-    const available = Math.max(0, 200 - images.length);
+    const available = remaining(media.getTasks());
     const accepted = valid.slice(0, available);
     if (valid.length !== files.length) setUrlError(label("invalidFiles", "gallery.noImagesYetUploadFiles"));
     else if (valid.length > available) setUrlError(tr("gallery.aGalleryCanHoldUp"));
@@ -85,7 +88,8 @@ function GalleryEditorSession({ window, ctx, update }: ModuleProps<"gallery">) {
       const image = additions[index];
       media.upload(file, {
         kind: "image", slot: `add:${image.id}`,
-        isCurrent: (current) => current.content.images.length < 200 && !current.content.images.some((item) => item.id === image.id),
+        isCurrent: (current) => !current.content.images.some((item) => item.id === image.id),
+        canApply: (current) => current.content.images.length < 200,
         apply: (current, stored) => ({
           ...current,
           content: { ...current.content, images: insertGalleryUpload(current.content.images, { ...image, src: stored }, selectionIds, beforeId) }
@@ -115,7 +119,7 @@ function GalleryEditorSession({ window, ctx, update }: ModuleProps<"gallery">) {
   function addUrl() {
     const { valid, rejected } = parseGalleryUrls(url);
     if (!valid.length) { setUrlError(label("invalidUrls", "gallery.pasteAnImageUrlTo")); return; }
-    const available = Math.max(0, 200 - images.length);
+    const available = remaining(media.getTasks());
     if (!available) { setUrlError(tr("gallery.aGalleryCanHoldUp2")); return; }
     const additions = valid.slice(0, available).map((item) => makeGalleryImage(item));
     setImages((list) => [...list, ...additions.slice(0, Math.max(0, 200 - list.length))]);
@@ -128,6 +132,21 @@ function GalleryEditorSession({ window, ctx, update }: ModuleProps<"gallery">) {
   function deselect() {
     setActiveId(null);
     restoreFocusUnlessMoved(() => urlToggle.current);
+  }
+
+  function retryUpload(id: string) {
+    const task = media.getTasks().find((item) => item.id === id);
+    if (!task) return;
+    if (task.slot?.startsWith("add:") && !remaining(media.getTasks())) {
+      setUrlError(tr("gallery.aGalleryCanHoldUp2"));
+      return;
+    }
+    media.retry(id);
+  }
+
+  function cancelUpload(id: string) {
+    const task = media.getTasks().find((item) => item.id === id);
+    if (task?.slot) media.cancel(task.slot);
   }
 
   function deleteSelected() {
@@ -185,7 +204,7 @@ function GalleryEditorSession({ window, ctx, update }: ModuleProps<"gallery">) {
       }
     }}>
       <div className="gal-editor-toolbar" role="toolbar" aria-label={tr("gallery.galleryThumbnails")}>
-        <FileUploadButton multiple disabled={images.length >= 200} onFiles={addFiles}><b>{tr("gallery.uploadImagesMultipleAllowed")}</b></FileUploadButton>
+        <FileUploadButton multiple disabled={availableNow === 0} onFiles={addFiles}><b>{tr("gallery.uploadImagesMultipleAllowed")}</b></FileUploadButton>
         <button ref={urlToggle} type="button" className="mini-btn wide" aria-expanded={urlOpen} onClick={() => {
           if (urlOpen) closeUrls();
           else { setUrlOpen(true); requestAnimationFrame(() => urlInput.current?.focus()); }
@@ -200,9 +219,9 @@ function GalleryEditorSession({ window, ctx, update }: ModuleProps<"gallery">) {
           if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); closeUrls(); }
           if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.stopPropagation(); addUrl(); }
         }} />
-        <CompactButton label={tr("gallery.add")} className="mini-btn wide" disabled={images.length >= 200} onClick={addUrl}>{tr("gallery.add")}</CompactButton>
+        <CompactButton label={tr("gallery.add")} className="mini-btn wide" disabled={availableNow === 0} onClick={addUrl}>{tr("gallery.add")}</CompactButton>
       </div> : null}
-      <div className="gal-upload-list"><UploadProgressList tasks={media.tasks} onRetry={media.retry} onDismiss={media.dismiss} /></div>
+      <div className="gal-upload-list"><UploadProgressList tasks={media.tasks} onRetry={retryUpload} onCancel={cancelUpload} onDismiss={media.dismiss} /></div>
       <div className="gal-editor-workspace" data-selected={!!selected}>
         <div className="gal-editor-grid-scroll" onMouseDown={(event) => { if (event.target === event.currentTarget) setActiveId(null); }}>
           {!images.length ? <FileUploadButton multiple className="gal-editor-empty" onFiles={addFiles}>{label("emptyDrop", "gallery.noImagesYetUploadFiles")}</FileUploadButton> : null}
@@ -228,7 +247,7 @@ function GalleryEditorSession({ window, ctx, update }: ModuleProps<"gallery">) {
             {images.length > 0 ? <div className="gal-end-drop" data-drop={over?.id === null || undefined} onDragOver={(event) => {
               if (!dragId && !hasFiles(event)) return;
               event.preventDefault(); event.stopPropagation(); setOver({ id: null, after: true });
-            }} onDrop={(event) => drop(event)}><FileUploadButton multiple disabled={images.length >= 200} className="gal-add" title={tr("gallery.uploadImagesMultipleAllowed")} onFiles={addFiles}>＋ {tr("gallery.add")}</FileUploadButton></div> : null}
+            }} onDrop={(event) => drop(event)}><FileUploadButton multiple disabled={availableNow === 0} className="gal-add" title={tr("gallery.uploadImagesMultipleAllowed")} onFiles={addFiles}>＋ {tr("gallery.add")}</FileUploadButton></div> : null}
           </div>
         </div>
         {selected ? (
