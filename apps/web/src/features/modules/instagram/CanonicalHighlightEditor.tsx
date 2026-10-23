@@ -1,4 +1,4 @@
-import { IgImageUrlField as ImageUrlField } from "./IgImageUrlField";
+import { IgImageUrlField as ImageUrlInput } from "./IgImageUrlField";
 import { useIgPendingEntities, useIgSessionValue } from "./useIgSessionValue";
 import { useId } from "react";
 import styles from "./ocEditor.module.css";
@@ -19,7 +19,7 @@ import {
   type SiteDocumentV2Input,
 } from "@retrodesk/shared";
 import type { ModuleProps } from "../types";
-import { FilePick, SafeImg } from "../ui";
+import { FileUploadButton, FallbackImage } from "../ui";
 import { useIgMedia } from "./useIgMedia";
 import { igEditorScope, useIgEditorState } from "./useIgEditorState";
 
@@ -109,7 +109,7 @@ export function CanonicalHighlightEditor({ props }: Props) {
       const bodyId = `${editorId}-${highlight.id}`;
       return <article key={highlight.id} className="ig-canonical-post" hidden={openId ? !expanded : !visibleHighlights.includes(highlight)}>
         <div className="ig-post-row">
-          <span className="ig-thumb round ph">{highlight.coverSrc ? <SafeImg src={highlight.coverSrc} alt={highlight.coverAlt} compact style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : null}</span>
+          <span className="ig-thumb round ph">{highlight.coverSrc ? <FallbackImage src={highlight.coverSrc} alt={highlight.coverAlt} compact style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : null}</span>
           <button type="button" className="ig-post-toggle" data-ig-edit={highlight.id} aria-expanded={expanded} aria-controls={expanded ? bodyId : undefined} onClick={() => setOpenId(expanded ? null : highlight.id)}><span>{tr("editorFlow.edit")} · {highlight.title || tr("canonicalHighlightEditor.untitledHighlight")}</span><small>{tr("ig.highlightMeta", { count: highlight.frames.length, status: highlight.visibility === "published" ? tr("canonicalCollectionEditor.public") : tr("canonicalCollectionEditor.draft") })}</small></button>
           <div className="ig-item-actions">
           <button type="button" className="mini-btn" aria-label={`${tr("canonicalHighlightEditor.moveHighlightUp")}：${highlight.title || tr("canonicalHighlightEditor.untitledHighlight")}`} aria-describedby={search ? `${editorId}-order-hint` : undefined} disabled={!!search || highlightIndex === 0} onClick={() => mutate((document) => run(reorderHighlight(document, highlight.id, -1, { siteId }), document))}>▲</button>
@@ -128,10 +128,10 @@ export function CanonicalHighlightEditor({ props }: Props) {
           <label className="check-row"><input type="checkbox" checked={highlight.visibility === "published"} onChange={(event) => mutate((document) => run(updateHighlight(document, highlight.id, { visibility: event.target.checked ? "published" : "draft" }, { siteId }), document))} />{tr("canonicalHighlightEditor.showPublicly")}</label>
           {!highlight.frames.length ? <p className="ig-editor-empty">{tr("canonicalHighlightEditor.noHighlightPagesYetAdd")}</p> : null}
           {highlight.frames.map((frame, frameIndex) => <div key={frame.id} className="ig-highlight-frame-row">
-            <span className="ig-thumb sq48 ph">{frame.src ? <SafeImg src={frame.src} alt={frame.alt} compact style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : null}</span>
+            <span className="ig-thumb sq48 ph">{frame.src ? <FallbackImage src={frame.src} alt={frame.alt} compact style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : null}</span>
             <div className="ig-col grow">
               <strong>{tr("ig.frameHeading", { n: frameIndex + 1, cover: frameIndex === 0 ? tr("canonicalHighlightEditor.cover") : "" })}</strong>
-              <ImageUrlField draftKey={`${scope}:${highlight.id}:${frame.id}:source`} visibleLabel raw={frame.srcUrl} label={tr("imageControls.highlightPageUrl", { n: frameIndex + 1 })} placeholder={tr("canonicalHighlightEditor.orPasteAnImageUrl")} className="w98-input compact" onCommit={(raw, src) => mutate((document) => run(updateHighlightFrame(document, highlight.id, frame.id, { src, srcUrl: raw }, { siteId }), document))} />
+              <ImageUrlInput draftKey={`${scope}:${highlight.id}:${frame.id}:source`} visibleLabel raw={frame.srcUrl} label={tr("imageControls.highlightPageUrl", { n: frameIndex + 1 })} placeholder={tr("canonicalHighlightEditor.orPasteAnImageUrl")} className="w98-input compact" onCommit={(raw, src) => mutate((document) => run(updateHighlightFrame(document, highlight.id, frame.id, { src, srcUrl: raw }, { siteId }), document))} />
               <input className="w98-input compact" aria-label={tr("canonicalHighlightEditor.altTextForHighlightPage", { v1: frameIndex + 1 })} value={frame.alt} placeholder={tr("canonicalHighlightEditor.altText")} onChange={(event) => mutate((document) => run(updateHighlightFrame(document, highlight.id, frame.id, { alt: event.target.value }, { siteId }), document), `highlight-alt-${frame.id}`)} />
               <textarea className="w98-textarea" rows={2} aria-label={tr("canonicalHighlightEditor.textForHighlightPage", { v1: frameIndex + 1 })} value={frame.text} placeholder={tr("canonicalHighlightEditor.optionalShortText")} onChange={(event) => mutate((document) => run(updateHighlightFrame(document, highlight.id, frame.id, { text: event.target.value }, { siteId }), document), `highlight-text-${frame.id}`)} />
             </div>
@@ -145,11 +145,11 @@ export function CanonicalHighlightEditor({ props }: Props) {
           </div>)}
           {highlight.frames.length < 50 ? <div className="ie-row">
             <fieldset className="ig-upload-control" aria-label={tr("canonicalHighlightEditor.uploadHighlightImages")} disabled={!media.canUpload} aria-busy={media.isPending("highlight", highlight.id)}>
-            <FilePick multiple disabled={!media.canUpload} className="w98-btn small" onFiles={(files) => {
+            <FileUploadButton multiple disabled={!media.canUpload} className="w98-btn small" onFiles={(files) => {
               setError("");
               const omitted = media.upload("highlight", highlight.id, files);
               if (omitted) setError(tr("batchMedia.omitted", { count: omitted }));
-            }}>{tr("batchMedia.uploadPages")}</FilePick>
+            }}>{tr("batchMedia.uploadPages")}</FileUploadButton>
             </fieldset>
             <label className={`ig-col grow ${sourceStyles.url}`}><span className="w98-hint">{tr("canonicalHighlightEditor.addHighlightPageImageUrl")}</span><input className="w98-input compact" aria-label={tr("canonicalHighlightEditor.addHighlightPageImageUrl")} value={urls[highlight.id] ?? ""} placeholder={tr("canonicalHighlightEditor.orPasteAnImageUrl")} onChange={(event) => setUrls((current) => ({ ...current, [highlight.id]: event.target.value }))} /></label>
             <button type="button" className="w98-btn small" onClick={() => {

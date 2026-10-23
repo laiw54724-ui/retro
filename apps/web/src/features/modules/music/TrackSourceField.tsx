@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PLATFORM_LABELS, type MusicTrack } from "@retrodesk/shared";
-import { FilePick } from "../ui";
+import { FileUploadButton } from "../ui";
 import { ProviderPlayer } from "./ProviderPlayer";
 import { classifyPastedUrl, type PastedSource } from "./sourceClassifier";
 
@@ -129,7 +129,7 @@ export function TrackSourceField({ draftCache, onEdit, track, windowId, patchSou
             aria-describedby={`${inputId}-note`}
             onChange={(event) => commit(event.target.value)}
           />
-          <FilePick className="w98-btn" accept="audio/mpeg,audio/ogg,audio/wav,.mp3,.ogg,.wav" onFiles={(files) => files[0] && uploadAudio(files[0])}>{track.source.kind === "uploadedAudio" ? tr("music.replaceAudioFile") : tr("music.uploadAudio")}</FilePick>
+          <FileUploadButton className="w98-btn" accept="audio/mpeg,audio/ogg,audio/wav,.mp3,.ogg,.wav" onFiles={(files) => files[0] && uploadAudio(files[0])}>{track.source.kind === "uploadedAudio" ? tr("music.replaceAudioFile") : tr("music.uploadAudio")}</FileUploadButton>
         </div>
       </div>
       <p id={`${inputId}-note`} className={`w98-hint music-source-explain${invalid ? " bad" : ""}`} role={invalid ? "alert" : "status"} data-testid="source-explanation">

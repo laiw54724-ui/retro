@@ -3,7 +3,7 @@ import { translateSystemMessage } from "../../../i18n/systemMessages";
 import { i18n } from "../../../i18n";
 import { useTranslation } from "react-i18next";
 import { makeIgComment, makeIgHighlight, makeIgPost, normalizeImageUrl, type IgPost } from "@retrodesk/shared";
-import { FilePick, ImageUrlField, MiniBtn, SafeImg } from "../ui";
+import { FileUploadButton, ImageUrlInput, CompactButton, FallbackImage } from "../ui";
 import { moveById, patchById, type ModuleProps } from "../types";
 
 import { IgDraftInput } from "./IgDraftInput";
@@ -93,10 +93,10 @@ export function IgEditForm({ window, ctx, update, children, section = "all" }: M
     <div className="ig-edit w98-scroll">
       {showProfile || showInteraction ? <fieldset className="w98-fieldset"><legend>{section === "interaction" ? tr("igEditForm.legacyStatsAndInteractionText") : canonicalProfile ? tr("igEditForm.linksAndExtraInfo") : tr("igEditForm.accountInfo")}</legend>
         {showIdentity ? <div className="ig-edit-avatar">
-          <span className="ig-thumb round ph">{profile.avatar ? <SafeImg src={profile.avatar} alt="" compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : null}</span>
+          <span className="ig-thumb round ph">{profile.avatar ? <FallbackImage src={profile.avatar} alt="" compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : null}</span>
           <div className="ig-col">
-            <FilePick onFiles={async (files) => { const url = await upload(files[0]); if (url) setProfile({ avatar: url, avatarUrl: "", avatarCrop: undefined }); }}>{tr("igEditForm.uploadAvatar")}</FilePick>
-            <ImageUrlField raw={profile.avatarUrl} label={tr("igEditForm.avatarUrl")} placeholder={tr("igEditForm.orPasteAnImageUrl")} className="w98-input compact" onCommit={(raw, src) => setProfile({ avatarUrl: raw, avatar: src, avatarCrop: undefined })} />
+            <FileUploadButton onFiles={async (files) => { const url = await upload(files[0]); if (url) setProfile({ avatar: url, avatarUrl: "", avatarCrop: undefined }); }}>{tr("igEditForm.uploadAvatar")}</FileUploadButton>
+            <ImageUrlInput raw={profile.avatarUrl} label={tr("igEditForm.avatarUrl")} placeholder={tr("igEditForm.orPasteAnImageUrl")} className="w98-input compact" onCommit={(raw, src) => setProfile({ avatarUrl: raw, avatar: src, avatarCrop: undefined })} />
           </div>
         </div> : null}
         <div className="ig-fields">
@@ -121,15 +121,15 @@ export function IgEditForm({ window, ctx, update, children, section = "all" }: M
       {section === "all" && !ctx.updateContent ? <fieldset className="w98-fieldset"><legend>{tr("igEditForm.highlightStories")}</legend>
         {profile.highlights.map((highlight) => (
           <div key={highlight.id} className="ig-hl-edit">
-            <span className="ig-thumb round ph">{highlight.src ? <SafeImg src={highlight.src} alt="" compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : null}</span>
+            <span className="ig-thumb round ph">{highlight.src ? <FallbackImage src={highlight.src} alt="" compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : null}</span>
             <div className="ig-col">
               <input className="w98-input compact" value={highlight.title} placeholder={tr("canonicalPostEditor.heading")} aria-label={tr("canonicalHighlightEditor.highlightTitle")} onChange={(event) => setProfile({ highlights: profile.highlights.map((h) => h.id === highlight.id ? { ...h, title: event.target.value } : h) }, "hl" + highlight.id)} />
               <div className="ie-row">
-                <ImageUrlField raw={highlight.srcUrl} label={tr("igEditForm.highlightImageUrl")} placeholder={tr("canonicalPostEditor.imageUrl")} className="w98-input compact grow" onCommit={(raw, src) => setProfile({ highlights: profile.highlights.map((h) => h.id === highlight.id ? { ...h, srcUrl: raw, src } : h) })} />
-                <FilePick onFiles={async (files) => { const url = await upload(files[0]); if (url) setProfile({ highlights: profile.highlights.map((h) => h.id === highlight.id ? { ...h, src: url, srcUrl: "" } : h) }); }}>{tr("igEditForm.upload")}</FilePick>
+                <ImageUrlInput raw={highlight.srcUrl} label={tr("igEditForm.highlightImageUrl")} placeholder={tr("canonicalPostEditor.imageUrl")} className="w98-input compact grow" onCommit={(raw, src) => setProfile({ highlights: profile.highlights.map((h) => h.id === highlight.id ? { ...h, srcUrl: raw, src } : h) })} />
+                <FileUploadButton onFiles={async (files) => { const url = await upload(files[0]); if (url) setProfile({ highlights: profile.highlights.map((h) => h.id === highlight.id ? { ...h, src: url, srcUrl: "" } : h) }); }}>{tr("igEditForm.upload")}</FileUploadButton>
               </div>
             </div>
-            <MiniBtn label={tr("igEditForm.deleteHighlight")} danger onClick={() => setProfile({ highlights: profile.highlights.filter((h) => h.id !== highlight.id) })}>×</MiniBtn>
+            <CompactButton label={tr("igEditForm.deleteHighlight")} danger onClick={() => setProfile({ highlights: profile.highlights.filter((h) => h.id !== highlight.id) })}>×</CompactButton>
           </div>
         ))}
         <button type="button" className="w98-btn small" onClick={() => setProfile({ highlights: [...profile.highlights, makeIgHighlight()] })}>{tr("canonicalHighlightEditor.addHighlight")}</button>
@@ -137,7 +137,7 @@ export function IgEditForm({ window, ctx, update, children, section = "all" }: M
 
       {section === "all" && !ctx.updateContent ? <fieldset className="w98-fieldset"><legend>{tr("ig.legacyPostsCount", { count: posts.length })}</legend>
         <div className="ie-row">
-          <FilePick multiple className="w98-btn small" onFiles={(files) => void addPosts(files)}><b>{tr("igEditForm.uploadPhotosMultipleAllowed")}</b></FilePick>
+          <FileUploadButton multiple className="w98-btn small" onFiles={(files) => void addPosts(files)}><b>{tr("igEditForm.uploadPhotosMultipleAllowed")}</b></FileUploadButton>
           <input className="w98-input compact grow" value={newUrl} placeholder={tr("canonicalHighlightEditor.orPasteAnImageUrl")} aria-label={tr("canonicalPostEditor.newPostImageUrl")} onChange={(event) => { setNewUrl(event.target.value); setNewUrlError(""); }} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addPostUrl(); } }} />
           <button type="button" className="w98-btn small" onClick={addPostUrl}>{tr("canonicalPostEditor.add")}</button>
         </div>
@@ -148,31 +148,31 @@ export function IgEditForm({ window, ctx, update, children, section = "all" }: M
           return (
             <div key={post.id} className="ig-post-edit">
               <div className="ig-post-row">
-                <span className="ig-thumb sq ph">{post.src ? <SafeImg src={post.src} alt="" compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : null}</span>
+                <span className="ig-thumb sq ph">{post.src ? <FallbackImage src={post.src} alt="" compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : null}</span>
                 <button type="button" className="ig-post-toggle" aria-expanded={expanded} onClick={() => setOpen(expanded ? null : post.id)}>
                   <span>{expanded ? "▾" : "▸"} {(post.caption || post.title || tr("canonicalCollectionEditor.noTitle")).slice(0, 28)}</span>
                   <small>{tr("ig.legacyPostMeta", { date: post.date, likes: post.likes, comments: post.comments.length })}{post.extra.length ? tr("igEditForm.images", { v1: post.extra.length + 1 }) : ""}</small>
                 </button>
-                <MiniBtn label={tr("igEditForm.moveUp")} disabled={index === 0} onClick={() => setPosts((list) => moveById(list, post.id, -1))}>▲</MiniBtn>
-                <MiniBtn label={tr("igEditForm.moveDown")} disabled={index === posts.length - 1} onClick={() => setPosts((list) => moveById(list, post.id, 1))}>▼</MiniBtn>
-                <MiniBtn label={tr("canonicalPostEditor.deletePost")} danger onClick={() => setPosts((list) => list.filter((item) => item.id !== post.id))}>×</MiniBtn>
+                <CompactButton label={tr("igEditForm.moveUp")} disabled={index === 0} onClick={() => setPosts((list) => moveById(list, post.id, -1))}>▲</CompactButton>
+                <CompactButton label={tr("igEditForm.moveDown")} disabled={index === posts.length - 1} onClick={() => setPosts((list) => moveById(list, post.id, 1))}>▼</CompactButton>
+                <CompactButton label={tr("canonicalPostEditor.deletePost")} danger onClick={() => setPosts((list) => list.filter((item) => item.id !== post.id))}>×</CompactButton>
               </div>
               {expanded ? (
                 <div className="ig-post-body">
                   <span className="w98-hint">{tr("igEditForm.mainImage")}</span>
                   <div className="ie-row">
-                    <ImageUrlField raw={post.srcUrl} label={tr("igEditForm.mainImageUrl")} placeholder={tr("igEditForm.imageUrlPublicGoogleDrive")} className="w98-input compact grow" onCommit={(raw, src) => patchPost(post.id, { srcUrl: raw, src })} />
-                    <FilePick onFiles={async (files) => { const url = await upload(files[0]); if (url) patchPost(post.id, { src: url, srcUrl: "" }); }}>{tr("igEditForm.upload")}</FilePick>
+                    <ImageUrlInput raw={post.srcUrl} label={tr("igEditForm.mainImageUrl")} placeholder={tr("igEditForm.imageUrlPublicGoogleDrive")} className="w98-input compact grow" onCommit={(raw, src) => patchPost(post.id, { srcUrl: raw, src })} />
+                    <FileUploadButton onFiles={async (files) => { const url = await upload(files[0]); if (url) patchPost(post.id, { src: url, srcUrl: "" }); }}>{tr("igEditForm.upload")}</FileUploadButton>
                   </div>
                   <span className="w98-hint">{tr("igEditForm.morePhotosCarouselUpTo")}</span>
                   <div className="ie-row">
                     {post.extra.map((extra) => (
                       <span key={extra.id} className="ig-thumb sq48 ph">
-                        {extra.src ? <SafeImg src={extra.src} alt="" compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : null}
+                        {extra.src ? <FallbackImage src={extra.src} alt="" compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : null}
                         <button type="button" className="ig-x" aria-label={tr("igEditForm.removeThisOne")} onClick={() => setPosts((list) => list.map((item) => item.id === post.id ? { ...item, extra: item.extra.filter((e) => e.id !== extra.id) } : item))}>×</button>
                       </span>
                     ))}
-                    {post.extra.length < 9 ? <FilePick multiple className="ig-add-extra" title={tr("igEditForm.uploadCarouselPhotos")} onFiles={(files) => void addExtras(post.id, files)}>＋</FilePick> : null}
+                    {post.extra.length < 9 ? <FileUploadButton multiple className="ig-add-extra" title={tr("igEditForm.uploadCarouselPhotos")} onFiles={(files) => void addExtras(post.id, files)}>＋</FileUploadButton> : null}
                   </div>
                   <div className="ie-row">
                     <input className="w98-input compact grow" value={extraUrl[post.id] ?? ""} placeholder={tr("igEditForm.carouselPhotoUrl")} aria-label={tr("igEditForm.carouselPhotoUrl")} onChange={(event) => setExtraUrl((o) => ({ ...o, [post.id]: event.target.value }))} />
@@ -190,7 +190,7 @@ export function IgEditForm({ window, ctx, update, children, section = "all" }: M
                     <div key={comment.id} className="ie-row">
                       <input className="w98-input compact" style={{ width: 96, flexShrink: 0, fontWeight: 700 }} value={comment.user} placeholder={tr("igEditForm.handle")} aria-label={tr("igEditForm.commenterAccount")} onChange={(event) => patchPost(post.id, { comments: post.comments.map((c) => c.id === comment.id ? { ...c, user: event.target.value } : c) }, "cu" + comment.id)} />
                       <input className="w98-input compact grow" value={comment.text} placeholder={tr("igEditForm.commentText")} aria-label={tr("igEditForm.commentText")} onChange={(event) => patchPost(post.id, { comments: post.comments.map((c) => c.id === comment.id ? { ...c, text: event.target.value } : c) }, "ct" + comment.id)} />
-                      <MiniBtn label={tr("igEditForm.deleteComment")} danger onClick={() => patchPost(post.id, { comments: post.comments.filter((c) => c.id !== comment.id) })}>×</MiniBtn>
+                      <CompactButton label={tr("igEditForm.deleteComment")} danger onClick={() => patchPost(post.id, { comments: post.comments.filter((c) => c.id !== comment.id) })}>×</CompactButton>
                     </div>
                   ))}
                   <button type="button" className="w98-btn small" style={{ alignSelf: "flex-start" }} onClick={() => patchPost(post.id, { comments: [...post.comments, makeIgComment("friend", "")] })}>{tr("igEditForm.addComment")}</button>

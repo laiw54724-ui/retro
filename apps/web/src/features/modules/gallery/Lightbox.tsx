@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import type { GalleryImage } from "@retrodesk/shared";
 import { lockBackground } from "../../../lib/backgroundLock";
-import { SafeImg } from "../ui";
+import { FallbackImage } from "../ui";
 import type { ModuleCtx } from "../types";
 
 const FOCUSABLE = "button:not(:disabled), a[href], input:not(:disabled), [tabindex]:not([tabindex='-1'])";
@@ -88,7 +88,7 @@ export function Lightbox({ images, index, onIndex, onClose, ctx }: Props) {
       </div>
       <div className="lb-stage" onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
         {image.src
-          ? <SafeImg key={image.src} src={image.src} alt={image.alt ?? (image.caption || image.title)} className="lb-img" />
+          ? <FallbackImage key={image.src} src={image.src} alt={image.alt ?? (image.caption || image.title)} className="lb-img" />
           : <div className="ph lb-placeholder" />}
       </div>
       <div className="lb-foot">

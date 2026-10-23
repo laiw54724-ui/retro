@@ -2,8 +2,8 @@ import { useId, useLayoutEffect, useRef, useState, type CSSProperties, type Drag
 import { i18n } from "../../../i18n";
 import { useTranslation } from "react-i18next";
 import { type DocumentBlock, type DocumentBlockKind } from "@retrodesk/shared";
-import { UploadTaskList, useWindowMedia } from "../../media/editorMedia";
-import { FilePick, ImageUrlField, MiniBtn, SafeImg } from "../ui";
+import { UploadProgressList, useWindowMedia } from "../../media/editorMedia";
+import { FileUploadButton, ImageUrlInput, CompactButton, FallbackImage } from "../ui";
 import { moveById, opensNewTab, patchById, safeHref, type ModuleProps } from "../types";
 import { convertBlock, emptyBlock, MAX_BLOCKS, moveBlock, splitBlock, textLimit } from "./editing";
 import enDelta from "./locales/en.json";
@@ -33,7 +33,7 @@ export function DocumentView({ window, ctx }: ModuleProps<"document">) {
           case "image": {
             const caption = block.caption ?? block.alt;
             return block.src
-              ? <figure key={block.id}><SafeImg src={block.src} alt={block.alt} className="doc-img" style={{ boxShadow: tv.sunken }} />{caption ? <figcaption>{caption}</figcaption> : null}</figure>
+              ? <figure key={block.id}><FallbackImage src={block.src} alt={block.alt} className="doc-img" style={{ boxShadow: tv.sunken }} />{caption ? <figcaption>{caption}</figcaption> : null}</figure>
               : <div key={block.id} className="doc-img-ph ph" style={{ boxShadow: tv.sunken }} />;
           }
           case "button": return <div key={block.id}><a className="doc-button" href={safeHref(block.url)} target={opensNewTab(block.url) ? "_blank" : undefined} rel="noopener noreferrer" onClick={(event) => go(event, block.url)} style={{ background: tv.face, color: tv.text, boxShadow: tv.bevel }}>{block.text}</a></div>;
@@ -215,12 +215,12 @@ function DocumentEditorSession({ window, ctx, update }: ModuleProps<"document">)
           {!textStyle ? <option value="other">{focusBlock ? LABEL()[focusBlock.kind] : tr("document.paragraph")}</option> : null}
         </select>
         <span className="doc-toolbar-divider" />
-        <MiniBtn label={tr("document.bold")} disabled={focusBlock?.kind !== "text"} on={focusBlock?.kind === "text" && focusBlock.bold} aria-pressed={focusBlock?.kind === "text" && focusBlock.bold} onMouseDown={keepFocus} onClick={() => focusBlock?.kind === "text" && patch(focusBlock.id, { bold: !focusBlock.bold })}><b>B</b></MiniBtn>
-        <MiniBtn label={tr("document.italic")} disabled={focusBlock?.kind !== "text"} on={focusBlock?.kind === "text" && focusBlock.italic} aria-pressed={focusBlock?.kind === "text" && focusBlock.italic} onMouseDown={keepFocus} onClick={() => focusBlock?.kind === "text" && patch(focusBlock.id, { italic: !focusBlock.italic })}><i>I</i></MiniBtn>
+        <CompactButton label={tr("document.bold")} disabled={focusBlock?.kind !== "text"} on={focusBlock?.kind === "text" && focusBlock.bold} aria-pressed={focusBlock?.kind === "text" && focusBlock.bold} onMouseDown={keepFocus} onClick={() => focusBlock?.kind === "text" && patch(focusBlock.id, { bold: !focusBlock.bold })}><b>B</b></CompactButton>
+        <CompactButton label={tr("document.italic")} disabled={focusBlock?.kind !== "text"} on={focusBlock?.kind === "text" && focusBlock.italic} aria-pressed={focusBlock?.kind === "text" && focusBlock.italic} onMouseDown={keepFocus} onClick={() => focusBlock?.kind === "text" && patch(focusBlock.id, { italic: !focusBlock.italic })}><i>I</i></CompactButton>
         <span className="doc-toolbar-divider" />
-        {(["left", "center", "right"] as const).map((align) => <MiniBtn key={align} label={tr(align === "left" ? "document.alignLeft" : align === "center" ? "document.center" : "document.alignRight")} disabled={focusBlock?.kind !== "text"} on={focusBlock?.kind === "text" && focusBlock.align === align} aria-pressed={focusBlock?.kind === "text" && focusBlock.align === align} onMouseDown={keepFocus} onClick={() => focusBlock?.kind === "text" && patch(focusBlock.id, { align })}><span aria-hidden="true" className={`doc-align-icon ${align}`}><i /><i /><i /></span></MiniBtn>)}
+        {(["left", "center", "right"] as const).map((align) => <CompactButton key={align} label={tr(align === "left" ? "document.alignLeft" : align === "center" ? "document.center" : "document.alignRight")} disabled={focusBlock?.kind !== "text"} on={focusBlock?.kind === "text" && focusBlock.align === align} aria-pressed={focusBlock?.kind === "text" && focusBlock.align === align} onMouseDown={keepFocus} onClick={() => focusBlock?.kind === "text" && patch(focusBlock.id, { align })}><span aria-hidden="true" className={`doc-align-icon ${align}`}><i /><i /><i /></span></CompactButton>)}
         <span className="doc-toolbar-divider" />
-        <MiniBtn label={label("insert")} aria-haspopup="menu" aria-expanded={!!menu} onMouseDown={keepFocus} onClick={() => menu ? closeMenu() : setMenu({ convert: null, anchor: active })}>{label("insert")} ▾</MiniBtn>
+        <CompactButton label={label("insert")} aria-haspopup="menu" aria-expanded={!!menu} onMouseDown={keepFocus} onClick={() => menu ? closeMenu() : setMenu({ convert: null, anchor: active })}>{label("insert")} ▾</CompactButton>
       </div>
       {menu ? <div className="doc-insert-menu" role="menu" aria-label={label("insert")} onKeyDown={(event) => {
         const items = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('[role="menuitem"]'));
@@ -230,7 +230,7 @@ function DocumentEditorSession({ window, ctx, update }: ModuleProps<"document">)
         if (event.key === "Tab") { event.preventDefault(); closeMenu(); }
       }}>{ADD_ORDER.map((kind) => <button key={kind} type="button" role="menuitem" onClick={() => add(kind)}>{LABEL()[kind]}</button>)}</div> : null}
       <div className="doc-page" onPointerDown={() => { if (menu) setMenu(null); }}>
-        <UploadTaskList tasks={media.tasks} onRetry={media.retry} onDismiss={media.dismiss} />
+        <UploadProgressList tasks={media.tasks} onRetry={media.retry} onDismiss={media.dismiss} />
         <div className="doc-body doc-edit-blocks">
           {blocks.map((block, index) => {
             const isActive = active === block.id;
@@ -243,11 +243,11 @@ function DocumentEditorSession({ window, ctx, update }: ModuleProps<"document">)
                   <textarea data-primary className={`ie ${block.kind === "heading" ? "heading" : ""}`} rows={1} value={block.text} maxLength={textLimit(block.kind)} placeholder={block.kind === "heading" ? tr("document.heading") : block.kind === "list" ? tr("document.oneItemPerLine") : label("typeOrSlash")} aria-label={block.kind === "list" ? tr("document.listOneItemPerLine") : LABEL()[block.kind]} style={block.kind === "heading" ? { color: tv.titleFrom } : block.kind === "text" ? { textAlign: block.align, fontWeight: block.bold ? 700 : 400, fontStyle: block.italic ? "italic" : "normal" } : undefined} onChange={(event) => patch(block.id, { text: event.target.value }, "text")} />
                 </div> : null}
                 {block.kind === "image" ? <figure className="doc-fig">
-                  {block.src ? <SafeImg src={block.src} alt={block.alt} className="doc-img" style={{ boxShadow: tv.sunken }} /> : <div className="doc-image-drop" onDragOver={(event) => { if (!dragId && event.dataTransfer.types.includes("Files")) { event.preventDefault(); event.stopPropagation(); } }} onDrop={(event) => { if (dragId) return; event.preventDefault(); event.stopPropagation(); setOver(null); dropFiles(Array.from(event.dataTransfer.files), block.id, true, block); }}><span>{label("dropImage")}</span><FilePick onFiles={(files) => uploadInto(block, files[0])}>{tr("document.uploadImage")}</FilePick></div>}
+                  {block.src ? <FallbackImage src={block.src} alt={block.alt} className="doc-img" style={{ boxShadow: tv.sunken }} /> : <div className="doc-image-drop" onDragOver={(event) => { if (!dragId && event.dataTransfer.types.includes("Files")) { event.preventDefault(); event.stopPropagation(); } }} onDrop={(event) => { if (dragId) return; event.preventDefault(); event.stopPropagation(); setOver(null); dropFiles(Array.from(event.dataTransfer.files), block.id, true, block); }}><span>{label("dropImage")}</span><FileUploadButton onFiles={(files) => uploadInto(block, files[0])}>{tr("document.uploadImage")}</FileUploadButton></div>}
                   {(block.caption ?? block.alt) ? <figcaption>{block.caption ?? block.alt}</figcaption> : null}
                   {isActive ? <div className="doc-block-settings" role="group" aria-label={tr("document.imageSettings")}>
-                    <div className="doc-image-actions">{block.src ? <FilePick onFiles={(files) => uploadInto(block, files[0])}>{tr("document.replaceImage")}</FilePick> : null}<MiniBtn label={tr("image.remove")} disabled={!block.src} onClick={() => { media.cancel(`image:${block.id}`); patch(block.id, { src: null, srcUrl: "" }); }}>{tr("image.remove")}</MiniBtn></div>
-                    <label className="doc-setting-label"><span>{tr("document.imageUrl")}</span><ImageUrlField onEdit={() => media.cancel(`image:${block.id}`)} raw={block.srcUrl} label={tr("document.imageUrl")} placeholder={tr("document.httpsPublicGoogleDriveLinks")} onCommit={(raw, src) => patch(block.id, { srcUrl: raw, src })} /></label>
+                    <div className="doc-image-actions">{block.src ? <FileUploadButton onFiles={(files) => uploadInto(block, files[0])}>{tr("document.replaceImage")}</FileUploadButton> : null}<CompactButton label={tr("image.remove")} disabled={!block.src} onClick={() => { media.cancel(`image:${block.id}`); patch(block.id, { src: null, srcUrl: "" }); }}>{tr("image.remove")}</CompactButton></div>
+                    <label className="doc-setting-label"><span>{tr("document.imageUrl")}</span><ImageUrlInput onEdit={() => media.cancel(`image:${block.id}`)} raw={block.srcUrl} label={tr("document.imageUrl")} placeholder={tr("document.httpsPublicGoogleDriveLinks")} onCommit={(raw, src) => patch(block.id, { srcUrl: raw, src })} /></label>
                     <label className="doc-setting-label"><span>{tr("document.caption")}</span><input className="ie small" value={block.caption ?? block.alt} maxLength={300} aria-label={tr("document.caption")} aria-describedby={`${fieldId}-caption-help`} onChange={(event) => patch(block.id, { caption: event.target.value }, "caption")} /></label>
                     <small id={`${fieldId}-caption-help`}>{tr("document.theCaptionAppearsOnThe")}</small>
                     <label className="doc-setting-label"><span>{tr("document.altText")}</span><input className="ie small" value={block.alt} maxLength={300} aria-label={tr("document.altText")} aria-describedby={`${fieldId}-alt-help`} onChange={(event) => changeAlt(block.id, event.target.value)} /></label>
@@ -260,14 +260,14 @@ function DocumentEditorSession({ window, ctx, update }: ModuleProps<"document">)
                 </div> : null}
                 {block.kind === "divider" ? <button type="button" data-primary className="doc-divider" aria-label={tr("document.divider")}><hr style={{ borderTop: `1px solid ${tv.shadow}`, borderBottom: "1px solid #fff" }} /></button> : null}
               </div>
-              <MiniBtn tabIndex={isActive ? 0 : -1} className="mini-btn doc-delete" label={tr("document.deleteBlock")} danger onMouseDown={keepFocus} onClick={() => remove(block.id)}>×</MiniBtn>
+              <CompactButton tabIndex={isActive ? 0 : -1} className="mini-btn doc-delete" label={tr("document.deleteBlock")} danger onMouseDown={keepFocus} onClick={() => remove(block.id)}>×</CompactButton>
             </div>;
           })}
           <button type="button" className="doc-append" aria-label={tr("document.add2", { v1: tr("document.paragraph") })} data-drop={over?.id === null ? "before" : undefined} onClick={() => { const last = blocks[blocks.length - 1]; if (last?.kind === "text" && !last.text) { requestFocus(last.id, 0); } else { setActive(null); const block = emptyBlock("text"); if (blocks.length >= MAX_BLOCKS) { setError(tr("document.youveReachedTheLimitOf")); return; } setBlocks((list) => list.length < MAX_BLOCKS ? [...list, block] : list); requestFocus(block.id, 0); } }} onDragOver={(event) => dragOver(event, null)} onDrop={(event) => drop(event, null, false)}>{blocks.length ? "+" : tr("document.typeParagraphText")}</button>
         </div>
       </div>
       <div className="doc-status"><span>{dragId ? label("dragHint") : label("status")}</span><span>{label("count").replace("{{count}}", String(blocks.length))}</span></div>
-      {error ? <div className="doc-error" role="alert"><span>{error}</span><MiniBtn label={tr("lightbox.close")} onClick={() => setError("")}>×</MiniBtn></div> : null}
+      {error ? <div className="doc-error" role="alert"><span>{error}</span><CompactButton label={tr("lightbox.close")} onClick={() => setError("")}>×</CompactButton></div> : null}
     </div>
   );
 }

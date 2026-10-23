@@ -1,11 +1,11 @@
 import { useEffect, useRef, type ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
-import { ImageUrlField } from "../ui";
+import { ImageUrlInput } from "../ui";
 import { useIgSessionValue } from "./useIgSessionValue";
 
 type SourceDraft = { base: string; text: string; error: string };
 /** Preserve uncommitted source text through task changes and Done editing. */
-export function IgImageUrlField({ draftKey, ...props }: ComponentProps<typeof ImageUrlField> & { draftKey: string }) {
+export function IgImageUrlField({ draftKey, ...props }: ComponentProps<typeof ImageUrlInput> & { draftKey: string }) {
   const { t } = useTranslation("instagram");
   const fresh = { base: props.raw, text: props.raw, error: "" };
   const [stored, setStored] = useIgSessionValue<SourceDraft>(draftKey, fresh);
@@ -17,7 +17,7 @@ export function IgImageUrlField({ draftKey, ...props }: ComponentProps<typeof Im
   const feedback = useRef(false);
   if (pending) feedback.current = true;
   return <>
-    <ImageUrlField {...props} draftState={{ ...draft,
+    <ImageUrlInput {...props} draftState={{ ...draft,
       setText: (text) => setStored({ base: props.raw, text, error: "" }),
       setError: (error) => setStored((current) => ({ ...(current.base === props.raw ? current : fresh), error })),
     }} />

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { i18n } from "../../../i18n";
 import { useTranslation } from "react-i18next";
 import { PLATFORM_LABELS, type MusicTrack } from "@retrodesk/shared";
-import { FilePick, MiniBtn, SafeImg } from "../ui";
+import { FileUploadButton, CompactButton, FallbackImage } from "../ui";
 import { moveById, type ModuleProps } from "../types";
 import { musicPlayback, useMusicPlayback } from "./audioCoordinator";
 import { embedSession, playNative, playResolvedNative, useStopMediaOnResize } from "./mediaSession";
@@ -13,7 +13,7 @@ import { TrackSourceField, type SourceDraftCache } from "./TrackSourceField";
 import { explainPlaybackFailure, insightForUrl } from "./sourceInsight";
 import { useAssetResolver, useAssetSource, useAssetSourceState } from "../../../lib/assetSource";
 
-import { UploadTaskList, useMediaQueue } from "../../media/editorMedia";
+import { UploadProgressList, useMediaQueue } from "../../media/editorMedia";
 import { didMediaHistoryChange, enqueueWindowUpload } from "../../media/windowMediaSession";
 import { useEditorStore } from "../../editor/store";
 import { musicUploadOptions, musicUploadScope, type MusicUploadField } from "./musicUploads";
@@ -113,7 +113,7 @@ export function MusicView({ window, ctx }: ModuleProps<"music">) {
   return (
     <div className="music-player">
       <header className="music-now">
-        <div className="music-cover w98-sunken">{selected.cover ? <SafeImg src={selected.cover} alt={tr("music.coverAlt", { title: selected.title || tr("music.trackFallback") })} compact /> : <span aria-hidden="true">♫</span>}</div>
+        <div className="music-cover w98-sunken">{selected.cover ? <FallbackImage src={selected.cover} alt={tr("music.coverAlt", { title: selected.title || tr("music.trackFallback") })} compact /> : <span aria-hidden="true">♫</span>}</div>
         <div className="music-meta">
           <small>{window.content.playlist.title || tr("music.playlist")}</small>
           <strong>{selected.title || tr("music.untitledTrack")}</strong>
@@ -217,7 +217,7 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
   const trackTasks = (id: string) => tasks.filter((task) => task.scope === musicUploadScope(window.id, id));
   const orphanTasks = tasks.filter((task) => task.scope.startsWith(`window:${window.id}:music:`) && !tracks.some((track) => task.scope === musicUploadScope(window.id, track.id)));
   const cancelUpload = (id: string, field: MusicUploadField) => queue?.invalidate(tr("authoring.sourceChanged"), (entry) => entry.options.scope === musicUploadScope(window.id, id) && entry.options.slot === field);
-  const taskList = (id: string) => <UploadTaskList tasks={trackTasks(id)} onRetry={(taskId) => queue?.retry(taskId)} onDismiss={(taskId) => queue?.dismiss(taskId)} />;
+  const taskList = (id: string) => <UploadProgressList tasks={trackTasks(id)} onRetry={(taskId) => queue?.retry(taskId)} onDismiss={(taskId) => queue?.dismiss(taskId)} />;
   const playback = useMusicPlayback();
   const setTracks = (recipe: (tracks: MusicTrack[]) => MusicTrack[], key?: string) => update((current) => {
     const next = recipe(orderedTracks(current));
@@ -281,7 +281,7 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
           </button>;
         })}
       </div>
-      {orphanTasks.length ? <div className="music-orphan-tasks"><p>{tr("authoring.removedTrackUploads")}</p><UploadTaskList tasks={orphanTasks} onRetry={(id) => queue?.retry(id)} onDismiss={(id) => queue?.dismiss(id)} /></div> : null}
+      {orphanTasks.length ? <div className="music-orphan-tasks"><p>{tr("authoring.removedTrackUploads")}</p><UploadProgressList tasks={orphanTasks} onRetry={(id) => queue?.retry(id)} onDismiss={(id) => queue?.dismiss(id)} /></div> : null}
       {selected ? [selected].map((track) => {
         const index = tracks.findIndex((item) => item.id === track.id);
 
@@ -297,8 +297,8 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
             <legend>{index + 1}. {track.title || tr("music.untitledTrack")}</legend>
             {taskList(track.id)}
             <div className="music-editor-tools">
-              <MiniBtn label={tr("music.moveUp")} disabled={index === 0} onClick={() => setTracks((list) => moveById(list, track.id, -1))}>▲</MiniBtn>
-              <MiniBtn label={tr("music.moveDown")} disabled={index === tracks.length - 1} onClick={() => setTracks((list) => moveById(list, track.id, 1))}>▼</MiniBtn>
+              <CompactButton label={tr("music.moveUp")} disabled={index === 0} onClick={() => setTracks((list) => moveById(list, track.id, -1))}>▲</CompactButton>
+              <CompactButton label={tr("music.moveDown")} disabled={index === tracks.length - 1} onClick={() => setTracks((list) => moveById(list, track.id, 1))}>▼</CompactButton>
               <button type="button" className="mini-btn danger" onClick={() => removeTrack(track.id)}>{tr("music.delete")}</button>
             </div>
             <div className="music-editor-grid">
@@ -306,8 +306,8 @@ export function MusicInlineEditor({ window, ctx, update }: ModuleProps<"music">)
               <label><span>{tr("music.artist")}</span><input className="w98-input" value={track.artist} onChange={(event) => patchTrack(track.id, { artist: event.target.value }, `music-artist-${track.id}`)} /></label>
             </div>
             <div className="music-cover-editor">
-              <div className="music-cover small w98-sunken">{track.cover ? <SafeImg src={track.cover} alt="" compact /> : <span aria-hidden="true">♫</span>}</div>
-              <div className="music-cover-source"><FilePick className="w98-btn small" onFiles={(files) => files[0] && upload(track, files[0], "cover")}>{tr("music.uploadCover")}</FilePick><MusicCoverUrlField draftKey={`${window.id}:${track.id}`} drafts={coverDrafts.current} onEdit={() => cancelUpload(track.id, "cover")} raw={track.coverUrl} label={tr("music.coverImageUrl")} placeholder="https://…" onCommit={(raw, cover) => patchTrack(track.id, { coverUrl: raw, cover })} /></div>
+              <div className="music-cover small w98-sunken">{track.cover ? <FallbackImage src={track.cover} alt="" compact /> : <span aria-hidden="true">♫</span>}</div>
+              <div className="music-cover-source"><FileUploadButton className="w98-btn small" onFiles={(files) => files[0] && upload(track, files[0], "cover")}>{tr("music.uploadCover")}</FileUploadButton><MusicCoverUrlField draftKey={`${window.id}:${track.id}`} drafts={coverDrafts.current} onEdit={() => cancelUpload(track.id, "cover")} raw={track.coverUrl} label={tr("music.coverImageUrl")} placeholder="https://…" onCommit={(raw, cover) => patchTrack(track.id, { coverUrl: raw, cover })} /></div>
             </div>
 
             <TrackSourceField

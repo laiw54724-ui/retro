@@ -2,7 +2,7 @@ import { useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import type { IgPost } from "@retrodesk/shared";
 import { AvatarImage } from "../../../components/AvatarImage";
-import { SafeImg } from "../ui";
+import { FallbackImage } from "../ui";
 import { safeHref, type ModuleProps, type ProfileDirectoryPost } from "../types";
 import { igIcons } from "./igIcons";
 import { useIgSession } from "./useIgSession";
@@ -138,7 +138,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
           <button type="button" className="ig-icbtn" aria-label={tr("igPreview.moreOptions")} onClick={() => s.setSheetId(post.id)}><Ic bg={I.more} size={20} /></button>
         </div>
         <div className={`ig-media ph${single ? ` detail${currentMedia?.aspectRatio ? " has-ratio" : ""}` : ""}`} style={mediaStyle} onDoubleClick={() => { if (profile.allowLikes) s.doubleLike(post.id); }}>
-          {current ? <SafeImg src={current} alt={currentMedia?.alt || post.caption} style={imageStyle} /> : null}
+          {current ? <FallbackImage src={current} alt={currentMedia?.alt || post.caption} style={imageStyle} /> : null}
           {sources.length > 1 ? (
             <>
               <span className="ig-count">{index + 1}/{sources.length}</span>
@@ -199,7 +199,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
         return (
         <button key={h.id} type="button" className="ig-hl" onClick={() => s.openStory(storyIndex)}>
           <span className="ig-hl-ring" style={ring ? { background: ringBg } : { border: "2px solid #c7c7c7", background: "#fff" }}>
-            <span className="ig-hl-in ph" style={phStyle}>{h.src ? <SafeImg src={h.src} alt="" compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : null}</span>
+            <span className="ig-hl-in ph" style={phStyle}>{h.src ? <FallbackImage src={h.src} alt="" compact style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : null}</span>
           </span>
           <span className="ig-hl-title">{h.title}</span>
         </button>
@@ -393,7 +393,7 @@ export function IgPreview({ window, ctx }: Pick<ModuleProps<"instagram">, "windo
           <div className="ig-bars">{storyFrames.map((frame, i) => <span key={frame.id}><span style={{ width: i < s.story ? "100%" : i === s.story ? `${s.storyProgress}%` : "0%" }} /></span>)}</div>
           <div className="ig-story-head">{avatar(28)}<strong>{profile.username}</strong><span className="ig-story-title">{story.highlightTitle}{story.frameCount > 1 ? ` · ${story.frameIndex + 1}/${story.frameCount}` : ""}</span><button type="button" aria-label={s.storyPaused ? tr("igPreview.resumePlayback") : tr("igPreview.pausePlayback")} onClick={s.toggleStoryPause}>{s.storyPaused ? "▶" : "Ⅱ"}</button><button type="button" aria-label={tr("igPreview.close")} onClick={s.closeStory}>×</button></div>
           <div className="ig-story-body">
-            {story.src ? <SafeImg src={story.src} alt={story.alt || story.highlightTitle} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }} /> : <div className="ph" style={{ height: "100%", aspectRatio: "9 / 16", ...phStyle }} />}
+            {story.src ? <FallbackImage src={story.src} alt={story.alt || story.highlightTitle} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }} /> : <div className="ph" style={{ height: "100%", aspectRatio: "9 / 16", ...phStyle }} />}
             {story.text ? <div className="ig-story-text">{story.text}</div> : null}
             <button type="button" aria-label={tr("igPreview.previousStory")} className="ig-story-l" onClick={() => s.stepStory(-1)} />
             <button type="button" aria-label={tr("igPreview.nextStory")} className="ig-story-r" onClick={() => s.stepStory(1)} />

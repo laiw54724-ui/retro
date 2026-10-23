@@ -5,8 +5,8 @@ import { Icon } from "../../../components/Icon";
 import { BUILTIN_ICON_KEYS } from "../../../lib/icons";
 import { readableOn } from "../../../lib/themeView";
 import { restoreFocusUnlessMoved } from "../../../lib/restoreFocus";
-import { UploadTaskList, useWindowMedia } from "../../media/editorMedia";
-import { FilePick, ImageUrlField, MiniBtn } from "../ui";
+import { UploadProgressList, useWindowMedia } from "../../media/editorMedia";
+import { FileUploadButton, ImageUrlInput, CompactButton } from "../ui";
 import { moveById, patchById, type ModuleProps } from "../types";
 import { describeIcon, IconPickerAction } from "./IconPicker";
 import { linkDestinationSummary } from "./linkDestinationSummary";
@@ -146,22 +146,22 @@ function Editor({ window, ctx, update }: ModuleProps<"links">) {
               <span aria-hidden="true">{link.target === "window" ? "▸" : "↗"}</span>
               <button type="button" className="link-color-trigger" style={{ borderColor: fg }} aria-label={t("links.inline.changeColor")} aria-expanded={open === "color"} onClick={(event) => toggle(link.id, "color", event.currentTarget)} />
             </div>
-            <MiniBtn label={t("links.delete")} className="mini-btn link-delete" danger onClick={() => {
+            <CompactButton label={t("links.delete")} className="mini-btn link-delete" danger onClick={() => {
               const neighbor = links[index + 1] ?? links[index - 1];
               media.cancel(`icon:${link.id}`); setLinks((list) => list.filter((item) => item.id !== link.id)); setPanel(null);
               restoreFocusUnlessMoved(() => Array.from(root.current?.querySelectorAll<HTMLElement>("[data-link-id]") ?? []).find((row) => row.dataset.linkId === neighbor?.id)?.querySelector<HTMLInputElement>(".link-input") ?? root.current?.querySelector<HTMLInputElement>(".link-paste-input"));
-            }}>×</MiniBtn>
+            }}>×</CompactButton>
           </div>
           {!link.label.trim() ? <p className="link-destination is-problem">{t("links.enterTheButtonTextSo")}</p> : null}
           <button type="button" className={`link-destination-trigger${destination.state !== "ready" ? " is-problem" : ""}`} title={destination.summary} aria-label={t("links.settingsForLink", { v1: link.label || index + 1 })} aria-expanded={open === "destination"} onClick={(event) => toggle(link.id, "destination", event.currentTarget)}><span aria-hidden="true">{destination.state !== "ready" ? "⚠" : link.target === "window" ? "▸" : "↗"}</span><span>{destination.summary}</span><span aria-hidden="true">▾</span></button>
           {open === "order" ? <div className="link-inline-panel link-order-panel" role="group" aria-label={t("links.inline.reorder")}>
-            <MiniBtn label={t("document.moveUp")} disabled={index === 0} onClick={() => setLinks((list) => moveById(list, link.id, -1))}>{t("document.moveUp")}</MiniBtn>
-            <MiniBtn label={t("document.moveDown")} disabled={index === links.length - 1} onClick={() => setLinks((list) => moveById(list, link.id, 1))}>{t("document.moveDown")}</MiniBtn>
+            <CompactButton label={t("document.moveUp")} disabled={index === 0} onClick={() => setLinks((list) => moveById(list, link.id, -1))}>{t("document.moveUp")}</CompactButton>
+            <CompactButton label={t("document.moveDown")} disabled={index === links.length - 1} onClick={() => setLinks((list) => moveById(list, link.id, 1))}>{t("document.moveDown")}</CompactButton>
           </div> : null}
           {open === "icon" ? <div className="link-inline-panel" aria-label={t("iconPicker.chooseAnIcon")}>
             <div className="link-icon-grid">{BUILTIN_ICON_KEYS.map((icon) => <button type="button" key={icon} aria-label={describeIcon(icon)} aria-pressed={link.icon === icon} onClick={() => { setIcon(link, icon); close(); }}><Icon name={icon} size={24} /></button>)}</div>
-            <FilePick onFiles={(files) => uploadIcon(link, files[0])}>{t("iconPicker.uploadOne")}</FilePick>
-            <ImageUrlField key={link.id} onEdit={() => media.cancel(`icon:${link.id}`)} raw={link.iconUrl} label={t("iconPicker.iconUrl")} placeholder={t("iconPicker.orPasteAnIconUrl")} onCommit={(raw, src) => setIcon(link, src || "link", raw)} />
+            <FileUploadButton onFiles={(files) => uploadIcon(link, files[0])}>{t("iconPicker.uploadOne")}</FileUploadButton>
+            <ImageUrlInput key={link.id} onEdit={() => media.cancel(`icon:${link.id}`)} raw={link.iconUrl} label={t("iconPicker.iconUrl")} placeholder={t("iconPicker.orPasteAnIconUrl")} onCommit={(raw, src) => setIcon(link, src || "link", raw)} />
             <div onClickCapture={() => media.cancel(`icon:${link.id}`)}><IconPickerAction text={t("links.inline.fullLibrary")} siteId={ctx.siteId} value={link.icon} upload={ctx.upload} mediaTarget={{ windowId: window.id, windowType: "links", itemId: link.id }} label={link.label} defaultValue="link" onChange={(value) => setIcon(link, value, value.startsWith("http") ? value : "")} /></div>
           </div> : null}
           {open === "color" ? <div className="link-inline-panel link-colors"><span>{t("links.inline.colorHint")}</span>{COLORS.map((color) => <button key={color} type="button" className="swatch" aria-label={t("links.color", { color })} aria-pressed={link.color.toLowerCase() === color} style={{ background: color }} onClick={() => patch(link.id, { color })} />)}<label>{t("links.customColor")}<input type="color" value={link.color} aria-label={t("links.customColor")} onChange={(event) => patch(link.id, { color: event.target.value }, `color:${link.id}`)} /></label></div> : null}
@@ -169,10 +169,10 @@ function Editor({ window, ctx, update }: ModuleProps<"links">) {
         </div>;
       })}
       <button type="button" className="ie-add link-add-blank" disabled={links.length >= 100} data-drop={over?.id === "end" || undefined} onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); add(true); }} onDragOver={(event) => { if (dragId) { event.preventDefault(); setOver({ id: "end", after: true }); } }} onDrop={(event) => { if (dragId) { event.preventDefault(); move(null, true); resetDrag(); } }}>{t("links.inline.blank")}</button>
-      <UploadTaskList tasks={media.tasks} onRetry={media.retry} onDismiss={media.dismiss} />
+      <UploadProgressList tasks={media.tasks} onRetry={media.retry} onDismiss={media.dismiss} />
     </div>
     <div className="link-status"><span title={t("links.inline.hint")} role="status">{dragId ? t("links.inline.dragHint") : missing ? t("links.inline.missing", { count: missing }) : t("links.inline.hint")}</span><span>{t("links.inline.count", { count: links.length })}</span></div>
-    {error ? <div role="alert" className="link-error"><span>{error}</span><MiniBtn label={t("iconPicker.cancel")} onClick={() => setError("")}>×</MiniBtn></div> : null}
+    {error ? <div role="alert" className="link-error"><span>{error}</span><CompactButton label={t("iconPicker.cancel")} onClick={() => setError("")}>×</CompactButton></div> : null}
   </div>;
 }
 
@@ -190,6 +190,6 @@ function DestinationPanel({ link, windows, onApply, onClose }: { link: LinkItem;
     </div>
     {target === "url" ? <input className="ie" value={url} maxLength={2048} aria-label={t("document.linkUrl")} aria-invalid={invalid} placeholder="https:// / mailto:" onChange={(event) => setUrl(event.target.value)} /> : <div className="link-window-options">{windows.length ? windows.map((item) => <button type="button" key={item.id} aria-pressed={item.id === windowId} onClick={() => setWindowId(item.id)}>{item.id === windowId ? "✓ " : ""}{item.title}</button>) : <span>{t("links.inline.noWindows")}</span>}</div>}
     {invalid ? <span role="alert" className="ie-error">{t("document.enterAFullHttpHttps")}</span> : null}
-    <div className="link-panel-actions"><MiniBtn label={t("iconPicker.cancel")} onClick={onClose}>{t("iconPicker.cancel")}</MiniBtn><MiniBtn label={t("links.inline.done")} disabled={invalid} onClick={() => onApply({ target, url: target === "url" ? url.trim() : link.url, windowId })}>{t("links.inline.done")}</MiniBtn></div>
+    <div className="link-panel-actions"><CompactButton label={t("iconPicker.cancel")} onClick={onClose}>{t("iconPicker.cancel")}</CompactButton><CompactButton label={t("links.inline.done")} disabled={invalid} onClick={() => onApply({ target, url: target === "url" ? url.trim() : link.url, windowId })}>{t("links.inline.done")}</CompactButton></div>
   </div>;
 }

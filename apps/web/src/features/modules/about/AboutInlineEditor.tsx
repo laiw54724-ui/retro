@@ -3,8 +3,8 @@ import type { ParseKeys } from "i18next";
 import { useTranslation } from "react-i18next";
 import { AvatarImage } from "../../../components/AvatarImage";
 import { CropEditor } from "../../editor/CropEditor";
-import { useWindowMedia, UploadTaskList } from "../../media/editorMedia";
-import { FilePick, ImageUrlField, MiniBtn } from "../ui";
+import { useWindowMedia, UploadProgressList } from "../../media/editorMedia";
+import { FileUploadButton, ImageUrlInput, CompactButton } from "../ui";
 import { safeHref, type ModuleProps } from "../types";
 import { normalizeSocial, reorderFields } from "./inlineModel";
 
@@ -123,7 +123,7 @@ function AboutCardEditor({ window, ctx, update }: ModuleProps<"about">) {
               <input className="about-direct about-social-name" value={social.label} size={Math.min(24, Math.max(4, social.label.length + 1))} maxLength={100} aria-label={tr("about.socialName")} onChange={event => { const value = event.currentTarget.value; setSocials(list => list.map(item => item.id === social.id ? { ...item, label: value } : item), `social:${social.id}:label`); }} />
               <span className="about-social-tools">
                 <input className="about-direct about-social-url" value={social.url} maxLength={2048} placeholder="https://" aria-label={tr("about.socialUrl")} aria-invalid={invalid} aria-describedby={`${feedbackPrefix}-${index}`} onChange={event => { const value = event.currentTarget.value; setSocials(list => list.map(item => item.id === social.id ? { ...item, url: value } : item), `social:${social.id}:url`); }} />
-                <MiniBtn label={tr("about.deleteSocialLink")} danger onClick={() => { pendingAddFocus.current = "social"; setSocials(list => list.filter(item => item.id !== social.id)); }}>×</MiniBtn>
+                <CompactButton label={tr("about.deleteSocialLink")} danger onClick={() => { pendingAddFocus.current = "social"; setSocials(list => list.filter(item => item.id !== social.id)); }}>×</CompactButton>
                 {invalid ? <span id={`${feedbackPrefix}-${index}`} className="ie-error">{tr("document.enterAFullHttpHttps")}</span> : null}
               </span>
             </span>;
@@ -141,14 +141,14 @@ function AboutCardEditor({ window, ctx, update }: ModuleProps<"about">) {
               <button ref={avatarButton} type="button" className="mini-btn wide about-avatar-toggle" aria-expanded={avatarOpen} onMouseDown={event => { if (avatarOpen) event.preventDefault(); }} onClick={event => { if (avatarOpen) closeAvatar(); else { event.currentTarget.focus({ preventScroll: true }); setAvatarOpen(true); } }}>{content.avatar ? tr("about.changeAvatar") : tr("about.uploadAvatar")}</button>
             </div>
             {avatarOpen ? <div className="about-avatar-panel" role="group" aria-label={tr("about.avatarSettings")} style={{ background: tv.face, boxShadow: tv.bevel }} onKeyDown={event => { if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); closeAvatar(); } }}>
-              <FilePick onFiles={files => uploadAvatar(files[0])}>{content.avatar ? tr("about.changeAvatar") : tr("about.uploadAvatar")}</FilePick>
-              <ImageUrlField visibleLabel onEdit={() => media.cancel("avatar")} raw={content.avatarUrl} label={tr("about.avatarUrl")} placeholder={tr("about.orPasteAnAvatarUrl")} onCommit={(raw, src) => { media.cancel("avatar"); setCropping(false); patch({ avatarUrl: raw, avatar: src, avatarCrop: undefined }); }} />
+              <FileUploadButton onFiles={files => uploadAvatar(files[0])}>{content.avatar ? tr("about.changeAvatar") : tr("about.uploadAvatar")}</FileUploadButton>
+              <ImageUrlInput visibleLabel onEdit={() => media.cancel("avatar")} raw={content.avatarUrl} label={tr("about.avatarUrl")} placeholder={tr("about.orPasteAnAvatarUrl")} onCommit={(raw, src) => { media.cancel("avatar"); setCropping(false); patch({ avatarUrl: raw, avatar: src, avatarCrop: undefined }); }} />
               {content.avatar ? <>
-                <MiniBtn label={tr("about.adjustPosition")} className="mini-btn wide" aria-pressed={cropping} onClick={() => setCropping(!cropping)}>{tr("about.adjustPosition")}</MiniBtn>
-                <MiniBtn label={tr("about.removeAvatar")} className="mini-btn wide danger" onMouseDown={event => event.preventDefault()} onClick={() => { media.cancel("avatar"); patch({ avatar: null, avatarUrl: "", avatarCrop: undefined }); closeAvatar(); }}>{tr("about.removeAvatar")}</MiniBtn>
+                <CompactButton label={tr("about.adjustPosition")} className="mini-btn wide" aria-pressed={cropping} onClick={() => setCropping(!cropping)}>{tr("about.adjustPosition")}</CompactButton>
+                <CompactButton label={tr("about.removeAvatar")} className="mini-btn wide danger" onMouseDown={event => event.preventDefault()} onClick={() => { media.cancel("avatar"); patch({ avatar: null, avatarUrl: "", avatarCrop: undefined }); closeAvatar(); }}>{tr("about.removeAvatar")}</CompactButton>
               </> : null}
               {cropping && content.avatar ? <CropEditor key={content.avatar} src={content.avatar} crop={content.avatarCrop} onChange={avatarCrop => { media.cancel("avatar"); patch({ avatarCrop }, "avatar-crop"); }} /> : null}
-              <MiniBtn label={text("close", "iconPicker.cancel")} className="mini-btn wide" onMouseDown={event => event.preventDefault()} onClick={closeAvatar}>{text("close", "iconPicker.cancel")}</MiniBtn>
+              <CompactButton label={text("close", "iconPicker.cancel")} className="mini-btn wide" onMouseDown={event => event.preventDefault()} onClick={closeAvatar}>{text("close", "iconPicker.cancel")}</CompactButton>
             </div> : null}
           </div>
           <div className="about-info">
@@ -162,7 +162,7 @@ function AboutCardEditor({ window, ctx, update }: ModuleProps<"about">) {
                 <span>: </span>
                 <textarea rows={1} ref={element => { if (element) fieldValues.current.set(field.id, element); else fieldValues.current.delete(field.id); }} className="about-direct about-field-value" value={field.value} maxLength={500} aria-label={tr("about.fieldContent")} placeholder={tr("about.content")} onChange={event => { const value = event.currentTarget.value; setFields(list => list.map(item => item.id === field.id ? { ...item, value } : item), `field:${field.id}:value`); }} onKeyDown={event => { if (enter(event) && !event.shiftKey) { event.preventDefault(); newFieldInput.current?.focus(); } }} />
               </div>
-              <MiniBtn label={tr("about.deleteField")} danger onClick={() => { pendingAddFocus.current = "field"; setFields(list => list.filter(item => item.id !== field.id)); }}>×</MiniBtn>
+              <CompactButton label={tr("about.deleteField")} danger onClick={() => { pendingAddFocus.current = "field"; setFields(list => list.filter(item => item.id !== field.id)); }}>×</CompactButton>
             </div>)}
             <div className="about-field-add" data-drop={over?.id === null ? "before" : undefined} onDragOver={event => { if (dragId) { event.preventDefault(); setOver({ id: null, after: true }); } }} onDrop={event => { if (dragId) { event.preventDefault(); drop(null); } }}>
               <input ref={newFieldInput} className="about-direct" value={newField} maxLength={100} disabled={content.fields.length >= 50} aria-label={tr("about.addField")} placeholder={text("addField", "about.addField")} onChange={event => setNewField(event.currentTarget.value)} onKeyDown={event => { if (enter(event)) { event.preventDefault(); addField(); } }} />
@@ -177,9 +177,9 @@ function AboutCardEditor({ window, ctx, update }: ModuleProps<"about">) {
           <div className="about-bar" style={{ boxShadow: tv.sunken }}><span>‹</span><input className="about-direct about-nickname" value={content.nickname} maxLength={160} aria-label={tr("about.nickname")} onChange={event => patch({ nickname: event.currentTarget.value }, "nickname")} /><span className="about-time">{new Date().toTimeString().slice(0, 5)}</span></div>
           <div className="about-banner" data-empty={!content.banner || undefined}><textarea rows={1} className="about-direct" value={content.banner} maxLength={500} placeholder={text("addBanner", "about.bannerTextOptional")} aria-label={tr("about.bannerText")} onChange={event => patch({ banner: event.currentTarget.value }, "banner")} /></div>
         </div>
-        <UploadTaskList tasks={media.tasks} onRetry={media.retry} onDismiss={media.dismiss} />
+        <UploadProgressList tasks={media.tasks} onRetry={media.retry} onDismiss={media.dismiss} />
       </div>
-      {error ? <div className="about-inline-error" role="alert"><span>{error}</span><MiniBtn label={text("close", "iconPicker.cancel")} onClick={() => setError("")}>×</MiniBtn></div> : null}
+      {error ? <div className="about-inline-error" role="alert"><span>{error}</span><CompactButton label={text("close", "iconPicker.cancel")} onClick={() => setError("")}>×</CompactButton></div> : null}
       <div className="about-editor-status" style={{ boxShadow: tv.sunken }} role="status">{status}</div>
     </div>
   );
