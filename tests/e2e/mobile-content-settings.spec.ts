@@ -108,6 +108,7 @@ test("settings return preserves the mounted IG editor and its unfinished Handle"
   const backend = await openEditor(page, "instagram");
   await page.locator(".m-icon").tap();
   await page.getByRole("button", { name: "編輯內容", exact: true }).tap();
+  await page.getByRole("region", { name: "Instagram 角色編輯視窗", exact: true }).getByRole("button", { name: "編輯個人檔案", exact: true }).tap();
   const handle = page.getByRole("textbox", { name: "Handle", exact: true });
   await handle.fill("");
   const node = await handle.elementHandle();
