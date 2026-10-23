@@ -11,6 +11,7 @@ export function LongPressReorderGrid<T extends Item>({ items, columns, arranging
   const [draft, setDraft] = useState<string[] | null>(null), [ghost, setGhost] = useState<{ id: string; x: number; y: number } | null>(null), [announcement, setAnnouncement] = useState("");
   const suppressClick = useRef(false);
   const cancel = () => { clearTimeout(timer.current); const p=gesture.current; gesture.current=null; setDraft(null); setGhost(null); if (p?.node.hasPointerCapture(p.pointerId)) p.node.releasePointerCapture(p.pointerId); };
+  useEffect(() => { if(!arranging)cancel(); }, [arranging]);
   const signature = items.map(item=>item.id).join("|");
   useEffect(() => { cancel(); return cancel; }, [signature, revision]);
   const move = (e: Pick<PointerEvent, "pointerId" | "clientX" | "clientY">) => {
@@ -37,9 +38,10 @@ export function LongPressReorderGrid<T extends Item>({ items, columns, arranging
   };
   const handlers = useRef({ move, release, cancel }); handlers.current = { move, release, cancel };
   useEffect(() => {
+    const onKey = (event: globalThis.KeyboardEvent) => { if(event.key === "Escape" && !event.isComposing && gesture.current)handlers.current.cancel(); };
     const onMove = (event: globalThis.PointerEvent) => handlers.current.move(event), onUp = (event: globalThis.PointerEvent) => handlers.current.release(event), onCancel = () => handlers.current.cancel();
-    globalThis.addEventListener("pointermove", onMove); globalThis.addEventListener("pointerup", onUp); globalThis.addEventListener("pointercancel", onCancel); globalThis.addEventListener("blur", onCancel);
-    return () => { globalThis.removeEventListener("pointermove", onMove); globalThis.removeEventListener("pointerup", onUp); globalThis.removeEventListener("pointercancel", onCancel); globalThis.removeEventListener("blur", onCancel); };
+    globalThis.addEventListener("keydown", onKey, true); globalThis.addEventListener("pointermove", onMove); globalThis.addEventListener("pointerup", onUp); globalThis.addEventListener("pointercancel", onCancel); globalThis.addEventListener("blur", onCancel);
+    return () => { globalThis.removeEventListener("keydown", onKey, true); globalThis.removeEventListener("pointermove", onMove); globalThis.removeEventListener("pointerup", onUp); globalThis.removeEventListener("pointercancel", onCancel); globalThis.removeEventListener("blur", onCancel); };
   }, []);
   const ordered=(draft??items.map(x=>x.id)).map(id=>items.find(item=>item.id===id)).filter((x):x is T=>!!x);
   const ghostItem=items.find(item=>item.id===ghost?.id);
