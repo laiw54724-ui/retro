@@ -582,7 +582,26 @@
     "reports": "신고 {{count}}",
     "pending": "검토 대기",
     "public": "공개됨",
-    "rejected": "거부됨"
+    "rejected": "거부됨",
+    "queue": {
+      "published": "공개됨: {{count}}",
+      "hidden": "숨김: {{count}}",
+      "resolved": "처리한 신고: {{count}}",
+      "deleted": "제거됨: {{count}}. 5초 이내에 복원할 수 있습니다.",
+      "open": "열림",
+      "closed": "닫힘",
+      "introPlaceholder": "방문자 메시지 양식 위에 안내 추가",
+      "selectAll": "이 페이지 전체 선택",
+      "selected": "선택: {{count}}",
+      "publishAll": "선택한 항목 공개",
+      "hideAll": "선택한 항목 숨기기",
+      "pendingEmpty": "모두 처리했습니다",
+      "reportedEmpty": "미처리 신고가 없습니다",
+      "pendingHint": "새 메시지는 공개 전 검토를 위해 여기에 표시됩니다.",
+      "selectEntry": "{{name}} 선택",
+      "total": "메시지: {{count}}",
+      "keyboardHint": "A 공개 · H 숨기기 · R 신고 처리 · Delete 삭제 · ↑↓ / J K 이동 · Space 선택"
+    }
   },
   "minesweeper": {
     "difficulties": "자주 쓰는 난이도",

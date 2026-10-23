@@ -582,7 +582,26 @@
     "reports": "Reports {{count}}",
     "pending": "Pending",
     "public": "Public",
-    "rejected": "Rejected"
+    "rejected": "Rejected",
+    "queue": {
+      "published": "Published: {{count}}",
+      "hidden": "Hidden: {{count}}",
+      "resolved": "Reports resolved: {{count}}",
+      "deleted": "Removed: {{count}}. Undo within 5 seconds.",
+      "open": "Open",
+      "closed": "Closed",
+      "introPlaceholder": "Add a note above the visitor message form",
+      "selectAll": "Select this page",
+      "selected": "Selected: {{count}}",
+      "publishAll": "Publish selected",
+      "hideAll": "Hide selected",
+      "pendingEmpty": "All caught up",
+      "reportedEmpty": "No open reports",
+      "pendingHint": "New messages appear here for review before publication.",
+      "selectEntry": "Select {{name}}",
+      "total": "Messages: {{count}}",
+      "keyboardHint": "A publish · H hide · R resolve report · Delete remove · ↑↓ / J K move · Space select"
+    }
   },
   "minesweeper": {
     "difficulties": "Common difficulties",

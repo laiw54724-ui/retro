@@ -582,7 +582,26 @@
     "reports": "報告 {{count}}",
     "pending": "承認待ち",
     "public": "公開中",
-    "rejected": "拒否済み"
+    "rejected": "拒否済み",
+    "queue": {
+      "published": "公開しました：{{count}}",
+      "hidden": "非表示にしました：{{count}}",
+      "resolved": "対応済みの報告：{{count}}",
+      "deleted": "取り除きました：{{count}}。5秒以内なら元に戻せます。",
+      "open": "受付中",
+      "closed": "受付停止",
+      "introPlaceholder": "訪問者のメッセージフォームの上に案内を追加",
+      "selectAll": "このページを全選択",
+      "selected": "選択：{{count}}",
+      "publishAll": "選択した項目を公開",
+      "hideAll": "選択した項目を非表示",
+      "pendingEmpty": "すべて確認しました",
+      "reportedEmpty": "未対応の報告はありません",
+      "pendingHint": "新しいメッセージは公開前の確認のためにここに表示されます。",
+      "selectEntry": "{{name}} を選択",
+      "total": "メッセージ：{{count}}",
+      "keyboardHint": "A 公開 · H 非表示 · R 報告対応 · Delete 削除 · ↑↓ / J K 移動 · Space 選択"
+    }
   },
   "minesweeper": {
     "difficulties": "よく使う難易度",

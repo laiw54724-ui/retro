@@ -582,7 +582,26 @@
     "reports": "檢舉 {{count}}",
     "pending": "待審",
     "public": "已公開",
-    "rejected": "已拒絕"
+    "rejected": "已拒絕",
+    "queue": {
+      "published": "已公開 {{count}} 則留言",
+      "hidden": "已隱藏 {{count}} 則留言",
+      "resolved": "已處理 {{count}} 則留言的檢舉",
+      "deleted": "已移除 {{count}} 則留言，5 秒內可復原。",
+      "open": "開放中",
+      "closed": "已關閉",
+      "introPlaceholder": "＋ 寫一句給訪客的話（會顯示在留言表單上方）",
+      "selectAll": "全選這一頁",
+      "selected": "已勾 {{count}} 則",
+      "publishAll": "全部公開",
+      "hideAll": "全部隱藏",
+      "pendingEmpty": "全部處理完了 ✓",
+      "reportedEmpty": "沒有被檢舉的留言",
+      "pendingHint": "新留言進來會出現在這裡，審核後才會公開。",
+      "selectEntry": "勾選 {{name}}",
+      "total": "{{count}} 則留言",
+      "keyboardHint": "A 公開 · H 隱藏 · R 處理檢舉 · Delete 刪除 · ↑↓ / J K 切換 · 空白鍵勾選"
+    }
   },
   "minesweeper": {
     "difficulties": "常用難度",
