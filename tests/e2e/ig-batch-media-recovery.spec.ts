@@ -28,7 +28,9 @@ async function open(page: Page, width = 1400) {
   });
   await page.setViewportSize({ width, height: 950 }); await page.goto("/editor/site-1");
   if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯內容" }).click(); }
-  const win = page.getByRole("dialog", { name: "Instagram.exe", exact: true }); await expect(win.getByRole("textbox", { name: "Handle", exact: true })).toBeVisible();
+  const win = page.getByRole("dialog", { name: "Instagram.exe", exact: true });
+  await win.getByRole("button", { name: "編輯個人檔案", exact: true }).click();
+  await expect(win.getByRole("textbox", { name: "Handle", exact: true })).toBeVisible();
   await win.getByRole("tab", { name: "貼文", exact: true }).click();
   const posts = win.locator(".ig-canonical-posts");
   return { win, posts, calls, assets, saved: () => saved, post: (title: string) => saved.entities.posts.find((post) => post.title === title)!, src: (name: string) => assets.find((asset) => asset.name === name)!.url,
@@ -62,7 +64,7 @@ test("partial post batch keeps successes and newer edits; retry fills selection 
   expect(media.map((item) => item.src)).toEqual([s.src("fail-b.png"), "https://assets.test/newer.png", s.src("d.png"), s.src("e.png")]);
   expect(media[1]).toMatchObject({ id: beforeIds[1], alt: "newer alt" }); expect(media.some((item) => item.id === beforeIds[0])).toBe(false);
   expect(s.calls).toEqual(["a.png", "fail-b.png", "held-c.png", "d.png", "e.png", "fail-b.png"]);
-  await page.reload(); await s.win.getByRole("tab", { name: "貼文", exact: true }).click(); await expect(s.posts.locator("[data-ig-edit]").filter({ hasText: "Edited during upload" })).toBeVisible();
+  await page.reload(); await s.win.getByRole("button", { name: "編輯個人檔案", exact: true }).click(); await s.win.getByRole("tab", { name: "貼文", exact: true }).click(); await expect(s.posts.locator("[data-ig-edit]").filter({ hasText: "Edited during upload" })).toBeVisible();
   expect(s.post("Edited during upload").media).toEqual(media);
 });
 

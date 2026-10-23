@@ -518,6 +518,7 @@ test("deleting a post that shortcuts point at lists them, removes only those on 
   const { saves } = await openEditor(page, document as unknown as SiteDocument);
   const ig = page.getByRole("dialog", { name: "Instagram.exe" });
   await ig.getByRole("tab", { name: "編輯" }).click();
+  await ig.getByRole("button", { name: "編輯個人檔案", exact: true }).click();
   await ig.getByRole("tablist", { name: "OC 編輯分組" }).getByRole("tab", { name: "貼文", exact: true }).click(); // #57 groups the editor into sections
   await ig.getByRole("button", { name: "刪除貼文" }).first().click();
   const confirm = page.getByRole("dialog", { name: "這項刪除會影響 1 個捷徑" });

@@ -43,6 +43,7 @@ async function fixture(page: Page, width: number) {
   const enter = async () => {
     await page.getByRole("button", { name: "Instagram.exe", exact: true }).click();
     await page.locator(".m-edit-toggle").click();
+    await page.getByRole("dialog", { name: "Instagram.exe", exact: true }).getByRole("button", { name: "編輯個人檔案", exact: true }).click();
   };
   await enter();
   const win = page.getByRole("dialog", { name: "Instagram.exe", exact: true });
@@ -90,6 +91,7 @@ for (const width of [320, 375, 390, 430]) test(`combined IG draft survives phone
   await page.locator(".m-edit-toggle").click();
   await expect(page.locator(".save-text")).toHaveText("有欄位未完成，暫不儲存");
   await page.locator(".m-edit-toggle").click();
+  await s.win.getByRole("button", { name: "編輯個人檔案", exact: true }).click();
   await s.win.getByRole("button", { name: "管理貼文", exact: true }).click();
   await item.click();
   await expect(pending).toHaveValue("https:");

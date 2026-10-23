@@ -21,6 +21,7 @@ async function openEditor(page: Page, width = 1400) {
   await page.goto("/editor/site-1");
   if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯內容" }).click(); }
   const win = page.getByRole("dialog", { name: "Instagram.exe", exact: true });
+  await win.getByRole("button", { name: "編輯個人檔案", exact: true }).click();
   await expect(win.getByRole("textbox", { name: "Handle", exact: true })).toBeVisible();
   return { win, saved: () => saved, profile: () => saved.entities.profiles[0], saves: () => saves };
 }
@@ -55,6 +56,7 @@ for (const width of [1400, 390]) {
     await page.screenshot({ path: testInfo.outputPath(`identity-${width}.png`) });
     await page.reload();
     if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯內容" }).click(); }
+    await win.getByRole("button", { name: "編輯個人檔案", exact: true }).click();
     await expect(identity(win)).toHaveValue("new-name");
     await expect(nameField(win)).toHaveValue("New Display Name");
   });

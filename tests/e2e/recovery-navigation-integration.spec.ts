@@ -37,6 +37,8 @@ async function owner(page: Page, held: boolean) {
   await page.setViewportSize({ width: 1400, height: 950 });
   await page.goto("/auth"); await page.locator('a[href="/editor/site-1"]').click();
   const win = page.getByRole("dialog", { name: "Instagram.exe", exact: true });
+  // Keyboard entry isolates media/history from a pointer's separate window-raise edit.
+  await win.getByRole("button", { name: "編輯個人檔案", exact: true }).press("Enter");
   await expect(win.getByRole("textbox", { name: "Handle", exact: true })).toBeVisible();
   return { win, baseline, saved: () => saved, saves: () => saves, uploads: () => uploads, release: () => { release?.(); release = undefined; } };
 }
@@ -78,6 +80,7 @@ test("cancelled avatar upload cannot change a Links preview snapshot or dirty hi
     await page.setViewportSize({ width: 1400, height: 950 });
     await page.getByRole("button", { name: "桌面版", exact: true }).click();
     // Responsive editor remounts need not retain a module-local input buffer.
+    await state.win.getByRole("button", { name: "編輯個人檔案", exact: true }).press("Enter");
     await expect(state.win.getByRole("textbox", { name: "頭像網址", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "復原", exact: true })).toBeDisabled();
     // Observe one full autosave debounce after late transport and visitor actions.

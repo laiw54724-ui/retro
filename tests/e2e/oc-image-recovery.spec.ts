@@ -31,6 +31,7 @@ async function open(page: Page, width = 1400) {
   await page.setViewportSize({ width, height: 950 }); await page.goto("/editor/site-1");
   if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯內容" }).click(); }
   const win = page.getByRole("dialog", { name: "Instagram.exe", exact: true });
+  await win.getByRole("button", { name: "編輯個人檔案", exact: true }).click();
   await expect(win.getByRole("textbox", { name: "Handle", exact: true })).toBeVisible();
   return { win, calls, assets, saved: () => saved, profile: (id = "profile:ig") => saved.entities.profiles.find((p) => p.id === id)!, release: (name: string) => { const done = held.get(name); if (!done) throw new Error("not held"); held.delete(name); done(); } };
 }
@@ -48,7 +49,7 @@ test("URL typing cancels an older upload before blur; invalid input stays local 
   await avatar(s.win).press("Enter"); await expect(avatar(s.win)).toHaveAttribute("aria-invalid", "true");
   await avatar(s.win).fill("https://assets.test/new.png"); await avatar(s.win).press("Enter");
   await expect.poll(() => s.profile().avatar).toBe("https://assets.test/new.png");
-  await page.reload(); await expect(avatar(s.win)).toHaveValue("https://assets.test/new.png");
+  await page.reload(); await s.win.getByRole("button", { name: "編輯個人檔案", exact: true }).click(); await expect(avatar(s.win)).toHaveValue("https://assets.test/new.png");
 });
 
 test("repeated file choice supersedes old work; failure retries only once and remove persists", async ({ page }) => {
@@ -64,7 +65,7 @@ test("repeated file choice supersedes old work; failure retries only once and re
   const latest = s.profile().avatar; s.release("held-old.png"); await expect.poll(() => s.assets.length).toBe(3);
   expect(s.profile().avatar).toBe(latest);
   await s.win.getByRole("button", { name: "移除頭像", exact: true }).click(); await expect.poll(() => s.profile().avatar).toBeNull();
-  await page.reload(); await expect(avatar(s.win)).toHaveValue(""); await expect(s.win.getByRole("button", { name: "移除頭像", exact: true })).toHaveCount(0);
+  await page.reload(); await s.win.getByRole("button", { name: "編輯個人檔案", exact: true }).click(); await expect(avatar(s.win)).toHaveValue(""); await expect(s.win.getByRole("button", { name: "移除頭像", exact: true })).toHaveCount(0);
 });
 
 test("explicit cancellation keeps the source and does not offer stale retry", async ({ page }) => {
