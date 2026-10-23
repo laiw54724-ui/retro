@@ -22,6 +22,7 @@ for (const locale of Object.keys(catalogs) as Array<keyof typeof catalogs>) for 
     const legacy = createStarterDocument("Gap editors", "classic98", "blank");
     legacy.windows = (["instagram", "character-dialog", "guestbook"] as const).map((type, index) => {
       const win = makeWindow(type, index); win.id = type; win.title = `${type}.exe`; win.defaultOpen = true;
+      if(type==="instagram")win.chrome={showIcon:false};
       win.layout.desktop = { ...win.layout.desktop, x: 20, y: 20, w: 500, h: 600 };
       return win;
     });
@@ -47,6 +48,7 @@ for (const locale of Object.keys(catalogs) as Array<keyof typeof catalogs>) for 
         await page.getByRole("menuitem", { name: `${type}.exe`, exact: true }).click();
       }
       const win = page.getByRole("dialog", { name: `${type}.exe`, exact: true });
+      if(width<768&&type==="instagram")await expect(win.locator(".m-inline-titlebar .w98-icon")).toHaveCount(0);
       if (type === "instagram") {
         const app = win.getByRole("region", { name: igText.inlineApp.authoringApp, exact: true });
         await expect(app.locator(".ig-app")).toBeVisible();

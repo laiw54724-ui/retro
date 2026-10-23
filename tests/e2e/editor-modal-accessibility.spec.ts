@@ -234,7 +234,7 @@ for (const width of [390, 1280]) {
     if (width === 390) {
       // An edit after cancel remains local: dismissing recovery must not clear the conflict pause.
       await page.locator(".m-icon").getByText("Notes.exe").click();
-      const title=page.getByRole("dialog",{name:"Notes.exe",exact:true}).getByRole("textbox",{name:"視窗標題",exact:true});
+      const title=page.locator(".m-inline-titlebar").getByRole("textbox",{name:"視窗標題",exact:true});
       await title.fill("Retained local Notes.exe");await title.press("Enter");
       await editTrigger(page).click();
       await editDialog(page).getByRole("button", { name: "關閉", exact: true }).click();
