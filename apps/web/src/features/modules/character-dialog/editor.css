@@ -64,3 +64,7 @@
 .character-message-editor[data-mobile] .character-message-input { font-size:15px; }
 .character-message-editor[data-mobile] .character-popup .character-button-input,.character-message-editor[data-mobile] .character-fake-ok { min-height:44px; }
 @media (prefers-reduced-motion:reduce) { .character-popup { animation:none !important; transition:none !important; } }
+/* Let wrapped popup content contribute its natural height; centering a taller
+   dialog in a fixed basis would cover the author controls above it. */
+.character-popup-stage { flex:1 0 auto; height:auto; }
+.character-popup { flex:0 0 auto; }

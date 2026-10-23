@@ -24,7 +24,7 @@ async function setup(page: Page, width: number) {
     return route.fulfill({ json: { version: saves + 1 } });
   });
   await page.setViewportSize({ width, height: 900 }); await page.goto("/editor/site-1");
-  if (width < 768) { await page.locator(".m-icon").click(); await page.locator(".m-edit-toggle").click(); }
+  if (width < 768) { await page.locator(".m-icon").click(); if (await page.locator(".m-edit-toggle").count()) await page.locator(".m-edit-toggle").click(); else await expect(page.locator(".m-window-settings")).toBeVisible(); }
   const editor = page.locator(".character-message-editor:visible");
   await expect(editor).toBeVisible();
   return { editor, saved: () => draft.windows.find(window => window.type === "character-dialog")?.content, saves: () => saves };
@@ -113,4 +113,15 @@ test('v2 welcome popup stage replays without canonical writes and removes a link
   await expect.poll(()=>backend.saved()?.linkLabel).toBe('Explore');
   await expect.poll(()=>backend.saved()?.linkUrl).toBe('https://example.com/old');
   await page.screenshot({path:info.outputPath('welcome-v2-390.png')});
+});
+
+for(const width of [320,375])test(`v2 popup grows below the complete options and replay targets at ${width}px`,async({page},info)=>{
+ const backend=await setup(page,width),editor=backend.editor,options=editor.locator('.character-top-options'),stage=editor.locator('.character-popup-stage'),popup=editor.locator('.character-popup');
+ const replay=editor.getByRole('button',{name:'播放出場',exact:true}),toggle=options.getByRole('checkbox');
+ await expect(replay).toBeInViewport({ratio:1});await expect(toggle).toBeInViewport({ratio:1});
+ const top=await options.boundingBox(),area=await stage.boundingBox(),dialog=await popup.boundingBox();
+ expect(area!.y).toBeGreaterThanOrEqual(top!.y+top!.height);expect(dialog!.y).toBeGreaterThanOrEqual(area!.y);expect(dialog!.y+dialog!.height).toBeLessThanOrEqual(area!.y+area!.height);
+ for(const target of [replay,toggle])expect(await target.evaluate(node=>{const r=node.getBoundingClientRect();return node===document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)||node.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));})).toBe(true);
+ const before=backend.saved();await replay.click();await expect(replay).toBeFocused();expect(backend.saved()).toEqual(before);await toggle.uncheck();await expect.poll(()=>backend.saved()?.autoShow).toBe(false);await page.getByRole('button',{name:'復原',exact:true}).click();await expect.poll(()=>backend.saved()?.autoShow).toBe(true);
+ await page.screenshot({path:info.outputPath(`welcome-v2-safe-${width}.png`)});
 });
