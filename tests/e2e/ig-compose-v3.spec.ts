@@ -21,7 +21,7 @@ async function openEditor(page: Page, width = 1400, openFields = true) {
   await page.route("**/api/sites/site-1/draft", (route) => { saved = route.request().postDataJSON().document; saves++; return route.fulfill({ json: { version: saves + 1, updatedAt: "2026-10-19T00:00:00Z" } }); });
   await page.setViewportSize({ width, height: 900 });
   await page.goto("/editor/site-1");
-  if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯內容" }).click(); }
+  if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); if(await page.locator(".m-edit-toggle").count()) await page.locator(".m-edit-toggle").click(); else await expect(page.locator(".m-window-settings")).toBeVisible(); }
   const win = page.getByRole("dialog", { name: "Instagram.exe", exact: true });
   if (openFields) {
     await win.getByRole("region", { name: "Instagram 角色編輯視窗" }).getByRole("button", { name: "管理編輯欄位" }).click();
