@@ -122,6 +122,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
   const editorAppRef = useRef<HTMLElement | null>(null);
   const actionsDockRef = useRef<HTMLDivElement | null>(null);
+  const addWindowButtonRef = useRef<HTMLButtonElement | null>(null);
   useEffect(() => {
     const app = editorAppRef.current;
     const viewport = window.visualViewport;
@@ -667,7 +668,13 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
   const layoutMode = store.layoutMode && store.device === "desktop";
   const actions = collaborationActions(store.accessRole);
-  const selectedActions = selected && !layoutMode ? <WindowActionBar title={selected.title} imageWindow={selected.type === "image"} editing={selected.type !== "image" && !readWindows.has(selected.id)} onEdit={editSelectedContent} onDone={() => setReadWindows(current => new Set(current).add(selected.id))} onIcon={() => openInspector("icon")} onSettings={() => openInspector("general")} onDuplicate={() => store.duplicateWindow(selected.id)} onDelete={() => store.deleteWindow(selected.id)} /> : null;
+  function deleteSelectedWindow(id: string) {
+    store.deleteWindow(id);
+    requestAnimationFrame(() => {
+      if (!useEditorStore.getState().selectedId) addWindowButtonRef.current?.focus();
+    });
+  }
+  const selectedActions = selected && !layoutMode ? <WindowActionBar title={selected.title} imageWindow={selected.type === "image"} editing={selected.type !== "image" && !readWindows.has(selected.id)} onEdit={editSelectedContent} onDone={() => setReadWindows(current => new Set(current).add(selected.id))} onIcon={() => openInspector("icon")} onSettings={() => openInspector("general")} onDuplicate={() => store.duplicateWindow(selected.id)} onDelete={() => deleteSelectedWindow(selected.id)} /> : null;
   function closeCollaboration() {
     setCollaborationOpen(false);
     window.requestAnimationFrame(() => collaborationButtonRef.current?.focus());
@@ -782,7 +789,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
 
         <section className={`editor-stage2 ${shellStyles.stage}`}>
           {store.device === "desktop" && !layoutMode ? <div className={shellStyles.bar}>
-            <button type="button" className="w98-btn primary" onClick={() => setAddOpen(true)}>{t("authoring.add")}</button>
+            <button ref={addWindowButtonRef} type="button" className="w98-btn primary" onClick={() => setAddOpen(true)}>{t("authoring.add")}</button>
             <div ref={actionsDockRef} className={shellStyles.docked} />
             {!selected ? <span className="w98-hint">{t("authoring.selectHint")}</span> : null}
           </div> : null}

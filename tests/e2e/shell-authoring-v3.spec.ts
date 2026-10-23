@@ -116,6 +116,7 @@ test('selected window actions float with the window and keep duplicate/delete un
   await page.locator('.deskicon').click();
   await toolbar.getByRole('button', { name: '刪除視窗', exact: true }).click();
   await expect(page.locator('.deskicon')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '新增元件', exact: true })).toBeFocused();
   await page.getByRole('button', { name: '復原', exact: true }).click();
   await expect(page.locator('.deskicon')).toHaveCount(1);
 });
