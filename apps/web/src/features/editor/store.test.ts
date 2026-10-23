@@ -248,7 +248,7 @@ describe("explorer shortcut integrity in the editor store", () => {
 
 describe("mobile handoff atomic reorder",()=>{
  it("commits all IDs once, rejects incomplete/stale orders and preserves canonical entities through Undo",()=>{
-  const {legacy,versioned}=profileFixture();const second=makeWindow("links");second.id="second";second.layout.mobile.order=1;legacy.windows.push(second);versioned.windows.push(structuredClone(second));
+  const {legacy,versioned}=profileFixture();const second=makeWindow("links");if(second.type!=="links")throw new Error("links fixture");second.id="second";second.layout.mobile.order=1;legacy.windows.push(second);versioned.windows.push(structuredClone(second));
   const store=useEditorStore.getState();store.setSite("site-a","alice",legacy,1,null,null,"owner");store.setVersionedDocument(versioned);
   const before=useEditorStore.getState();const ids=legacy.windows.map(window=>window.id);
   store.reorderMobileIds(["missing",ids[0]]);store.reorderMobileIds([ids[0]]);store.reorderMobileIds([ids[0],ids[0]]);
