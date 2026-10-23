@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { expect, test, type Page, type Route } from "@playwright/test";
 import { duplicateProfile, migrateSiteDocumentV2, type SiteDocumentV2Input } from "../../packages/shared/src";
 import { igDocument } from "./ig-fixture";
@@ -132,4 +133,50 @@ test("failed photo thumbnail keeps its message and remove action inside the320px
  expect(await failed.evaluate(node=>{const r=document.createRange();r.selectNodeContents(node);return r.getBoundingClientRect().bottom<=node.getBoundingClientRect().bottom+1;})).toBe(true);
  const remove=composer.getByRole("button",{name:"移除照片 1",exact:true});expect(await remove.evaluate(node=>{const r=node.getBoundingClientRect();return node.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));})).toBe(true);
  await page.screenshot({path:info.outputPath("compose-failed-photo-320.png")});await remove.click();await expect(composer.getByRole("button",{name:"下一步",exact:true})).toBeDisabled();await composer.getByRole("button",{name:"取消",exact:true}).click();expect(site.saves()).toBe(0);
+});
+
+
+for (const removeSuccessful of [false, true]) test(`composer retry keeps selection order and cover, remove successful=${removeSuccessful}`, async ({ page }) => {
+  const site = await openEditor(page, 390, false);
+  const before = await snapshot(page);
+  await privateImages(page);
+  const assetA = "retro-asset:22222222-2222-4222-8222-222222222222";
+  const assetB = "retro-asset:33333333-3333-4333-8333-333333333333";
+  let attemptsA = 0;
+  await page.route("**/api/sites/site-1/assets", route => {
+    if (route.request().method() !== "POST") return route.fulfill({ json: { assets: [] } });
+    const isA = route.request().postDataBuffer()!.includes(Buffer.from('filename="A.png"'));
+    if (isA && ++attemptsA === 1) return route.fulfill({ status: 500, json: { error: { code: "internal_error", message: "Synthetic A failure" } } });
+    const url = isA ? assetA : assetB;
+    return route.fulfill({ json: { asset: { ...stored.asset, id: url.slice("retro-asset:".length), url } } });
+  });
+  const composer = await startCompose(page, site.win);
+  const bytes = readFileSync(FILE);
+  await composer.getByLabel(/^從裝置選擇照片/).setInputFiles([
+    { name: "A.png", mimeType: "image/png", buffer: bytes },
+    { name: "B.png", mimeType: "image/png", buffer: bytes }
+  ]);
+  await expect(composer.locator('[data-upload-state="failed"]')).toHaveCount(1);
+  await expect(composer.locator('[data-upload-state="completed"]')).toHaveCount(1);
+  // A later URL must retain its place after both initially selected files.
+  await composer.getByRole("textbox", { name: "圖片網址", exact: true }).fill("https://example.test/C.png");
+  await composer.getByRole("button", { name: "加入", exact: true }).click();
+  if (removeSuccessful) await composer.getByRole("button", { name: "移除照片 1", exact: true }).click();
+  expect(await snapshot(page)).toEqual(before);
+  await composer.getByRole("button", { name: "重試 A.png", exact: true }).click();
+  await expect(composer.getByRole("img")).toHaveCount(removeSuccessful ? 2 : 3);
+  await expect(composer.getByRole("button", { name: "下一步", exact: true })).toBeEnabled();
+  expect(attemptsA).toBe(2);
+  expect(await snapshot(page)).toEqual(before);
+  await composer.getByRole("button", { name: "下一步", exact: true }).click();
+  await composer.getByRole("button", { name: "完成", exact: true }).click();
+  const after = await snapshot(page);
+  const post = after.document!.entities.posts.at(-1)!;
+  expect(post.media.map(item => item.src)).toEqual(removeSuccessful ? [assetA, "https://example.test/C.png"] : [assetA, assetB, "https://example.test/C.png"]);
+  expect(post.src).toBe(assetA);
+  expect(after.past).toBe(before.past + 1);
+  await page.keyboard.press("Control+z");
+  expect((await snapshot(page)).document).toEqual(before.document);
+  await page.keyboard.press("Control+Shift+z");
+  expect((await snapshot(page)).document).toEqual(after.document);
 });

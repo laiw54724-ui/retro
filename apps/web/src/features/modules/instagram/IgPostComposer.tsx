@@ -18,6 +18,11 @@ export function IgPostComposer({ props, draftId, onClose }: { props: ModuleProps
   const scope = `ig-compose:${ctx.siteId}:${window.id}:${ctx.profileId}:${draftId}`;
   const [draft, setDraft] = useState<Draft>({ media: [], url: "", title: "", caption: "", location: "", date: "", private: true });
   const latest = useRef(draft);
+  // Retry completion must not change the carousel order or its cover image.
+  const selectionOrder = useRef(new Map<string, number>());
+  const nextSelection = useRef(0);
+  const rememberSelection = (id: string) => selectionOrder.current.set(id, nextSelection.current++);
+  const withSelectedMedia = (item: PostMediaV2) => [...latest.current.media, item].sort((a, b) => selectionOrder.current.get(a.id)! - selectionOrder.current.get(b.id)!);
   const active = useRef(true);
   const [step, setStep] = useState<"pick" | "details">("pick");
   const [error, setError] = useState("");
@@ -57,7 +62,9 @@ export function IgPostComposer({ props, draftId, onClose }: { props: ModuleProps
     if (!available()) { setError(t("composer.limit")); return; }
     const normalized = normalizeImageUrl(latest.current.url);
     if (!normalized.ok) { setError(translateSystemMessage(normalized.reason)); return; }
-    change({ media: [...latest.current.media, { id: crypto.randomUUID(), src: normalized.url, srcUrl: latest.current.url, alt: "" }], url: "" });
+    const mediaId = crypto.randomUUID();
+    rememberSelection(mediaId);
+    change({ media: withSelectedMedia({ id: mediaId, src: normalized.url, srcUrl: latest.current.url, alt: "" }), url: "" });
     setError("");
   }
   function upload(files: File[]) {
@@ -66,9 +73,10 @@ export function IgPostComposer({ props, draftId, onClose }: { props: ModuleProps
     setError(accepted.length < files.length ? t("composer.limit") : "");
     for (const file of accepted) {
       const mediaId = crypto.randomUUID();
+      rememberSelection(mediaId);
       queue.enqueue({ file, scope, slot: mediaId, upload: file => ctx.upload!(file, "image"), isCurrent: () => !!current(), apply: src => {
         if (!current() || latest.current.media.length >= 10) return false;
-        change({ media: [...latest.current.media, { id: mediaId, src, srcUrl: "", alt: "" }] });
+        change({ media: withSelectedMedia({ id: mediaId, src, srcUrl: "", alt: "" }) });
         return true;
       } });
     }
