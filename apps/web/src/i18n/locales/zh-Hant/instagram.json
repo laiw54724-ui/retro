@@ -1,4 +1,24 @@
 {
+  "inlineApp": {
+    "authoringApp": "Instagram 角色編輯視窗",
+    "visitorView": "訪客檢視",
+    "actingAs": "以角色操作",
+    "visitorHint": "只顯示可公開的草稿內容；互動不會儲存。",
+    "draftHint": "按讚、留言與追蹤會存入網站草稿，不會發布。",
+    "backToCharacter": "回到角色操作",
+    "viewAsVisitor": "以訪客檢視",
+    "noPublicCharacter": "目前沒有可供訪客查看的公開角色。",
+    "commentAs": "以 @{{handle}} 身分留言…",
+    "newHighlight": "新增精選",
+    "editProfile": "編輯個人檔案",
+    "following": "追蹤中",
+    "follow": "追蹤",
+    "editPost": "編輯貼文",
+    "createFailed": "無法建立草稿，請再試一次。",
+    "editHighlight": "編輯精選",
+    "manageFields": "管理編輯欄位",
+    "backToApp": "← 返回 IG 畫面"
+  },
   "canonicalCollectionEditor": {
     "couldntUpdateTheCollectionPlease": "合集更新失敗，請再試一次。",
     "newCollection": "新合集",

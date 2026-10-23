@@ -1,4 +1,24 @@
 {
+  "inlineApp": {
+    "authoringApp": "Instagram キャラクター編集画面",
+    "visitorView": "訪問者表示",
+    "actingAs": "操作するキャラクター",
+    "visitorHint": "公開可能な下書きのみ表示します。操作は保存されません。",
+    "draftHint": "いいね・コメント・フォローはサイトの下書きに保存され、公開はされません。",
+    "backToCharacter": "キャラクター操作に戻る",
+    "viewAsVisitor": "訪問者として表示",
+    "noPublicCharacter": "訪問者に表示できる公開キャラクターはまだありません。",
+    "commentAs": "@{{handle}} としてコメント…",
+    "newHighlight": "新しいハイライト",
+    "editProfile": "プロフィールを編集",
+    "following": "フォロー中",
+    "follow": "フォロー",
+    "editPost": "投稿を編集",
+    "createFailed": "下書きを作成できませんでした。もう一度お試しください。",
+    "editHighlight": "ハイライトを編集",
+    "manageFields": "編集項目を管理",
+    "backToApp": "← IG 画面に戻る"
+  },
   "canonicalCollectionEditor": {
     "couldntUpdateTheCollectionPlease": "コレクションを更新できませんでした。もう一度お試しください。",
     "newCollection": "新しいコレクション",

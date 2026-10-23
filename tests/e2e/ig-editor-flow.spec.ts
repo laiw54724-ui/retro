@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { duplicateProfile, migrateSiteDocumentV2, type SiteDocumentV2Input } from "../../packages/shared/src";
 import { igDocument } from "./ig-fixture";
 
-async function openEditor(page: Page, width = 1400) {
+async function openEditor(page: Page, width = 1400, openFields = true) {
   const migrated = migrateSiteDocumentV2(igDocument(), { siteId: "site-1" });
   if (!migrated.ok || migrated.version !== 2) throw new Error("fixture");
   const duplicated = duplicateProfile(migrated.document, migrated.document.entities.profiles[0].id, { siteId: "site-1", id: "other", handle: "other" });
@@ -21,9 +21,81 @@ async function openEditor(page: Page, width = 1400) {
   await page.goto("/editor/site-1");
   if (width < 768) { await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯內容" }).click(); }
   const win = page.getByRole("dialog", { name: "Instagram.exe", exact: true });
-  await expect(win.getByRole("textbox", { name: "Handle", exact: true })).toBeVisible();
+  if (openFields) {
+    await win.getByRole("region", { name: "Instagram 角色編輯視窗" }).getByRole("button", { name: "管理編輯欄位" }).click();
+    await expect(win.getByRole("textbox", { name: "Handle", exact: true })).toBeVisible();
+  } else await expect(win.getByRole("region", { name: "Instagram 角色編輯視窗" })).toBeVisible();
   return { win, saved: () => saved, profile: () => saved.entities.profiles[0], saves: () => saves };
 }
+
+for (const width of [320, 390, 430]) test(`IG app creates a canonical draft and visitor view hides it at ${width}px`, async ({ page }) => {
+  const s = await openEditor(page, width, false);
+  const { win } = s;
+  const app = win.getByRole("region", { name: "Instagram 角色編輯視窗" });
+  await expect(app.locator(".ig-app")).toBeVisible();
+  await expect(win.getByRole("tab", { name: "角色資料", exact: true })).toBeHidden();
+  await app.locator(".ig-nav4").getByRole("button", { name: "新增貼文", exact: true }).click();
+  await expect(win.getByRole("tab", { name: "貼文", exact: true })).toBeVisible();
+  const posts = win.locator(".ig-canonical-posts");
+  await expect(posts.getByRole("button", { name: "← 返回貼文", exact: true })).toBeVisible();
+  const title = posts.getByRole("textbox", { name: "標題", exact: true });
+  await title.fill("Fresh draft");
+  await expect.poll(() => s.saved().entities.posts.find((post) => post.title === "Fresh draft")?.visibility).toBe("draft");
+  await win.getByRole("button", { name: "← 返回 IG 畫面" }).click();
+  await expect(app.locator(".ig-draft-badge")).toHaveCount(1);
+  await app.locator(".ig-app").getByRole("button", { name: /Fresh draft/ }).click();
+  await app.locator(".ig-app").getByRole("button", { name: "更多選項" }).click();
+  await app.getByRole("menuitem", { name: "編輯貼文" }).click();
+  await expect(posts.getByRole("textbox", { name: "標題", exact: true })).toHaveValue("Fresh draft");
+  await win.getByRole("button", { name: "← 返回 IG 畫面" }).click();
+  await app.getByRole("button", { name: "以訪客檢視" }).click();
+  await expect(app.locator(".ig-draft-badge")).toHaveCount(0);
+  await expect(app.locator(".ig-app").getByRole("button", { name: /Fresh draft/ })).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test("IG in-app character actions persist to the canonical draft and Undo reverses them", async ({ page }) => {
+  const s = await openEditor(page, 390, false);
+  await s.win.getByRole("region", { name: "Instagram 角色編輯視窗" }).getByRole("button", { name: "管理編輯欄位" }).click();
+  await s.win.getByRole("button", { name: "← 返回 IG 畫面" }).click();
+  const app = s.win.getByRole("region", { name: "Instagram 角色編輯視窗" });
+  await app.getByRole("combobox", { name: "以角色操作" }).selectOption("other");
+  await app.getByRole("button", { name: "管理編輯欄位" }).click();
+  await expect(s.win.getByRole("combobox", { name: "此視窗入口角色" })).toHaveValue("profile:ig");
+  await s.win.getByRole("button", { name: "← 返回 IG 畫面" }).click();
+  await app.locator(".ig-app").getByRole("button", { name: "所有角色" }).click();
+  await app.locator(".ig-app").getByRole("button", { name: /@retro$/ }).click();
+  await app.locator(".ig-app").getByRole("button", { name: "追蹤", exact: true }).click();
+  await expect.poll(() => s.saved().entities.followEdges?.some((edge) => edge.fromProfileId === "other" && edge.toProfileId === "profile:ig")).toBe(true);
+  await app.locator(".ig-app").getByRole("button", { name: /開啟貼文/ }).first().click();
+  await app.locator(".ig-app").getByRole("button", { name: "讚", exact: true }).click();
+  await expect.poll(() => s.saved().entities.posts[0]?.namedLikerIds.includes("other")).toBe(true);
+  const comment = app.locator(".ig-app").getByRole("textbox", { name: "留言", exact: true });
+  await comment.fill("In-character note"); await comment.press("Enter");
+  await expect.poll(() => s.saved().entities.posts[0]?.actorComments.some((item) => item.authorProfileId === "other" && item.text === "In-character note")).toBe(true);
+  await page.getByRole("button", { name: "復原", exact: true }).click();
+  await expect.poll(() => s.saved().entities.posts[0]?.actorComments.some((item) => item.text === "In-character note")).toBe(false);
+});
+
+test("IG highlight entry opens its focused canonical editor and returns to the app", async ({ page }) => {
+  const s = await openEditor(page, 390, false);
+  const app = s.win.getByRole("region", { name: "Instagram 角色編輯視窗" });
+  await app.locator(".ig-app").getByRole("button", { name: "編輯個人檔案" }).click();
+  const handle = s.win.getByRole("textbox", { name: "Handle", exact: true });
+  await expect(handle).toBeVisible();
+  await handle.fill(""); await handle.press("Enter");
+  await s.win.getByRole("button", { name: "← 返回 IG 畫面" }).click();
+  await app.locator(".ig-app").getByRole("button", { name: "編輯個人檔案" }).click();
+  await expect(handle).toHaveValue(""); await expect(handle).toHaveAttribute("aria-invalid", "true");
+  await s.win.getByRole("button", { name: "取消編輯Handle", exact: true }).click();
+  await s.win.getByRole("button", { name: "← 返回 IG 畫面" }).click();
+  await app.locator(".ig-app").getByRole("button", { name: "新增精選" }).click();
+  await expect(s.win.getByRole("tab", { name: "精選／合集", exact: true })).toBeVisible();
+  await expect(s.win.locator(".ig-canonical-highlights").getByRole("button", { name: "← 返回精選" })).toBeVisible();
+  await expect.poll(() => s.saved().entities.highlights?.filter((highlight) => highlight.visibility === "draft").length).toBe(1);
+  await s.win.getByRole("button", { name: "← 返回 IG 畫面" }).click();
+  await expect(app.locator(".ig-app")).toBeVisible();
+});
 
 
 for (const width of [1400, 320, 390, 430]) test(`list-first posts, focused editing and preview return at ${width}px`, async ({ page }, testInfo) => {
@@ -78,6 +150,7 @@ test("Done editing retains invalid identity input, cancellation is explicit, rel
   await expect(handle).toHaveAttribute("aria-invalid", "true");
   await win.getByRole("button", { name: "完成", exact: true }).click();
   await win.getByRole("button", { name: "編輯內容", exact: true }).click();
+  await win.getByRole("region", { name: "Instagram 角色編輯視窗" }).getByRole("button", { name: "管理編輯欄位" }).click();
   await expect(handle).toHaveValue(""); await expect(handle).toHaveAttribute("aria-invalid", "true");
   expect(s.profile().handle).toBe("retro"); expect(s.saves()).toBe(0);
   await expect(win.locator("[data-ig-pending-drafts]")).toContainText("尚未儲存");
@@ -89,6 +162,7 @@ test("Done editing retains invalid identity input, cancellation is explicit, rel
   await win.getByRole("button", { name: "完成", exact: true }).click();
   await page.reload();
   await page.getByRole("button", { name: "Instagram.exe", exact: true }).click(); await page.getByRole("button", { name: "編輯內容" }).click();
+  await win.getByRole("region", { name: "Instagram 角色編輯視窗" }).getByRole("button", { name: "管理編輯欄位" }).click();
   await expect(handle).toHaveValue("retro");
 });
 
@@ -117,6 +191,7 @@ test("unfinished source URLs, pending additions and custom-field names survive D
   const leaveAndReturn = async () => {
     await win.getByRole("button", { name: "完成", exact: true }).click();
     await win.getByRole("button", { name: "編輯內容", exact: true }).click();
+    await win.getByRole("region", { name: "Instagram 角色編輯視窗" }).getByRole("button", { name: "管理編輯欄位" }).click();
   };
   const avatar = win.getByRole("textbox", { name: "頭像網址", exact: true });
   await avatar.fill("https:"); await avatar.press("Enter");

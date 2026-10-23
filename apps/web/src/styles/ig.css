@@ -50,6 +50,8 @@
 .ig-ptabs button { height: 40px; border: 0; background: none; cursor: pointer; display: grid; place-items: center; }
 .ig-grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; }
 .ig-cell { position: relative; aspect-ratio: 1; padding: 0; border: 0; cursor: pointer; overflow: hidden; }
+.ig-draft-badge { position: absolute; left: 4px; bottom: 4px; padding: 1px 4px; border: 1px solid #000; background: #ffffe1; color: #000; font-size: 10px; }
+.ig-add-highlight { display: grid; place-items: center; border: 2px dashed #808080; background: #fff; color: #000; font-size: 22px; }
 .ig-pinned { padding-bottom: 8px; border-bottom: 1px solid #dbdbdb; }
 .ig-pinned h2 { margin: 0; padding: 8px 10px; font-size: 13px; }
 .ig-collection-list { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 8px; list-style: none; }

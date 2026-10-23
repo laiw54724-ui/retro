@@ -1,4 +1,24 @@
 {
+  "inlineApp": {
+    "authoringApp": "Instagram character editor",
+    "visitorView": "Visitor view",
+    "actingAs": "Acting as",
+    "visitorHint": "Shows public-eligible draft content; interactions are not saved.",
+    "draftHint": "Likes, comments and follows are saved to the site draft, not published.",
+    "backToCharacter": "Back to character",
+    "viewAsVisitor": "View as visitor",
+    "noPublicCharacter": "There are no public characters to view yet.",
+    "commentAs": "Comment as @{{handle}}…",
+    "newHighlight": "New highlight",
+    "editProfile": "Edit profile",
+    "following": "Following",
+    "follow": "Follow",
+    "editPost": "Edit post",
+    "createFailed": "Could not create the draft. Please try again.",
+    "editHighlight": "Edit highlight",
+    "manageFields": "Manage edit fields",
+    "backToApp": "← Back to IG app"
+  },
   "canonicalCollectionEditor": {
     "couldntUpdateTheCollectionPlease": "Couldn't update the collection. Please try again.",
     "newCollection": "New collection",

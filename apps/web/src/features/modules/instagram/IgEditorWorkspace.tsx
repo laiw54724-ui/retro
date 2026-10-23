@@ -1,4 +1,4 @@
-import { useId, useLayoutEffect, useRef, type KeyboardEvent } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, type KeyboardEvent } from "react";
 import { i18n } from "../../../i18n";
 import { useTranslation } from "react-i18next";
 import type { ModuleProps } from "../types";
@@ -15,7 +15,9 @@ import { IgDraftProvider } from "./IgDraftInput";
 import styles from "./ocEditor.module.css";
 
 const SECTION_KEYS = ["profile", "posts", "collections", "social", "appearance"] as const;
-type Section = typeof SECTION_KEYS[number];
+export type Section = typeof SECTION_KEYS[number];
+export type SectionRequest = { section: Section; token: number; entityId?: string };
+type WorkspaceProps = ModuleProps<"instagram"> & { sectionRequest?: SectionRequest; entryProfileId?: string; onEntrySelect?: (id: string) => void; actingAsLabel?: string };
 const sectionLabels = (): Record<Section, string> => ({ profile: i18n.t("instagram:igEditorWorkspace.characterInfo"), posts: i18n.t("instagram:igEditorWorkspace.post"), collections: i18n.t("instagram:igEditorWorkspace.highlightsCollections"), social: i18n.t("instagram:igEditorWorkspace.interactions"), appearance: i18n.t("instagram:igEditorWorkspace.appearance") });
 
 export function IgSkinPicker(props: ModuleProps<"instagram">) {
@@ -30,11 +32,11 @@ export function IgSkinPicker(props: ModuleProps<"instagram">) {
 }
 
 /** A local workspace around the existing canonical operations; it never stores UI state in v2. */
-export function IgEditorWorkspace(props: ModuleProps<"instagram">) {
+export function IgEditorWorkspace(props: WorkspaceProps) {
   return <IgDraftProvider><IgEditorWorkspaceContent {...props} /></IgDraftProvider>;
 }
 
-function IgEditorWorkspaceContent(props: ModuleProps<"instagram">) {
+function IgEditorWorkspaceContent(props: WorkspaceProps) {
   const { t: tr } = useTranslation("instagram");
   const { formatList } = useLocaleFormatting();
   const { ctx } = props;
@@ -48,6 +50,13 @@ function IgEditorWorkspaceContent(props: ModuleProps<"instagram">) {
   const positions = useRef(new Map<string, number>());
   const positionKey = `${scope}:${section}:${section === "collections" ? collectionKind : ""}`;
   const current = ctx.profiles?.find((profile) => profile.id === ctx.profileId);
+
+  useEffect(() => {
+    if (props.sectionRequest) {
+      if (props.sectionRequest.section === "collections") setCollectionKind("highlights");
+      setSection(props.sectionRequest.section);
+    }
+  }, [props.sectionRequest?.token]);
 
   useLayoutEffect(() => {
     if (scroll.current) scroll.current.scrollTop = positions.current.get(positionKey) ?? 0;
@@ -66,12 +75,13 @@ function IgEditorWorkspaceContent(props: ModuleProps<"instagram">) {
   };
   const validRetarget = ctx.profiles.some((profile) => profile.id === retargetId && profile.id !== current.id) ? retargetId : "";
 
-  return <div className={styles.workspace}>
+  return <div className={styles.workspace} data-section={section}>
     <div className={styles.switcher}>
+      {props.actingAsLabel ? <p className={styles.actingAs}>{props.actingAsLabel}</p> : null}
       <ProfileSwitcher
         profiles={ctx.profiles}
-        currentId={current.id}
-        onSelect={(profileId) => ctx.onProfileSelect?.(profileId)}
+        currentId={props.entryProfileId ?? current.id}
+        onSelect={(profileId) => props.onEntrySelect ? props.onEntrySelect(profileId) : ctx.onProfileSelect?.(profileId)}
         onAdd={() => ctx.onProfileAdd?.()}
         onDuplicate={(profileId) => ctx.onProfileDuplicate?.(profileId)}
       />
@@ -113,14 +123,14 @@ function IgEditorWorkspaceContent(props: ModuleProps<"instagram">) {
         </details> : null}
       </section>
       <section role="tabpanel" id={`${id}-posts-panel`} aria-labelledby={`${id}-posts-tab`} hidden={section !== "posts"} className={styles.panel}>
-        <CanonicalPostEditor props={props} />
+        <CanonicalPostEditor props={props} openRequest={props.sectionRequest?.section === "posts" ? props.sectionRequest : undefined} />
       </section>
       <section role="tabpanel" id={`${id}-collections-panel`} aria-labelledby={`${id}-collections-tab`} hidden={section !== "collections"} className={styles.panel}>
         <div className={styles.collectionSwitch} role="group" aria-label={tr("editorFlow.organizeContent")} data-help="ig-collection-switch">
           <button type="button" className="w98-btn small" aria-pressed={collectionKind === "highlights"} onClick={() => setCollectionKind("highlights")}>{tr("editorFlow.highlights")}</button>
           <button type="button" className="w98-btn small" aria-pressed={collectionKind === "collections"} onClick={() => setCollectionKind("collections")}>{tr("editorFlow.collections")}</button>
         </div>
-        <div hidden={collectionKind !== "highlights"}><CanonicalHighlightEditor props={props} /></div>
+        <div hidden={collectionKind !== "highlights"}><CanonicalHighlightEditor props={props} openRequest={props.sectionRequest?.section === "collections" ? props.sectionRequest : undefined} /></div>
         <div hidden={collectionKind !== "collections"}><CanonicalCollectionEditor props={props} /></div>
       </section>
       <section role="tabpanel" id={`${id}-social-panel`} aria-labelledby={`${id}-social-tab`} hidden={section !== "social"} className={styles.panel}>

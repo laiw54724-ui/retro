@@ -162,6 +162,8 @@ async function mockEditor(page: Page, document = ocDocument()) {
   });
   await page.goto("/editor/site-1");
   await expect(page.getByRole("dialog", { name: "Instagram.exe" })).toBeVisible();
+  const manageFields = page.getByRole("dialog", { name: "Instagram.exe" }).getByRole("region", { name: "Instagram 角色編輯視窗" }).getByRole("button", { name: "管理編輯欄位" });
+  if (await manageFields.isVisible()) await manageFields.click();
   return saves;
 }
 
@@ -175,6 +177,8 @@ async function mockPublic(page: Page, document = ocDocument()) {
 }
 
 async function openEditorGroup(win: Locator, name: "角色資料" | "貼文" | "精選／合集" | "互動" | "外觀") {
+  const tabs = win.getByRole("tablist", { name: "OC 編輯分組" });
+  if (!await tabs.isVisible()) await win.getByRole("region", { name: "Instagram 角色編輯視窗" }).getByRole("button", { name: "管理編輯欄位" }).click();
   await win.getByRole("tablist", { name: "OC 編輯分組" }).getByRole("tab", { name, exact: true }).click();
   await expect(win.getByRole("tabpanel", { name, exact: true })).toBeVisible();
 }
@@ -345,6 +349,7 @@ test("mobile OC editor exposes the same profile tools without horizontal overflo
   await page.getByRole("button", { name: "Instagram.exe" }).click();
   await page.getByRole("button", { name: "編輯內容" }).click();
   const win = page.getByRole("dialog", { name: "Instagram.exe" });
+  await win.getByRole("region", { name: "Instagram 角色編輯視窗" }).getByRole("button", { name: "管理編輯欄位" }).click();
   const switcher = win.getByRole("region", { name: "角色切換器" });
   await expect(switcher).toBeVisible();
   await expandDetails(switcher, "管理角色");
@@ -385,6 +390,7 @@ for (const width of [320, 375, 430]) {
     await page.getByRole("button", { name: "Instagram.exe" }).click();
     await page.getByRole("button", { name: "編輯內容" }).click();
     const win = page.getByRole("dialog", { name: "Instagram.exe" });
+    await win.getByRole("region", { name: "Instagram 角色編輯視窗" }).getByRole("button", { name: "管理編輯欄位" }).click();
     const selection = win.getByRole("combobox", { name: "此視窗入口角色" });
     const add = win.locator("summary").filter({ hasText: "管理角色" });
     const groups = win.getByRole("tablist", { name: "OC 編輯分組" });
