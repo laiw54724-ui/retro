@@ -104,7 +104,7 @@ export function IgPostComposer({ props, draftId, onClose }: { props: ModuleProps
       </> : null}
       <div className={styles.media} aria-label={t("composer.photos")}>
         {draft.media.map((item, index) => <div key={item.id} className={styles.photo}>
-          {item.src ? <FallbackImage src={item.src} alt={t("composer.photo", { n: index + 1 })} /> : null}
+          {item.src ? <FallbackImage compact src={item.src} alt={t("composer.photo", { n: index + 1 })} /> : null}
           <button type="button" className="w98-btn danger" aria-label={t("composer.removePhoto", { n: index + 1 })} onClick={() => { change({ media: latest.current.media.filter(media => media.id !== item.id) }); }}>{t("composer.remove")}</button>
         </div>)}
       </div>

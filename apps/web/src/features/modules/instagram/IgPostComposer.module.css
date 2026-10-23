@@ -15,3 +15,5 @@
 .photo img, .photo > span, .photo > div { width: 96px; height: 96px; object-fit: cover; }
 .body > .check { flex-direction: row; align-items: center; min-height: 44px; }
 @media (max-width: 767px), (pointer: coarse) { .composer button, .pick { min-height: 44px; min-width: 44px; } }
+
+.photo > div { box-sizing: border-box; overflow: hidden; overflow-wrap: anywhere; }

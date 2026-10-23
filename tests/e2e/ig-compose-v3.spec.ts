@@ -122,3 +122,14 @@ test("failed local upload retries without creating a post until confirmation",as
  const composer=await startCompose(page,site.win);await composer.getByLabel(/^從裝置選擇照片/).setInputFiles(FILE);await expect(composer.locator('[data-upload-state="failed"]')).toHaveCount(1);expect(await snapshot(page)).toEqual(before);
  await composer.getByRole("button",{name:/重試.*transparent/}).click();await expect(composer.getByRole("img")).toHaveCount(1);expect(attempts).toBe(2);expect(await snapshot(page)).toEqual(before);await composer.getByRole("button",{name:"取消",exact:true}).click();expect(await snapshot(page)).toEqual(before);expect(site.saves()).toBe(0);
 });
+
+
+test("failed photo thumbnail keeps its message and remove action inside the320px composer",async({page},info)=>{
+ const site=await openEditor(page,320,false);await page.route("https://example.test/broken.png",route=>route.abort());const composer=await startCompose(page,site.win);
+ await page.screenshot({path:info.outputPath("compose-pick-320.png")});
+ await composer.getByRole("textbox",{name:"圖片網址",exact:true}).fill("https://example.test/broken.png");await composer.getByRole("button",{name:"加入",exact:true}).click();
+ const failed=composer.locator(".img-fail");await expect(failed).toBeVisible();
+ expect(await failed.evaluate(node=>{const r=document.createRange();r.selectNodeContents(node);return r.getBoundingClientRect().bottom<=node.getBoundingClientRect().bottom+1;})).toBe(true);
+ const remove=composer.getByRole("button",{name:"移除照片 1",exact:true});expect(await remove.evaluate(node=>{const r=node.getBoundingClientRect();return node.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));})).toBe(true);
+ await page.screenshot({path:info.outputPath("compose-failed-photo-320.png")});await remove.click();await expect(composer.getByRole("button",{name:"下一步",exact:true})).toBeDisabled();await composer.getByRole("button",{name:"取消",exact:true}).click();expect(site.saves()).toBe(0);
+});
