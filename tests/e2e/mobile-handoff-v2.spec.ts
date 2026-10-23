@@ -1,8 +1,9 @@
 import {expect,test,type Page} from '@playwright/test';
 import {createStarterDocument,makeWindow,makeGalleryImage,migrateSiteDocumentV2} from '@retrodesk/shared';
-async function fixture(page:Page,width=390){
+async function fixture(page:Page,width=390,hideTitleIcon=false){
  const legacy=createStarterDocument('Phone','classic98','blank');
  legacy.windows=['links','gallery','about'].map((type,index)=>{const w=makeWindow(type as 'links'); w.id=`w${index}`; w.title=['Links','Gallery','About'][index];w.layout.mobile.order=index;return w;});
+ if(hideTitleIcon)legacy.windows[0].chrome={showIcon:false};
  const gallery=legacy.windows[1];if(gallery.type==='gallery')gallery.content.images=Array.from({length:8},(_,i)=>makeGalleryImage({id:`im${i}`,title:`Picture ${i}`}));
  const migrated=migrateSiteDocumentV2(legacy,{siteId:'site-1'});if(!migrated.ok)throw Error('migration');let draft=migrated.document,writes=0;
  const session={access_token:'a.b.c',refresh_token:'r',expires_at:4102444800,expires_in:3600,token_type:'bearer',user:{id:'u',email:'x@y.z',aud:'authenticated',app_metadata:{},user_metadata:{},created_at:'2026-01-01'}};
@@ -72,4 +73,11 @@ test('v2 blank required titles stay local through sheets and Escape cancels with
 
 test('review: Escape during a longpress cancels its ghost and pointerup cannot reorder',async({page})=>{
  await fixture(page);const before=await state(page),first=page.locator('[data-reorder-id=w0]');await first.focus();const a=await first.boundingBox();await page.mouse.move(a!.x+a!.width/2,a!.y+a!.height/2);await page.mouse.down();await page.waitForTimeout(480);await expect(page.locator('.editing-reorder-ghost')).toBeVisible();await first.press('Escape');await expect(page.locator('.m-toolbar')).toBeVisible();const ghostAfterEscape=await page.locator('.editing-reorder-ghost').count();const b=await page.locator('[data-reorder-id=w2]').boundingBox();await page.mouse.move(b!.x+b!.width/2,b!.y+b!.height/2,{steps:4});await page.mouse.up();expect(await state(page)).toEqual(before);expect(ghostAfterEscape).toBe(0);await expect(page.locator('.editing-reorder-ghost')).toHaveCount(0);
+});
+
+for(const width of [320,390])test(`v2 inline title respects a persisted hidden icon without changing history at ${width}`,async({page})=>{
+ const backend=await fixture(page,width,true),before=await state(page);await page.getByRole('button',{name:'Links',exact:true}).click();
+ const header=page.locator('.m-inline-titlebar');await expect(header.locator('.w98-icon')).toHaveCount(0);await expect(header.getByRole('textbox',{name:'\u8996\u7a97\u6a19\u984c',exact:true})).toHaveValue('Links');
+ for(const button of [header.locator('.m-back'),header.locator('.m-window-settings')])expect((await button.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+ await header.locator('.m-back').click();await page.getByRole('button',{name:'Links',exact:true}).click();await expect(header.locator('.w98-icon')).toHaveCount(0);expect(await state(page)).toEqual(before);expect(backend.writes()).toBe(0);expect(backend.saved().windows[0].chrome?.showIcon).toBe(false);
 });
