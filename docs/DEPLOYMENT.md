@@ -14,7 +14,11 @@ Use separate Supabase projects for staging and production when possible.
 For each project:
 
 1. Create the project.
-2. Apply every SQL file in `supabase/migrations` in filename order.
+2. Review SQL files in `supabase/migrations` in filename order before applying.
+   `0010_worker_write_boundary.sql` requires explicit owner approval: it removes
+   direct client writes to sites, versions and assets while preserving Worker
+   operations. Follow its [staging-first application and read-back guide](security/db-write-boundary-76.md);
+   do not include it in an unreviewed bulk migration run.
 3. Copy:
    - Project URL
    - anon key
