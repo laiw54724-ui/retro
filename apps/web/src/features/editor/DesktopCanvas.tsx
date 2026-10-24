@@ -181,6 +181,12 @@ export function DesktopCanvas({ windowActions, actionsDock, readWindowIds, siteI
     store().setViewState(id, null);
     store().focusWindow(id);
   }
+  function hideWindow(id: string, state: "min" | "closed") {
+    stopWindowMedia(id);
+    store().setViewState(id, state);
+    const index = document.windows.findIndex(window => window.id === id);
+    canvasRef.current?.querySelector<HTMLButtonElement>(`.deskicon[data-index="${index}"]`)?.focus({ preventScroll: true });
+  }
   function iconClick(id: string) {
     if (suppressClick.current) { suppressClick.current = false; return; }
     openWindow(id);
@@ -283,9 +289,9 @@ export function DesktopCanvas({ windowActions, actionsDock, readWindowIds, siteI
               active={isSel || layout.z === topZ}
               interactiveControls
               maximized={maximized}
-              onMinimize={() => { stopWindowMedia(win.id); store().setViewState(win.id, "min"); }}
+              onMinimize={() => hideWindow(win.id, "min")}
               onMaximize={() => store().setViewState(win.id, maximized ? null : "max")}
-              onClose={() => { stopWindowMedia(win.id); store().setViewState(win.id, "closed"); }}
+              onClose={() => hideWindow(win.id, "closed")}
               titleBarProps={{ onDoubleClick: () => store().setViewState(win.id, maximized ? null : "max"), style: { cursor: layoutMode ? "move" : "default", touchAction: "none" } }}
               style={{ height: "100%" }}
               bodyStyle={{ padding: 0 }}

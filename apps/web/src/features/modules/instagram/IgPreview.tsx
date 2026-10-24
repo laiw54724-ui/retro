@@ -9,6 +9,7 @@ import { useIgSession } from "./useIgSession";
 import { buildPublicEntityUrl, sharePublicUrl } from "../../../lib/publicShare";
 import { ProfileDetails } from "./ProfileDetails";
 import { translateSystemMessage } from "../../../i18n/systemMessages";
+import { followCountLabel } from "./followCountLabel";
 
 const Ic = ({ bg, size = 24 }: { bg: string; size?: number }) => <span aria-hidden="true" className="ig-ic" style={{ width: size, height: size, background: bg }} />;
 
@@ -105,8 +106,8 @@ export function IgPreview({ window, ctx, authoring }: Pick<ModuleProps<"instagra
   const I = igIcons(tv.text);
   const showHighlights = profile.showHighlights && highlights.length > 0;
   const ringBg = showHighlights ? `conic-gradient(${tv.titleFrom}, ${tv.accent}, ${tv.titleTo}, ${tv.titleFrom})` : "transparent";
-  const followersText = directoryEntry?.followerCount ?? directoryEntry?.legacyFollowerLabel ?? (profile.followers || "0");
-  const followingText = directoryEntry?.followingCount ?? directoryEntry?.legacyFollowingLabel ?? (profile.following || "0");
+  const followersText = followCountLabel(directoryEntry?.followerCount, directoryEntry?.legacyFollowerLabel ?? profile.followers, directoryEntry?.followerIds.length ?? 0);
+  const followingText = followCountLabel(directoryEntry?.followingCount, directoryEntry?.legacyFollowingLabel ?? profile.following, directoryEntry?.followingIds.length ?? 0);
   const actorFollowing = !!(canAct && directoryEntry?.followerIds.includes(actorId!));
   const toggleActorFollow = () => {
     if (!canAct || !actorId || actorId === s.activeProfileId) return;

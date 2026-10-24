@@ -19,6 +19,30 @@ function withProfileAccent(document: SiteDocumentV2Input, accent: string): SiteD
 }
 
 describe("editor canonical history", () => {
+  it("clears hidden window selection without changing the canonical document or history", () => {
+    const { legacy, versioned } = profileFixture();
+    const store = useEditorStore.getState();
+    store.setSite("site-a", "alice", legacy, 1, null, null, "owner");
+    store.setVersionedDocument(versioned);
+    const id = legacy.windows[0].id;
+    store.select(id);
+    store.setViewState("another-window", "closed");
+    expect(useEditorStore.getState().selectedId).toBe(id);
+    store.setViewState(id, "max");
+    expect(useEditorStore.getState().selectedId).toBe(id);
+    for (const hidden of ["closed", "min"] as const) {
+      store.select(id);
+      store.setViewState(id, hidden);
+      expect(useEditorStore.getState().selectedId).toBeNull();
+      expect(useEditorStore.getState().viewState[id]).toBe(hidden);
+      expect(useEditorStore.getState().document).toBe(legacy);
+      expect(useEditorStore.getState().versionedDocument).toBe(versioned);
+      expect(useEditorStore.getState().past).toHaveLength(0);
+      expect(useEditorStore.getState().saveStatus).toBe("saved");
+      store.setViewState(id, null);
+      expect(useEditorStore.getState().viewState[id]).toBeUndefined();
+    }
+  });
   it("keeps theme previews outside draft history until Apply and clears them on site change", () => {
     const { legacy, versioned } = profileFixture();
     const store = useEditorStore.getState();

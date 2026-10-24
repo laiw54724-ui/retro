@@ -369,7 +369,7 @@ export const useEditorStore = create<EditorState>((set) => ({
   setViewState: (id, next) => set((state) => {
     const viewState = { ...state.viewState };
     if (next) viewState[id] = next; else delete viewState[id];
-    return { viewState };
+    return { viewState, ...((next === "closed" || next === "min") && state.selectedId === id ? { selectedId: null } : {}) };
   }),
   layoutMode: false,
   snap: true,
