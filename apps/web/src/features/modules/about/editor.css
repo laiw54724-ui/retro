@@ -60,8 +60,12 @@
 .about-avatar-column { min-width: 0; position: relative; align-self: start; }
 .about-editor .about-avatar { width: 100%; background: repeating-linear-gradient(45deg, #ededed 0 8px, #dcdcdc 8px 16px); }
 .about-avatar-drop[data-over] { outline: 3px dashed #000080; outline-offset: -3px; }
-.about-avatar-empty { position: absolute; inset: 0 0 40px; display: grid; place-items: center; padding: 8px; text-align: center; font-size: 11px; color: #404040; }
-.about-avatar-toggle { position: absolute; left: 6px; bottom: 6px; max-width: calc(100% - 12px); }
+.about-avatar-empty { position: absolute; inset: 0; display: grid; place-items: center; padding: 8px; text-align: center; font-size: 11px; color: #404040; }
+.about-editor .about-avatar-toggle { display: block; position: static; width: 100%; max-width: 100%; margin-top: 4px; min-height: 26px; white-space: normal; }
+@container (max-width: 320px) {
+  .about-editor:not([data-mobile]) .about-main { grid-template-columns: minmax(0, 1fr); }
+  .about-editor:not([data-mobile]) .about-avatar-column { width: min(180px, 100%); justify-self: center; }
+}
 .about-avatar-panel { display: flex; flex-direction: column; gap: 6px; padding: 6px; margin-top: 4px; min-width: 0; color: #111; }
 .about-avatar-panel .ie { width: 100%; min-width: 0; }
 .about-avatar-panel .mini-btn { white-space: normal; height: auto; }
@@ -111,4 +115,6 @@
 .about-editor textarea.about-direct { resize: none; white-space: pre-wrap; }
 .about-editor .about-banner textarea { display: block; width: 100%; }
 
-.about-editor .about-avatar-toggle { min-height: 44px; }
+@media (pointer: coarse) {
+  .about-editor .about-avatar-toggle { min-height: 44px; }
+}

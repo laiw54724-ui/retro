@@ -19,6 +19,10 @@ export function FloatingWindowActions({ canvasRef, dockRef, anchorKey, children 
     const place = () => {
       if (!canvas.isConnected || !bar.isConnected) return;
       const area = canvas.getBoundingClientRect(), anchor = target?.getBoundingClientRect();
+      // Compact actions follow the selected window's width, including resize.
+      // A desktop icon alone is too narrow, so that fallback uses the canvas.
+      const widthLimit = target?.classList.contains("canvas-window") && anchor ? anchor.width : canvas.clientWidth - 8;
+      bar.style.maxWidth = `${Math.max(0, Math.min(canvas.clientWidth - 8, widthLimit))}px`;
       const height = bar.offsetHeight, width = bar.offsetWidth;
       const availableHeight = canvas.clientHeight - 36;
       const above = anchor ? anchor.top - area.top - height - 6 : 8;

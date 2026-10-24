@@ -10,9 +10,8 @@
 .bar { display: flex; flex-shrink: 0; align-items: center; flex-wrap: wrap; gap: 6px; padding: 6px; background: var(--w98-face); border: 1px solid var(--w98-shadow); }
 .floating { position: absolute; z-index: 90002; width: max-content; max-width: calc(100% - 8px); visibility: hidden; }
 .docked { min-width: 0; max-width: 100%; }
-.selection { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; min-width: 0; padding: 4px; background: var(--w98-face); color: var(--w98-text); box-shadow: var(--w98-raised), 2px 2px #0005; }
-.selection button { min-height: 32px; }
-.selectedTitle { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+.selection { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; min-width: 0; max-width: 100%; padding: 3px; font-size: 12px; background: var(--w98-face); color: var(--w98-text); box-shadow: var(--w98-raised), 2px 2px #0005; }
+.selection button { flex: 0 0 auto; min-height: 26px; padding: 2px 8px; font: inherit; }
 .bar button { min-height: 32px; }
 @media (pointer: coarse) { .selection button { min-height: 44px; min-width: 44px; } }
 @media (max-width: 767px) {

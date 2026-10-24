@@ -18,12 +18,12 @@ export function WindowActionBar({ title, imageWindow, editing, onEdit, onDone, o
     event.preventDefault();
     buttons[event.key === "Home" ? 0 : event.key === "End" ? buttons.length - 1 : (index + (event.key === "ArrowLeft" ? -1 : 1) + buttons.length) % buttons.length]?.focus();
   }}>
-    <strong className={styles.selectedTitle} title={title}>{title}</strong>
+    <strong className="sr-only">{title}</strong>
     <button ref={editButton} type="button" className="w98-btn" aria-pressed={editing} disabled={imageWindow && !imageWriter} onClick={onEdit}>{t("mobile.editWindow")}</button>
     <button type="button" className="w98-btn" onClick={onIcon}>{t("rightPanel.icon")}</button>
     <button type="button" className="w98-btn" onClick={onSettings}>{t("mobile.edit")}</button>
-    <button type="button" className="w98-btn" disabled={imageWindow && !imageWriter} onClick={onDuplicate}>{t("rightPanel.duplicateWindow")}</button>
-    <button type="button" className="w98-btn danger" onClick={onDelete}>{t("mobileEditor.deleteWindow")}</button>
+    <button type="button" className="w98-btn" aria-label={t("rightPanel.duplicateWindow")} title={t("rightPanel.duplicateWindow")} disabled={imageWindow && !imageWriter} onClick={onDuplicate}>{t("mobileScreen.duplicate")}</button>
+    <button type="button" className="w98-btn danger" aria-label={t("mobileEditor.deleteWindow")} title={t("mobileEditor.deleteWindow")} onClick={onDelete}>{t("inspectorContent.delete")}</button>
     {editing ? <button type="button" className="w98-btn primary" onClick={() => { onDone(); requestAnimationFrame(() => editButton.current?.focus()); }}>{t("mobile.finishEditing")}</button> : null}
   </div>;
 }
