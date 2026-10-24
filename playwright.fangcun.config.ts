@@ -1,5 +1,7 @@
 import { defineConfig } from "@playwright/test";
 import base from "./playwright.config";
+// Match the preview server's four-locale contract in test workers as well.
+process.env.VITE_I18N_PREVIEW_LOCALES = "true";
 const port = 5651;
 const baseURL = `http://127.0.0.1:${port}`;
 export default defineConfig({

@@ -103,11 +103,12 @@ test("failed follow save retains accurate draft count and retry persists once", 
   expect(state.saves()).toBe(2);
 });
 
-test("follow counts and close work across all four interface languages", async ({ page }) => {
+test("follow counts and close work across every enabled interface language", async ({ page }) => {
   const state = await fixture(page);
   await viewAsOther(state.app);
   const app = state.win.locator(".ig-app");
-  for (const locale of ["zh-Hant", "en", "ja", "ko"]) {
+  const locales = process.env.VITE_I18N_PREVIEW_LOCALES === "true" ? ["zh-Hant", "en", "ja", "ko"] : ["zh-Hant", "en"];
+  for (const locale of locales) {
     await page.getByTestId("language-switcher").selectOption(locale);
     await expect(page.locator("html")).toHaveAttribute("lang", locale);
     const follow = app.locator(".ig-follow-btn");
