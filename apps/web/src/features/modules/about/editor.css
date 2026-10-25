@@ -61,7 +61,6 @@
 .about-editor .about-avatar { width: 100%; background: repeating-linear-gradient(45deg, #ededed 0 8px, #dcdcdc 8px 16px); }
 .about-avatar-drop[data-over] { outline: 3px dashed #000080; outline-offset: -3px; }
 .about-avatar-empty { position: absolute; inset: 0; display: grid; place-items: center; padding: 8px; text-align: center; font-size: 11px; color: #404040; }
-.about-editor .about-avatar-toggle { display: block; position: static; width: 100%; max-width: 100%; margin-top: 4px; min-height: 26px; white-space: normal; }
 @container (max-width: 320px) {
   .about-editor:not([data-mobile]) .about-main { grid-template-columns: minmax(0, 1fr); }
   .about-editor:not([data-mobile]) .about-avatar-column { width: min(180px, 100%); justify-self: center; }
@@ -70,6 +69,7 @@
 .about-avatar-panel .ie { width: 100%; min-width: 0; }
 .about-avatar-panel .mini-btn { white-space: normal; height: auto; }
 .about-editor .mini-btn { min-width: 22px; min-height: 24px; font-size: 11px; }
+.about-editor .about-avatar-toggle { display: block; position: static; width: 100%; max-width: 100%; margin-top: 4px; min-height: 26px; white-space: normal; }
 .about-field-row { display: flex; align-items: center; gap: 2px; min-width: 0; }
 .about-editor .about-field { flex: 1; min-width: 0; display: flex; align-items: center; padding: 3px 5px; }
 .about-editor .about-field-key { flex: 0 1 auto; max-width: 44%; }
