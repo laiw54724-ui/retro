@@ -77,7 +77,13 @@ for (const width of [1440, 320, 390, 430]) {
         await name.fill(`${nameBefore} edited`);
         await expect.poll(() => saves.length).toBe(1);
         // Native keyboard disclosure, mounted fields, and no geometry writes.
-        expect((await disclosure.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+        const compactPointer = kind === "about" && width >= 768 && await page.evaluate(() => matchMedia("(pointer: fine)").matches);
+        if (compactPointer) {
+          // Fine-pointer About uses compact controls; touch and character controls remain 44px.
+          expect((await disclosure.boundingBox())!.height).toBeGreaterThanOrEqual(26);
+        } else {
+          expect((await disclosure.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+        }
         if (width < 768) await disclosure.tap();
         else { await disclosure.focus(); await disclosure.press("Enter"); }
         if (kind === "about") await expect(dialog.locator(".about-avatar-panel")).toBeVisible();

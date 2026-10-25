@@ -122,8 +122,8 @@ function AboutCardEditor({ window, ctx, update }: ModuleProps<"about">) {
           <div className="about-avatar-column">
             <FileDropZone className="about-avatar about-avatar-drop" tv={tv} mobile={ctx.mobile} accept="image" maxBytes={8 * 1024 * 1024} onFiles={files => uploadAvatar(files[0])} onError={setError} style={{ border: `1px solid ${tv.shadow}` }}>
               {content.avatar ? <AvatarImage src={content.avatar} crop={content.avatarCrop} alt={tr("about.avatarPreview")} /> : <span className="about-avatar-empty">{text("dropAvatar", "about.noAvatarSetYet")}</span>}
-              <button ref={avatarButton} type="button" className="mini-btn wide about-avatar-toggle" aria-expanded={avatarOpen} onMouseDown={event => { if (avatarOpen) event.preventDefault(); }} onClick={event => { if (avatarOpen) closeAvatar(); else { event.currentTarget.focus({ preventScroll: true }); setAvatarOpen(true); } }}>{content.avatar ? tr("about.changeAvatar") : tr("about.uploadAvatar")}</button>
             </FileDropZone>
+            <button ref={avatarButton} type="button" className="mini-btn wide about-avatar-toggle" aria-expanded={avatarOpen} onMouseDown={event => { if (avatarOpen) event.preventDefault(); }} onClick={event => { if (avatarOpen) closeAvatar(); else { event.currentTarget.focus({ preventScroll: true }); setAvatarOpen(true); } }}>{content.avatar ? tr("about.changeAvatar") : tr("about.uploadAvatar")}</button>
             <PopoverPanel open={avatarOpen} onClose={closeAvatar} triggerRef={avatarButton} scopeRef={editor} showDone={false} tv={tv} mobile={ctx.mobile} className="about-avatar-panel" label={tr("about.avatarSettings")}>
               <FileUploadButton onFiles={files => uploadAvatar(files[0])}>{content.avatar ? tr("about.changeAvatar") : tr("about.uploadAvatar")}</FileUploadButton>
               <ImageUrlInput visibleLabel onEdit={() => media.cancel("avatar")} raw={content.avatarUrl} label={tr("about.avatarUrl")} placeholder={tr("about.orPasteAnAvatarUrl")} onCommit={(raw, src) => { media.cancel("avatar"); setCropping(false); patch({ avatarUrl: raw, avatar: src, avatarCrop: undefined }); }} />
@@ -145,7 +145,7 @@ function AboutCardEditor({ window, ctx, update }: ModuleProps<"about">) {
               </div>
               <CompactButton label={tr("about.deleteField")} danger onClick={() => { pendingAddFocus.current = "field"; setFields(list => list.filter(item => item.id !== field.id)); }}>×</CompactButton>
             </>} endSlot={<div className="about-field-add">
-              <InlineTextField ref={newFieldInput} className="about-direct" value={newField} maxLength={100} disabled={content.fields.length >= 50} aria-label={tr("about.addField")} placeholder={text("addField", "about.addField")} onChange={event => setNewField(event.currentTarget.value)} onKeyDown={event => { if (enter(event)) { event.preventDefault(); addField(); } }} />
+              <InlineTextField ref={newFieldInput} className="about-direct" value={newField} maxLength={100} disabled={content.fields.length >= 50} aria-label={tr("about.addField")} placeholder={tr("about.addField")} title={text("addField", "about.addField")} onChange={event => setNewField(event.currentTarget.value)} onKeyDown={event => { if (enter(event)) { event.preventDefault(); addField(); } }} />
             </div>} />
             {content.fields.length >= 50 ? <span>{tr("about.youveReachedTheLimitOf")}</span> : null}
             <InlineTextField className="about-direct about-details-title" value={content.detailsTitle} maxLength={100} aria-label={tr("about.tagline")} onChange={event => patch({ detailsTitle: event.currentTarget.value }, "details-title")} />
