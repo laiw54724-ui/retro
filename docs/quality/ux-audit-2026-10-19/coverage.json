@@ -1,0 +1,198 @@
+{
+  "modules": [
+    {
+      "type": "document",
+      "label": "文件",
+      "tasks": "七種區塊：標題、段落、圖片、按鈕、連結、清單、分隔線；選取工具、格式、排序、刪除、圖片來源／caption／alt、訪客連結。",
+      "coverage": "4 寬度編輯與預覽；320/390px 文字與圖片欄位正常點選、儲存／reload；刪除後焦點；圖片上傳歸屬及晚到回應。",
+      "recommendation": "保留直接編輯文字、選取才出工具的方式。先補手機 Undo 與本地未完成輸入的共同離開處理。",
+      "evidence": "inline-editor-preservation, media-tasks"
+    },
+    {
+      "type": "gallery",
+      "label": "相簿",
+      "tasks": "批次新增、來源網址、欄數、縮圖清單、單圖屬性、更換、caption/alt、裝飾性圖片、排序／刪除、Lightbox。",
+      "coverage": "4 寬度空狀態／編輯／預覽；批次部分失敗／重試／順序、選取保留、刪除焦點、protected-image 失敗；lightbox Tab/Escape/左右鍵/返回焦點。",
+      "recommendation": "保留「縮圖清單＋一張圖片屬性」；可作為 IG 媒體編輯的既有參考。手機 Undo 為共同缺口。",
+      "evidence": "media-tasks, inline-editor-preservation, component-operations"
+    },
+    {
+      "type": "links",
+      "label": "連結",
+      "tasks": "可直接改標籤；設定區的網址／視窗目標、摘要、色彩、IconPicker、排序、刪除；訪客缺失目標。",
+      "coverage": "4 寬度編輯／預覽；長文字、無效及空目標、切換目的地、Undo/reload、公眾視窗開啟。",
+      "recommendation": "保留逐條設定與可讀目標摘要；最新 main 已含 #120 訪客 Back/focus，保留，不另寫一套。",
+      "evidence": "about-links-ux, public-sharing"
+    },
+    {
+      "type": "about",
+      "label": "名片／關於我",
+      "tasks": "頭像／裁切／網址、暱稱、標語、簡介、引言、橫幅、自訂欄位、社群連結、訪客文字。",
+      "coverage": "4 寬度編輯／預覽；320/390px 輸入焦點、刪除及 Undo、來源晚到、protected-media、reload、公眾顯示。",
+      "recommendation": "基本／自訂欄位／社群分組可保留。桌面預設小視窗的大頭像把姓名推到捲動區下方，宜縮成頭像列或提供明確放大編輯。",
+      "evidence": "about-links-ux, inline-editor-preservation, media-tasks"
+    },
+    {
+      "type": "instagram",
+      "label": "IG／OC",
+      "tasks": "角色切換與管理、身分／進階資料、貼文與輪播、精選故事、合集、虛構關係／讚／留言、外觀；訪客目錄、貼文、收藏、故事、人物與 deep link。",
+      "coverage": "4 寬度五分類實際操作；三個觸控 context 的未完成草稿；角色切換寫入、Arrow tabs；既有 OC／社交／篩選／合集／捲動／隱私／公開導覽互動。",
+      "recommendation": "優先採本報告 IG 任務流程；#121/#124 解決媒體復原，不能取代資訊架構修正。",
+      "evidence": "oc-profiles, ig-validation, preview-sources, public-sharing"
+    },
+    {
+      "type": "music",
+      "label": "音樂",
+      "tasks": "播放清單、選取單曲、封面、統一來源欄位、檔案上傳、來源判定、原站／官方 player／原生音訊影片、角色、權利、歌詞、逐檔狀態與重試。",
+      "coverage": "4 寬度編輯／預覽；來源及封面草稿、鍵盤選取、排序/reload、逐檔失敗／重試／取消晚到、停止舊預覽；手機長歌詞及 safe area。",
+      "recommendation": "已實現「貼網址／上傳，由系統辨識」；保留，不再要求先選來源類型。複雜來源說明用當下判定結果呈現。",
+      "evidence": "music-authoring, mobile-shell"
+    },
+    {
+      "type": "moodboard",
+      "label": "Moodboard",
+      "tasks": "文字、色塊、圖片、背景、元素清單、拖曳／鍵盤選取、位置尺寸、層序、鎖定、複製／刪除、PNG 匯出。",
+      "coverage": "4 寬度編輯／預覽；元素遮擋選取、精確 geometry、指標移動、鍵盤、Undo/reload、PNG 成功及跨來源失敗。",
+      "recommendation": "保留畫布＋元素清單與數值替代操作。字級仍直接 clamp 的路徑列為來源待驗證；不要新增拖曳專用操作。",
+      "evidence": "moodboard, moodboard-properties, component-operations"
+    },
+    {
+      "type": "explorer",
+      "label": "世界觀資料夾",
+      "tasks": "資料夾／捷徑、階層 breadcrumb、搜尋、建立目標、Rename/F2、Move／拖曳、複製、可見狀態、刪除影響確認。",
+      "coverage": "4 寬度空態／編輯／預覽；單擊選取、雙擊／Enter、F2/Escape/Delete、拖動及 Move 替代；刪除參照／Undo/reload；手機 ⋯ 及 visitor 導覽。",
+      "recommendation": "保留資料夾與捷徑語意。健康捷徑改目標由 #123 提供；手機 preview 複製 focus key 的返回焦點問題已由 #126 修正並併入最新 main，不重複列待辦。",
+      "evidence": "explorer, public-sharing"
+    },
+    {
+      "type": "minesweeper",
+      "label": "掃雷",
+      "tasks": "遊戲棋盤、狀態／重新開始、旗標模式、難度預設、列／欄／地雷數、鍵盤移動與窄螢幕橫向棋盤。",
+      "coverage": "4 寬度編輯／預覽；5/8/12 欄到最右格的鍵盤 reachability；1440/320px 清空數值實際變成 5 且儲存。",
+      "recommendation": "保持簡單訪客遊戲；修正數值草稿，讓設定與試玩有清楚分組。只需可收合的一行旗標／鍵盤說明。",
+      "evidence": "component-operations + numeric drafts probe"
+    },
+    {
+      "type": "character-dialog",
+      "label": "角色彈窗",
+      "tasks": "角色圖／移除、名稱、訊息、連結、auto-show 設定；訪客關閉與重開、同名視窗焦點。",
+      "coverage": "4 寬度編輯／預覽；圖片移除 Undo/reload；auto-show 關閉／重開、競爭開窗、精確 opener 返回。",
+      "recommendation": "既有焦點修正有效，保留。編輯模式中的大預覽可收起以讓資料先出現；不要為此增加強制導覽。",
+      "evidence": "character-dialog-45"
+    },
+    {
+      "type": "guestbook",
+      "label": "留言簿",
+      "tasks": "允許提交、說明、全部／待審／已公開／檢舉／已拒絕、審核動作；訪客提交／重試／report；預覽沙盒。",
+      "coverage": "4 寬度編輯／預覽；公開純文字、失敗保留提交、手機；審核佇列重試與單列鎖定／晚到隔離；preview sandbox 不寫入。",
+      "recommendation": "預設待審與 preview 提示清楚，保留。服務端審核不是編輯 Undo，錯誤須留在當列；不新增教學流程。",
+      "evidence": "guestbook, guestbook-moderation, guestbook-preview"
+    },
+    {
+      "type": "image",
+      "label": "單張圖片",
+      "tasks": "reader 與呈現契約：來源、alt/caption、contain/cover/original、裁切、背景、pixelated、無框／簡框、裝飾性模式；writer 已在程式中但受 gate。",
+      "coverage": "四寬度 editor reader／visitor synthetic image 截圖；既有 reader compatibility 7 案例（含零寫入與 426）；writer 僅來源檢閱，未改開關。",
+      "recommendation": "reader 可用不等於作者功能已發布。先通過原本 reader/API/private-media/release gate；本報告不給完成日期，不用引導顯示不存在的按鈕。",
+      "evidence": "image-reader-compatibility + image reader probe"
+    }
+  ],
+  "crossCutting": [
+    {
+      "surface": "首頁／登入",
+      "source": "LandingPage, AuthPage",
+      "coverage": "首頁、範例入口、登入錯誤與 Google 按鈕。首頁四寬度截圖；landing axe 無 critical 案例通過。",
+      "limits": "Google 真正 OAuth／帳號服務未跑；匿名登入畫面本輪以來源檢閱為主。"
+    },
+    {
+      "surface": "桌面清單",
+      "source": "DesktopHub",
+      "coverage": "擁有者／editor／viewer 卡片、狀態、開啟、新增、空態／失敗重試；既有 4 案例與四寬度實際畫面。",
+      "limits": "權限與後端資料皆 mock。"
+    },
+    {
+      "surface": "建立桌面",
+      "source": "OnboardingPage",
+      "coverage": "三步前進／返回保留輸入、主題與範本，四寬度；500 availability 失敗探針。",
+      "limits": "建立真正帳號／站台未送出；正常建立 API 不是本次驗收。"
+    },
+    {
+      "surface": "協作／邀請／唯讀",
+      "source": "InvitePage, CollaborativeSitePage, CollaborationDialog, DraftViewer",
+      "coverage": "9 既有案例：邀請接受／錯誤、320px、viewer 唯讀、editor 權限、失權離開、管理者新增撤銷／角色變更。",
+      "limits": "全部使用假的本機身份與 API；未寄出真邀請。"
+    },
+    {
+      "surface": "桌面編輯 shell",
+      "source": "EditorPage, DesktopCanvas, LeftPanel, RightPanel",
+      "coverage": "選取、焦點背景、模式、側欄收合、圖示／視窗 layout、8px snapping、max/min/close/restore、不改文檔 view state。",
+      "limits": "四寬度共用 capture；桌面 1440 專案 baseline。多視窗極端密度未逐一驗收。"
+    },
+    {
+      "surface": "手機編輯 shell",
+      "source": "MobileScreen（實際使用）",
+      "coverage": "首頁 → 開元件 → 編輯此視窗／完成、底部新增／編輯／主題／預覽、safe area、長內容捲動；四寬度與 touch probe。",
+      "limits": "MobileEditor.tsx 是 dormant 舊實作，不當成第二套現行 UI。虛擬鍵盤／真機安全區未跑。"
+    },
+    {
+      "surface": "視窗樣式／幾何／圖示",
+      "source": "WindowChromeEditor, WindowAppearanceEditor, IconPicker, CropEditor",
+      "coverage": "既有主題、layout、圖示 lazy library/search/categories/preview/apply/cancel/focus/upload/reload；幾何精確輸入被既有 suites 覆蓋。",
+      "limits": "appearanceP2 的另一組 gated writer 未啟用；全部 theme permutations 未視覺逐格檢查。"
+    },
+    {
+      "surface": "媒體共同流程",
+      "source": "FilePick, ImageUrlField, SafeImg, editorMedia, uploadTasks",
+      "coverage": "可重選同檔、網址草稿、保留 caption/alt、逐檔 retry、原始目標、刪除／Undo／switch 後晚到丟棄、protected image 錯誤。",
+      "limits": "沒有 live upload/HTTP abort/provider/native acceptance。#121/#124 以 PR 檢閱為主。"
+    },
+    {
+      "surface": "儲存／Undo／離開",
+      "source": "EditorPage, store, editorSession",
+      "coverage": "27 save-session 案例含衝突、500/403/409/426、路由離開、回應隔離、Retry、theme preview；手機狀態／Undo 缺口實測。",
+      "limits": "元件本地草稿不等同 canonical dirty；IG Finish loss 已另外重現。"
+    },
+    {
+      "surface": "發布／衝突／資產清單",
+      "source": "EditorPage, DocumentUpgradeRecovery",
+      "coverage": "mock publish success、artifact failure/retry、離開後回應、remote reload、存取失權；發布前 dialog 四寬度 focus probe。",
+      "limits": "真正 publish 未執行；資產清單與每一種阻擋 check 只來源檢閱，不宣稱逐項 UI 驗收。"
+    },
+    {
+      "surface": "匯入／匯出",
+      "source": "TransferDialog",
+      "coverage": "JSON export、missing-media preview、新複本 import、ZIP 拒絕與320px，2既有案例。",
+      "limits": "dialog 焦點缺口與共享模式相似，但本次只對 Publish／phone sheet 做獨立焦點探針。"
+    },
+    {
+      "surface": "訪客預覽",
+      "source": "VisitorPreview, DesktopPreviewViewport, MobileScreen",
+      "coverage": "可發布／目前草稿分離、開新頁與share狀態、mobile/desktop viewport、zoom session、nested Escape、Back、零autosave/Undo。",
+      "limits": "IG「預覽互動」是另一個局部模式；返回正在編輯貼文的連續性列為設計建議，尚未新寫 acceptance。"
+    },
+    {
+      "surface": "訪客桌面／手機",
+      "source": "VisitorDesktop, DesktopTaskbar, MobileScreen",
+      "coverage": "圖示、Start、最小化／重開、下層返回、local clock、手機單視窗、語言menu、deep links、share fallback及私有資料排除。",
+      "limits": "#120 Links return 不在原始基準，已在最後核對的 main；非 Chromium／所有主題組合未跑。"
+    },
+    {
+      "surface": "共同 dialog／picker",
+      "source": "ModalDialog, LinkTargetPicker, IntegrityDialog, IconPicker, Lightbox",
+      "coverage": "picker Cancel/Escape、焦點、刪除影響、lightbox 輪播；現有正確基礎可重用。",
+      "limits": "不能因為有 ModalDialog 就推定所有 legacy section role=dialog 都符合；已發現例外。"
+    },
+    {
+      "surface": "Paint 工具（版本見下）",
+      "source": "PR #122 PaintEditorEntry/Dialog/Workspace",
+      "coverage": "7342aca 專用 worktree/5315：6 現有案例＋430px draw/export/save；桌面、320、390、430 screenshot。",
+      "limits": "原始基準未含；最新 main 已含同一 source head。匯入/進階筆刷 native 高頻指標本輪未重跑；沒有 Pencil/Safari/live asset 驗收。"
+    },
+    {
+      "surface": "尚未實作項",
+      "source": "registry COMING_SOON；Dialog/UiActions/animation plans",
+      "coverage": "日記、角色檔案、視覺小說列在 coming-soon；通用 Dialog action／sequence 等只屬計畫。",
+      "limits": "不將計畫、debug host、disabled writer 算作已完成的使用者元件。"
+    }
+  ]
+}
