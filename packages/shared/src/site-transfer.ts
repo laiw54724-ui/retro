@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { migrateSiteDocumentV2, parseSiteDocument, validateSiteDocumentScope, type VersionedSiteDocument } from "./site-versioning";
 import { projectPublicSiteDocument } from "./public-projection";
+import { cloneWithoutRawAuthoringUrls } from "./authoring-urls";
 
 export const EXPORT_SITE_ID = "export:site";
 export const RETRO_EXPORT_FORMAT = "retrodesk-export";
@@ -42,17 +43,10 @@ export type ImportPreview = {
   missingMedia: Array<{ documentPath: string; reason: string }>;
 };
 
-const rawAuthoringKeys = new Set(["srcUrl", "avatarUrl", "coverUrl", "coverSrcUrl", "imageUrl", "iconUrl"]);
 const mediaKeys = new Set(["src", "avatar", "cover", "coverSrc", "image", "wallImage", "asset", "icon"]);
 const sensitiveQueryKeys = /^(?:token|access_token|auth|authorization|signature|sig|expires|policy|key-pair-id|x-amz-.+|x-goog-.+)$/i;
 const tokenShape = /(?:\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b|\bgh[pousr]_[A-Za-z0-9]{30,}\b|\bsb_secret_[A-Za-z0-9_-]{20,}\b)/;
 const pointer = (segments: Array<string | number>) => `/${segments.map((part) => String(part).replace(/~/g, "~0").replace(/\//g, "~1")).join("/")}`;
-
-function cloneWithoutRawAuthoringUrls<T>(value: T): T {
-  if (Array.isArray(value)) return value.map((item) => cloneWithoutRawAuthoringUrls(item)) as T;
-  if (!value || typeof value !== "object") return value;
-  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, rawAuthoringKeys.has(key) && typeof item === "string" ? "" : cloneWithoutRawAuthoringUrls(item)])) as T;
-}
 
 function sensitiveStrings(value: unknown, segments: Array<string | number> = [], result: TransferDiagnostic[] = []): TransferDiagnostic[] {
   if (typeof value === "string") {

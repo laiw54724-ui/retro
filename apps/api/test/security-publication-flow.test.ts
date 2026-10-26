@@ -111,6 +111,33 @@ beforeEach(() => {
 });
 
 describe("publication commit and asset visibility", () => {
+  it.each([1, 2])("clears v%s About author input across stored snapshot, artifact, and public JSON without changing draft", async (version) => {
+    const draft = fixture(0), about = makeWindow("about");
+    if (about.type !== "about") throw new Error("about fixture");
+    about.content.avatar = `retro-asset:${ids[0]}`;
+    about.content.avatarUrl = "AUTHOR_INPUT_ONLY_FIXTURE";
+    draft.windows.push(about);
+    const migrated = migrateSiteDocumentV2(draft, { siteId: "site-a" });
+    if (!migrated.ok) throw new Error("migration fixture");
+    state.site.draft_document = version === 1 ? draft : migrated.document;
+    const before = structuredClone(state.site.draft_document);
+    const response = await publish();
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ artifactStatus: "synced" });
+    const expected = { type: "about", content: { avatar: `${base}/${publicKey(0)}`, avatarUrl: "" } };
+    expect(state.versions[0].document.windows.at(-1)).toMatchObject(expected);
+    expect(JSON.stringify(state.site.published_document)).not.toContain("AUTHOR_INPUT_ONLY_FIXTURE");
+    const artifact = new TextDecoder().decode(objects.get("published/demo/versions/1/site.json")!.bytes);
+    expect(artifact).not.toContain("AUTHOR_INPUT_ONLY_FIXTURE");
+    expect(JSON.parse(artifact).document.windows.at(-1)).toMatchObject(expected);
+    const publicResponse = await app.request("/api/public/sites/demo", {}, env);
+    expect(publicResponse.status).toBe(200);
+    const body = await publicResponse.text();
+    expect(body).not.toContain("AUTHOR_INPUT_ONLY_FIXTURE");
+    expect(JSON.parse(body).site.published_document.windows.at(-1)).toMatchObject(expected);
+    expect(state.site.draft_document).toEqual(before);
+  });
+
   it.each([1, 2])("publishes and serves v%s images without leaking raw srcUrl while preserving the owner draft", async (version) => {
     const draft = fixture(0), image = makeWindow("image");
     if (image.type !== "image") throw new Error("image fixture");
