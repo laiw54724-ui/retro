@@ -3,7 +3,7 @@ import type { Env } from "../env";
 import { jsonError } from "../lib/http";
 import { requireUser, serviceClient } from "../lib/supabase";
 import { audioBytesMatchMime, extensionForMime, imageBytesMatchMime, normalizeAudioMime } from "../lib/upload";
-import { collectAssetReferences, createAssetReference, parseSiteDocument, replaceExactStrings } from "@retrodesk/shared";
+import { collectAssetReferences, createAssetReference, normalizeAssetId, parseSiteDocument, replaceExactStrings } from "@retrodesk/shared";
 import { requireSiteRole, SiteAccessError, type SiteAccess, type SiteAction } from "../lib/access";
 import { respondWithR2Object } from "../lib/r2-response";
 
@@ -28,6 +28,13 @@ async function loadAssetAccess(
     if (error instanceof SiteAccessError) return jsonError(c, error.status, error.code, error.message);
     throw error;
   }
+}
+
+function containsExactString(value: unknown, candidates: ReadonlySet<string>): boolean {
+  if (typeof value === "string") return candidates.has(value);
+  if (Array.isArray(value)) return value.some((item) => containsExactString(item, candidates));
+  if (value && typeof value === "object") return Object.values(value).some((item) => containsExactString(item, candidates));
+  return false;
 }
 
 assets.post("/sites/:siteId/assets", async (c) => {
@@ -147,27 +154,39 @@ assets.post("/sites/:siteId/assets/migrate", async (c) => {
   if (!(rows ?? []).length) return c.json({ version, document: site.draft_document, migratedCount: 0, cleanupWarnings: [] });
   const replacements = new Map<string, string>();
   const updates: Array<Record<string, string>> = [];
-  const copiedKeys: string[] = [];
+  // Deterministic keys are shared by retries and concurrent requests. A failed
+  // or unknown RPC cannot prove that another transaction has not committed them.
+  // Retain private copies for retry; never roll them back from this request.
   for (const row of rows ?? []) {
     const extension = row.object_key.match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase();
     if (!extension || !["jpg", "jpeg", "png", "webp", "gif"].includes(extension)) {
-      for (const copied of copiedKeys) await c.env.ASSETS.delete(copied);
       return jsonError(c, 400, "asset_migration_failed", `Legacy asset ${row.id} has an unsupported extension`, { assetId: row.id });
     }
     const object = await c.env.ASSETS.get(row.object_key);
     if (!object) {
-      for (const copied of copiedKeys) await c.env.ASSETS.delete(copied);
       return jsonError(c, 400, "asset_migration_failed", `Legacy asset ${row.id} is missing from storage`, { assetId: row.id });
     }
     const normalizedExtension = extension === "jpeg" ? "jpg" : extension;
     const key = `draft/users/${access.ownerId}/sites/${siteId}/${row.id}.${normalizedExtension}`;
     try {
-      await c.env.ASSETS.put(key, object.body, { httpMetadata: { contentType: row.mime_type, cacheControl: "private, no-store" }, customMetadata: { ownerId: access.ownerId, siteId } });
+      const created = await c.env.ASSETS.put(key, object.body, {
+        onlyIf: new Headers({ "If-None-Match": "*" }),
+        httpMetadata: { contentType: row.mime_type, cacheControl: "private, no-store" },
+        customMetadata: { ownerId: access.ownerId, siteId }
+      });
+      if (created === null) {
+        const existing = await c.env.ASSETS.head(key);
+        // A collision or uncertain identity needs investigation, not an
+        // overwrite of bytes that may already have been committed.
+        if (!existing || existing.etag !== object.etag || existing.size !== object.size
+          || existing.httpMetadata?.contentType !== row.mime_type
+          || existing.customMetadata?.ownerId !== access.ownerId || existing.customMetadata?.siteId !== siteId) {
+          return jsonError(c, 502, "asset_migration_failed", "Migration destination already exists with a different identity", { assetId: row.id });
+        }
+      }
     } catch (copyError) {
-      for (const copied of copiedKeys) await c.env.ASSETS.delete(copied);
       return jsonError(c, 502, "asset_migration_failed", copyError instanceof Error ? copyError.message : "Could not copy legacy asset", { assetId: row.id });
     }
-    copiedKeys.push(key);
     const reference = createAssetReference(row.id);
     replacements.set(row.public_url, reference);
     updates.push({ id: row.id, oldObjectKey: row.object_key, oldPublicUrl: row.public_url, objectKey: key, publicUrl: reference });
@@ -175,12 +194,10 @@ assets.post("/sites/:siteId/assets/migrate", async (c) => {
   const document = replaceExactStrings(site.draft_document, replacements);
   const parsed = parseSiteDocument(document);
   if (!parsed.ok) {
-    for (const copied of copiedKeys) await c.env.ASSETS.delete(copied);
     return jsonError(c, 400, "invalid_migration", "The migrated draft is invalid", { diagnostics: parsed.code === "invalid" ? parsed.diagnostics : [] });
   }
   const { data: migrated, error: rpcError } = await supabase.rpc("migrate_site_assets_private", { p_site_id: siteId, p_owner_id: access.ownerId, p_expected_version: version, p_document: document, p_asset_updates: updates });
   if (rpcError) {
-    for (const copied of copiedKeys) await c.env.ASSETS.delete(copied);
     if (rpcError.message.includes("version_conflict")) return jsonError(c, 409, "version_conflict", "This draft changed somewhere else");
     return jsonError(c, 500, "asset_migration_failed", "Could not migrate legacy assets");
   }
@@ -202,14 +219,15 @@ assets.delete("/sites/:siteId/assets/:assetId", async (c) => {
   const user = await requireUser(c);
   if (user instanceof Response) return user;
   const siteId = c.req.param("siteId");
-  const assetId = c.req.param("assetId");
 
   const supabase = serviceClient(c.env);
   const access = await loadAssetAccess(c, supabase, user.id, "assets_write");
   if (access instanceof Response) return access;
+  const assetId = normalizeAssetId(c.req.param("assetId"));
+  if (!assetId) return jsonError(c, 400, "invalid_asset_id", "A valid asset UUID is required");
   const { data: asset, error } = await supabase
     .from("site_assets")
-    .select("id,object_key,migration_status,legacy_object_key")
+    .select("id,object_key,migration_status,legacy_object_key,public_url,legacy_public_url,storage_scope")
     .eq("id", assetId)
     .eq("site_id", siteId)
     .eq("owner_id", access.ownerId)
@@ -224,7 +242,11 @@ assets.delete("/sites/:siteId/assets/:assetId", async (c) => {
   if (siteError) return jsonError(c, 500, "db_error", "Could not verify asset references");
   if (site) {
     const referenced = new Set([...collectAssetReferences(site.draft_document), ...collectAssetReferences(site.published_document)]);
-    if (referenced.has(assetId)) return jsonError(c, 409, "asset_in_use", "Remove this asset from the draft and published site before deleting it");
+    const legacyUrls = new Set<string>([asset.storage_scope === "legacy_public" ? asset.public_url : null, asset.legacy_public_url]
+      .filter((value): value is string => typeof value === "string" && value.length > 0));
+    if (referenced.has(assetId) || containsExactString(site.draft_document, legacyUrls) || containsExactString(site.published_document, legacyUrls)) {
+      return jsonError(c, 409, "asset_in_use", "Remove this asset from the draft and published site before deleting it");
+    }
   }
 
   await c.env.ASSETS.delete(asset.object_key);

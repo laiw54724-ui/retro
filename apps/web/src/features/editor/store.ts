@@ -42,7 +42,8 @@ type EditorState = {
   /** Replace the legacy render projection and canonical v2 snapshot atomically. */
   replaceDocument: (document: SiteDocument, historyKey?: string, versionedDocument?: SiteDocumentV2Input) => void;
   retrySave: () => void;
-  markPublished: (publishedVersion: number) => void;
+  /** Bind publication to the snapshot sent with its expected version, never the draft at response time. */
+  markPublished: (publishedVersion: number, submitted: Pick<EditorState, "siteId" | "document" | "versionedDocument">) => void;
   undo: () => void;
   redo: () => void;
   select: (id: string | null) => void;
@@ -184,12 +185,12 @@ export const useEditorStore = create<EditorState>((set) => ({
   setPublishedRaw: (publishedRaw) => set({ publishedRaw }),
   replaceDocument: (document, historyKey, versionedDocument) => set((state) => withHistory(state, document, {}, historyKey, versionedDocument)),
   retrySave: () => set((state) => state.document ? { saveStatus: "dirty" } : {}),
-  markPublished: (publishedVersion) => set((state) => ({
+  markPublished: (publishedVersion, submitted) => set(() => ({
     publishedVersion,
-    publishedDocument: state.document,
+    publishedDocument: submitted.document,
     // What the API stores is the draft's public projection (private content removed); asset URLs are written server-side
     // and are mapped back to references when compared, so the local projection is the right baseline here.
-    publishedRaw: (() => { if (!state.versionedDocument || !state.siteId) return null; const projected = projectPublicSiteDocument(state.versionedDocument, state.siteId); return projected.ok ? projected.document : null; })(),
+    publishedRaw: (() => { if (!submitted.versionedDocument || !submitted.siteId) return null; const projected = projectPublicSiteDocument(submitted.versionedDocument, submitted.siteId); return projected.ok ? projected.document : null; })(),
   })),
   undo: () => set((state) => {
     if (state.themePreview) return { themePreview: null };

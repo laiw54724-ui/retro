@@ -264,14 +264,21 @@ describe("Q0 combined reader and export compatibility", () => {
     expect(allPresentation(updated)).toEqual(expected);
     const projected = projectPublicSiteDocument(updated, SITE_ID);
     if (!projected.ok || projected.version !== 2) throw new Error("Q0 public projection");
-    expect(allPresentation(projected.document)).toEqual(expected);
+    // Public/export documents retain player identity, not the author's pasted URL.
+    const publicExpected = structuredClone(expected);
+    for (const window of publicExpected) {
+      if ("tracks" in window.content) for (const track of window.content.tracks) {
+        if (track.source.kind === "providerEmbed") track.source.originalUrl = "";
+      }
+    }
+    expect(allPresentation(projected.document)).toEqual(publicExpected);
     for (const document of [v1.document, updated]) {
       const exported = createRetroExport({ scope, document, siteId: SITE_ID, username: "media", siteName: document.siteName });
       if (!exported.ok) throw new Error("Q0 export");
       const imported = inspectRetroImport(JSON.parse(JSON.stringify(exported.value)));
       if (!imported.ok) throw new Error("Q0 import");
-      // Exports deliberately replace the source site scope; all other values remain exact.
-      const exportExpected = structuredClone(expected);
+      // Exports also replace the source site scope; renderer values remain exact.
+      const exportExpected = structuredClone(publicExpected);
       for (const window of exportExpected) {
         if ("shortcuts" in window.content) for (const shortcut of window.content.shortcuts) shortcut.target.siteId = "export:site";
       }

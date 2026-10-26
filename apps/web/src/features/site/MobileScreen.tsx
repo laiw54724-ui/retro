@@ -2,7 +2,7 @@ import { restoreNavigationFocus, useVisitorNavigation } from "../navigation/useV
 import { resolveDesktopLabelAppearance } from "../../lib/windowAppearance";
 import type { PreviewNavigation } from "./previewNavigation";
 import authoring from "./MobileAuthoring.module.css";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { makeWindow, THEME_PRESETS, type CollectionEntityV2, type DesktopWindow, type PostEntityV2, type ProfileEntityV2, type SiteDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { Icon } from "../../components/Icon";
@@ -103,6 +103,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const deleteIcon = (window: DesktopWindow) => { flushDelete(); pendingDeleteRef.current = { window, siteId }; setPendingDelete(window); setOpenId(null); setSheet(null); setRenaming(null); store.select(null); setToast({ id: crypto.randomUUID(), message: t("mobileEditor.deleted", { title: window.title }) }); };
   const iconRefs = useRef(new Map<string, HTMLElement>());
   const screenRef = useRef<HTMLDivElement | null>(null);
+  const focusAppOnOpen = useRef(false);
   const contentEditButton = useRef<HTMLButtonElement | null>(null);
   const music = useMusicPlayback();
   const ordered = useMemo(() => [...document.windows].sort((a, b) => a.layout.mobile.order - b.layout.mobile.order), [document.windows]);
@@ -111,8 +112,17 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
   const selected = document.windows.find((window) => window.id === store.selectedId) ?? null;
 
   useEffect(() => () => stopAllMedia(), []);
-  const open = (id: string, fromNavigation = false) => { if (!fromNavigation) visitor.clearReturns(); if (openId && openId !== id) stopWindowMedia(openId); if (navigation) navigation.openId = id; setOpenId(id); setInlineEdit(editor); if (editor) store.select(id); };
+  const open = (id: string, fromNavigation = false) => { focusAppOnOpen.current = !openId; if (!fromNavigation) visitor.clearReturns(); if (openId && openId !== id) stopWindowMedia(openId); if (navigation) navigation.openId = id; setOpenId(id); setInlineEdit(editor); if (editor) store.select(id); };
   const back = () => { const closingId = openId; if (closingId) stopWindowMedia(closingId); const previous = visitor.back(openId); const returning = previous && visitor.windows.some((window) => window.id === previous.windowId) ? previous : null; if (navigation) navigation.openId = returning?.windowId ?? null; setOpenId(returning?.windowId ?? null); setInlineEdit(editor); if (returning) restoreNavigationFocus(returning.focusKey, screenRef.current); else if (closingId) requestAnimationFrame(() => iconRefs.current.get(closingId)?.focus()); };
+  useLayoutEffect(() => {
+    if (!openWindow || !focusAppOnOpen.current) return;
+    focusAppOnOpen.current = false;
+    const screen = screenRef.current;
+    if (!screen || screen.closest("[inert], [hidden], [aria-hidden='true']")) return;
+    // Only home → App needs initial focus. Nested navigation restores its own
+    // trigger, and adding an App can still focus its title on the next frame.
+    screen.querySelector<HTMLButtonElement>(".m-back")?.focus({ preventScroll: true });
+  }, [openWindow?.id]);
   useEffect(() => {
     if (!openId) return;
     // preventDefault marks the key as handled, so a surrounding preview does not also close on the same Escape
@@ -167,7 +177,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
       ) : null}
 
       <div className="m-stage">
-        <div className="m-scroll">
+        <div className="m-scroll" inert={!!openWindow}>
           {editor ? <LongPressReorderGrid items={ordered.filter(window=>window.id!==pendingDelete?.id)} columns={document.mobileColumns} arranging={arranging} revision={store.document} onArrangeStart={()=>setArranging(true)} onReorder={ids=>{ if(useEditorStore.getState().document !== document || useEditorStore.getState().siteId !== siteId)return; if(pendingDelete){flushDelete();setToast(null);} store.reorderMobileIds(ids); }} onOpen={id=>{if(arranging){const window=ordered.find(window=>window.id===id);if(window){setRenameDraft(window.title);setRenaming(id);}}else open(id);}} cellRef={(id,node)=>{if(node)iconRefs.current.set(id,node);else iconRefs.current.delete(id);}} label={t("mobileEditor.desktopIcons")} renderGhost={window=><Icon name={window.icon} size={40}/>} renderCell={window=><>
             <span className="m-tile" style={{background:tv.tileBg,boxShadow:tv.tileShadow}}><Icon name={window.icon} size={40}/></span>
             {renaming===window.id ? <InlineTextField autoFocus className="m-icon-rename" aria-label={t("mobileEditor.iconName")} value={renameDraft} maxLength={160} onPointerDown={e=>e.stopPropagation()} onValueChange={setRenameDraft} onBlur={()=>{if(renameDraft.trim())store.updateWindow(window.id,current=>({...current,title:renameDraft.trim()}));setRenaming(null);}} onKeyDown={e=>{e.stopPropagation();if(e.key==='Escape'){e.preventDefault();setRenaming(null);requestAnimationFrame(()=>iconRefs.current.get(window.id)?.focus());}else if(e.key==='Enter'&&!e.nativeEvent.isComposing){e.preventDefault();if(renameDraft.trim())store.updateWindow(window.id,current=>({...current,title:renameDraft.trim()}));setRenaming(null);requestAnimationFrame(()=>iconRefs.current.get(window.id)?.focus());}}}/> : <span className="m-label" style={resolveDesktopLabelAppearance(theme,window.appearance)}>{window.title}</span>}
@@ -175,7 +185,7 @@ export function MobileScreen({ document, mode, framed = false, siteId, upload, o
           </>} /> : (
           <div className="mobile-icons m-grid" style={{ gridTemplateColumns: `repeat(${document.mobileColumns}, minmax(0, 1fr))` }}>
             {ordered.map((window) => (
-              <button key={window.id} ref={(node) => { if (node) iconRefs.current.set(window.id, node); else iconRefs.current.delete(window.id); }} type="button" className="m-icon" data-window-id={window.id} aria-label={window.title} style={{ outline: editor && store.selectedId === window.id ? `2px dotted ${tv.text}` : "none" }} onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); open(window.id); }}>
+              <button key={window.id} ref={(node) => { if (node) iconRefs.current.set(window.id, node); else iconRefs.current.delete(window.id); }} type="button" className="m-icon" data-window-id={window.id} aria-label={window.title} onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); open(window.id); }}>
                 <span className="m-tile" style={{ background: tv.tileBg, boxShadow: tv.tileShadow }}><Icon name={window.icon} size={40} /></span>
                 <span className="m-label" style={resolveDesktopLabelAppearance(theme, window.appearance)}>{window.title}</span>
               </button>

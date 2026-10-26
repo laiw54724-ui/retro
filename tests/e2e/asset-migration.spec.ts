@@ -48,9 +48,13 @@ test("legacy asset warning identifies each asset and refreshes after v2 migratio
   await expect(dialog.getByText("未使用舊圖")).toBeVisible();
   await expect(dialog.getByText("草稿中沒有引用（可考慮刪除）")).toBeVisible();
   await expect(dialog.getByText(urls[2])).toBeVisible();
+  const assetList = dialog.locator(".asset-inventory-list");
+  await expect(assetList.getByRole("listitem")).toHaveCount(3);
   page.once("dialog", (prompt) => prompt.accept());
   await dialog.getByRole("button", { name: "刪除未使用素材" }).click();
-  await expect(dialog.getByText("未使用舊圖")).toHaveCount(0);
+  await expect(assetList.getByText("未使用舊圖", { exact: true })).toHaveCount(0);
+  await expect(assetList.getByRole("listitem")).toHaveCount(2);
+  await expect(dialog.getByRole("status")).toHaveText("已刪除未使用素材「未使用舊圖」。");
   await expect(page.getByText("有 2 個舊素材仍是公開網址。")).toBeVisible();
 
   await dialog.getByRole("button", { name: "轉為私有（2）" }).click();

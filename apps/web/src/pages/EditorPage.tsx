@@ -1,5 +1,6 @@
 import { ImageWriteProvider } from "../features/editor/ImageWriteContext";
 import { AppearanceWriteProvider } from "../features/editor/AppearanceWriteContext";
+import { downloadLocalDocument } from "../features/editor/downloadLocalDocument";
 import { DocumentUpgradeRecovery } from "../features/editor/DocumentUpgradeRecovery";
 import type { AppearanceApiLoad } from "../lib/appearanceCompatibility";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -152,6 +153,13 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   const [loadError, setLoadError] = useState("");
   const [message, setMessage] = useState<EditorMessage>("");
   const [conflict, setConflict] = useState(false);
+  const [migrationConflict, setMigrationConflict] = useState(false);
+  const [backupMessage, setBackupMessage] = useState("");
+  const [copyingLocal, setCopyingLocal] = useState(false);
+  const [publishMessage, setPublishMessage] = useState<EditorMessage>("");
+  const [assetMessage, setAssetMessage] = useState<EditorMessage>("");
+  const [assetRefreshFailed, setAssetRefreshFailed] = useState(false);
+  const messageText = (value: EditorMessage) => typeof value === "string" ? value : translateError(value, errorT, t(value.fallback)) + (value.assetName ? t("page.assetSuffix", { name: value.assetName }) : "");
   // Dismissing recovery must not resume autosave against a conflicting version.
   const [conflictRecoveryOpen, setConflictRecoveryOpen] = useState(false);
   const upgradePaused = useRef(false);
@@ -207,6 +215,8 @@ export function EditorPage({ site }: { site: SiteRecord }) {
   }, [sidebarPreferences]);
 
   function applyLoadedSite(site: SiteRecord) {
+    setMigrationConflict(false);
+    setBackupMessage("");
     const loadedDraft = loadVersionedSiteDocument(site.draft_document, { siteId: site.id, migrateV1: true });
     if (!loadedDraft.ok) throw new Error(loadedDraft.diagnostics[0]?.message ?? t("editor.theDraftFormatIsInvalid"));
     const loadedPublished = site.published_document ? loadVersionedSiteDocument(site.published_document, { siteId: site.id }) : null;
@@ -326,10 +336,29 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     }
   }, [store.versionedDocument]);
 
-  const refreshAssetInventory = () => api.listAssets(siteId).then(({ assets }) => {
-    setAssetInventory(assets);
+  const refreshAssetInventory = async () => {
+    const isCurrentSession = captureSaveSession();
+    const { assets } = await api.listAssets(siteId);
+    if (isCurrentSession()) setAssetInventory(assets);
     return assets;
-  });
+  };
+  async function refreshPublishedAssets() {
+    const isCurrentSession = captureSaveSession();
+    try {
+      await refreshAssetInventory();
+      if (isCurrentSession()) setAssetRefreshFailed(false);
+    } catch {
+      // An ancillary GET cannot turn a confirmed publication into a failed publish or a draft conflict.
+      if (isCurrentSession()) setAssetRefreshFailed(true);
+    }
+  }
+  function closePublishSuccess() {
+    setPublishSuccess(null);
+    const isCurrentSession = captureSaveSession();
+    requestAnimationFrame(() => {
+      if (isCurrentSession()) editorAppRef.current?.querySelector<HTMLElement>('[data-help="publish"]:not(:disabled), [data-help="preview"]')?.focus();
+    });
+  }
   useEffect(() => { void refreshAssetInventory().catch(() => undefined); }, [siteId]);
 
   useEffect(() => {
@@ -517,13 +546,20 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     setPublishing(true);
     setMessage("");
     try {
-      const result = await api.publish(siteId, store.version);
+      const submitted = useEditorStore.getState();
+      if (submitted.saveStatus === "dirty" || submitted.saveStatus === "saving" || submitted.saveStatus === "error") {
+        setPublishPrompt(false);
+        setMessage(t(submitted.saveStatus === "error" ? "editor.theDraftHasASave" : "editor.pleaseWaitForTheDraft"));
+        return;
+      }
+      setPublishMessage(""); setAssetRefreshFailed(false);
+      const result = await api.publish(siteId, submitted.version);
       if (!isCurrentSession() || upgradePaused.current) return;
       const absoluteUrl = new URL(result.url, window.location.origin).toString();
-      store.markPublished(result.publishedVersion);
+      store.markPublished(result.publishedVersion, submitted);
       setPublishPrompt(false);
       setPublishSuccess({ version: result.publishedVersion, url: absoluteUrl, artifactStatus: result.artifactStatus, retryable: result.retryable });
-      await refreshAssetInventory();
+      await refreshPublishedAssets();
     } catch (error) {
       if (!isCurrentSession()) return;
       if (stopForUpgrade(error)) return;
@@ -559,12 +595,23 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     }
   }
 
+  function localRecoveryDocument() {
+    const current = useEditorStore.getState();
+    return current.versionedDocument ?? versionedDraftRef.current ?? current.document;
+  }
+
   async function copyLocalJson() {
+    if (copyingLocal) return;
+    const isCurrentSession = captureSaveSession();
+    setCopyingLocal(true);
+    setBackupMessage(t("editor.copyingLocalJson"));
     try {
-      await navigator.clipboard.writeText(JSON.stringify(store.versionedDocument ?? versionedDraft ?? store.document, null, 2));
-      setMessage(t("editor.theCurrentLocalDraftJson"));
+      await navigator.clipboard.writeText(JSON.stringify(localRecoveryDocument(), null, 2));
+      if (isCurrentSession()) setBackupMessage(t("editor.theCurrentLocalDraftJson"));
     } catch {
-      setMessage(t("editor.theClipboardIsntAvailablePlease"));
+      if (isCurrentSession()) setBackupMessage(t("editor.theClipboardIsntAvailablePlease"));
+    } finally {
+      if (isCurrentSession()) setCopyingLocal(false);
     }
   }
 
@@ -572,10 +619,15 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     if (!publishSuccess) return;
     try {
       await navigator.clipboard.writeText(publishSuccess.url);
-      setMessage(t("editor.publicUrlCopied"));
+      setPublishMessage(t("editor.publicUrlCopied"));
     } catch {
-      setMessage(t("editor.couldntCopyTheUrlAutomatically"));
+      setPublishMessage(t("editor.couldntCopyTheUrlAutomatically"));
     }
+  }
+
+  function reportAssetMessage(value: EditorMessage) {
+    setAssetMessage(value);
+    setMessage(value);
   }
 
   async function migrateLegacyAssets() {
@@ -583,32 +635,48 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     if (!store.document || migratingAssets) return;
     const isCurrentSession = captureSaveSession();
     setMigratingAssets(true);
+    let submitted = useEditorStore.getState();
+    const changedSinceSubmission = () => {
+      const current = useEditorStore.getState();
+      return current.document !== submitted.document || current.versionedDocument !== submitted.versionedDocument
+        || current.past !== submitted.past || current.future !== submitted.future || current.version !== submitted.version;
+    };
+    const retainNewerDraft = () => {
+      setMigrationConflict(true); setConflict(true); setConflictRecoveryOpen(true);
+      setAssetInventoryOpen(false); setBackupMessage("");
+    };
     try {
-      let version = store.version;
-      if (store.saveStatus === "dirty") {
-        const documentToSave = store.versionedDocument ?? versionedDraftRef.current ?? store.document;
+      let version = submitted.version;
+      if (submitted.saveStatus === "dirty") {
+        const documentToSave = submitted.versionedDocument ?? versionedDraftRef.current ?? submitted.document!;
         const saved = await api.saveDraft(siteId, version, documentToSave);
         // Another request may have paused this editor while the save was pending.
         if (upgradePaused.current || !isCurrentSession()) return;
-        store.markSaved(saved.version, store.document);
+        if (changedSinceSubmission()) { retainNewerDraft(); return; }
+        store.markSaved(saved.version, submitted.document!);
         version = saved.version;
+        submitted = { ...submitted, version };
       }
       if (upgradePaused.current || !isCurrentSession()) return;
       const result = await api.migrateLegacyAssets(siteId, version);
       // A late migration response must never replace the retained local draft.
       if (upgradePaused.current || !isCurrentSession()) return;
+      // Same-session edits, uploads, autosaves or undo/redo also invalidate the response.
+      // Preserve the entire local history and require backup/reload rather than guessing a merge.
+      if (changedSinceSubmission()) { retainNewerDraft(); return; }
       const loaded = loadVersionedSiteDocument(result.document, { siteId, migrateV1: true });
       if (!loaded.ok) throw new Error(loaded.diagnostics[0]?.message ?? t("editor.theMigratedDraftsFormatIs"));
       const legacy = loadedLegacyDocument(loaded);
       const canonical = loaded.version === 2 ? loaded.document : null;
-      store.setSite(store.siteId!, store.username, legacy, result.version, store.publishedDocument, store.publishedVersion, store.accessRole);
+      const current = useEditorStore.getState();
+      store.setSite(current.siteId!, current.username, legacy, result.version, current.publishedDocument, current.publishedVersion, current.accessRole);
       versionedDraftRef.current = canonical;
       setVersionedDraft(canonical);
       store.setVersionedDocument(canonical);
       const refreshed = await refreshAssetInventory();
       if (upgradePaused.current || !isCurrentSession()) return;
       const stillLegacy = refreshed.filter((asset) => asset.storageScope === "legacy_public");
-      setMessage(stillLegacy.length
+      reportAssetMessage(stillLegacy.length
         ? t("editor.migratedButLegacyAssetsAre", { migratedCount: result.migratedCount, length: stillLegacy.length })
         : result.cleanupWarnings.length
           ? t("editor.assetsWereConvertedToPrivate", { length: result.cleanupWarnings.length })
@@ -618,7 +686,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       if (!isCurrentSession() || stopForUpgrade(error) || upgradePaused.current) return;
       const assetId = error instanceof ApiError && error.details && typeof error.details === "object" && "assetId" in error.details ? String((error.details as { assetId: unknown }).assetId) : "";
       const asset = assetInventory.find((item) => item.id === assetId);
-      setMessage({ code: error instanceof ApiError ? error.code : undefined, fallback: "page.assetMigrationFailed", assetName: asset ? asset.name || asset.id : undefined });
+      reportAssetMessage({ code: error instanceof ApiError ? error.code : undefined, fallback: "page.assetMigrationFailed", assetName: asset ? asset.name || asset.id : undefined });
       setAssetInventoryOpen(true);
     }
     finally { setMigratingAssets(false); }
@@ -630,10 +698,10 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     try {
       await api.deleteAsset(siteId, asset.id);
       await refreshAssetInventory();
-      setMessage(t("editor.deletedTheUnusedAsset", { v1: asset.name || asset.id }));
+      reportAssetMessage(t("editor.deletedTheUnusedAsset", { v1: asset.name || asset.id }));
     } catch (error) {
       const code = error instanceof ApiError ? error.code : "";
-      setMessage(code === "asset_public_copy_pending"
+      reportAssetMessage(code === "asset_public_copy_pending"
         ? { fallback: "editor.thisAssetStillHasA" }
         : { code: error instanceof ApiError ? error.code : undefined, fallback: "editor.failedToDeleteTheAsset" });
     } finally {
@@ -726,7 +794,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       ) : null}
 
       {upgradeRequired ? <div className="editor-message" role="status"><span>{t("documentCompatibility.paused")}</span><button onClick={() => setUpgradeRecoveryOpen(true)}>{t("documentCompatibility.title")}</button></div> : null}
-      {conflict ? <div className="editor-message conflict-notice" role="status"><span>{t("editor.anUpdateFromAnotherTab")}</span><RetroButton className="conflict-reopen" onClick={() => setConflictRecoveryOpen(true)}>{t("editor.versionConflict")}</RetroButton></div> : null}
+      {conflict ? <div className="editor-message conflict-notice" role="status"><span>{t(migrationConflict ? "editor.migrationDraftRetained" : "editor.anUpdateFromAnotherTab")}</span><RetroButton className="conflict-reopen" onClick={() => setConflictRecoveryOpen(true)}>{t("editor.versionConflict")}</RetroButton></div> : null}
       {upgradeRequired && upgradeRecoveryOpen && store.document ? <DocumentUpgradeRecovery key={siteId} siteId={siteId} localDocument={store.versionedDocument ?? versionedDraft ?? store.document} onClose={() => setUpgradeRecoveryOpen(false)} /> : null}
 
       {legacyAssets.length > 0 || pendingPublicCopyAssets.length > 0 ? <div className="editor-message asset-migration-message" role="status">
@@ -740,10 +808,8 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         {legacyAssets.length > 0 && actions.migrateAssets ? <button disabled={upgradeRequired || migratingAssets || store.saveStatus === "saving" || store.saveStatus === "error" || conflict} onClick={migrateLegacyAssets}>{migratingAssets ? t("editor.migrating") : t("editor.convertToPrivateAssets")}</button> : null}
       </div> : null}
 
-      {assetInventoryOpen ? <div className="modal-backdrop" role="presentation">
-        <section className="retro-panel editor-dialog asset-inventory-dialog" role="dialog" aria-modal="true" aria-labelledby="asset-inventory-title">
-          <header className="landing-titlebar" id="asset-inventory-title">{t("editor.legacyAssetMigrationDetails")}</header>
-          <div className="dialog-body">
+      {assetInventoryOpen ? <ModalDialog title={t("editor.legacyAssetMigrationDetails")} className="publish-preflight asset-inventory-dialog" width={720} onClose={() => setAssetInventoryOpen(false)}>
+            {assetMessage ? <p role="status">{messageText(assetMessage)}</p> : null}
             <p>{t("editor.thisListsEachAssetsName")}</p>
             {migrationAudits.length ? <ul className="asset-inventory-list">
               {migrationAudits.map(({ asset, references }) => <li key={asset.id}>
@@ -759,13 +825,10 @@ export function EditorPage({ site }: { site: SiteRecord }) {
               </li>)}
             </ul> : <p role="status">{t("editor.noLegacyAssetsNeedMigration")}</p>}
             <div className="button-row end">
-              <RetroButton onClick={() => void refreshAssetInventory().catch((error) => setMessage({ code: error instanceof ApiError ? error.code : undefined, fallback: "editor.couldntReScanAssets" }))}>{t("editor.reScan")}</RetroButton>
+              <RetroButton onClick={() => void refreshAssetInventory().then(() => setAssetMessage("")).catch((error) => setAssetMessage({ code: error instanceof ApiError ? error.code : undefined, fallback: "editor.couldntReScanAssets" }))}>{t("editor.reScan")}</RetroButton>
               {legacyAssets.length && actions.migrateAssets ? <RetroButton className="primary" disabled={upgradeRequired || migratingAssets || store.saveStatus === "saving" || store.saveStatus === "error" || conflict} onClick={migrateLegacyAssets}>{migratingAssets ? t("editor.migrating") : t("editor.convertToPrivate", { length: legacyAssets.length })}</RetroButton> : null}
-              <RetroButton onClick={() => setAssetInventoryOpen(false)}>{t("editor.close")}</RetroButton>
             </div>
-          </div>
-        </section>
-      </div> : null}
+      </ModalDialog> : null}
 
       <div className="editor-grid2">
         {!layoutMode && sidebarPreferences.leftExpanded ? (
@@ -854,13 +917,16 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       {conflict && conflictRecoveryOpen ? (
         <ModalDialog role="alertdialog" title={t("editor.versionConflict")} className="publish-preflight" width={520} dismissOnBackdrop={false} onClose={() => setConflictRecoveryOpen(false)} actions={
           <>
-            <RetroButton data-autofocus onClick={copyLocalJson}>{t("editor.copyLocalJson")}</RetroButton>
+            <RetroButton data-autofocus disabled={copyingLocal} onClick={copyLocalJson}>{t("editor.copyLocalJson")}</RetroButton>
+            <RetroButton onClick={() => downloadLocalDocument(siteId, localRecoveryDocument())}>{t("documentCompatibility.download")}</RetroButton>
             <RetroButton onClick={() => setConflictRecoveryOpen(false)}>{t("editor.cancel")}</RetroButton>
             <RetroButton className="primary" onClick={reloadRemote}>{t("editor.reloadTheCloudVersion")}</RetroButton>
           </>
         }>
-          <h2>{t("editor.aNewerVersionOfThe")}</h2>
+          <h2>{t(migrationConflict ? "editor.migrationDraftRetained" : "editor.aNewerVersionOfThe")}</h2>
           <p>{t("editor.autosaveWasStoppedToAvoid")}</p>
+          <p>{t("editor.reloadReplacesLocal")}</p>
+          {backupMessage ? <p role="status">{backupMessage}</p> : null}
         </ModalDialog>
       ) : null}
 
@@ -882,28 +948,29 @@ export function EditorPage({ site }: { site: SiteRecord }) {
       ) : null}
 
       {publishSuccess ? (
-        <div className="modal-backdrop" role="presentation">
-          <section className="retro-panel editor-dialog" role="dialog" aria-modal="true" aria-labelledby="success-title">
-            <header className="landing-titlebar" id="success-title">{t("editor.published")}</header>
-            <div className="dialog-body">
-              <h2>{t("page.publishedLive", { version: publishSuccess.version })}</h2>
-              {publishSuccess.artifactStatus === "failed" ? <p role="alert">{t("editor.theDatabaseVersionIsPublished")}</p> : <p>{t("editor.publicFilesAreNowIn")}</p>}
-              <input className="share-url" readOnly value={publishSuccess.url} onFocus={(event) => event.currentTarget.select()} />
-              <div className="button-row end">
-                <RetroButton onClick={copyPublishedUrl}>{t("editor.copyUrl")}</RetroButton>
-                {publishSuccess.retryable && !upgradeRequired ? <RetroButton onClick={async () => {
-                  if (upgradePaused.current) return;
-                  try {
-                    const result = await api.retryPublish(siteId);
-                    setPublishSuccess((current) => current ? { ...current, artifactStatus: result.artifactStatus, retryable: result.retryable } : current);
-                  } catch (error) { if (!stopForUpgrade(error)) setMessage({ code: error instanceof ApiError ? error.code : undefined, fallback: "editor.syncRetryFailed" }); }
-                }}>{t("editor.retrySync")}</RetroButton> : null}
-                <a className="retro-link" href={publishSuccess.url} target="_blank" rel="noreferrer">{t("editor.openSite")}</a>
-                <RetroButton className="primary" onClick={() => setPublishSuccess(null)}>{t("editor.done")}</RetroButton>
-              </div>
-            </div>
-          </section>
-        </div>
+        <ModalDialog title={t("editor.published")} className="publish-preflight" width={520} onClose={closePublishSuccess} actions={
+          <>
+            <RetroButton data-autofocus onClick={copyPublishedUrl}>{t("editor.copyUrl")}</RetroButton>
+            {publishSuccess.retryable && !upgradeRequired ? <RetroButton onClick={async () => {
+              if (upgradePaused.current) return;
+              const isCurrentSession = captureSaveSession();
+              try {
+                const result = await api.retryPublish(siteId);
+                if (!isCurrentSession() || upgradePaused.current) return;
+                setPublishSuccess(current => current ? { ...current, artifactStatus: result.artifactStatus, retryable: result.retryable } : current);
+                setPublishMessage("");
+              } catch (error) { if (isCurrentSession() && !stopForUpgrade(error)) setPublishMessage({ code: error instanceof ApiError ? error.code : undefined, fallback: "editor.syncRetryFailed" }); }
+            }}>{t("editor.retrySync")}</RetroButton> : null}
+            <a className="retro-link" href={publishSuccess.url} target="_blank" rel="noreferrer">{t("editor.openSite")}</a>
+            <RetroButton className="primary" onClick={closePublishSuccess}>{t("editor.done")}</RetroButton>
+          </>
+        }>
+          <h2>{t("page.publishedLive", { version: publishSuccess.version })}</h2>
+          {publishSuccess.artifactStatus === "failed" ? <p role="alert">{t("editor.theDatabaseVersionIsPublished")}</p> : <p>{t("editor.publicFilesAreNowIn")}</p>}
+          <input className="share-url" aria-label={t("editor.publicUrl")} readOnly value={publishSuccess.url} onFocus={event => event.currentTarget.select()} />
+          {publishMessage ? <p role="status">{messageText(publishMessage)}</p> : null}
+          {assetRefreshFailed ? <div><p role="status">{t("editor.publishedAssetsRefreshFailed")}</p><RetroButton onClick={() => void refreshPublishedAssets()}>{t("editor.reScan")}</RetroButton></div> : null}
+        </ModalDialog>
       ) : null}
       {leaveGuard.prompt}
     </main>

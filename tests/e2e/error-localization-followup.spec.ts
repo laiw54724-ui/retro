@@ -71,10 +71,11 @@ test("asset migration, re-scan, and deletion hide backend details and keep the a
     id: "unused-asset", url: "https://assets.test/unused.png", mimeType: "image/png", size: 20,
     kind: "image", name: "作者圖片", createdAt: "2026-10-17T00:00:00Z", storageScope: "legacy_public"
   };
-  let assetReads = 0;
+  // Initial inventory loads (including StrictMode replay) must succeed. Fail only
+  // the user-triggered re-scan, independently of session setup request counts.
+  let failAssetReads = false;
   await page.route("**/api/sites/site-1/assets", (route) => {
-    assetReads += 1;
-    return route.fulfill(assetReads === 1 ? { json: { assets: [asset] } } : {
+    return route.fulfill(!failAssetReads ? { json: { assets: [asset] } } : {
       status: 429, json: { error: { code: "rate_limited", message: privateMessage } }
     });
   });
@@ -86,14 +87,18 @@ test("asset migration, re-scan, and deletion hide backend details and keep the a
   }));
   await openEditor(page);
   await page.getByRole("button", { name: "轉為私有素材" }).click();
-  const notice = page.locator(".editor-message[role='alert']");
+  const inventory = page.getByRole("dialog", { name: /^(舊素材遷移明細|Legacy asset migration details)$/ });
+  const notice = inventory.getByRole("status");
+  await expect(inventory).toHaveAccessibleName("舊素材遷移明細");
   await expect(notice).toContainText("素材遷移失敗（作者圖片）");
   await expect(notice).not.toContainText(privateMessage);
   await switchToEnglish(page);
   await expect(notice).toContainText("Asset migration failed (作者圖片)");
-  const inventory = page.getByRole("dialog", { name: "Legacy asset migration details" });
+  await expect(inventory).toHaveAccessibleName("Legacy asset migration details");
+  failAssetReads = true;
   await inventory.getByRole("button", { name: "Re-scan" }).click();
   await expect(notice).toContainText("Too many requests. Please wait and try again.");
+  await expect(notice).not.toContainText(privateMessage);
   page.once("dialog", (dialog) => void dialog.accept());
   await inventory.getByRole("button", { name: "Delete unused asset" }).click();
   await expect(notice).toContainText("Failed to delete the asset");
@@ -111,9 +116,10 @@ test("sync retry failure uses a safe fallback without removing the retry action"
   await openEditor(page);
   await page.getByRole("button", { name: "發布", exact: true }).click();
   await page.getByRole("dialog", { name: "發布 Retro Desktop" }).getByRole("button", { name: "確認發布" }).click();
-  const success = page.getByRole("dialog", { name: "發布完成" });
+  const success = page.getByRole("dialog", { name: /^(發布完成|Published)$/ });
+  await expect(success).toHaveAccessibleName("發布完成");
   await success.getByRole("button", { name: "重試同步" }).click();
-  const notice = page.locator(".editor-message[role='alert']");
+  const notice = success.getByRole("status");
   await expect(notice).toContainText("同步重試失敗");
   await expect(notice).not.toContainText(privateMessage);
   await switchToEnglish(page);

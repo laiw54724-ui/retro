@@ -319,7 +319,11 @@
     "syncRetryFailed": "同期の再試行に失敗しました",
     "retrySync": "同期を再試行",
     "openSite": "サイトを開く",
-    "done": "完了"
+    "done": "完了",
+    "migrationDraftRetained": "素材の移行中に新しいローカル変更がありました。下書きと元に戻す履歴は保持されています。",
+    "reloadReplacesLocal": "再読み込みすると、現在のローカル下書きと元に戻す履歴が置き換わります。先にJSONをコピーまたはダウンロードしてバックアップしてください。",
+    "publishedAssetsRefreshFailed": "公開は完了しましたが、素材一覧を更新できませんでした。再公開せずに素材を再確認できます。",
+    "copyingLocalJson": "ローカル下書きのJSONをコピーしています…"
   },
   "inspectorContent": {
     "loading": "読み込み中…",

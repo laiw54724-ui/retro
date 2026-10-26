@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createStarterDocument, makeWindow, migrateSiteDocumentV2, parseSiteDocument, projectV2ToLegacyDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
+import { createStarterDocument, hasUnpublishedChanges, makeWindow, migrateSiteDocumentV2, parseSiteDocument, projectV2ToLegacyDocument, type SiteDocumentV2Input } from "@retrodesk/shared";
 import { useEditorStore } from "./store";
 
 function profileFixture() {
@@ -19,6 +19,26 @@ function withProfileAccent(document: SiteDocumentV2Input, accent: string): SiteD
 }
 
 describe("editor canonical history", () => {
+  it("publishes the submitted snapshot while retaining edits completed during the request", () => {
+    const { legacy, versioned } = profileFixture();
+    const store = useEditorStore.getState();
+    store.setSite("site-a", "alice", legacy, 1, null, null, "owner");
+    store.setVersionedDocument(versioned);
+    const submitted = useEditorStore.getState();
+    store.setSiteName("Late upload or edit");
+    const edited = useEditorStore.getState();
+    store.markPublished(1, submitted);
+    const result = useEditorStore.getState();
+    expect(result.publishedDocument).toBe(legacy);
+    expect(result.document).toBe(edited.document);
+    expect(result.past).toBe(edited.past);
+    expect(result.saveStatus).toBe("dirty");
+    expect(hasUnpublishedChanges({ siteId: "site-a", assets: { username: "alice", trustedAssetBaseUrls: [] }, draftLegacy: result.document!, publishedLegacy: result.publishedDocument, draftCanonical: result.versionedDocument, publishedRaw: result.publishedRaw })).toBe(true);
+    store.undo();
+    expect(hasUnpublishedChanges({ siteId: "site-a", assets: { username: "alice", trustedAssetBaseUrls: [] }, draftLegacy: useEditorStore.getState().document!, publishedLegacy: result.publishedDocument, draftCanonical: useEditorStore.getState().versionedDocument, publishedRaw: result.publishedRaw })).toBe(false);
+    store.redo();
+    expect(useEditorStore.getState().document?.siteName).toBe("Late upload or edit");
+  });
   it("clears hidden window selection without changing the canonical document or history", () => {
     const { legacy, versioned } = profileFixture();
     const store = useEditorStore.getState();
