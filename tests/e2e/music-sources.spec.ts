@@ -42,6 +42,15 @@ async function stubPlatforms(page: Page, opts: { hang?: boolean } = {}) {
   });
 }
 
+async function stubSpotifyPopup(page: Page) {
+  // A page route cannot intercept a popup's first navigation. Keep the exact
+  // canonical destination synthetic without changing the iframe failure routes.
+  await page.context().route(SPOTIFY, route => route.fulfill({
+    contentType: "text/html",
+    body: "<!doctype html><title>Mock Spotify destination</title><h1>Mock Spotify destination</h1>"
+  }));
+}
+
 /** Valid, self-authored PCM: even a mocked play() must not load a corrupt file. */
 function silentPcmWave() {
   const sampleRate = 8_000;
@@ -300,6 +309,7 @@ test.describe("visitor: official platform players", () => {
   });
 
   test("when the platform never answers, the visitor is told what to do and the original link stays available", async ({ page }) => {
+    await stubSpotifyPopup(page);
     await page.clock.install();
     await stubPlatforms(page, { hang: true });
     const player = await openPublic(page, doc(musicWindow("Music.exe", [spotify])));
@@ -309,10 +319,13 @@ test.describe("visitor: official platform players", () => {
     await expect(player.getByRole("status")).toContainText("還沒有回應");
     const popup = page.context().waitForEvent("page");
     await player.getByRole("button", { name: "在 Spotify 開啟 ↗" }).click();
-    expect((await popup).url()).toBe(SPOTIFY);
+    const destination = await popup;
+    await expect(destination).toHaveURL(SPOTIFY);
+    await expect(destination.getByRole("heading", { name: "Mock Spotify destination" })).toBeVisible();
   });
 
   test("a blocked or failing platform leaves the original link working and never leaves a frame running", async ({ page }) => {
+    await stubSpotifyPopup(page);
     // 1) the network refuses the connection; 2) the platform answers but forbids framing
     for (const mode of ["abort", "deny-framing"] as const) {
       await page.unroute(/https:\/\/(open\.spotify\.com|www\.youtube-nocookie\.com)\/.*/).catch(() => undefined);
@@ -326,7 +339,9 @@ test.describe("visitor: official platform players", () => {
       await expect(player.getByRole("button", { name: "在 Spotify 開啟 ↗" })).toBeVisible();
       await expect(player.getByText("能否完整播放取決於你的 Spotify 帳號")).toBeVisible();
       await player.getByRole("button", { name: "在 Spotify 開啟 ↗" }).click();
-      expect((await popupTarget).url()).toBe(SPOTIFY);
+      const destination = await popupTarget;
+      await expect(destination).toHaveURL(SPOTIFY);
+      await expect(destination.getByRole("heading", { name: "Mock Spotify destination" })).toBeVisible();
       await player.getByRole("button", { name: "關閉播放器" }).click();
       await expect(page.locator("iframe")).toHaveCount(0);
       await page.goto("about:blank");
