@@ -319,7 +319,11 @@
     "syncRetryFailed": "Sync retry failed",
     "retrySync": "Retry sync",
     "openSite": "Open site",
-    "done": "Done"
+    "done": "Done",
+    "migrationDraftRetained": "New local changes arrived during asset migration. Your draft and undo history have been retained.",
+    "reloadReplacesLocal": "Reloading replaces the current local draft and undo history. Copy or download a JSON backup first.",
+    "publishedAssetsRefreshFailed": "Publishing succeeded, but the asset list could not be refreshed. Re-scan assets without publishing again.",
+    "copyingLocalJson": "Copying the local draft JSON…"
   },
   "inspectorContent": {
     "loading": "Loading…",

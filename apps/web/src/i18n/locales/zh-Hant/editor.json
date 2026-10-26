@@ -319,7 +319,11 @@
     "syncRetryFailed": "同步重試失敗",
     "retrySync": "重試同步",
     "openSite": "開啟網站",
-    "done": "完成"
+    "done": "完成",
+    "migrationDraftRetained": "素材遷移期間有新的本機變更，已保留草稿與復原記錄。",
+    "reloadReplacesLocal": "重新載入會取代目前本機草稿與復原記錄。請先複製或下載 JSON 備份。",
+    "publishedAssetsRefreshFailed": "發布已成功，但素材清單未更新。可以重新盤點素材，無須再次發布。",
+    "copyingLocalJson": "正在複製本機草稿 JSON…"
   },
   "inspectorContent": {
     "loading": "載入中…",
