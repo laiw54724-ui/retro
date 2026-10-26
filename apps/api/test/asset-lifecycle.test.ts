@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createStarterDocument, makeWindow } from "@retrodesk/shared";
+import { createStarterDocument, makeWindow, parseSiteDocument } from "@retrodesk/shared";
 
 const ownerId = "owner-local";
 const siteId = "site-local";
@@ -218,5 +218,68 @@ describe("legacy URL deletion guard", () => {
   it("refuses another site's asset", async () => {
     expect((await remove(assetId, "unrelated-site")).status).toBe(404);
     expect(deletedKeys).toEqual([]);
+  });
+});
+
+describe("UUID reference identity at deletion", () => {
+  const id = "abcdefab-abcd-4abc-8abc-abcdefabcdef";
+  const key = `draft/users/${ownerId}/sites/${siteId}/${id}.png`;
+  beforeEach(() => {
+    rows[0] = { ...rows[0], id, object_key: key, public_url: `retro-asset:${id}`, storage_scope: "draft_private" };
+    objects.set(key, { bytes, contentType: "image/png", ownerId, siteId });
+  });
+
+  // QA's exact schema-valid About fixture; retain both byte and row assertions.
+  it("protects a schema-valid uppercase UUID asset reference", async () => {
+    site.draft_document.windows[0].content.avatar = `retro-asset:${id.toUpperCase()}`;
+    expect(parseSiteDocument(site.draft_document).ok).toBe(true);
+    const response = await remove(id);
+    expect(response.status).toBe(409);
+    expect(deletedKeys).toEqual([]);
+    expect(rows).toHaveLength(1);
+    expect(objects.has(key)).toBe(true);
+  });
+
+  it.each([
+    ["draft", id.toUpperCase(), id],
+    ["published", id, id.toUpperCase()],
+    ["both", "AbCdEfAb-AbCd-4aBc-8aBc-AbCdEfAbCdEf", "AbCdEfAb-AbCd-4aBc-8aBc-AbCdEfAbCdEf"]
+  ])("protects %s references regardless of path/reference UUID case", async (where, pathId, referenceId) => {
+    const document = structuredClone(site.draft_document);
+    document.windows[0].content.avatar = `retro-asset:${referenceId}`;
+    expect(parseSiteDocument(document).ok).toBe(true);
+    site.draft_document = where === "published" ? {} : document;
+    site.published_document = where === "draft" ? null : document;
+    expect((await remove(pathId)).status).toBe(409);
+    expect(deletedKeys).toEqual([]);
+    expect(rows).toHaveLength(1);
+  });
+
+  it("still deletes an unreferenced asset through an uppercase UUID path", async () => {
+    site.draft_document = {};
+    expect((await remove(id.toUpperCase())).status).toBe(204);
+    expect(deletedKeys).toEqual([key]);
+    expect(rows).toEqual([]);
+  });
+
+  it.each([`${id}extra`, ` ${id}`, id.replace("4abc", "0abc"), id.replace("8abc", "7abc"), "not-a-uuid"])("rejects invalid UUID path %s without storage mutation", async (invalid) => {
+    expect((await remove(encodeURIComponent(invalid))).status).toBe(400);
+    expect(deletedKeys).toEqual([]);
+    expect(rows).toHaveLength(1);
+  });
+
+  it.each(["site_id", "owner_id"])("does not let UUID normalization bypass %s filters", async (field) => {
+    rows[0][field] = "unrelated-identity";
+    expect((await remove(id.toUpperCase())).status).toBe(404);
+    expect((await remove(id.toUpperCase(), "another-site")).status).toBe(404);
+    expect(deletedKeys).toEqual([]);
+    expect(rows).toHaveLength(1);
+  });
+
+  it("does not case-fold legacy URLs", async () => {
+    rows[0].legacy_public_url = oldUrl;
+    site.draft_document = { src: oldUrl.toUpperCase() };
+    expect((await remove(id)).status).toBe(204);
+    expect(deletedKeys).toEqual([key]);
   });
 });

@@ -3,18 +3,23 @@ import { z } from "zod";
 export const ASSET_REFERENCE_PREFIX = "retro-asset:";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-export const AssetReferenceSchema = z.string().regex(/^retro-asset:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i, "Invalid asset reference");
+export const AssetReferenceSchema = z.string().length(ASSET_REFERENCE_PREFIX.length + 36).regex(/^retro-asset:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i, "Invalid asset reference");
 export type AssetReference = z.infer<typeof AssetReferenceSchema>;
 
+/** UUID identity is case-insensitive; never normalize arbitrary URLs or text. */
+export function normalizeAssetId(value: unknown): string | null {
+  return typeof value === "string" && value.length === 36 && UUID.test(value) ? value.toLowerCase() : null;
+}
+
 export function createAssetReference(id: string): AssetReference {
-  if (!UUID.test(id)) throw new Error("Invalid asset id");
-  return `${ASSET_REFERENCE_PREFIX}${id}` as AssetReference;
+  const normalized = normalizeAssetId(id);
+  if (!normalized) throw new Error("Invalid asset id");
+  return `${ASSET_REFERENCE_PREFIX}${normalized}` as AssetReference;
 }
 
 export function parseAssetReference(value: unknown): string | null {
-  if (typeof value !== "string" || !value.startsWith(ASSET_REFERENCE_PREFIX)) return null;
-  const id = value.slice(ASSET_REFERENCE_PREFIX.length);
-  return UUID.test(id) ? id : null;
+  if (typeof value !== "string" || value.slice(0, ASSET_REFERENCE_PREFIX.length).toLowerCase() !== ASSET_REFERENCE_PREFIX) return null;
+  return normalizeAssetId(value.slice(ASSET_REFERENCE_PREFIX.length));
 }
 
 export function isAssetReference(value: unknown): value is AssetReference {

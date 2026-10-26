@@ -3,7 +3,7 @@ import type { Env } from "../env";
 import { jsonError } from "../lib/http";
 import { requireUser, serviceClient } from "../lib/supabase";
 import { audioBytesMatchMime, extensionForMime, imageBytesMatchMime, normalizeAudioMime } from "../lib/upload";
-import { collectAssetReferences, createAssetReference, parseSiteDocument, replaceExactStrings } from "@retrodesk/shared";
+import { collectAssetReferences, createAssetReference, normalizeAssetId, parseSiteDocument, replaceExactStrings } from "@retrodesk/shared";
 import { requireSiteRole, SiteAccessError, type SiteAccess, type SiteAction } from "../lib/access";
 import { respondWithR2Object } from "../lib/r2-response";
 
@@ -219,11 +219,12 @@ assets.delete("/sites/:siteId/assets/:assetId", async (c) => {
   const user = await requireUser(c);
   if (user instanceof Response) return user;
   const siteId = c.req.param("siteId");
-  const assetId = c.req.param("assetId");
 
   const supabase = serviceClient(c.env);
   const access = await loadAssetAccess(c, supabase, user.id, "assets_write");
   if (access instanceof Response) return access;
+  const assetId = normalizeAssetId(c.req.param("assetId"));
+  if (!assetId) return jsonError(c, 400, "invalid_asset_id", "A valid asset UUID is required");
   const { data: asset, error } = await supabase
     .from("site_assets")
     .select("id,object_key,migration_status,legacy_object_key,public_url,legacy_public_url,storage_scope")
