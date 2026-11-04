@@ -1,0 +1,17 @@
+{
+  "generic": "Something went wrong. Please try again later.",
+  "languageChangeFailed": "Could not change the language. Your previous language is still selected. Please try again.",
+  "codes": {
+    "unauthorized": "Please sign in to continue.",
+    "forbidden": "You do not have permission to perform this action.",
+    "not_found": "The requested item was not found.",
+    "version_conflict": "This draft changed on another tab or device. Check the latest version before trying again.",
+    "request_failed": "The request failed. Please try again later.",
+    "internal_error": "A server error occurred. Please try again later.",
+    "export_failed": "Export failed. Please try again.",
+    "db_error": "Unable to load or save data right now. Please try again later.",
+    "rate_limited": "Too many requests. Please wait and try again.",
+    "invalid_draft": "The draft format is invalid. Please check its content.",
+    "not_published": "Publish a version before continuing."
+  }
+}

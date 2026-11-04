@@ -1,0 +1,17 @@
+{
+  "gallery": {
+    "inline": {
+      "pasteUrls": "貼網址…",
+      "deselect": "取消選取",
+      "urlsPlaceholder": "貼上圖片網址，每行一張（支援 Google 雲端公開連結）。Shift+Enter 換行。",
+      "invalidUrls": "請貼上以 https:// 開頭的有效圖片網址。",
+      "skippedUrls": "部分行不是有效的 HTTPS 圖片網址，已略過。",
+      "invalidFiles": "只能加入 8 MB 以內的圖片，無效檔案已略過。",
+      "emptyDrop": "把照片拖進來，或點一下選擇。可以一次選多張。",
+      "dropHere": "放開就會加入相簿",
+      "sorting": "拖到想放的位置後放開（藍線是插入位置）",
+      "selectionHint": "拖曳縮圖排序 · ← → 切換 · Alt+← → 移動 · Delete 刪除",
+      "browseHint": "點縮圖編輯標題和連結，拖曳可以排序"
+    }
+  }
+}

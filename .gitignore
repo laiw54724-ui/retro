@@ -1,0 +1,25 @@
+node_modules
+.pnpm-store
+dist
+.wrangler
+.dev.vars
+.env
+.env.local
+*.log
+.DS_Store
+coverage
+
+# TypeScript build artifacts
+*.tsbuildinfo
+apps/web/vite.config.js
+apps/web/vite.config.d.ts
+test-results/
+**/supabase/.temp/
+.worktrees/
+
+# Optional, user-installed third-party icon packs. They are never part of the
+# MIT source distribution or default build.
+apps/web/public/windows-icons/
+apps/web/public/win98-icons/
+tests/tmp/
+/evidence/

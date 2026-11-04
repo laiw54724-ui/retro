@@ -1,0 +1,111 @@
+import { useEffect, useId, useState } from "react";
+import { i18n } from "../../../i18n";
+import { useTranslation } from "react-i18next";
+import { PLATFORM_LABELS, embedUrlFor, type MusicTrack } from "@retrodesk/shared";
+import "./musicPlayback.css";
+import { embedSession, useActiveEmbed } from "./mediaSession";
+
+type EmbedSource = Extract<MusicTrack["source"], { kind: "providerEmbed" }>;
+
+const SANDBOX = "allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox";
+const ALLOW: Record<EmbedSource["provider"], string> = {
+  spotify: "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture",
+  youtube: "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share"
+};
+const HOST: Record<EmbedSource["provider"], string> = { spotify: "open.spotify.com", youtube: "www.youtube-nocookie.com" };
+const providerNote = (): Record<EmbedSource["provider"], string> => ({
+  spotify: i18n.t("music:providerPlayer.whetherItPlaysInFull"),
+  youtube: i18n.t("music:providerPlayer.someVideosDontAllowEmbedded")
+});
+const SLOW_MS = 8000;
+
+type Props = {
+  source: EmbedSource;
+  title: string;
+  windowId: string;
+  trackId: string;
+  onOpenOriginal: () => void;
+};
+
+/**
+ * Official platform player. Nothing is loaded (no iframe, script or cookie) until the visitor
+ * clicks; the iframe URL is rebuilt from validated ids, never taken from stored text.
+ */
+export function ProviderPlayer({ source, title, windowId, trackId, onOpenOriginal }: Props) {
+  const { t: tr } = useTranslation("music");
+  const label = PLATFORM_LABELS[source.provider];
+  const active = useActiveEmbed();
+  const instanceId = useId();
+  const isActive = active.windowId === windowId && active.trackId === trackId && active.instanceId === instanceId;
+  const src = embedUrlFor(source.provider, source.resourceType, source.resourceId);
+  // The iframe only exists after the visitor's explicit click, so asking YouTube to start playing is a user-initiated
+  // play, not an unexpected sound on page load. Spotify's embed has no autoplay switch: its own play button starts it.
+  const frameSrc = src && isActive && source.provider === "youtube" ? `${src}${src.includes("?") ? "&" : "?"}autoplay=1` : src;
+  const [loaded, setLoaded] = useState(false);
+  const [slow, setSlow] = useState(false);
+  const [help, setHelp] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const helpId = useId();
+
+  useEffect(() => {
+    setLoaded(false);
+    setSlow(false);
+    setHelp(false);
+    if (!isActive) return;
+    const timer = setTimeout(() => setSlow(true), SLOW_MS);
+    return () => clearTimeout(timer);
+  }, [isActive, src, attempt]);
+
+  // Unmounting the frame is the only reliable way to stop a platform player, so tie it to this view's lifetime.
+  useEffect(() => () => embedSession.dispose(windowId, trackId, instanceId), [windowId, trackId, instanceId]);
+
+  const tall = source.provider === "spotify" && source.resourceType !== "track";
+  const frameStyle = source.provider === "spotify"
+    ? { height: tall ? 352 : 152 }
+    : { aspectRatio: "16 / 9", minHeight: 200 };
+
+  return (
+    <section className="music-embed" aria-label={tr("providerPlayer.player", { label })} data-provider={source.provider}>
+      {isActive && frameSrc ? (
+        <div className="music-embed-frame" style={{ minWidth: 200 }}>
+          <iframe
+            key={`${src}-${attempt}`}
+            title={tr("music.playerTitle", { label, title: title || tr("music.untitledTrackLabel") })}
+            src={frameSrc ?? undefined}
+            sandbox={SANDBOX}
+            allow={ALLOW[source.provider]}
+            allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
+            loading="eager"
+            style={{ width: "100%", border: 0, display: "block", ...frameStyle }}
+            onLoad={(event) => { if (event.currentTarget.isConnected) setLoaded(true); }}
+            onError={(event) => { if (event.currentTarget.isConnected) setHelp(true); }}
+          />
+        </div>
+      ) : (
+        <div className="music-embed-card">
+          <strong>{tr("music.playerHeading", { label })}</strong>
+          <span>{src ? tr("providerPlayer.nothingConnectsToUntilYou", { v1: HOST[source.provider], label }) : tr("providerPlayer.thisSourcesIdIsNo")}</span>
+        </div>
+      )}
+      <div className="music-embed-actions">
+        {isActive
+          ? <button type="button" className="w98-btn" onClick={() => embedSession.dispose(windowId, trackId, instanceId)}>{tr("providerPlayer.closePlayer")}</button>
+          : <button type="button" className="w98-btn primary" disabled={!src} onClick={() => embedSession.activate(windowId, trackId, instanceId)}>{tr("music.loadPlayer", { label })}</button>}
+        <button type="button" className="w98-btn music-open" onClick={onOpenOriginal}>{tr("music.openOn", { label })}</button>
+        {isActive ? <button type="button" className="w98-btn" aria-expanded={help || slow && !loaded} aria-controls={helpId} onClick={() => setHelp(true)}>{tr("m2.needHelp")}</button> : null}
+      </div>
+      {isActive && (help || slow && !loaded) ? (
+        <div id={helpId} className="music-notice music-playback-help" role="status">
+          <strong>{tr("m2.heading")}</strong>
+          {slow && !loaded ? <span>{tr("music.slowNotice", { label })}</span> : null}
+          <span>{tr("m2.guidance", { label })}</span>
+          <div className="music-embed-actions">
+            <button type="button" className="w98-btn" onClick={() => setAttempt((value) => value + 1)}>{tr("m2.retry")}</button>
+          </div>
+        </div>
+      ) : null}
+      <small className="music-embed-note">{providerNote()[source.provider]}</small>
+    </section>
+  );
+}

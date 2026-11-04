@@ -1,0 +1,23 @@
+.guestbook-app.guestbook-queue-v2 { display:flex; flex-direction:column; height:100%; min-height:320px; min-width:0; position:relative; padding:4px; gap:4px; box-sizing:border-box; background:#c0c0c0; color:#000; }
+.guestbook-queue-v2 .guestbook-settings { flex:none; padding:2px 4px; border:0; margin:0; }
+.guestbook-queue-v2 .guestbook-settings textarea { width:100%; min-height:28px; box-sizing:border-box; }
+.guestbook-queue-v2 .guestbook-moderation { display:flex; flex-direction:column; flex:1; min-height:140px; min-width:0; }
+.guestbook-tabs { display:flex; flex-wrap:wrap; gap:1px; flex:none; }
+.guestbook-tabs button[aria-selected=true] { font-weight:bold; background:#fff; }
+.guestbook-tabs button { display:flex; gap:4px; align-items:center; }
+.guestbook-count-chip { background:#000080; color:#fff; padding:0 4px; }
+.guestbook-tabs button:nth-child(2) .guestbook-count-chip { background:#b00020; }
+.guestbook-bulk { flex:none; display:flex; flex-wrap:wrap; gap:6px; align-items:center; padding:4px; border:1px solid #808080; }
+.guestbook-bulk label { display:flex; align-items:center; gap:4px; }
+.guestbook-queue-list { flex:1; overflow:auto; min-height:120px; padding:5px; background:#fff; box-shadow:inset 1px 1px #000,inset -1px -1px #fff; }
+.guestbook-queue-v2 .guestbook-queue-list article { display:flex; gap:8px; align-items:flex-start; padding:10px; margin:0 0 8px; border:1px solid #dfdfdf; background:#fff; }
+.guestbook-queue-list article[data-focused] { outline:1px dotted #000; border-color:#000080; }
+.guestbook-card-content { flex:1; min-width:0; }
+.guestbook-card-content header { display:flex; gap:6px; flex-wrap:wrap; align-items:center; font-size:12px; }
+.guestbook-card-content p { margin:6px 0 10px; white-space:pre-wrap; overflow-wrap:anywhere; }
+.guestbook-status-chip,.guestbook-open-chip { border:1px solid #808080; padding:0 4px; font-size:11px; background:#ffffe1; }
+.guestbook-open-chip { margin-left:6px; }
+.guestbook-report-chip { background:#fff0f0; color:#8a0018; border:1px solid #b00020; padding:0 4px; }
+.guestbook-queue-v2 article[aria-busy=true] { opacity:.6; }
+.guestbook-queue-v2 .editing-undo-toast { bottom:30px; }
+@media(max-width:767px),(pointer:coarse) { .guestbook-queue-v2 button { min-height:44px; height:auto; } .guestbook-queue-v2 input[type=checkbox] { width:20px; height:20px; margin:8px; } .guestbook-queue-v2 .guestbook-tabs button { min-width:44px; } .guestbook-queue-v2 .guestbook-settings textarea { font-size:15px; } }

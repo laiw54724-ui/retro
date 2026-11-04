@@ -1,0 +1,88 @@
+name: Q0 mobile gate verification
+
+on:
+  push:
+    branches: [fix/retro-q0-mobile-gate]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: q0-mobile-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.3
+      - name: Enable pinned pnpm
+        run: corepack enable && corepack prepare pnpm@10.18.2 --activate
+      - name: Install frozen dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install pinned browsers
+        run: pnpm exec playwright install --with-deps chromium webkit
+      - name: Record verification identity
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          mkdir -p .q0-evidence
+          {
+            git rev-parse HEAD
+            git rev-parse HEAD^{tree}
+            node --version
+            pnpm --version
+            pnpm exec playwright --version
+            uname -a
+          } | tee .q0-evidence/environment.txt
+      - name: Focused About and Links regressions
+        run: |
+          set -euo pipefail
+          trap 'if [ -d test-results ]; then cp -a test-results .q0-evidence/focused-test-results; fi' EXIT
+          pnpm exec playwright test tests/e2e/about-links-ux.spec.ts --project=chromium --workers=1 --retries=0 --reporter=line 2>&1 | tee .q0-evidence/focused.log
+      - name: Lint the same final commit
+        run: |
+          set -euo pipefail
+          pnpm lint 2>&1 | tee .q0-evidence/lint.log
+      - name: Complete unchanged contributor gate
+        run: |
+          set -euo pipefail
+          trap 'if [ -d test-results ]; then cp -a test-results .q0-evidence/contributor-test-results; fi' EXIT
+          pnpm verify:contributor 2>&1 | tee .q0-evidence/contributor.log
+      - name: Linux WindowChrome baselines
+        run: |
+          set -euo pipefail
+          trap 'if [ -d test-results/window-chrome ]; then cp -a test-results/window-chrome .q0-evidence/chrome-linux-results; fi' EXIT
+          pnpm exec playwright test --config=playwright.chrome.config.ts --project=chrome-linux --workers=1 2>&1 | tee .q0-evidence/chrome-linux.log
+      - name: WindowChrome WebKit smoke
+        run: |
+          set -euo pipefail
+          pnpm exec playwright test --config=playwright.chrome.config.ts --project=chrome-webkit --workers=1 2>&1 | tee .q0-evidence/chrome-webkit.log
+      - name: Confirm unchanged tracked source
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          git diff --exit-code
+          git diff --cached --exit-code
+      - name: Upload actual verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: q0-mobile-gate-${{ github.sha }}
+          path: |
+            .q0-evidence
+            test-results
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7

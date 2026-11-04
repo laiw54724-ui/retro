@@ -1,0 +1,18 @@
+.page { box-sizing: border-box; padding: 12px; font: 14px system-ui, sans-serif; color: #17232d; background: #f2f4f6; min-height: 100vh; }
+.page * { box-sizing: border-box; }
+.page h1 { font-size: 20px; margin: 0 0 8px; }
+.page h2 { font-size: 16px; margin: 16px 0 6px; }
+.intro { margin: 0 0 12px; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; max-width: 900px; }
+.controls label { display: inline-flex; align-items: center; gap: 4px; }
+.controls input, .controls select { min-height: 30px; font: inherit; }
+.controls input[type="number"] { width: 62px; }
+.controls input[type="text"] { width: min(220px, 55vw); }
+.sample { position: relative; width: min(100%, 480px); height: 260px; border: 1px dashed #8b969e; }
+.underlay { position: absolute; inset: 0; border: 0; background: #f9e48c; font: inherit; cursor: pointer; }
+.host { position: absolute; inset: 0; pointer-events: none; }
+.host > * { pointer-events: auto; }
+.host > *[aria-hidden="true"] { pointer-events: none; }
+.status { min-height: 24px; margin-top: 8px; }
+.windowBox { width: min(100%, 480px); height: 310px; }
+.windowBody { height: 100%; min-height: 0; }

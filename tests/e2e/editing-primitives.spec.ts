@@ -1,0 +1,41 @@
+import { expect, test } from "@playwright/test";
+import { resolve } from "node:path";
+const fixture = `/@fs${resolve("tests/editing-primitives/index.html")}`;
+test.beforeEach(async ({ page }) => { page.on("pageerror", error => console.log(error.message)); page.on("console", message => { if (message.type() === "error") console.log(message.text()); }); await page.goto(fixture); await expect(page.getByLabel("Name", { exact: true })).toBeVisible(); });
+test("sortable rows keep focus and announce keyboard reorder", async ({ page }) => {
+  const field = page.getByLabel("Beta", { exact: true }); await field.focus(); await field.press("Alt+ArrowUp");
+  await expect(page.locator("[data-sort-id]").first()).toHaveAttribute("data-sort-id", "b"); await expect(field).toBeFocused(); await expect(page.locator(".editing-sr-only")).toContainText("1");
+  await expect(page.locator("[data-sort-id] input[draggable]")).toHaveCount(0);
+  await page.locator('[data-sort-id="b"] .editing-sort-handle').dragTo(page.locator(".editing-sort-end")); await expect(page.locator("[data-sort-id]").last()).toHaveAttribute("data-sort-id", "b");
+});
+test("inline fields preserve IME and autosize multiline text", async ({ page }) => {
+  const name = page.getByLabel("Name", { exact: true }); await name.dispatchEvent("compositionstart"); await name.dispatchEvent("keydown", { key: "Enter", isComposing: true, keyCode: 229 }); await expect(page.getByTestId("entered")).toHaveText("0"); await name.dispatchEvent("compositionend"); await name.press("Enter"); await expect(page.getByTestId("entered")).toHaveText("1");
+  const note = page.getByLabel("Note"); const before = (await note.boundingBox())!.height; await note.fill("one\ntwo\nthree\nfour\nfive\nsix"); await expect(note).toHaveValue("one\ntwo\nthree\nfour\nfive\nsix"); expect((await note.boundingBox())!.height).toBeGreaterThan(before); await expect(note).toHaveCSS("resize", "none");
+});
+test("popover Escape and blank dismissal preserve draft and return focus", async ({ page }) => {
+  const trigger = page.getByRole("button", { name: "Source", exact: true }); await trigger.click(); await page.getByLabel("Draft").fill("Kept draft"); await page.getByLabel("Draft").press("Escape"); await expect(trigger).toBeFocused(); await expect(page.getByLabel("Source settings")).toHaveCount(0); await trigger.click(); await expect(page.getByLabel("Draft")).toHaveValue("Kept draft"); await page.getByTestId("blank").click({ position: { x: 5, y: 5 } }); await expect(trigger).toBeFocused();
+});
+test("destination chip confines a complete long destination at 320px", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 844 }); const chip = page.locator(".editing-destination"); await expect(chip).toHaveAttribute("title", /long\/long/); expect((await chip.boundingBox())!.width).toBeLessThanOrEqual(304); await expect(chip.locator(".editing-destination-text")).toHaveCSS("text-overflow", "ellipsis");
+});
+test("paste bar previews invalid input and ignores composition confirmation", async ({ page }) => {
+  const paste = page.getByLabel("Paste URL"); await paste.fill("bad"); await expect(page.locator(".editing-paste-preview")).toHaveAttribute("data-invalid", "true"); await paste.press("Enter"); await expect(page.getByRole("alert")).toContainText("Invalid URL"); await paste.fill("https://example.test"); await paste.dispatchEvent("compositionstart"); await paste.dispatchEvent("keydown", { key: "Enter", isComposing: true, keyCode: 229 }); await expect(page.getByTestId("added")).toHaveText("0"); await paste.dispatchEvent("compositionend"); await paste.press("Enter"); await expect(page.getByTestId("added")).toHaveText("1"); await expect(paste).toHaveValue("");
+});
+test("file drop depth ignores internal sorting and validates before callbacks", async ({ page }) => {
+  const drop = page.getByTestId("drop"); const transfer = await page.evaluateHandle(() => { const data = new DataTransfer(); data.items.add(new File(["a"], "one.png", { type: "image/png" })); data.items.add(new File(["a"], "bad.txt", { type: "text/plain" })); return data; });
+  await drop.dispatchEvent("dragenter", { dataTransfer: transfer }); await page.getByTestId("drop-child").dispatchEvent("dragenter", { dataTransfer: transfer }); await page.getByTestId("drop-child").dispatchEvent("dragleave", { dataTransfer: transfer }); await expect(drop).toHaveAttribute("data-file-over", "true"); await drop.dispatchEvent("drop", { dataTransfer: transfer, clientX: 12, clientY: 34 }); await expect(page.getByTestId("received")).toHaveText("one.png@12,34"); await expect(page.getByRole("alert")).toBeVisible(); await expect(drop).not.toHaveAttribute("data-file-over");
+  const sort = await page.evaluateHandle(() => { const data = new DataTransfer(); data.setData("text/x-retro-sort", "a"); return data; }); await drop.dispatchEvent("dragenter", { dataTransfer: sort }); await expect(drop).not.toHaveAttribute("data-file-over");
+});
+test("error stays until dismissed and status remains a live region", async ({ page }) => {
+  await page.getByRole("button", { name: "Fail upload" }).click(); await expect(page.getByRole("alert")).toContainText("Upload failed"); await page.getByRole("alert").getByRole("button").click(); await expect(page.getByRole("alert")).toHaveCount(0); await expect(page.locator(".editing-status [role=status]")).toHaveAttribute("aria-live", "polite");
+});
+test("context menu keyboard navigation skips disabled actions and stays within host", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 844 }); const trigger = page.getByRole("button", { name: "Actions", exact: true }); await trigger.focus(); await trigger.press("Shift+F10"); const menu = page.getByRole("menu"); await expect(page.getByRole("menuitem", { name: "Open" })).toBeFocused(); await page.keyboard.press("ArrowDown"); await expect(page.getByRole("menuitem", { name: "Delete" })).toBeFocused(); const bounds = (await menu.boundingBox())!, host = (await page.getByTestId("host").boundingBox())!; expect(bounds.x + bounds.width).toBeLessThanOrEqual(host.x + host.width); expect(bounds.y + bounds.height).toBeLessThanOrEqual(host.y + host.height); await page.keyboard.press("Escape"); await expect(menu).toHaveCount(0); await expect(trigger).toBeFocused();
+});
+test("floating toolbar flips, clamps and hides with selection", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 844 }); const bar = page.getByRole("toolbar", { name: "Selection tools" }); await expect.poll(async () => { const b = (await bar.boundingBox())!, h = (await page.getByTestId("host").boundingBox())!; return b.x + b.width <= h.x + h.width; }).toBe(true); const bounds = (await bar.boundingBox())!, host = (await page.getByTestId("host").boundingBox())!; expect(bounds.x + bounds.width).toBeLessThanOrEqual(host.x + host.width); expect(bounds.y).toBeGreaterThan(host.y + 20); await bar.getByRole("button", { name: "Copy" }).click(); await expect(page.locator(".editing-status [role=status]")).toHaveText("Copied"); await page.getByRole("button", { name: "Toggle selection" }).click(); await expect(bar).toHaveCount(0); await page.screenshot({ path: test.info().outputPath("editing-primitives-320.png") });
+});
+
+test("popover protects portaled dialogs and nested Escape ownership", async ({ page }) => {
+  await page.getByRole("button", { name: "Source", exact: true }).click(); await page.getByRole("button", { name: "Open portal" }).click(); await page.getByLabel("Portal input").fill("Picker draft"); await expect(page.getByLabel("Source settings", { exact: true })).toBeVisible(); await page.getByLabel("Portal input").press("Escape"); await expect(page.getByRole("dialog", { name: "Portal picker" })).toHaveCount(0); await expect(page.getByLabel("Source settings", { exact: true })).toBeVisible(); await page.getByRole("button", { name: "Nested", exact: true }).click(); await page.getByLabel("Nested draft").focus(); await page.keyboard.press("Escape"); await expect(page.getByLabel("Nested settings", { exact: true })).toHaveCount(0); await expect(page.getByLabel("Source settings", { exact: true })).toBeVisible(); await expect(page.getByRole("button", { name: "Nested", exact: true })).toBeFocused();
+});

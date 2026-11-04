@@ -1,0 +1,15 @@
+.modal-root:has(.editing-bottom-sheet) { align-items:flex-end; padding:4px; }
+.editing-bottom-sheet.modal-card { width:min(560px,100%) !important; max-width:100% !important; max-height:78dvh; margin:0 auto; display:flex; flex-direction:column; }
+.editing-bottom-sheet .w98-titlebar { flex:none; }
+.editing-bottom-sheet .w98-titlebtn { min-width:44px; min-height:44px; height:auto; }
+.editing-bottom-sheet .editing-sheet-body { min-height:0; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain; }
+.editing-bottom-sheet .w98-btn { min-height:44px; height:auto; }
+.editing-bottom-sheet .modal-actions { flex:none; }
+.editing-undo-toast { position:absolute; bottom:80px; left:8px; right:8px; z-index:20; background:#ffffe1; color:#000; box-shadow:inset -1px -1px #000,inset 1px 1px #fff; padding:8px; display:flex; align-items:center; gap:8px; overflow-wrap:anywhere; }
+.editing-undo-toast[hidden] { display:none; }
+.editing-undo-toast button { margin-left:auto; flex:none; min-height:44px; }
+.editing-reorder-grid .m-icon { position:relative; touch-action:manipulation; -webkit-touch-callout:none; user-select:none; }
+.editing-reorder-grid[data-arranging] .m-icon { touch-action:none; outline:1px dashed currentColor; }
+.editing-reorder-grid .m-icon[data-dragging] { opacity:.3; }
+.editing-reorder-grid .m-icon:focus-visible { outline:2px dotted currentColor; }
+.editing-reorder-ghost { position:fixed; width:56px; height:56px; z-index:1500; pointer-events:none; opacity:.85; display:grid; place-items:center; }

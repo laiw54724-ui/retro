@@ -1,0 +1,18 @@
+{
+  "moodboard": {
+    "inline": {
+      "invalidImage": "請選擇 8 MB 以下的圖片。",
+      "dropImages": "放開以加入圖片",
+      "resize": "調整大小：{{handle}}",
+      "smallerText": "縮小字級",
+      "largerText": "放大字級",
+      "replaceImage": "換圖…",
+      "selectedCount": "已選 {{count}} 個",
+      "dragHint": "拖曳移動 · 按住 Alt 暫停吸附",
+      "lockedHint": "物件已鎖定 · 解鎖後可移動與縮放",
+      "selectionHint": "方向鍵移動 · Shift 多選 · Enter 編輯文字",
+      "emptyHint": "點選物件或拖入圖片 · 貼上文字或圖片",
+      "preciseGeometry": "精確位置與尺寸"
+    }
+  }
+}

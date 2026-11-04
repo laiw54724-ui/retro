@@ -1,0 +1,17 @@
+{
+  "gallery": {
+    "inline": {
+      "pasteUrls": "Paste URLs…",
+      "deselect": "Deselect",
+      "urlsPlaceholder": "Paste image URLs, one per line (public Google Drive links supported). Shift+Enter adds a line.",
+      "invalidUrls": "Please paste valid image URLs starting with https://.",
+      "skippedUrls": "Some lines were not valid HTTPS image URLs and were skipped.",
+      "invalidFiles": "Only images up to 8 MB can be added. Invalid files were skipped.",
+      "emptyDrop": "Drop photos here, or click to choose. You can select multiple images.",
+      "dropHere": "Release to add to the gallery",
+      "sorting": "Drag to reorder; the blue line marks the insertion point",
+      "selectionHint": "Drag thumbnails to sort · ← → select · Alt+← → move · Delete remove",
+      "browseHint": "Select a thumbnail to edit its title and link; drag to reorder"
+    }
+  }
+}

@@ -1,0 +1,4170 @@
+{
+  "sha": "fa79436a3b8d7d1433e30b5abe4147c0868c4864",
+  "separateDiagnostic": true,
+  "intervalUs": 1000,
+  "sampledSelfMs": [
+    [
+      "(idle)",
+      1549.4290000000005
+    ],
+    [
+      "(program)",
+      162.12500000000003
+    ],
+    [
+      "../../src/features/modules/instagram/useIgSession.ts",
+      17.665
+    ],
+    [
+      "../../../../node_modules/.pnpm/react-dom@19.3.1_react@19.3.1/node_modules/react-dom/cjs/react-dom-client.production.js",
+      15.595000000000002
+    ],
+    [
+      "(garbage collector)",
+      12.249
+    ],
+    [
+      "../../src/i18n/format.ts",
+      11.333
+    ],
+    [
+      "../../../../node_modules/.pnpm/i18next@26.4.7_typescript@5.9.3/node_modules/i18next/dist/esm/i18next.js",
+      8.626000000000001
+    ],
+    [
+      "../../../../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/util.js",
+      6.154999999999999
+    ],
+    [
+      "../../../../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/schemas.js",
+      5.72
+    ],
+    [
+      "../../../../node_modules/.pnpm/react@19.3.1/node_modules/react/cjs/react.production.js",
+      4.759
+    ],
+    [
+      "../../src/features/modules/ui.tsx",
+      3.05
+    ],
+    [
+      "../../../../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/doc.js",
+      2.701
+    ],
+    [
+      "parseEvaluationResultValue",
+      2.32
+    ],
+    [
+      "serialize",
+      2.132
+    ],
+    [
+      "../../src/features/site/DesktopTaskbar.tsx",
+      2.107
+    ],
+    [
+      "../../src/i18n/index.ts",
+      1.964
+    ],
+    [
+      "index-ByY0glO4.js:0",
+      1.788
+    ],
+    [
+      "../../src/features/site/VisitorDesktop.tsx",
+      1.27
+    ],
+    [
+      "(anonymous)",
+      1.263
+    ],
+    [
+      "../../../../node_modules/.pnpm/scheduler@0.28.0/node_modules/scheduler/cjs/scheduler.production.js",
+      1.252
+    ],
+    [
+      "../../../../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/memoizer.js",
+      1.245
+    ],
+    [
+      "../../../../node_modules/.pnpm/react-router@7.18.4_react-dom@19.3.1_react@19.3.1__react@19.3.1/node_modules/react-router/dist/development/chunk-OB3PAWPO.mjs",
+      1.241
+    ],
+    [
+      "../../src/components/window-chrome/WindowTitleBar.tsx",
+      0.631
+    ]
+  ],
+  "profile": {
+    "nodes": [
+      {
+        "id": 1,
+        "callFrame": {
+          "functionName": "(root)",
+          "scriptId": "0",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1
+        },
+        "hitCount": 0,
+        "children": [
+          2,
+          3,
+          4,
+          6,
+          42,
+          47,
+          85,
+          230,
+          231,
+          234
+        ]
+      },
+      {
+        "id": 2,
+        "callFrame": {
+          "functionName": "(program)",
+          "scriptId": "0",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1
+        },
+        "hitCount": 51
+      },
+      {
+        "id": 3,
+        "callFrame": {
+          "functionName": "(idle)",
+          "scriptId": "0",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1
+        },
+        "hitCount": 177
+      },
+      {
+        "id": 4,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 0,
+          "columnNumber": 0
+        },
+        "hitCount": 1,
+        "children": [
+          5,
+          7,
+          17,
+          29,
+          30,
+          36
+        ],
+        "positionTicks": [
+          {
+            "line": 9,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "callFrame": {
+          "functionName": "XN",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 8,
+          "columnNumber": 51464
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 9,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "callFrame": {
+          "functionName": "strict",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 94,
+          "columnNumber": 21835
+        },
+        "hitCount": 0,
+        "children": [
+          8
+        ]
+      },
+      {
+        "id": 8,
+        "callFrame": {
+          "functionName": "clone",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 94,
+          "columnNumber": 14311
+        },
+        "hitCount": 0,
+        "children": [
+          9
+        ]
+      },
+      {
+        "id": 9,
+        "callFrame": {
+          "functionName": "tr",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 63983
+        },
+        "hitCount": 0,
+        "children": [
+          10
+        ]
+      },
+      {
+        "id": 10,
+        "callFrame": {
+          "functionName": "y",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 71657
+        },
+        "hitCount": 0,
+        "children": [
+          11
+        ]
+      },
+      {
+        "id": 11,
+        "callFrame": {
+          "functionName": "f",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 71130
+        },
+        "hitCount": 0,
+        "children": [
+          12
+        ]
+      },
+      {
+        "id": 12,
+        "callFrame": {
+          "functionName": "be.keyof",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 94,
+          "columnNumber": 21459
+        },
+        "hitCount": 0,
+        "children": [
+          13
+        ]
+      },
+      {
+        "id": 13,
+        "callFrame": {
+          "functionName": "f",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 71130
+        },
+        "hitCount": 0,
+        "children": [
+          14
+        ]
+      },
+      {
+        "id": 14,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 11401
+        },
+        "hitCount": 0,
+        "children": [
+          15
+        ]
+      },
+      {
+        "id": 15,
+        "callFrame": {
+          "functionName": "f",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 71130
+        },
+        "hitCount": 0,
+        "children": [
+          16
+        ]
+      },
+      {
+        "id": 16,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 10229
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 43,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 17,
+        "callFrame": {
+          "functionName": "superRefine",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 94,
+          "columnNumber": 14451
+        },
+        "hitCount": 0,
+        "children": [
+          18
+        ]
+      },
+      {
+        "id": 18,
+        "callFrame": {
+          "functionName": "check",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 94,
+          "columnNumber": 14095
+        },
+        "hitCount": 0,
+        "children": [
+          19
+        ]
+      },
+      {
+        "id": 19,
+        "callFrame": {
+          "functionName": "clone",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 94,
+          "columnNumber": 14311
+        },
+        "hitCount": 0,
+        "children": [
+          20
+        ]
+      },
+      {
+        "id": 20,
+        "callFrame": {
+          "functionName": "tr",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 63983
+        },
+        "hitCount": 0,
+        "children": [
+          21
+        ]
+      },
+      {
+        "id": 21,
+        "callFrame": {
+          "functionName": "y",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 71657
+        },
+        "hitCount": 0,
+        "children": [
+          22
+        ]
+      },
+      {
+        "id": 22,
+        "callFrame": {
+          "functionName": "f",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 71130
+        },
+        "hitCount": 0,
+        "children": [
+          23
+        ]
+      },
+      {
+        "id": 23,
+        "callFrame": {
+          "functionName": "be.keyof",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 94,
+          "columnNumber": 21459
+        },
+        "hitCount": 0,
+        "children": [
+          24
+        ]
+      },
+      {
+        "id": 24,
+        "callFrame": {
+          "functionName": "f",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 71130
+        },
+        "hitCount": 0,
+        "children": [
+          25
+        ]
+      },
+      {
+        "id": 25,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 11401
+        },
+        "hitCount": 0,
+        "children": [
+          26
+        ]
+      },
+      {
+        "id": 26,
+        "callFrame": {
+          "functionName": "f",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 71130
+        },
+        "hitCount": 0,
+        "children": [
+          27
+        ]
+      },
+      {
+        "id": 27,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 10229
+        },
+        "hitCount": 0,
+        "children": [
+          28
+        ]
+      },
+      {
+        "id": 28,
+        "callFrame": {
+          "functionName": "attach",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 12937
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 93,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 29,
+        "callFrame": {
+          "functionName": "get",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 70378
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 39,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 30,
+        "callFrame": {
+          "functionName": "startsWith",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 94,
+          "columnNumber": 16614
+        },
+        "hitCount": 0,
+        "children": [
+          31
+        ]
+      },
+      {
+        "id": 31,
+        "callFrame": {
+          "functionName": "f$",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 21424
+        },
+        "hitCount": 0,
+        "children": [
+          32
+        ]
+      },
+      {
+        "id": 32,
+        "callFrame": {
+          "functionName": "y",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 71657
+        },
+        "hitCount": 0,
+        "children": [
+          33
+        ]
+      },
+      {
+        "id": 33,
+        "callFrame": {
+          "functionName": "f",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 71130
+        },
+        "hitCount": 0,
+        "children": [
+          34
+        ]
+      },
+      {
+        "id": 34,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 84225
+        },
+        "hitCount": 0,
+        "children": [
+          35
+        ]
+      },
+      {
+        "id": 35,
+        "callFrame": {
+          "functionName": "ol",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 63921
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 39,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 36,
+        "callFrame": {
+          "functionName": "f",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 115,
+          "columnNumber": 48058
+        },
+        "hitCount": 0,
+        "children": [
+          37
+        ]
+      },
+      {
+        "id": 37,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 115,
+          "columnNumber": 48073
+        },
+        "hitCount": 1,
+        "children": [
+          38
+        ],
+        "positionTicks": [
+          {
+            "line": 116,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 38,
+        "callFrame": {
+          "functionName": "init",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 57236
+        },
+        "hitCount": 0,
+        "children": [
+          39
+        ]
+      },
+      {
+        "id": 39,
+        "callFrame": {
+          "functionName": "r",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 57854
+        },
+        "hitCount": 0,
+        "children": [
+          40
+        ]
+      },
+      {
+        "id": 40,
+        "callFrame": {
+          "functionName": "ZP",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 50340
+        },
+        "hitCount": 0,
+        "children": [
+          41
+        ]
+      },
+      {
+        "id": 41,
+        "callFrame": {
+          "functionName": "init",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 50414
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 11,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "callFrame": {
+          "functionName": "(garbage collector)",
+          "scriptId": "0",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1
+        },
+        "hitCount": 5
+      },
+      {
+        "id": 42,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 117,
+          "columnNumber": 192626
+        },
+        "hitCount": 0,
+        "children": [
+          43
+        ]
+      },
+      {
+        "id": 43,
+        "callFrame": {
+          "functionName": "JN.yc.createRoot",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 8,
+          "columnNumber": 50450
+        },
+        "hitCount": 0,
+        "children": [
+          44
+        ]
+      },
+      {
+        "id": 44,
+        "callFrame": {
+          "functionName": "e0",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 8,
+          "columnNumber": 41835
+        },
+        "hitCount": 0,
+        "children": [
+          45
+        ]
+      },
+      {
+        "id": 45,
+        "callFrame": {
+          "functionName": "Jn",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 28986
+        },
+        "hitCount": 0,
+        "children": [
+          46
+        ]
+      },
+      {
+        "id": 46,
+        "callFrame": {
+          "functionName": "oA",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 28607
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 8,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 47,
+        "callFrame": {
+          "functionName": "M",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 0,
+          "columnNumber": 10908
+        },
+        "hitCount": 0,
+        "children": [
+          48
+        ]
+      },
+      {
+        "id": 48,
+        "callFrame": {
+          "functionName": "fk",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 138260
+        },
+        "hitCount": 0,
+        "children": [
+          49
+        ]
+      },
+      {
+        "id": 49,
+        "callFrame": {
+          "functionName": "Xx",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 125331
+        },
+        "hitCount": 0,
+        "children": [
+          50,
+          66
+        ]
+      },
+      {
+        "id": 50,
+        "callFrame": {
+          "functionName": "Nm",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 128849
+        },
+        "hitCount": 0,
+        "children": [
+          51
+        ]
+      },
+      {
+        "id": 51,
+        "callFrame": {
+          "functionName": "NA",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 129332
+        },
+        "hitCount": 0,
+        "children": [
+          52
+        ]
+      },
+      {
+        "id": 52,
+        "callFrame": {
+          "functionName": "ok",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 130303
+        },
+        "hitCount": 0,
+        "children": [
+          53,
+          64
+        ]
+      },
+      {
+        "id": 53,
+        "callFrame": {
+          "functionName": "wx",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 83843
+        },
+        "hitCount": 0,
+        "children": [
+          54,
+          164
+        ]
+      },
+      {
+        "id": 54,
+        "callFrame": {
+          "functionName": "em",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 73397
+        },
+        "hitCount": 0,
+        "children": [
+          55
+        ]
+      },
+      {
+        "id": 55,
+        "callFrame": {
+          "functionName": "Lp",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 50185
+        },
+        "hitCount": 2,
+        "children": [
+          56,
+          81,
+          158,
+          162,
+          168,
+          181,
+          187,
+          192,
+          200
+        ],
+        "positionTicks": [
+          {
+            "line": 8,
+            "ticks": 2
+          }
+        ]
+      },
+      {
+        "id": 56,
+        "callFrame": {
+          "functionName": "eP",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 9001
+        },
+        "hitCount": 0,
+        "children": [
+          57
+        ]
+      },
+      {
+        "id": 57,
+        "callFrame": {
+          "functionName": "F1",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 8,
+          "columnNumber": 65541
+        },
+        "hitCount": 0,
+        "children": [
+          58
+        ]
+      },
+      {
+        "id": 58,
+        "callFrame": {
+          "functionName": "LT",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 8,
+          "columnNumber": 65573
+        },
+        "hitCount": 0,
+        "children": [
+          59
+        ]
+      },
+      {
+        "id": 59,
+        "callFrame": {
+          "functionName": "V1",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 4540
+        },
+        "hitCount": 0,
+        "children": [
+          60
+        ]
+      },
+      {
+        "id": 60,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 5432
+        },
+        "hitCount": 0,
+        "children": [
+          61
+        ]
+      },
+      {
+        "id": 61,
+        "callFrame": {
+          "functionName": "C",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 5751
+        },
+        "hitCount": 0,
+        "children": [
+          62
+        ]
+      },
+      {
+        "id": 62,
+        "callFrame": {
+          "functionName": "YN.tt.createElement",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 0,
+          "columnNumber": 7551
+        },
+        "hitCount": 0,
+        "children": [
+          63
+        ]
+      },
+      {
+        "id": 63,
+        "callFrame": {
+          "functionName": "$",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 0,
+          "columnNumber": 2833
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 1,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 81,
+        "callFrame": {
+          "functionName": "OD",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 60926
+        },
+        "hitCount": 0,
+        "children": [
+          82
+        ]
+      },
+      {
+        "id": 82,
+        "callFrame": {
+          "functionName": "YN.tt.useState",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 0,
+          "columnNumber": 9244
+        },
+        "hitCount": 0,
+        "children": [
+          83
+        ]
+      },
+      {
+        "id": 83,
+        "callFrame": {
+          "functionName": "useState",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 65040
+        },
+        "hitCount": 0,
+        "children": [
+          84
+        ]
+      },
+      {
+        "id": 84,
+        "callFrame": {
+          "functionName": "fd",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 52682
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 8,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 158,
+        "callFrame": {
+          "functionName": "EZ",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 117,
+          "columnNumber": 186423
+        },
+        "hitCount": 0,
+        "children": [
+          159
+        ]
+      },
+      {
+        "id": 159,
+        "callFrame": {
+          "functionName": "jZ",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 117,
+          "columnNumber": 183670
+        },
+        "hitCount": 0,
+        "children": [
+          160
+        ]
+      },
+      {
+        "id": 160,
+        "callFrame": {
+          "functionName": "YN.tt.useSyncExternalStore",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 0,
+          "columnNumber": 9304
+        },
+        "hitCount": 0,
+        "children": [
+          161
+        ]
+      },
+      {
+        "id": 161,
+        "callFrame": {
+          "functionName": "useSyncExternalStore",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 63793
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 8,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 162,
+        "callFrame": {
+          "functionName": "Xy",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 117,
+          "columnNumber": 66753
+        },
+        "hitCount": 0,
+        "children": [
+          163
+        ]
+      },
+      {
+        "id": 163,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 117,
+          "columnNumber": 70085
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 118,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 168,
+        "callFrame": {
+          "functionName": "BG",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 115,
+          "columnNumber": 83099
+        },
+        "hitCount": 0,
+        "children": [
+          169
+        ]
+      },
+      {
+        "id": 169,
+        "callFrame": {
+          "functionName": "YN.tt.useMemo",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 0,
+          "columnNumber": 9025
+        },
+        "hitCount": 0,
+        "children": [
+          170
+        ]
+      },
+      {
+        "id": 170,
+        "callFrame": {
+          "functionName": "useMemo",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 62994
+        },
+        "hitCount": 0,
+        "children": [
+          171
+        ]
+      },
+      {
+        "id": 171,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 115,
+          "columnNumber": 83431
+        },
+        "hitCount": 0,
+        "children": [
+          172
+        ]
+      },
+      {
+        "id": 172,
+        "callFrame": {
+          "functionName": "Pc",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 94,
+          "columnNumber": 31146
+        },
+        "hitCount": 0,
+        "children": [
+          173,
+          174
+        ]
+      },
+      {
+        "id": 173,
+        "callFrame": {
+          "functionName": "get",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 69643
+        },
+        "hitCount": 0
+      },
+      {
+        "id": 174,
+        "callFrame": {
+          "functionName": "t",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 94,
+          "columnNumber": 15435
+        },
+        "hitCount": 0,
+        "children": [
+          175
+        ]
+      },
+      {
+        "id": 175,
+        "callFrame": {
+          "functionName": "e",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 74338
+        },
+        "hitCount": 0,
+        "children": [
+          176
+        ]
+      },
+      {
+        "id": 176,
+        "callFrame": {
+          "functionName": "h",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 13048
+        },
+        "hitCount": 0,
+        "children": [
+          177
+        ]
+      },
+      {
+        "id": 177,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 171
+        },
+        "hitCount": 0,
+        "children": [
+          178
+        ]
+      },
+      {
+        "id": 178,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "27",
+          "url": "",
+          "lineNumber": 2,
+          "columnNumber": 16
+        },
+        "hitCount": 0,
+        "children": [
+          179
+        ]
+      },
+      {
+        "id": 179,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 7597
+        },
+        "hitCount": 0,
+        "children": [
+          180
+        ]
+      },
+      {
+        "id": 180,
+        "callFrame": {
+          "functionName": "qS",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 7821
+        },
+        "hitCount": 0
+      },
+      {
+        "id": 181,
+        "callFrame": {
+          "functionName": "$G",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 115,
+          "columnNumber": 81285
+        },
+        "hitCount": 1,
+        "children": [
+          182
+        ],
+        "positionTicks": [
+          {
+            "line": 116,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 182,
+        "callFrame": {
+          "functionName": "u",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 63586
+        },
+        "hitCount": 0,
+        "children": [
+          183
+        ]
+      },
+      {
+        "id": 183,
+        "callFrame": {
+          "functionName": "t",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 64275
+        },
+        "hitCount": 0,
+        "children": [
+          184
+        ]
+      },
+      {
+        "id": 184,
+        "callFrame": {
+          "functionName": "translate",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 31815
+        },
+        "hitCount": 0,
+        "children": [
+          185
+        ]
+      },
+      {
+        "id": 185,
+        "callFrame": {
+          "functionName": "extendTranslation",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 36243
+        },
+        "hitCount": 0,
+        "children": [
+          186
+        ]
+      },
+      {
+        "id": 186,
+        "callFrame": {
+          "functionName": "nest",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 48262
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 11,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 187,
+        "callFrame": {
+          "functionName": "dn",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 115,
+          "columnNumber": 115078
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 116,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 192,
+        "callFrame": {
+          "functionName": "HY",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 116,
+          "columnNumber": 46110
+        },
+        "hitCount": 0,
+        "children": [
+          193
+        ]
+      },
+      {
+        "id": 193,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 116,
+          "columnNumber": 46262
+        },
+        "hitCount": 0,
+        "children": [
+          194
+        ]
+      },
+      {
+        "id": 194,
+        "callFrame": {
+          "functionName": "Sj",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 116,
+          "columnNumber": 44654
+        },
+        "hitCount": 0,
+        "children": [
+          195
+        ]
+      },
+      {
+        "id": 195,
+        "callFrame": {
+          "functionName": "t",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 64275
+        },
+        "hitCount": 0,
+        "children": [
+          196
+        ]
+      },
+      {
+        "id": 196,
+        "callFrame": {
+          "functionName": "translate",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 31815
+        },
+        "hitCount": 0,
+        "children": [
+          197
+        ]
+      },
+      {
+        "id": 197,
+        "callFrame": {
+          "functionName": "extendTranslation",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 36243
+        },
+        "hitCount": 0,
+        "children": [
+          198
+        ]
+      },
+      {
+        "id": 198,
+        "callFrame": {
+          "functionName": "interpolate",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 46491
+        },
+        "hitCount": 0,
+        "children": [
+          199
+        ]
+      },
+      {
+        "id": 199,
+        "callFrame": {
+          "functionName": "p",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 46611
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 11,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 200,
+        "callFrame": {
+          "functionName": "uj",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 115,
+          "columnNumber": 90808
+        },
+        "hitCount": 1,
+        "children": [
+          201
+        ],
+        "positionTicks": [
+          {
+            "line": 116,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 201,
+        "callFrame": {
+          "functionName": "formatTime",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 115,
+          "columnNumber": 90527
+        },
+        "hitCount": 0,
+        "children": [
+          202
+        ]
+      },
+      {
+        "id": 202,
+        "callFrame": {
+          "functionName": "YG",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 115,
+          "columnNumber": 90112
+        },
+        "hitCount": 5,
+        "positionTicks": [
+          {
+            "line": 116,
+            "ticks": 5
+          }
+        ]
+      },
+      {
+        "id": 164,
+        "callFrame": {
+          "functionName": "fn",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 69858
+        },
+        "hitCount": 0,
+        "children": [
+          165
+        ]
+      },
+      {
+        "id": 165,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 45751
+        },
+        "hitCount": 0,
+        "children": [
+          166
+        ]
+      },
+      {
+        "id": 166,
+        "callFrame": {
+          "functionName": "at",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 44182
+        },
+        "hitCount": 0,
+        "children": [
+          167
+        ]
+      },
+      {
+        "id": 167,
+        "callFrame": {
+          "functionName": "Ee",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 42617
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 8,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 64,
+        "callFrame": {
+          "functionName": "Fd",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 131144
+        },
+        "hitCount": 0,
+        "children": [
+          65
+        ]
+      },
+      {
+        "id": 65,
+        "callFrame": {
+          "functionName": "CA",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 89041
+        },
+        "hitCount": 1,
+        "children": [
+          188
+        ],
+        "positionTicks": [
+          {
+            "line": 8,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 188,
+        "callFrame": {
+          "functionName": "En",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 8,
+          "columnNumber": 5607
+        },
+        "hitCount": 1,
+        "children": [
+          189
+        ],
+        "positionTicks": [
+          {
+            "line": 9,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 189,
+        "callFrame": {
+          "functionName": "Et",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 8,
+          "columnNumber": 71
+        },
+        "hitCount": 0,
+        "children": [
+          190
+        ]
+      },
+      {
+        "id": 190,
+        "callFrame": {
+          "functionName": "mv",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 10741
+        },
+        "hitCount": 0,
+        "children": [
+          191
+        ]
+      },
+      {
+        "id": 191,
+        "callFrame": {
+          "functionName": "pv",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 10489
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 8,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 66,
+        "callFrame": {
+          "functionName": "Qx",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 126456
+        },
+        "hitCount": 0,
+        "children": [
+          67
+        ]
+      },
+      {
+        "id": 67,
+        "callFrame": {
+          "functionName": "sk",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 131583
+        },
+        "hitCount": 0,
+        "children": [
+          68
+        ]
+      },
+      {
+        "id": 68,
+        "callFrame": {
+          "functionName": "RA",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 131827
+        },
+        "hitCount": 0,
+        "children": [
+          69,
+          203,
+          206
+        ]
+      },
+      {
+        "id": 69,
+        "callFrame": {
+          "functionName": "Om",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 133824
+        },
+        "hitCount": 0,
+        "children": [
+          70
+        ]
+      },
+      {
+        "id": 70,
+        "callFrame": {
+          "functionName": "Lx",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 106336
+        },
+        "hitCount": 0,
+        "children": [
+          71
+        ]
+      },
+      {
+        "id": 71,
+        "callFrame": {
+          "functionName": "fo",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 117720
+        },
+        "hitCount": 0,
+        "children": [
+          72
+        ]
+      },
+      {
+        "id": 72,
+        "callFrame": {
+          "functionName": "Lx",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 106336
+        },
+        "hitCount": 0,
+        "children": [
+          73
+        ]
+      },
+      {
+        "id": 73,
+        "callFrame": {
+          "functionName": "fo",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 117720
+        },
+        "hitCount": 0,
+        "children": [
+          74
+        ]
+      },
+      {
+        "id": 74,
+        "callFrame": {
+          "functionName": "Lx",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 106336
+        },
+        "hitCount": 0,
+        "children": [
+          75
+        ]
+      },
+      {
+        "id": 75,
+        "callFrame": {
+          "functionName": "fo",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 117720
+        },
+        "hitCount": 0,
+        "children": [
+          76
+        ]
+      },
+      {
+        "id": 76,
+        "callFrame": {
+          "functionName": "Lx",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 106336
+        },
+        "hitCount": 0,
+        "children": [
+          77
+        ]
+      },
+      {
+        "id": 77,
+        "callFrame": {
+          "functionName": "fo",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 117720
+        },
+        "hitCount": 0,
+        "children": [
+          78
+        ]
+      },
+      {
+        "id": 78,
+        "callFrame": {
+          "functionName": "Lx",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 106336
+        },
+        "hitCount": 0,
+        "children": [
+          79
+        ]
+      },
+      {
+        "id": 79,
+        "callFrame": {
+          "functionName": "Ql",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 96630
+        },
+        "hitCount": 0,
+        "children": [
+          80
+        ]
+      },
+      {
+        "id": 80,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 18287
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 11,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 203,
+        "callFrame": {
+          "functionName": "FA",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 136648
+        },
+        "hitCount": 0,
+        "children": [
+          204
+        ]
+      },
+      {
+        "id": 204,
+        "callFrame": {
+          "functionName": "t.unstable_scheduleCallback",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 0,
+          "columnNumber": 12504
+        },
+        "hitCount": 0,
+        "children": [
+          205
+        ]
+      },
+      {
+        "id": 205,
+        "callFrame": {
+          "functionName": "e",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 0,
+          "columnNumber": 9634
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 1,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 206,
+        "callFrame": {
+          "functionName": "Rm",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 134030
+        },
+        "hitCount": 0,
+        "children": [
+          207
+        ]
+      },
+      {
+        "id": 207,
+        "callFrame": {
+          "functionName": "rc",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 136817
+        },
+        "hitCount": 0,
+        "children": [
+          208
+        ]
+      },
+      {
+        "id": 208,
+        "callFrame": {
+          "functionName": "pk",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 138591
+        },
+        "hitCount": 0,
+        "children": [
+          209
+        ]
+      },
+      {
+        "id": 209,
+        "callFrame": {
+          "functionName": "Xx",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 125331
+        },
+        "hitCount": 0,
+        "children": [
+          210
+        ]
+      },
+      {
+        "id": 210,
+        "callFrame": {
+          "functionName": "Nm",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 128849
+        },
+        "hitCount": 0,
+        "children": [
+          211
+        ]
+      },
+      {
+        "id": 211,
+        "callFrame": {
+          "functionName": "NA",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 129332
+        },
+        "hitCount": 0,
+        "children": [
+          212
+        ]
+      },
+      {
+        "id": 212,
+        "callFrame": {
+          "functionName": "ok",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 130303
+        },
+        "hitCount": 0,
+        "children": [
+          213
+        ]
+      },
+      {
+        "id": 213,
+        "callFrame": {
+          "functionName": "wx",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 83843
+        },
+        "hitCount": 0,
+        "children": [
+          214
+        ]
+      },
+      {
+        "id": 214,
+        "callFrame": {
+          "functionName": "em",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 73397
+        },
+        "hitCount": 0,
+        "children": [
+          215
+        ]
+      },
+      {
+        "id": 215,
+        "callFrame": {
+          "functionName": "Lp",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 50185
+        },
+        "hitCount": 0,
+        "children": [
+          216
+        ]
+      },
+      {
+        "id": 216,
+        "callFrame": {
+          "functionName": "Lf",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 115,
+          "columnNumber": 89493
+        },
+        "hitCount": 0,
+        "children": [
+          217
+        ]
+      },
+      {
+        "id": 217,
+        "callFrame": {
+          "functionName": "ke",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 71285
+        },
+        "hitCount": 0,
+        "children": [
+          218
+        ]
+      },
+      {
+        "id": 218,
+        "callFrame": {
+          "functionName": "YN.tt.useSyncExternalStore",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 0,
+          "columnNumber": 9304
+        },
+        "hitCount": 0,
+        "children": [
+          219
+        ]
+      },
+      {
+        "id": 219,
+        "callFrame": {
+          "functionName": "bw",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 7,
+          "columnNumber": 54391
+        },
+        "hitCount": 0,
+        "children": [
+          220
+        ]
+      },
+      {
+        "id": 220,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 72158
+        },
+        "hitCount": 0,
+        "children": [
+          221
+        ]
+      },
+      {
+        "id": 221,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 72240
+        },
+        "hitCount": 0,
+        "children": [
+          222
+        ]
+      },
+      {
+        "id": 222,
+        "callFrame": {
+          "functionName": "nO",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 68782
+        },
+        "hitCount": 0,
+        "children": [
+          223
+        ]
+      },
+      {
+        "id": 223,
+        "callFrame": {
+          "functionName": "hasLoadedNamespace",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 64438
+        },
+        "hitCount": 0,
+        "children": [
+          224
+        ]
+      },
+      {
+        "id": 224,
+        "callFrame": {
+          "functionName": "<computed>",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 59617
+        },
+        "hitCount": 0,
+        "children": [
+          225
+        ]
+      },
+      {
+        "id": 225,
+        "callFrame": {
+          "functionName": "hasResourceBundle",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 29520
+        },
+        "hitCount": 0,
+        "children": [
+          226
+        ]
+      },
+      {
+        "id": 226,
+        "callFrame": {
+          "functionName": "getResource",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 28213
+        },
+        "hitCount": 0,
+        "children": [
+          227
+        ]
+      },
+      {
+        "id": 227,
+        "callFrame": {
+          "functionName": "Lh",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 24688
+        },
+        "hitCount": 0,
+        "children": [
+          228
+        ]
+      },
+      {
+        "id": 228,
+        "callFrame": {
+          "functionName": "Uc",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 24064
+        },
+        "hitCount": 0,
+        "children": [
+          229
+        ]
+      },
+      {
+        "id": 229,
+        "callFrame": {
+          "functionName": "N0",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 10,
+          "columnNumber": 24001
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 11,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 85,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 117,
+          "columnNumber": 184077
+        },
+        "hitCount": 0,
+        "children": [
+          86,
+          130
+        ]
+      },
+      {
+        "id": 86,
+        "callFrame": {
+          "functionName": "tl",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 95,
+          "columnNumber": 9811
+        },
+        "hitCount": 0,
+        "children": [
+          87
+        ]
+      },
+      {
+        "id": 87,
+        "callFrame": {
+          "functionName": "ai",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 95,
+          "columnNumber": 23269
+        },
+        "hitCount": 0,
+        "children": [
+          88
+        ]
+      },
+      {
+        "id": 88,
+        "callFrame": {
+          "functionName": "safeParse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 94,
+          "columnNumber": 15553
+        },
+        "hitCount": 0,
+        "children": [
+          89
+        ]
+      },
+      {
+        "id": 89,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 74863
+        },
+        "hitCount": 0,
+        "children": [
+          90
+        ]
+      },
+      {
+        "id": 90,
+        "callFrame": {
+          "functionName": "h",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 13048
+        },
+        "hitCount": 0,
+        "children": [
+          91
+        ]
+      },
+      {
+        "id": 91,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 171
+        },
+        "hitCount": 1,
+        "children": [
+          92
+        ],
+        "positionTicks": [
+          {
+            "line": 93,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 92,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "7",
+          "url": "",
+          "lineNumber": 2,
+          "columnNumber": 16
+        },
+        "hitCount": 0,
+        "children": [
+          93,
+          96
+        ]
+      },
+      {
+        "id": 93,
+        "callFrame": {
+          "functionName": "h",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 13048
+        },
+        "hitCount": 0,
+        "children": [
+          94
+        ]
+      },
+      {
+        "id": 94,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 171
+        },
+        "hitCount": 0,
+        "children": [
+          95,
+          117
+        ]
+      },
+      {
+        "id": 95,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "8",
+          "url": "",
+          "lineNumber": 2,
+          "columnNumber": 16
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 99,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 117,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "21",
+          "url": "",
+          "lineNumber": 2,
+          "columnNumber": 16
+        },
+        "hitCount": 0,
+        "children": [
+          118
+        ]
+      },
+      {
+        "id": 118,
+        "callFrame": {
+          "functionName": "t._zod.run",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 1082
+        },
+        "hitCount": 0,
+        "children": [
+          119
+        ]
+      },
+      {
+        "id": 119,
+        "callFrame": {
+          "functionName": "h",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 13048
+        },
+        "hitCount": 0,
+        "children": [
+          120
+        ]
+      },
+      {
+        "id": 120,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 7965
+        },
+        "hitCount": 0,
+        "children": [
+          121
+        ]
+      },
+      {
+        "id": 121,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 8436
+        },
+        "hitCount": 0,
+        "children": [
+          122
+        ]
+      },
+      {
+        "id": 122,
+        "callFrame": {
+          "functionName": "h",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 13048
+        },
+        "hitCount": 0,
+        "children": [
+          123
+        ]
+      },
+      {
+        "id": 123,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 171
+        },
+        "hitCount": 0,
+        "children": [
+          124,
+          126
+        ]
+      },
+      {
+        "id": 124,
+        "callFrame": {
+          "functionName": "s",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 11475
+        },
+        "hitCount": 0,
+        "children": [
+          125
+        ]
+      },
+      {
+        "id": 125,
+        "callFrame": {
+          "functionName": "compile",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 39,
+          "columnNumber": 175
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 40,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 126,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "22",
+          "url": "",
+          "lineNumber": 2,
+          "columnNumber": 16
+        },
+        "hitCount": 0,
+        "children": [
+          127
+        ]
+      },
+      {
+        "id": 127,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 7597
+        },
+        "hitCount": 0,
+        "children": [
+          128
+        ]
+      },
+      {
+        "id": 128,
+        "callFrame": {
+          "functionName": "t._zod.run",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 1082
+        },
+        "hitCount": 0,
+        "children": [
+          129
+        ]
+      },
+      {
+        "id": 129,
+        "callFrame": {
+          "functionName": "s",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 434
+        },
+        "hitCount": 0
+      },
+      {
+        "id": 96,
+        "callFrame": {
+          "functionName": "t._zod.run",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 1082
+        },
+        "hitCount": 0,
+        "children": [
+          97
+        ]
+      },
+      {
+        "id": 97,
+        "callFrame": {
+          "functionName": "h",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 13048
+        },
+        "hitCount": 0,
+        "children": [
+          98
+        ]
+      },
+      {
+        "id": 98,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 7965
+        },
+        "hitCount": 0,
+        "children": [
+          99
+        ]
+      },
+      {
+        "id": 99,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 8436
+        },
+        "hitCount": 0,
+        "children": [
+          100
+        ]
+      },
+      {
+        "id": 100,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 1323
+        },
+        "hitCount": 0,
+        "children": [
+          101,
+          112
+        ]
+      },
+      {
+        "id": 101,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 2725
+        },
+        "hitCount": 0,
+        "children": [
+          102,
+          108
+        ]
+      },
+      {
+        "id": 102,
+        "callFrame": {
+          "functionName": "get value",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 61772
+        },
+        "hitCount": 0,
+        "children": [
+          103
+        ]
+      },
+      {
+        "id": 103,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 2701
+        },
+        "hitCount": 0,
+        "children": [
+          104
+        ]
+      },
+      {
+        "id": 104,
+        "callFrame": {
+          "functionName": "r2",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 1602
+        },
+        "hitCount": 0,
+        "children": [
+          105
+        ]
+      },
+      {
+        "id": 105,
+        "callFrame": {
+          "functionName": "get",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 69994
+        },
+        "hitCount": 0,
+        "children": [
+          106
+        ]
+      },
+      {
+        "id": 106,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 10516
+        },
+        "hitCount": 0,
+        "children": [
+          107
+        ]
+      },
+      {
+        "id": 107,
+        "callFrame": {
+          "functionName": "get",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 69994
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 39,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 108,
+        "callFrame": {
+          "functionName": "h",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 13048
+        },
+        "hitCount": 0,
+        "children": [
+          109
+        ]
+      },
+      {
+        "id": 109,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 171
+        },
+        "hitCount": 0,
+        "children": [
+          110
+        ]
+      },
+      {
+        "id": 110,
+        "callFrame": {
+          "functionName": "s",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 11475
+        },
+        "hitCount": 0,
+        "children": [
+          111
+        ]
+      },
+      {
+        "id": 111,
+        "callFrame": {
+          "functionName": "compile",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 39,
+          "columnNumber": 175
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 43,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 112,
+        "callFrame": {
+          "functionName": "h",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 13048
+        },
+        "hitCount": 0,
+        "children": [
+          113
+        ]
+      },
+      {
+        "id": 113,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 171
+        },
+        "hitCount": 0,
+        "children": [
+          114
+        ]
+      },
+      {
+        "id": 114,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "9",
+          "url": "",
+          "lineNumber": 2,
+          "columnNumber": 16
+        },
+        "hitCount": 0,
+        "children": [
+          115
+        ]
+      },
+      {
+        "id": 115,
+        "callFrame": {
+          "functionName": "h",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 13048
+        },
+        "hitCount": 0,
+        "children": [
+          116
+        ]
+      },
+      {
+        "id": 116,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 171
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 93,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 130,
+        "callFrame": {
+          "functionName": "Su",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 95,
+          "columnNumber": 34904
+        },
+        "hitCount": 0,
+        "children": [
+          131
+        ]
+      },
+      {
+        "id": 131,
+        "callFrame": {
+          "functionName": "ai",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 95,
+          "columnNumber": 23269
+        },
+        "hitCount": 0,
+        "children": [
+          132
+        ]
+      },
+      {
+        "id": 132,
+        "callFrame": {
+          "functionName": "safeParse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 94,
+          "columnNumber": 15553
+        },
+        "hitCount": 0,
+        "children": [
+          133
+        ]
+      },
+      {
+        "id": 133,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 74863
+        },
+        "hitCount": 0,
+        "children": [
+          134
+        ]
+      },
+      {
+        "id": 134,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 171
+        },
+        "hitCount": 0,
+        "children": [
+          135
+        ]
+      },
+      {
+        "id": 135,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "7",
+          "url": "",
+          "lineNumber": 2,
+          "columnNumber": 16
+        },
+        "hitCount": 0,
+        "children": [
+          136
+        ]
+      },
+      {
+        "id": 136,
+        "callFrame": {
+          "functionName": "t._zod.run",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 1082
+        },
+        "hitCount": 0,
+        "children": [
+          137
+        ]
+      },
+      {
+        "id": 137,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 7965
+        },
+        "hitCount": 0,
+        "children": [
+          138
+        ]
+      },
+      {
+        "id": 138,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 8436
+        },
+        "hitCount": 0,
+        "children": [
+          139
+        ]
+      },
+      {
+        "id": 139,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 1323
+        },
+        "hitCount": 0,
+        "children": [
+          140
+        ]
+      },
+      {
+        "id": 140,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 2725
+        },
+        "hitCount": 0,
+        "children": [
+          141
+        ]
+      },
+      {
+        "id": 141,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 171
+        },
+        "hitCount": 0,
+        "children": [
+          142
+        ]
+      },
+      {
+        "id": 142,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "9",
+          "url": "",
+          "lineNumber": 2,
+          "columnNumber": 16
+        },
+        "hitCount": 0,
+        "children": [
+          143,
+          156
+        ]
+      },
+      {
+        "id": 143,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 171
+        },
+        "hitCount": 0,
+        "children": [
+          144
+        ]
+      },
+      {
+        "id": 144,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "14",
+          "url": "",
+          "lineNumber": 2,
+          "columnNumber": 16
+        },
+        "hitCount": 0,
+        "children": [
+          145
+        ]
+      },
+      {
+        "id": 145,
+        "callFrame": {
+          "functionName": "t._zod.run",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 1082
+        },
+        "hitCount": 0,
+        "children": [
+          146
+        ]
+      },
+      {
+        "id": 146,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 7965
+        },
+        "hitCount": 0,
+        "children": [
+          147
+        ]
+      },
+      {
+        "id": 147,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 8436
+        },
+        "hitCount": 0,
+        "children": [
+          148
+        ]
+      },
+      {
+        "id": 148,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 171
+        },
+        "hitCount": 0,
+        "children": [
+          149
+        ]
+      },
+      {
+        "id": 149,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "15",
+          "url": "",
+          "lineNumber": 2,
+          "columnNumber": 16
+        },
+        "hitCount": 0,
+        "children": [
+          150
+        ]
+      },
+      {
+        "id": 150,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 7420
+        },
+        "hitCount": 0,
+        "children": [
+          151
+        ]
+      },
+      {
+        "id": 151,
+        "callFrame": {
+          "functionName": "t._zod.parse",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 92,
+          "columnNumber": 1323
+        },
+        "hitCount": 0,
+        "children": [
+          152
+        ]
+      },
+      {
+        "id": 152,
+        "callFrame": {
+          "functionName": "t._zod.run",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 1082
+        },
+        "hitCount": 0,
+        "children": [
+          153
+        ]
+      },
+      {
+        "id": 153,
+        "callFrame": {
+          "functionName": "s",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 434
+        },
+        "hitCount": 0,
+        "children": [
+          154,
+          155
+        ]
+      },
+      {
+        "id": 154,
+        "callFrame": {
+          "functionName": "ZD",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 67344
+        },
+        "hitCount": 0
+      },
+      {
+        "id": 155,
+        "callFrame": {
+          "functionName": "la",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 38,
+          "columnNumber": 67216
+        },
+        "hitCount": 0
+      },
+      {
+        "id": 156,
+        "callFrame": {
+          "functionName": "t._zod.run",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 1082
+        },
+        "hitCount": 0,
+        "children": [
+          157
+        ]
+      },
+      {
+        "id": 157,
+        "callFrame": {
+          "functionName": "s",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 42,
+          "columnNumber": 434
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 43,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 230,
+        "callFrame": {
+          "functionName": "ct",
+          "scriptId": "5",
+          "url": "http://127.0.0.1:5197/assets/index-ByY0glO4.js",
+          "lineNumber": 116,
+          "columnNumber": 126334
+        },
+        "hitCount": 11,
+        "positionTicks": [
+          {
+            "line": 117,
+            "ticks": 11
+          }
+        ]
+      },
+      {
+        "id": 231,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "34",
+          "url": "",
+          "lineNumber": 0,
+          "columnNumber": 1
+        },
+        "hitCount": 0,
+        "children": [
+          232
+        ]
+      },
+      {
+        "id": 232,
+        "callFrame": {
+          "functionName": "evaluate",
+          "scriptId": "28",
+          "url": "",
+          "lineNumber": 363,
+          "columnNumber": 10
+        },
+        "hitCount": 0,
+        "children": [
+          233
+        ]
+      },
+      {
+        "id": 233,
+        "callFrame": {
+          "functionName": "parseEvaluationResultValue",
+          "scriptId": "28",
+          "url": "",
+          "lineNumber": 119,
+          "columnNumber": 35
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 169,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 234,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "28",
+          "url": "",
+          "lineNumber": 394,
+          "columnNumber": 14
+        },
+        "hitCount": 0,
+        "children": [
+          235
+        ]
+      },
+      {
+        "id": 235,
+        "callFrame": {
+          "functionName": "safeJson",
+          "scriptId": "28",
+          "url": "",
+          "lineNumber": 386,
+          "columnNumber": 21
+        },
+        "hitCount": 0,
+        "children": [
+          236
+        ]
+      },
+      {
+        "id": 236,
+        "callFrame": {
+          "functionName": "jsonValue",
+          "scriptId": "28",
+          "url": "",
+          "lineNumber": 380,
+          "columnNumber": 11
+        },
+        "hitCount": 0,
+        "children": [
+          237
+        ]
+      },
+      {
+        "id": 237,
+        "callFrame": {
+          "functionName": "serializeAsCallArgument",
+          "scriptId": "28",
+          "url": "",
+          "lineNumber": 199,
+          "columnNumber": 32
+        },
+        "hitCount": 0,
+        "children": [
+          238
+        ]
+      },
+      {
+        "id": 238,
+        "callFrame": {
+          "functionName": "serialize",
+          "scriptId": "28",
+          "url": "",
+          "lineNumber": 202,
+          "columnNumber": 18
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 205,
+            "ticks": 1
+          }
+        ]
+      }
+    ],
+    "startTime": 329067546382,
+    "endTime": 329069363999,
+    "samples": [
+      2,
+      2,
+      3,
+      3,
+      3,
+      2,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      2,
+      2,
+      5,
+      4,
+      6,
+      6,
+      16,
+      6,
+      28,
+      29,
+      35,
+      6,
+      37,
+      41,
+      46,
+      2,
+      63,
+      65,
+      80,
+      2,
+      2,
+      84,
+      2,
+      91,
+      95,
+      107,
+      111,
+      116,
+      125,
+      129,
+      154,
+      155,
+      157,
+      2,
+      2,
+      2,
+      161,
+      163,
+      167,
+      55,
+      173,
+      180,
+      181,
+      186,
+      187,
+      188,
+      55,
+      191,
+      199,
+      202,
+      202,
+      202,
+      202,
+      202,
+      200,
+      205,
+      229,
+      6,
+      230,
+      230,
+      230,
+      230,
+      230,
+      230,
+      230,
+      230,
+      230,
+      230,
+      230,
+      2,
+      2,
+      2,
+      2,
+      3,
+      2,
+      233,
+      238,
+      3,
+      3,
+      2,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      2,
+      3,
+      3,
+      3,
+      3,
+      3,
+      2,
+      2,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      2,
+      2,
+      2,
+      3,
+      3,
+      3,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      3,
+      2,
+      3,
+      3,
+      2,
+      2,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      2,
+      3,
+      3,
+      2,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+    ],
+    "timeDeltas": [
+      714,
+      7413,
+      5053,
+      1993,
+      2418,
+      4999,
+      2038,
+      2587,
+      1404,
+      1533,
+      1265,
+      1298,
+      1281,
+      1118,
+      1477,
+      1314,
+      1365,
+      1832,
+      1839,
+      1827,
+      1278,
+      1439,
+      1430,
+      2496,
+      2223,
+      1581,
+      1685,
+      1788,
+      6410,
+      1339,
+      1323,
+      1266,
+      1245,
+      1827,
+      1779,
+      1663,
+      1964,
+      1276,
+      1256,
+      1519,
+      4759,
+      1241,
+      1241,
+      1277,
+      1548,
+      1324,
+      1108,
+      1503,
+      1263,
+      1239,
+      1431,
+      1267,
+      1270,
+      983,
+      944,
+      61,
+      322,
+      5245,
+      1749,
+      1989,
+      2093,
+      1270,
+      2050,
+      1795,
+      305,
+      322,
+      631,
+      1201,
+      3050,
+      1165,
+      1457,
+      1529,
+      1584,
+      6018,
+      1261,
+      1257,
+      1567,
+      1230,
+      2107,
+      1252,
+      4565,
+      1571,
+      2171,
+      1321,
+      1385,
+      1267,
+      4097,
+      1262,
+      1296,
+      1292,
+      1296,
+      1266,
+      1012,
+      1149,
+      1244,
+      1276,
+      1113,
+      8308,
+      6000,
+      2320,
+      2132,
+      5960,
+      6130,
+      2371,
+      1355,
+      4732,
+      1269,
+      3436,
+      3196,
+      8873,
+      2169,
+      12967,
+      20801,
+      2205,
+      1335,
+      1893,
+      921,
+      3175,
+      3309,
+      3729,
+      1295,
+      1696,
+      1366,
+      1812,
+      1260,
+      2234,
+      1089,
+      2221,
+      70023,
+      12555,
+      57666,
+      4104,
+      1370,
+      1443,
+      1562,
+      1718,
+      2379,
+      448,
+      2061,
+      1554,
+      1452,
+      1261,
+      1332,
+      9505,
+      1335,
+      1203,
+      1627,
+      1277,
+      1744,
+      789,
+      1268,
+      1805,
+      1854,
+      2367,
+      4734,
+      1369,
+      7257,
+      52004,
+      1173,
+      3445,
+      2645,
+      11444,
+      1324,
+      18009,
+      1669,
+      912,
+      1960,
+      32110,
+      1855,
+      1327,
+      167308,
+      4971,
+      2186,
+      1626,
+      17631,
+      1623,
+      17714,
+      10013,
+      11735,
+      13620,
+      2532,
+      2433,
+      19021,
+      2609,
+      1293,
+      1625,
+      1469,
+      1450,
+      1491,
+      1832,
+      1668,
+      1456,
+      1408,
+      1845,
+      2353,
+      2152,
+      3591,
+      1300,
+      2648,
+      1302,
+      1348,
+      1008,
+      1675,
+      183567,
+      3338,
+      5086,
+      1300,
+      1860,
+      892,
+      1381,
+      1553,
+      57057,
+      2018,
+      2999,
+      1311,
+      1422,
+      1385,
+      3801,
+      7020,
+      1325,
+      10233,
+      1427,
+      1043,
+      32630,
+      3407,
+      1291,
+      21769,
+      1357,
+      1267,
+      1318,
+      6252,
+      54135,
+      2582,
+      2938,
+      6662,
+      632,
+      187155,
+      33391,
+      2423,
+      5552,
+      1270,
+      2007,
+      1857,
+      2461,
+      1623,
+      1349,
+      1368,
+      2203,
+      1697,
+      2151,
+      1650,
+      1487,
+      1613,
+      2248,
+      1268,
+      1318,
+      1464,
+      1515,
+      1296,
+      1432,
+      2119,
+      8103,
+      1874,
+      91174,
+      9310,
+      3949,
+      1779,
+      2826,
+      1676,
+      1464,
+      1277,
+      3332,
+      2181,
+      17647,
+      1271,
+      5536,
+      1903,
+      1520,
+      3139,
+      9350,
+      3622,
+      2290,
+      2795,
+      2183,
+      1296,
+      1216,
+      2169,
+      1233,
+      2569,
+      1135,
+      3146
+    ]
+  }
+}

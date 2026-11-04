@@ -1,0 +1,20 @@
+.media-upload-tasks {
+  min-width: 0;
+  max-width: 100%;
+  margin: 8px 0;
+  padding: 8px;
+  border: 1px solid currentColor;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.media-upload-tasks .media-upload-summary { margin: 0 0 6px; }
+.media-upload-tasks ul { list-style: none; margin: 0; padding: 0; }
+.media-upload-tasks li { padding: 5px 0; }
+.media-upload-tasks li + li { border-top: 1px dotted currentColor; }
+.media-upload-tasks .media-upload-item { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+.media-upload-tasks .media-upload-name { flex: 1 1 110px; min-width: 0; }
+.media-upload-tasks .media-upload-error { margin: 4px 0 0; }
+.media-upload-tasks button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+@media (max-width: 600px) {
+  .media-upload-tasks button { min-width: 36px; min-height: 36px; }
+}

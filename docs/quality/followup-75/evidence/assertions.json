@@ -1,0 +1,12 @@
+{
+  "before": "fa79436a3b8d7d1433e30b5abe4147c0868c4864",
+  "after": "4f6ec161f68a90e2e63eec86185db58bb68dfa50",
+  "navigationObservationsPerRevision": 36,
+  "previewCyclesPerRevision": 6,
+  "identicalFixtures": true,
+  "editorChunkOnlyForEditor": true,
+  "noInitialIconCatalogRequests": true,
+  "noPrivateEditorSourcesInEntry": true,
+  "previewDomRestored": true,
+  "noRemainingMediaInCycles": true
+}

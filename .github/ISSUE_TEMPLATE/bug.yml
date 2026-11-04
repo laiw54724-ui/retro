@@ -1,0 +1,39 @@
+name: Bug report
+description: Report a reproducible Retro problem without private data.
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Never paste tokens, private site content, invitation links, real account details, or local personal paths. Use synthetic examples and the repository SECURITY.md policy for vulnerabilities.
+  - type: textarea
+    id: behavior
+    attributes:
+      label: What happened?
+      description: Include what you expected and what actually happened.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction
+      description: Minimal steps using demo or redacted content.
+    validations:
+      required: true
+  - type: input
+    id: release
+    attributes:
+      label: Version or commit
+      description: Use a commit SHA or public release identifier; omit private preview URLs and signed links.
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      options: [Desktop editor, Mobile editor, Visitor site, API, Deployment]
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Browser and viewport
+      description: Include browser version, OS, viewport size and input method; omit device/account identifiers.

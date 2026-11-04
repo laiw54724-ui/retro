@@ -1,0 +1,29 @@
+{
+  "explorer": {
+    "inline": {
+      "tree": "Folder tree",
+      "search": "Search folders and shortcuts",
+      "selectMode": "Select items",
+      "actions": "Item actions",
+      "open": "Open",
+      "cut": "Cut",
+      "paste": "Paste {{count}} items here",
+      "cutStatus": "Cut {{count}} items; paste them into a destination folder",
+      "moved": "Moved {{count}} items to “{{path}}”",
+      "selected": "{{count}} items selected",
+      "count": "{{count}} items",
+      "dragHint": "Drop onto a folder, the tree, or a path segment",
+      "hint": "Drag to organize · Double-click folders · Ctrl/Shift to select · Right-click for actions",
+      "touchHint": "Tap folders to open · Use Select items to organize or rename",
+      "renameHint": "Enter a name · Enter to confirm · Esc to cancel",
+      "broken": "{{count}} shortcut targets are missing; repair them from Item actions",
+      "confirmDelete": "Delete selected items? This removes {{folders}} folders and {{shortcuts}} shortcuts. Original windows and posts are kept.",
+      "deleted": "Deleted {{count}} items; original windows and posts remain. Undo is available.",
+      "noResults": "No matching items",
+      "expand": "Expand {{name}}",
+      "collapse": "Collapse {{name}}",
+      "searchTarget": "Search windows, characters, and posts",
+      "changeIcon": "Change icon…"
+    }
+  }
+}

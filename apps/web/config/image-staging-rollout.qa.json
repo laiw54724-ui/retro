@@ -1,0 +1,5 @@
+{
+  "enabled": true,
+  "webOrigin": "https://retrodesk-staging.pages.dev",
+  "apiOrigin": "https://retrodesk-api-staging.beibeiz.workers.dev"
+}
