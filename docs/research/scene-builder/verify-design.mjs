@@ -18,7 +18,6 @@ const paths = [
   "docs/ASSET-LICENSES.md",
   "docs/THIRD_PARTY_ASSETS.md",
   "docs/verification/guestbook-preview-42/README.md",
-  "docs/superpowers/evidence/2026-10-19-appearance-p2-writer.md",
 ];
 const documents = paths.map(path => ({ path, contents: readFileSync(resolve(root, path), "utf8") }));
 
