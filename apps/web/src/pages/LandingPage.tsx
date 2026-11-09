@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../app/AuthProvider";
 import { RetroButton } from "../components/RetroButton";
+import { ExternalLink } from "../components/ExternalLink";
 import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { buildSampleModel } from "../features/editor/previewModel";
 import { VisitorPreview } from "../features/editor/VisitorPreview";
@@ -21,7 +22,15 @@ export function LandingPage() {
     <main className="landing-shell" style={{ fontFamily }}>
       <section className="landing-window retro-panel">
         <header className="landing-titlebar">{t("landing.title")}</header>
-        <div style={{ padding: "12px 16px 0" }}><LanguageSwitcher /></div>
+        <div className="landing-navigation">
+          <nav aria-label={t("landing.navigation")}>
+            <a href="#how-it-works">{t("landing.howItWorks")}</a>
+            <a href="#examples">{t("landing.examples")}</a>
+            <a href="#faq">{t("landing.faqTitle")}</a>
+            <a href="#support">{t("landing.help")}</a>
+          </nav>
+          <LanguageSwitcher />
+        </div>
         {user ? <p className="info-box">{t("landing.signedIn", { email: user.email })}</p> : null}
         <div className="landing-hero">
           <div className="landing-copy">
@@ -32,20 +41,20 @@ export function LandingPage() {
               <Link className="retro-link primary" to="/auth">{t(user ? "landing.myDesktop" : "landing.createDesktop")}</Link>
               <a className="retro-link" href="#examples">{t("landing.browseExamples")}</a>
             </div>
-            <p role="note" style={{ fontSize: "12px" }}>{t("landing.fictionalNotice")}</p>
+            <p className="landing-sign-in-note">{t("landing.signInNote")}</p>
           </div>
           <div className="hero-demo">
             <div className="demo-desktop">
-              <div className="desktop-icons-demo"><span>{t("landing.demoCard")}</span><span>{t("landing.demoGallery")}</span><span>{t("landing.demoLinks")}</span></div>
-              <div className="demo-win one"><b>{t("landing.demoCard")}.exe</b><div className="demo-card-lines"><img src={DEMO_PREVIEW_IMAGES.card[0]} alt="" decoding="async" referrerPolicy="no-referrer" /><strong>{/* i18n-ignore: fictional sample character name */}Mochi 麻糬</strong><i /><i /></div></div>
-              <div className="demo-win two"><b>{t("landing.demoGallery")}</b><div className="demo-grid">{[...DEMO_PREVIEW_IMAGES.ig, ...DEMO_PREVIEW_IMAGES.portfolio].map((src) => <img key={src} src={src} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />)}</div></div>
-              <div className="demo-taskbar"><RetroButton>{t("desktop.start")}</RetroButton></div>
+              <div className="desktop-icons-demo" aria-hidden="true"><span>{t("landing.demoCard")}</span><span>{t("landing.demoGallery")}</span><span>{t("landing.demoLinks")}</span></div>
+              <div className="demo-win one" aria-hidden="true"><b>{t("landing.demoCard")}.exe</b><div className="demo-card-lines"><img src={DEMO_PREVIEW_IMAGES.card[0]} alt="" decoding="async" referrerPolicy="no-referrer" /><strong>{/* i18n-ignore: fictional sample character name */}Mochi 麻糬</strong><i /><i /></div></div>
+              <div className="demo-win two" aria-hidden="true"><b>{t("landing.demoGallery")}</b><div className="demo-grid">{[...DEMO_PREVIEW_IMAGES.ig, ...DEMO_PREVIEW_IMAGES.portfolio].map((src) => <img key={src} src={src} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />)}</div></div>
+              <div className="demo-taskbar"><RetroButton type="button" onClick={() => setDemo("card")}>{t("landing.tryDemo")}</RetroButton></div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="steps-grid">
+      <section id="how-it-works" className="steps-grid" aria-label={t("landing.howItWorks")}>
         {([
           ["01", "choose"],
           ["02", "add"],
@@ -59,7 +68,8 @@ export function LandingPage() {
       </section>
 
       <section id="examples" className="retro-panel examples">
-        <header className="landing-titlebar">{t("landing.examples")}</header>
+        <h2 className="landing-titlebar">{t("landing.examples")}</h2>
+        <p className="landing-section-copy">{t("landing.examplesHelp")}</p>
         <p role="note" className="info-box">{t("landing.fictionalNotice")}</p>
         <div className="example-grid">
           {DEMO_EXAMPLES.map((example) => (
@@ -77,9 +87,26 @@ export function LandingPage() {
         </div>
       </section>
       {demoDocument ? <VisitorPreview sample={buildSampleModel(demoDocument)} onClose={() => setDemo(null)} /> : null}
-      <footer className="retro-panel" style={{ width: "min(1000px, 100%)", padding: "12px 16px", display: "flex", flexWrap: "wrap", gap: 16 }}>
-        <a href="https://github.com/laiw54724-ui/retro/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">{t("landing.privacyDataDeletion")}</a>
-        <a href="https://github.com/laiw54724-ui/retro/issues" target="_blank" rel="noopener noreferrer">{t("landing.supportIssues")}</a>
+      <section id="faq" className="retro-panel landing-faq" aria-labelledby="faq-title">
+        <h2 id="faq-title" className="landing-titlebar">{t("landing.faqTitle")}</h2>
+        <div className="landing-faq-list">
+          {(["account", "preview", "mobile", "publish", "deletion"] as const).map((question) => (
+            <details key={question}>
+              <summary>{t(`landing.faq.${question}.question`)}</summary>
+              <p>{t(`landing.faq.${question}.answer`)}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+      <footer id="support" className="retro-panel landing-footer">
+        <h2>{t("landing.help")}</h2>
+        <nav aria-label={t("landing.resources")}>
+          <ExternalLink href="https://github.com/laiw54724-ui/retro/blob/main/PRIVACY.md">{t("landing.privacyDataDeletion")}</ExternalLink>
+          <ExternalLink href="https://github.com/laiw54724-ui/retro/issues">{t("landing.supportIssues")}</ExternalLink>
+          <ExternalLink href="https://github.com/laiw54724-ui/retro">{t("landing.sourceCode")}</ExternalLink>
+          <ExternalLink href="https://github.com/laiw54724-ui/retro/blob/main/LICENSE">{t("landing.sourceLicense")}</ExternalLink>
+        </nav>
+        <p>{t("landing.publicSupportNote")}</p>
       </footer>
     </main>
   );

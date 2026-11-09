@@ -525,7 +525,8 @@
     "hasUnpublishedChanges": "게시되지 않은 변경 사항이 있음 · 게시 후의 모습입니다(아직 온라인이 아닙니다)",
     "sameAsPublished": "게시된 버전과 같습니다",
     "backToSamples": "‹ 샘플로 돌아가기",
-    "sampleFictionalNotice": "가상 예시: 이 데모의 인물, 팔로워 수, 좋아요, 댓글은 모두 가상이며 실제 사용자나 활동이 아닙니다."
+    "sampleFictionalNotice": "가상 예시: 이 데모의 인물, 팔로워 수, 좋아요, 댓글은 모두 가상이며 실제 사용자나 활동이 아닙니다.",
+    "sampleInteractionHelp": "데스크톱 아이콘이나 시작 메뉴에서 앱을 여세요. 미리보기의 좋아요와 방명록 글은 저장되지 않습니다. 외부 링크는 Retro를 벗어납니다. 화면 맞춤은 전체 데스크톱을 보여 주며 100%에서는 스크롤하여 자세히 볼 수 있습니다."
   },
   "sidebarToggle": {
     "leftToolbar": "왼쪽 도구 모음",

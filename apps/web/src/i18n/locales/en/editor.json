@@ -525,7 +525,8 @@
     "hasUnpublishedChanges": "Has unpublished changes · this is how it will look once published; it isn’t online yet",
     "sameAsPublished": "Same as the published version",
     "backToSamples": "‹ Back to samples",
-    "sampleFictionalNotice": "Fictional demonstration: the people, follower counts, likes and comments in these examples are invented, not real users or activity."
+    "sampleFictionalNotice": "Fictional demonstration: the people, follower counts, likes and comments in these examples are invented, not real users or activity.",
+    "sampleInteractionHelp": "Open an app from a desktop icon or Start. Likes and guestbook entries in this preview are not saved. External links leave Retro; Fit shows the full desktop, while 100% lets you scroll for a closer look."
   },
   "sidebarToggle": {
     "leftToolbar": "Left toolbar",

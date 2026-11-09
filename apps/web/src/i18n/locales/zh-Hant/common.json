@@ -10,7 +10,8 @@
   },
   "actions": {
     "close": "關閉",
-    "home": "首頁"
+    "home": "首頁",
+    "opensNewTab": "↗ 新分頁"
   },
   "language": {
     "label": "介面語言",
@@ -18,7 +19,9 @@
     "zhHansNote": "尚未提供簡體中文；偵測到簡體中文偏好時會使用繁體中文。",
     "beta": "測試版",
     "changing": "正在切換語言…",
-    "betaNote": "日文與韓文目前為測試翻譯，仍待母語使用者校對。"
+    "betaNote": "日文與韓文目前為測試翻譯，仍待母語使用者校對。",
+    "shortNote": "只切換介面語言，不翻譯你的作品。",
+    "moreInfo": "語言支援說明"
   },
   "desktop": {
     "start": "開始",
@@ -75,7 +78,40 @@
     },
     "fictionalNotice": "虛構示意：範例中的人物、粉絲／追蹤數、按讚及留言都不是實際使用者或真實互動。",
     "privacyDataDeletion": "隱私與資料刪除說明",
-    "supportIssues": "問題與聯絡：GitHub Issues"
+    "supportIssues": "問題與聯絡：GitHub Issues",
+    "navigation": "首頁導覽",
+    "howItWorks": "如何開始",
+    "faqTitle": "常見問題",
+    "help": "說明與專案",
+    "resources": "GitHub 專案資源",
+    "sourceCode": "原始碼 · GitHub",
+    "sourceLicense": "原始碼授權 · MIT",
+    "signInNote": "不用登入即可試玩範例。建立與儲存自己的桌面需使用 Google 登入。",
+    "tryDemo": "開始試玩 →",
+    "examplesHelp": "開啟範例後，點桌面圖示或「開始」選單開啟視窗，也能切換桌面版與手機版。",
+    "publicSupportNote": "以上連結會在新分頁開啟 GitHub。Issues 是公開的，請勿張貼帳號資料、未公開作品或秘密資訊。",
+    "faq": {
+      "account": {
+        "question": "一定要登入嗎？",
+        "answer": "瀏覽互動範例不用登入。建立、儲存與發布自己的桌面時，請在登入頁使用 Google 繼續。"
+      },
+      "preview": {
+        "question": "可以修改範例嗎？",
+        "answer": "範例是虛構的暫時預覽。你可以開啟、移動視窗，試用支援的互動；預覽中的變更不會儲存到帳號。"
+      },
+      "mobile": {
+        "question": "手機也能瀏覽嗎？",
+        "answer": "訪客介面提供桌面版與手機版。建立前可先在範例中切換兩種版面，比較瀏覽方式。"
+      },
+      "publish": {
+        "question": "什麼時候會公開我的變更？",
+        "answer": "儲存草稿與發布是分開的操作。先預覽桌面版和手機版，再發布以更新公開版本。準備公開的內容請勿包含秘密資訊。"
+      },
+      "deletion": {
+        "question": "如何移除作品內容或刪除帳號？",
+        "answer": "你可以編輯或移除內容後重新發布，但不代表舊版本、備份或第三方副本都會清除。目前尚未提供自助整站或帳號刪除功能。詳細限制請閱讀下方的隱私與資料刪除說明。"
+      }
+    }
   },
   "auth": {
     "couldntReadYourDesktops": "無法讀取你的桌面",
@@ -85,7 +121,11 @@
     "signedIn": "已登入帳號",
     "signInFailed": "登入失敗：{{error}}",
     "continueWithGoogle": "使用 Google 繼續",
-    "back": "返回"
+    "back": "返回",
+    "welcome": "開始打造你的桌面",
+    "purpose": "登入後可建立、儲存並回到自己的桌面。也可以先不登入，試玩互動範例。",
+    "googleExplanation": "繼續後會前往 Google 選擇帳號。Retro 透過 Supabase Auth 管理登入，並顯示帳號的電子郵件。繼續前可先閱讀資料使用說明。",
+    "browseFirst": "先看看範例"
   },
   "onboarding": {
     "myLittleDesktop": "我的小桌面",

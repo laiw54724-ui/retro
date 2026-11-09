@@ -525,7 +525,8 @@
     "hasUnpublishedChanges": "有未發布的變更 · 這是發布後的樣子，尚未上線",
     "sameAsPublished": "與已發布版本相同",
     "backToSamples": "‹ 返回範例",
-    "sampleFictionalNotice": "虛構示意：範例中的人物、粉絲／追蹤數、按讚及留言都不是實際使用者或真實互動。"
+    "sampleFictionalNotice": "虛構示意：範例中的人物、粉絲／追蹤數、按讚及留言都不是實際使用者或真實互動。",
+    "sampleInteractionHelp": "點桌面圖示或「開始」開啟視窗。預覽中的按讚與留言不會儲存；外部連結會離開 Retro。「適合畫面」顯示完整桌面，「100%」可捲動查看細節。"
   },
   "sidebarToggle": {
     "leftToolbar": "左側工具欄",

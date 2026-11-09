@@ -47,6 +47,8 @@ export function DesktopTaskbar({ document, tasks, onOpen, onToggle, visitor = fa
   const { formatDate, formatTime, fontFamily } = useLocaleFormatting();
   const [startOpen, setStartOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const pendingMenuFocus = useRef<"first" | "last" | null>(null);
   const startButtonRef = useRef<HTMLButtonElement | null>(null);
   const menuId = `desktop-start-${useId().replaceAll(":", "")}`;
   const now = useLocalClock();
@@ -55,6 +57,12 @@ export function DesktopTaskbar({ document, tasks, onOpen, onToggle, visitor = fa
 
   useEffect(() => {
     if (!startOpen) return;
+    if (pendingMenuFocus.current) {
+      const items = menuRef.current?.querySelectorAll<HTMLButtonElement>("[role=menuitem]");
+      const target = pendingMenuFocus.current === "last" ? items?.[items.length - 1] : items?.[0];
+      target?.focus();
+      pendingMenuFocus.current = null;
+    }
 
     const closeOutside = (event: globalThis.PointerEvent) => {
       if (!rootRef.current?.contains(event.target as Node)) setStartOpen(false);
@@ -82,11 +90,18 @@ export function DesktopTaskbar({ document, tasks, onOpen, onToggle, visitor = fa
   return (
     <div ref={rootRef} className="desktop-chrome" style={{ fontFamily }}>
       {startOpen ? (
-        <div id={menuId} className="start-menu" style={{ background: tv.face, boxShadow: tv.bevel, width: "min(320px, calc(100vw - 12px))", maxHeight: "70vh", overflowY: "auto" }}>
+        <div id={menuId} className="start-menu" style={{ background: tv.face, boxShadow: tv.bevel, width: "min(320px, calc(100vw - 12px))", maxHeight: "min(70vh, calc(100% - 46px))", overflowY: "auto" }}>
           <div className="start-brand" aria-hidden="true" style={{ background: tv.titleBgV, color: tv.titleText }}>{document.siteName}</div>
           <div className="start-items">
             {document.windows.length ? (
-              <div role="menu" aria-label={t("desktop.startMenu")}>
+              <div ref={menuRef} role="menu" aria-label={t("desktop.startMenu")} onKeyDown={(event) => {
+                const items = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>("[role=menuitem]"));
+                const index = items.indexOf(globalThis.document.activeElement as HTMLButtonElement);
+                if (index < 0 || !["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+                event.preventDefault();
+                const next = event.key === "Home" ? 0 : event.key === "End" ? items.length - 1 : (index + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length;
+                items[next]?.focus();
+              }}>
                 {document.windows.map((desktopWindow) => (
                   <button
                     key={desktopWindow.id}
@@ -103,7 +118,7 @@ export function DesktopTaskbar({ document, tasks, onOpen, onToggle, visitor = fa
               </div>
             ) : <span className="start-empty">{t("desktop.empty")}</span>}
             <div className="w98-sep" />
-            <div style={{ padding: "4px 8px" }}><LanguageSwitcher /></div>
+            <div style={{ padding: "4px 8px" }}><LanguageSwitcher compact /></div>
             <small className="start-credit">{t("desktop.credit")}</small>
           </div>
         </div>
@@ -115,8 +130,21 @@ export function DesktopTaskbar({ document, tasks, onOpen, onToggle, visitor = fa
           type="button"
           className="start-btn"
           style={{ background: tv.face, color: tv.text, boxShadow: startOpen ? tv.pressed : tv.bevel }}
+          aria-haspopup="menu"
           aria-expanded={startOpen}
           aria-controls={menuId}
+          onKeyDown={(event) => {
+            if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+            event.preventDefault();
+            const edge = event.key === "ArrowUp" ? "last" : "first";
+            if (startOpen) {
+              const items = menuRef.current?.querySelectorAll<HTMLButtonElement>("[role=menuitem]");
+              (edge === "last" ? items?.[items.length - 1] : items?.[0])?.focus();
+            } else {
+              pendingMenuFocus.current = edge;
+              setStartOpen(true);
+            }
+          }}
           onClick={() => setStartOpen((open) => !open)}
         >
           <Icon name="computer" size={18} />{t("desktop.start")}
