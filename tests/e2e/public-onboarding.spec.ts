@@ -70,6 +70,7 @@ for (const size of [{ width: 1280, height: 800 }, { width: 390, height: 844 }, {
       }).toBe(true);
       const taskbar = await preview.locator(".visitor-taskbar").boundingBox();
       const host = await region.boundingBox();
+      expect(host!.y + host!.height).toBeLessThanOrEqual(size.height + 1);
       expect(taskbar!.y + taskbar!.height).toBeLessThanOrEqual(host!.y + host!.height + 1);
       const start = preview.getByRole("button", { name: "開始", exact: true });
       await start.focus();
@@ -100,3 +101,15 @@ for (const size of [{ width: 1280, height: 800 }, { width: 390, height: 844 }, {
     await expect(page).toHaveURL(/\/$/);
   });
 }
+
+test("a returned sign-in error leaves the demo escape route available", async ({ page }) => {
+  await page.goto("/auth?error_description=Sign-in%20was%20cancelled");
+  await expect(page.locator(".error-box")).toContainText("Sign-in was cancelled");
+  await expect(page.getByRole("button", { name: "使用 Google 繼續" })).toBeEnabled();
+  await page.getByRole("link", { name: "先看看範例" }).click();
+  await page.locator(".example-card").first().click();
+  await expect(page.locator(".preview-overlay")).toBeVisible();
+  await page.getByRole("button", { name: /返回範例/ }).click();
+  await expect(page.locator(".preview-overlay")).toHaveCount(0);
+  await expect(page).toHaveURL(/\/#examples$/);
+});
