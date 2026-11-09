@@ -116,7 +116,7 @@ export function OnboardingPage() {
                 <p id="url-rules" className="url-rules">{tr("onboarding.n320CharactersLowercaseLetters")}</p>
                 <p id="url-availability" role="status" aria-live="polite" className={`status ${urlError ? "bad" : availability === "available" ? "good" : "neutral"}`}>
                   <span aria-hidden="true">{urlError ? "⚠ " : availability === "available" ? "✓ " : ""}</span>
-                  {!username
+                  <span>{!username
                     ? ""
                     : !validUsername.success
                       ? tr(`onboarding.urlRules.${usernameError ?? "characters"}`)
@@ -126,7 +126,7 @@ export function OnboardingPage() {
                           ? tr("onboarding.thisUrlIsAvailable")
                           : availability === "failed"
                             ? tr("onboarding.availabilityFailed")
-                            : tr("onboarding.checking")}
+                            : tr("onboarding.checking")}</span>
                 </p>
                 {availability === "failed" ? <RetroButton style={{ minHeight: 44 }} onClick={retryAvailability}>{tr("onboarding.retryAvailability")}</RetroButton> : null}
                 <label>{tr("onboarding.desktopName")}<input value={siteName} maxLength={120} onChange={(event) => { setSiteName(event.target.value); setCreateError(null); }} /></label>

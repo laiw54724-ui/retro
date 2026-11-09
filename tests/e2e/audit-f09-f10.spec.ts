@@ -209,10 +209,10 @@ test("failed retry and a late retry result preserve the current name and pending
   await expect(page.getByRole("status")).toHaveText("正在檢查...");
   expect(checks).toBe(3);
   await url.fill("ab");
-  await expect(page.getByRole("status")).toHaveText("網址格式不符合規則");
+  await expect(page.getByRole("status")).toHaveText("⚠ 網址至少需要 3 個字元。");
   await retryRoute!.fulfill({ json: { available: true } });
   await page.waitForTimeout(400);
   await expect(next).toBeDisabled();
-  await expect(page.getByRole("status")).toHaveText("網址格式不符合規則");
+  await expect(page.getByRole("status")).toHaveText("⚠ 網址至少需要 3 個字元。");
   expect(checks).toBe(3);
 });
