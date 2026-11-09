@@ -37,8 +37,8 @@ export function LandingPage() {
           <div className="hero-demo">
             <div className="demo-desktop">
               <div className="desktop-icons-demo"><span>{t("landing.demoCard")}</span><span>{t("landing.demoGallery")}</span><span>{t("landing.demoLinks")}</span></div>
-              <div className="demo-win one"><b>{t("landing.demoCard")}.exe</b><div className="demo-card-lines"><img src={DEMO_PREVIEW_IMAGES.card[0]} alt="" decoding="async" /><strong>{/* i18n-ignore: fictional sample character name */}Mochi 麻糬</strong><i /><i /></div></div>
-              <div className="demo-win two"><b>{t("landing.demoGallery")}</b><div className="demo-grid">{[...DEMO_PREVIEW_IMAGES.ig, ...DEMO_PREVIEW_IMAGES.portfolio].map((src) => <img key={src} src={src} alt="" loading="lazy" decoding="async" />)}</div></div>
+              <div className="demo-win one"><b>{t("landing.demoCard")}.exe</b><div className="demo-card-lines"><img src={DEMO_PREVIEW_IMAGES.card[0]} alt="" decoding="async" referrerPolicy="no-referrer" /><strong>{/* i18n-ignore: fictional sample character name */}Mochi 麻糬</strong><i /><i /></div></div>
+              <div className="demo-win two"><b>{t("landing.demoGallery")}</b><div className="demo-grid">{[...DEMO_PREVIEW_IMAGES.ig, ...DEMO_PREVIEW_IMAGES.portfolio].map((src) => <img key={src} src={src} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />)}</div></div>
               <div className="demo-taskbar"><RetroButton>{t("desktop.start")}</RetroButton></div>
             </div>
           </div>
@@ -66,7 +66,7 @@ export function LandingPage() {
             <button type="button" className="example-card" key={example.kind} onClick={() => setDemo(example.kind)}>
               <div className={`example-thumb example-thumb-${example.kind}`} aria-hidden="true">
                 {DEMO_PREVIEW_IMAGES[example.kind].map((src, index) => (
-                  <span key={src} className={`example-image example-image-${index}`}><img src={src} alt="" loading="lazy" decoding="async" /></span>
+                  <span key={src} className={`example-image example-image-${index}`}><img src={src} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" /></span>
                 ))}
               </div>
               <strong>{t(`landing.examplesList.${example.kind}.name`)}</strong>
