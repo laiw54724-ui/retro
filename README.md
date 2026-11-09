@@ -81,3 +81,7 @@ Windows icon binaries are absent from the repository and default build. The app
 uses built-in SVG fallbacks. Self-hosters who have reviewed the upstream rights
 status may opt in with `pnpm icons:install -- --acknowledge-third-party-rights`.
 Run `pnpm icons:remove` before creating a redistributable build.
+
+### Public example imagery
+
+The four fictional read-only landing examples use [individually sourced CC0/public-domain sample pictures](docs/DEMO_MEDIA.md). These are remotely hosted visual references, not artwork or social accounts belonging to the fictional profiles. Their licenses are separate from Retro's MIT license.
