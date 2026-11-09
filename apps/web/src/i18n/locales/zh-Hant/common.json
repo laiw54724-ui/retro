@@ -135,7 +135,7 @@
     "startingContent": "起始內容",
     "pickAUrlForYour": "幫你的桌面取個網址",
     "yourUrl": "個人網址",
-    "n320CharactersLowercaseLetters": "3–20 個字元，小寫英文、數字或連字號。",
+    "n320CharactersLowercaseLetters": "使用 3–20 個小寫英文字母、數字或連字號，開頭與結尾必須是英文字母或數字。",
     "theUrlFormatIsntAllowed": "網址格式不符合規則",
     "thisUrlIsAlreadyTaken": "這個網址已有人使用",
     "thisUrlIsAvailable": "這個網址可以使用",
@@ -169,7 +169,15 @@
     "reviewDetails": "檢查資料",
     "signInAgain": "重新登入",
     "retryCreation": "重試建立",
-    "doneOpenTheEditor": "完成，進入編輯器"
+    "doneOpenTheEditor": "完成，進入編輯器",
+    "backToDesktops": "← 回到我的桌面",
+    "urlRules": {
+      "tooShort": "網址至少需要 3 個字元。",
+      "tooLong": "網址最多只能有 20 個字元。",
+      "characters": "只能使用小寫英文字母、數字或連字號。",
+      "edges": "開頭與結尾必須是英文字母或數字，不能是連字號。",
+      "reserved": "這個網址名稱已保留，請換一個名稱。"
+    }
   },
   "desktopHub": {
     "notPublished": "尚未發布",

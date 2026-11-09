@@ -135,7 +135,7 @@
     "startingContent": "最初の内容",
     "pickAUrlForYour": "デスクトップのURLを決めましょう",
     "yourUrl": "個人用URL",
-    "n320CharactersLowercaseLetters": "3〜20文字：英小文字、数字、ハイフンが使えます。",
+    "n320CharactersLowercaseLetters": "小文字の英字、数字、ハイフンを 3〜20 文字で入力してください。先頭と末尾は英字または数字にしてください。",
     "theUrlFormatIsntAllowed": "URLの形式が規則に合っていません",
     "thisUrlIsAlreadyTaken": "このURLはすでに使われています",
     "thisUrlIsAvailable": "このURLは使用できます",
@@ -169,7 +169,15 @@
     "reviewDetails": "入力内容を確認",
     "signInAgain": "再ログイン",
     "retryCreation": "作成を再試行",
-    "doneOpenTheEditor": "完了してエディターを開く"
+    "doneOpenTheEditor": "完了してエディターを開く",
+    "backToDesktops": "← マイデスクトップに戻る",
+    "urlRules": {
+      "tooShort": "3 文字以上で入力してください。",
+      "tooLong": "20 文字以内で入力してください。",
+      "characters": "小文字の英字、数字、ハイフンのみ使えます。",
+      "edges": "先頭と末尾はハイフンではなく、英字または数字にしてください。",
+      "reserved": "このアドレスは予約されています。別の名前を選んでください。"
+    }
   },
   "desktopHub": {
     "notPublished": "未公開",
