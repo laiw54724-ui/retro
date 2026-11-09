@@ -190,7 +190,6 @@
     "collaborativeEditing": "協作編輯",
     "viewPrivateDraft": "查看私人草稿",
     "loading": "正在讀取…",
-    "desktops": "{{length}} 個桌面",
     "newDesktop": "新增桌面",
     "retry": "重試",
     "loadingYourDesktops": "正在載入你的桌面…",
@@ -203,7 +202,9 @@
     "youCanEditTheDraft": "可以編輯草稿；發布與成員管理由擁有者負責。",
     "youCanOnlyViewThe": "只能查看私人草稿，不會產生儲存或發布變更。",
     "publicHomePage": "公開首頁",
-    "signOut": "登出"
+    "signOut": "登出",
+    "desktops_one": "{{count}} 個桌面",
+    "desktops_other": "{{count}} 個桌面"
   },
   "publicSite": {
     "thePublicDocumentFormatIs": "公開文件格式無效",

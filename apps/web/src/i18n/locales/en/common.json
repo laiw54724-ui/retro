@@ -190,7 +190,6 @@
     "collaborativeEditing": "Collaborative editing",
     "viewPrivateDraft": "View private draft",
     "loading": "Loading…",
-    "desktops": "{{length}} desktops",
     "newDesktop": "New desktop",
     "retry": "Retry",
     "loadingYourDesktops": "Loading your desktops…",
@@ -203,7 +202,9 @@
     "youCanEditTheDraft": "You can edit the draft. Publishing and member management are handled by the owner.",
     "youCanOnlyViewThe": "You can only view the private draft; nothing will be saved or published.",
     "publicHomePage": "Public home page",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "desktops_one": "{{count}} desktop",
+    "desktops_other": "{{count}} desktops"
   },
   "publicSite": {
     "thePublicDocumentFormatIs": "The public document format is invalid",

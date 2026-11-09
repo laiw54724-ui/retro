@@ -30,7 +30,7 @@ export function DesktopHub({ email, sites, loading, error, notice, onRetry, onSi
       <div className="desktop-hub-heading">
         <div>
           <h1>{tr("auth.myDesktops")}</h1>
-          <p>{email} · {loading ? tr("desktopHub.loading") : tr("desktopHub.desktops", { length: sites.length })}</p>
+          <p>{email} · {loading ? tr("desktopHub.loading") : tr("desktopHub.desktops", { count: sites.length })}</p>
         </div>
         <Link className="retro-link desktop-hub-add" to="/onboarding">{tr("desktopHub.newDesktop")}</Link>
       </div>

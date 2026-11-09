@@ -190,7 +190,6 @@
     "collaborativeEditing": "共同編集",
     "viewPrivateDraft": "非公開の下書きを見る",
     "loading": "読み込み中…",
-    "desktops": "{{length}} 個のデスクトップ",
     "newDesktop": "新しいデスクトップ",
     "retry": "再試行",
     "loadingYourDesktops": "デスクトップを読み込み中…",
@@ -203,7 +202,9 @@
     "youCanEditTheDraft": "下書きは編集できます。公開とメンバー管理はオーナーが行います。",
     "youCanOnlyViewThe": "非公開の下書きは閲覧のみで、保存や公開の変更は行われません。",
     "publicHomePage": "公開ホームページ",
-    "signOut": "ログアウト"
+    "signOut": "ログアウト",
+    "desktops_one": "{{count}} 個のデスクトップ",
+    "desktops_other": "{{count}} 個のデスクトップ"
   },
   "publicSite": {
     "thePublicDocumentFormatIs": "公開ドキュメントの形式が正しくありません",
