@@ -26,6 +26,7 @@ for (const width of [320, 768, 1280]) {
     await page.screenshot({ path: testInfo.outputPath(`auth-${width}.png`) });
     await page.getByRole("link", { name: "先看看範例" }).click();
     await expect(page).toHaveURL(/\/#examples$/);
+    await expect(page.locator("#examples > .landing-titlebar")).toBeInViewport();
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
   });
 }

@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createDemoDocument, DEMO_EXAMPLES, DEMO_PREVIEW_IMAGES, type DemoKind } from "@retrodesk/shared";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../app/AuthProvider";
 import { RetroButton } from "../components/RetroButton";
@@ -15,6 +15,13 @@ export function LandingPage() {
   const { t } = useTranslation("common");
   const { fontFamily, locale } = useLocaleFormatting();
   const { user } = useAuth();
+  const { hash } = useLocation();
+  // SPA navigation and a cold /#examples load can precede rendering the anchor.
+  useEffect(() => {
+    if (["#how-it-works", "#examples", "#faq", "#support"].includes(hash)) {
+      document.getElementById(hash.slice(1))?.scrollIntoView();
+    }
+  }, [hash]);
   const [demo, setDemo] = useState<DemoKind | null>(null);
   // Sample content follows the UI language it is opened in; it is a throwaway preview, never saved.
   const demoDocument = useMemo(() => demo ? localizeDefaults(createDemoDocument(demo)) : null, [demo, locale]);
