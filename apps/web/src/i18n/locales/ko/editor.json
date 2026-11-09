@@ -263,7 +263,7 @@
     "theCurrentLocalDraftJson": "현재 로컬 초안 JSON을 복사했습니다. 백업한 뒤 다시 불러올 수 있습니다.",
     "theClipboardIsntAvailablePlease": "클립보드를 사용할 수 없습니다. 아직 페이지를 새로고침하지 마세요.",
     "publicUrlCopied": "공개 URL을 복사했습니다.",
-    "couldntCopyTheUrlAutomatically": "URL을 자동으로 복사하지 못했습니다.",
+    "couldntCopyTheUrlAutomatically": "자동으로 복사하지 못했습니다. 아래 주소를 선택해 직접 복사하세요.",
     "theMigratedDraftsFormatIs": "마이그레이션된 초안의 형식이 올바르지 않습니다",
     "migratedButLegacyAssetsAre": "{{migratedCount}}개를 마이그레이션했지만 이전 소재 {{length}}개가 아직 완료되지 않았습니다. 상세 내용을 열어 확인하세요.",
     "assetsWereConvertedToPrivate": "소재를 비공개 미리보기로 변환했습니다. 게시된 버전이 아직 참조하고 있어 이전 공개 사본 {{length}}개는 일시적으로 보존됩니다.",
@@ -307,7 +307,7 @@
     "publicUrl": "공개 URL:",
     "prePublishCheckResults": "게시 전 점검 결과",
     "fixTheRedItemsFirst": "빨간색 항목을 먼저 수정한 뒤 다시 게시하세요.",
-    "yellowItemsAreSuggestionsAnd": "노란색 항목은 권장 사항이며 게시를 막지 않습니다. 게시한 뒤에도 다음 초안을 계속 편집할 수 있습니다.",
+    "yellowItemsAreSuggestionsAnd": "노란색 항목은 권장 사항이며 게시를 막지 않습니다. 이후 수정 사항은 초안에 저장됩니다. 다시 게시하기 전까지 방문자에게는 기존 게시 버전이 표시됩니다.",
     "publishing": "게시 중",
     "cancel": "취소",
     "publishing2": "게시 중…",
@@ -323,7 +323,11 @@
     "migrationDraftRetained": "자료를 이전하는 동안 새 로컬 변경 사항이 생겼습니다. 초안과 실행 취소 기록을 유지했습니다.",
     "reloadReplacesLocal": "다시 불러오면 현재 로컬 초안과 실행 취소 기록이 바뀝니다. 먼저 JSON을 복사하거나 다운로드하여 백업하세요.",
     "publishedAssetsRefreshFailed": "게시는 완료되었지만 자료 목록을 새로 고치지 못했습니다. 다시 게시하지 않고 자료를 다시 확인할 수 있습니다.",
-    "copyingLocalJson": "로컬 초안 JSON을 복사하고 있습니다…"
+    "copyingLocalJson": "로컬 초안 JSON을 복사하고 있습니다…",
+    "addressAfterPublishing": "게시 후 주소:",
+    "linkAvailableAfterPublishing": "아직 공개되지 않은 주소입니다. 게시 후 확인 화면에서 링크를 복사하거나 공유할 수 있습니다.",
+    "shareUrl": "링크 공유",
+    "shareUnavailable": "공유할 수 없습니다. URL 복사를 사용하거나 아래 주소를 선택해 복사하세요."
   },
   "inspectorContent": {
     "loading": "불러오는 중…",

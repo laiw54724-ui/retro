@@ -29,6 +29,8 @@ for (const width of [320, 390, 768, 1440]) {
       await expect(status).toHaveCSS("color", "rgb(138, 0, 24)");
       await expect(url).toHaveAttribute("aria-invalid", "true");
       await expect(next).toBeDisabled();
+      await expect(next).toHaveCSS("color", "rgb(68, 68, 68)");
+      await expect(next).toHaveCSS("opacity", "1");
     }
     expect(checks).toBe(0);
     await url.fill("valid-name");

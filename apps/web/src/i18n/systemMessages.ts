@@ -6,6 +6,7 @@ import { i18n } from "./index";
  */
 const EXACT: Readonly<Record<string, string>> = {
   "桌面上還沒有任何視窗": "publish.noWindows",
+  "自動開啟的視窗在桌機版有重疊，請先預覽並調整位置": "publish.overlappingWindows",
   "每個視窗都有標題": "publish.allTitled",
   "沒有預設開啟的視窗，訪客需要自己點圖示": "publish.noAutoOpen",
   "已上傳的圖片都有說明文字": "publish.allAlt",

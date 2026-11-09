@@ -263,7 +263,7 @@
     "theCurrentLocalDraftJson": "The current local draft JSON was copied; you can back it up before reloading.",
     "theClipboardIsntAvailablePlease": "The clipboard isn't available; please don't refresh the page yet.",
     "publicUrlCopied": "Public URL copied.",
-    "couldntCopyTheUrlAutomatically": "Couldn't copy the URL automatically.",
+    "couldntCopyTheUrlAutomatically": "Couldn't copy automatically. Select the address below and copy it manually.",
     "theMigratedDraftsFormatIs": "The migrated draft's format is invalid",
     "migratedButLegacyAssetsAre": "Migrated {{migratedCount}}, but {{length}} legacy assets are still unfinished; open the details to see them.",
     "assetsWereConvertedToPrivate": "Assets were converted to private previews; {{length}} legacy public copies are temporarily kept because the published version still references them.",
@@ -307,7 +307,7 @@
     "publicUrl": "Public URL:",
     "prePublishCheckResults": "Pre-publish check results",
     "fixTheRedItemsFirst": "Fix the red items first, then publish again.",
-    "yellowItemsAreSuggestionsAnd": "Yellow items are suggestions and don't block publishing. You can keep editing the next draft after publishing.",
+    "yellowItemsAreSuggestionsAnd": "Yellow items are suggestions and do not block publishing. Later edits stay in your draft until you choose Republish; visitors keep seeing the published version.",
     "publishing": "Publishing",
     "cancel": "Cancel",
     "publishing2": "Publishing…",
@@ -323,7 +323,11 @@
     "migrationDraftRetained": "New local changes arrived during asset migration. Your draft and undo history have been retained.",
     "reloadReplacesLocal": "Reloading replaces the current local draft and undo history. Copy or download a JSON backup first.",
     "publishedAssetsRefreshFailed": "Publishing succeeded, but the asset list could not be refreshed. Re-scan assets without publishing again.",
-    "copyingLocalJson": "Copying the local draft JSON…"
+    "copyingLocalJson": "Copying the local draft JSON…",
+    "addressAfterPublishing": "Address after publishing:",
+    "linkAvailableAfterPublishing": "This address is not live yet. Publish first, then copy or share the link from the confirmation screen.",
+    "shareUrl": "Share link",
+    "shareUnavailable": "Sharing is unavailable. Use Copy URL or select and copy the address below."
   },
   "inspectorContent": {
     "loading": "Loading…",

@@ -238,7 +238,8 @@
       "platformAsAudio_other": "{{count}} 首曲目的「音訊直連」其實是 YouTube／Spotify 等平台網頁，訪客無法在站內播放；請改成外部連結或平台播放器",
       "audioNoRights_one": "{{count}} 首上傳音訊尚未填寫權利說明",
       "audioNoRights_other": "{{count}} 首上傳音訊尚未填寫權利說明",
-      "formatProblem": "內容格式有問題："
+      "formatProblem": "內容格式有問題：",
+      "overlappingWindows": "自動開啟的視窗在桌機版有重疊，請先預覽並調整位置"
     },
     "imageUrl": {
       "empty": "請貼上圖片連結。",

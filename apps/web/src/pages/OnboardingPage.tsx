@@ -117,7 +117,7 @@ export function OnboardingPage() {
                 <p id="url-availability" role="status" aria-live="polite" className={`status ${urlError ? "bad" : availability === "available" ? "good" : "neutral"}`}>
                   <span aria-hidden="true">{urlError ? "⚠ " : availability === "available" ? "✓ " : ""}</span>
                   {!username
-                    ? tr("onboarding.n320CharactersLowercaseLetters")
+                    ? ""
                     : !validUsername.success
                       ? tr(`onboarding.urlRules.${usernameError ?? "characters"}`)
                       : availability === "taken"

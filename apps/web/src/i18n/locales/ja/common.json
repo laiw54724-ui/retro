@@ -238,7 +238,8 @@
       "platformAsAudio_other": "「音声の直接リンク」が実際にはYouTube／SpotifyなどのWebページになっているトラックが {{count}} 件あり、訪問者はサイト内で再生できません。外部リンクまたはプラットフォームプレーヤーに変更してください",
       "audioNoRights_one": "権利に関する説明が未入力のアップロード音声が {{count}} 件あります",
       "audioNoRights_other": "権利に関する説明が未入力のアップロード音声が {{count}} 件あります",
-      "formatProblem": "内容の形式に問題があります："
+      "formatProblem": "内容の形式に問題があります：",
+      "overlappingWindows": "自動で開くウィンドウがデスクトップで重なっています。公開前にプレビューして位置を調整してください。"
     },
     "imageUrl": {
       "empty": "画像のリンクを貼り付けてください。",

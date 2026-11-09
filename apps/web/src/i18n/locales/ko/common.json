@@ -238,7 +238,8 @@
       "platformAsAudio_other": "\"오디오 직접 링크\"가 실제로는 YouTube/Spotify 등의 웹 페이지인 곡이 {{count}}개 있어 방문자가 사이트 안에서 재생할 수 없습니다. 외부 링크나 플랫폼 플레이어로 바꾸세요",
       "audioNoRights_one": "권리 안내가 입력되지 않은 업로드 오디오가 {{count}}개 있습니다",
       "audioNoRights_other": "권리 안내가 입력되지 않은 업로드 오디오가 {{count}}개 있습니다",
-      "formatProblem": "콘텐츠 형식에 문제가 있습니다: "
+      "formatProblem": "콘텐츠 형식에 문제가 있습니다: ",
+      "overlappingWindows": "자동으로 열리는 창이 데스크톱에서 겹칩니다. 게시 전에 미리 보고 위치를 조정하세요."
     },
     "imageUrl": {
       "empty": "이미지 링크를 붙여 넣으세요.",

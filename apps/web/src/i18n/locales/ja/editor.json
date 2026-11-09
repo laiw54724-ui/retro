@@ -263,7 +263,7 @@
     "theCurrentLocalDraftJson": "現在のローカルの下書きJSONをコピーしました。バックアップしてから再読み込みできます。",
     "theClipboardIsntAvailablePlease": "クリップボードを使用できません。まだページを再読み込みしないでください。",
     "publicUrlCopied": "公開URLをコピーしました。",
-    "couldntCopyTheUrlAutomatically": "URLを自動でコピーできませんでした。",
+    "couldntCopyTheUrlAutomatically": "自動コピーできませんでした。下のアドレスを選択して手動でコピーしてください。",
     "theMigratedDraftsFormatIs": "移行後の下書きの形式が正しくありません",
     "migratedButLegacyAssetsAre": "{{migratedCount}} 件を移行しましたが、旧素材が {{length}} 件まだ完了していません。詳細を開いて確認してください。",
     "assetsWereConvertedToPrivate": "素材を非公開プレビューに変換しました。公開済みバージョンがまだ参照しているため、旧公開コピー {{length}} 件は一時的に保持されています。",
@@ -307,7 +307,7 @@
     "publicUrl": "公開URL：",
     "prePublishCheckResults": "公開前チェックの結果",
     "fixTheRedItemsFirst": "先に赤い項目を修正してから、もう一度公開してください。",
-    "yellowItemsAreSuggestionsAnd": "黄色の項目は提案であり、公開を妨げません。公開後も次の下書きの編集を続けられます。",
+    "yellowItemsAreSuggestionsAnd": "黄色の項目は提案で、公開を妨げません。その後の変更は下書きに保存されます。「再公開」を選ぶまで、訪問者には公開済みの版が表示されます。",
     "publishing": "公開中",
     "cancel": "キャンセル",
     "publishing2": "公開中…",
@@ -323,7 +323,11 @@
     "migrationDraftRetained": "素材の移行中に新しいローカル変更がありました。下書きと元に戻す履歴は保持されています。",
     "reloadReplacesLocal": "再読み込みすると、現在のローカル下書きと元に戻す履歴が置き換わります。先にJSONをコピーまたはダウンロードしてバックアップしてください。",
     "publishedAssetsRefreshFailed": "公開は完了しましたが、素材一覧を更新できませんでした。再公開せずに素材を再確認できます。",
-    "copyingLocalJson": "ローカル下書きのJSONをコピーしています…"
+    "copyingLocalJson": "ローカル下書きのJSONをコピーしています…",
+    "addressAfterPublishing": "公開後のアドレス：",
+    "linkAvailableAfterPublishing": "このアドレスはまだ公開されていません。公開後、確認画面でリンクをコピーまたは共有できます。",
+    "shareUrl": "リンクを共有",
+    "shareUnavailable": "共有できません。「URL をコピー」を使うか、下のアドレスを選択してコピーしてください。"
   },
   "inspectorContent": {
     "loading": "読み込み中…",

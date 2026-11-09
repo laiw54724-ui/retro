@@ -74,7 +74,12 @@ export function PublicSitePage() {
         window.document.title = (selected ? `${selected} — ` : "") + site.site_name + " — Retro Desktop";
       })
       .catch((reason) => { if (active) setError(reason instanceof Error ? reason.message : tr("publicSite.siteNotFound")); });
-    return () => { active = false; };
+    return () => {
+      active = false;
+      // A cold public-page load already has its own server-rendered title, so
+      // restoring the previous title would leave that title on landing/auth.
+      window.document.title = "Retro Desktop";
+    };
   }, [username, profileId, postId]);
 
   if (!username) return <Navigate to="/" replace />;

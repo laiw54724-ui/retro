@@ -238,7 +238,8 @@
       "platformAsAudio_other": "{{count}} tracks' \"direct audio\" is actually a YouTube/Spotify page, so visitors can't play it here; change them to external links or the platform player",
       "audioNoRights_one": "{{count}} uploaded audio file has no rights note yet",
       "audioNoRights_other": "{{count}} uploaded audio files have no rights note yet",
-      "formatProblem": "There is a problem with the content format: "
+      "formatProblem": "There is a problem with the content format: ",
+      "overlappingWindows": "Windows that open automatically overlap on desktop. Preview and adjust their positions before publishing."
     },
     "imageUrl": {
       "empty": "Paste an image link.",

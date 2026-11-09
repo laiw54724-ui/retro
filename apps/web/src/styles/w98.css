@@ -760,3 +760,9 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 .status.neutral { color: #333; }
 .status.good { color: #14532d; }
 .status.bad { color: #8a0018; }
+
+/* Visible keyboard focus and legible disabled controls on gray and navy faces. */
+.editor-app .w98-btn:focus-visible, .modal-card .w98-btn:focus-visible, .w98-btn:focus-visible { outline: 2px solid #000080; outline-offset: 2px; }
+.editor-app .w98-btn.primary:focus-visible, .modal-card .w98-btn.primary:focus-visible, .w98-btn.primary:focus-visible { outline: 3px solid #ffea00; outline-offset: -5px; }
+.w98-btn:disabled { opacity: 1; color: #444; text-shadow: none; }
+.w98-btn.primary:disabled { background: #c0c0c0 !important; color: #444 !important; }
