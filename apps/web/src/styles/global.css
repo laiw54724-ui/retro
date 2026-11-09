@@ -268,3 +268,46 @@ select{font:inherit}
 .moodboard-image-source { display: flex; flex-direction: column; gap: 4px; }
 
 .music-cover-source { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+
+
+/* CC0 landing demo imagery: photographs and pixel-art samples are visually
+   distinct, and work without changing the actual desktop/window mechanics. */
+.example-grid .example-card{
+  display:flex; flex-direction:column; gap:7px; text-align:left; min-width:0;
+  padding:10px; border:0; background:#c0c0c0; color:#111; cursor:pointer;
+  box-shadow:inset -1px -1px #000,inset 1px 1px #fff,inset -2px -2px #808080,inset 2px 2px #dfdfdf;
+}
+.example-grid .example-card:hover{background:#d6d6d6}
+.example-grid .example-card:focus-visible{outline:3px solid #000080;outline-offset:3px}
+.example-card strong{font-size:16px}
+.example-card p{line-height:1.45}
+.example-card > span{margin-top:auto;text-decoration:underline;color:#000080}
+.example-thumb{
+  overflow:hidden; isolation:isolate; border:1px solid #606060;
+  background:radial-gradient(circle at 20% 12%,#8190d7,#34387b 72%);
+}
+.example-thumb-ig{background:linear-gradient(145deg,#ffe2e0,#b5ccf6)}
+.example-thumb-oc{background:radial-gradient(circle at 30% 35%,#283459,#080e22)}
+.example-thumb-portfolio{background:linear-gradient(145deg,#7baf95,#183e38)}
+.example-thumb .example-image{
+  position:absolute;display:block;overflow:hidden;background:#fff;
+  border:4px solid #eee;box-shadow:2px 4px 0 #0008;
+}
+.example-thumb .example-image-0{
+  width:61%;height:108px;left:10%;top:9px;transform:rotate(-5deg)
+}
+.example-thumb .example-image-1{
+  width:39%;height:85px;right:7%;top:34px;transform:rotate(7deg)
+}
+.example-thumb .example-image img{
+  display:block;width:100%;height:100%;object-fit:cover
+}
+.example-thumb-ig .example-image img{image-rendering:pixelated;object-fit:contain}
+.example-thumb-oc .example-image img{object-position:center 38%}
+.demo-card-lines>img{
+  width:56px;height:56px;object-fit:cover;display:block;
+  border:2px solid #fff;box-shadow:1px 1px #808080
+}
+.demo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.demo-grid img{width:100%;aspect-ratio:1;object-fit:cover;display:block;min-width:0}
+.demo-grid img:first-child{image-rendering:pixelated;object-fit:contain;background:#e0efdc}

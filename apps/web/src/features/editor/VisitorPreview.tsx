@@ -144,7 +144,7 @@ export function VisitorPreview({ publishable, draft, sample, username = "", site
         </div>
         <button type="button" className="w98-btn primary" onClick={onClose} data-autofocus>{source === "sample" ? tr("visitorPreview.backToSamples") : tr("visitorPreview.backToEditor")}</button>
       </div>
-      {sample ? <p role="note" className="preview-sample-disclaimer">{tr("visitorPreview.sampleFictionalNotice")}</p> : null}
+      {sample ? <p role="note" className="preview-sample-disclaimer">{tr("visitorPreview.sampleFictionalNotice")} <span>{tr("visitorPreview.sampleInteractionHelp")}</span></p> : null}
       <GuestbookPreviewProvider>
       <div className="preview-body">
         {view === "desktop" ? (

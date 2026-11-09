@@ -1,0 +1,50 @@
+CC0 demonstration media
+
+Snapshot: 2026-11-09 Commons snapshot (individual SHA-256 pins)
+License: CC0-1.0
+https://creativecommons.org/publicdomain/zero/1.0/
+
+These images are not covered by Retro's MIT license. They are reference media for fictional examples, not artwork or client work by the fictional people. CC0 does not establish model/property releases, trademark rights, or endorsement. No creator endorses Retro. Original file-description declarations were reviewed on 2026-11-09. Individual source and byte pins are in docs/assets/demo-media.provenance.json.
+
+cat.jpg — Kiwiev — CC0-1.0
+https://commons.wikimedia.org/wiki/File:Green-eyed_white_cat_looking_at_camera.jpg
+
+heart.png — El Rolo Ueeqee — CC0-1.0
+https://commons.wikimedia.org/wiki/File:Heart_pixelart.png
+
+house.png — Nanami-seven-three — CC0-1.0
+https://commons.wikimedia.org/wiki/File:House_Pixel_icon.png
+
+kenney.svg — Kenney.nl — CC0-1.0
+https://commons.wikimedia.org/wiki/File:Kenney.nl_platformer_characters_-_player_vector.svg
+
+moon.jpg — Lynredza Ravey — CC0-1.0
+https://commons.wikimedia.org/wiki/File:Photo_of_Moon.jpg
+
+books.jpg — Unknown author (PxHere) — CC0-1.0
+https://commons.wikimedia.org/wiki/File:Old_books_in_library.jpg
+
+stars.jpg — Wrenalicious — CC0-1.0
+https://commons.wikimedia.org/wiki/File:Stars_in_the_Night_Sky.jpg
+
+typewriter.jpg — Wendelin Jacober — CC0-1.0
+https://commons.wikimedia.org/wiki/File:Vintage_Typewriter_Composing.jpg
+
+coffee.jpg — Genaro35 — CC0-1.0
+https://commons.wikimedia.org/wiki/File:Coffee_Cup_on_Modern_Table.jpg
+
+neon.jpg — Alex Knight — CC0-1.0
+https://commons.wikimedia.org/wiki/File:Neon_Sign.jpg
+
+architecture.jpg — Ranjima np — CC0-1.0
+https://commons.wikimedia.org/wiki/File:A_architecture.jpg
+
+camera.jpg — Swanie227 — CC0-1.0
+https://commons.wikimedia.org/wiki/File:Old_school_camera.jpg
+
+notebook.jpg — Abdurrahman Bin Asghar — CC0-1.0
+https://commons.wikimedia.org/wiki/File:Horizontal_lines_on_notebook_paper_(macro_view).jpg
+
+flowers.jpg — Sowmiyamuruganmba — CC0-1.0
+https://commons.wikimedia.org/wiki/File:Flowers_pictures.jpg
+

@@ -625,6 +625,19 @@ export function EditorPage({ site }: { site: SiteRecord }) {
     }
   }
 
+  async function sharePublishedUrl() {
+    if (!publishSuccess || typeof navigator.share !== "function") return;
+    const isCurrentSession = captureSaveSession();
+    try {
+      await navigator.share({ title: "Retro Desktop", url: publishSuccess.url });
+    } catch (error) {
+      // Closing the native sheet is a cancellation, not an error or consent to copy.
+      if (isCurrentSession() && !(error instanceof DOMException && error.name === "AbortError")) {
+        setPublishMessage(t("editor.shareUnavailable"));
+      }
+    }
+  }
+
   function reportAssetMessage(value: EditorMessage) {
     setAssetMessage(value);
     setMessage(value);
@@ -755,7 +768,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         <LanguageSwitcher compact />
         <span className="w98-vsep mobile-hide" />
         <div className="topbar-meta">
-          <span className="site-url">{publicSiteLabel(store.username)}</span>
+          <span className="site-url">{!store.publishedDocument ? `${t("editor.addressAfterPublishing")} ` : ""}{publicSiteLabel(store.username)}</span>
           <span className="status-badge" title={badge.text} style={{ background: badge.bg, color: badge.color, borderColor: badge.color }}>{badge.text}</span>
         </div>
         <span className="w98-vsep mobile-hide" />
@@ -938,7 +951,10 @@ export function EditorPage({ site }: { site: SiteRecord }) {
           </>
         }>
           <h2>{t("editor.prePublishCheck")}</h2>
-          <p>{t("editor.publicUrl")}<strong>{publicSiteLabel(store.username)}</strong></p>
+          <label>{t(store.publishedDocument ? "editor.publicUrl" : "editor.addressAfterPublishing")}
+            <input className="share-url" readOnly value={publicSiteUrl(store.username)} onFocus={(event) => event.currentTarget.select()} />
+          </label>
+          {!store.publishedDocument ? <p>{t("editor.linkAvailableAfterPublishing")}</p> : null}
           <ul className="publish-checks" aria-label={t("editor.prePublishCheckResults")}>
             {publishChecks.map((check, index) => <li key={index} className={check.level}><span aria-hidden="true">{check.level === "ok" ? "✓" : check.level === "warn" ? "!" : "×"}</span>{translateSystemMessage(check.text)}</li>)}
           </ul>
@@ -951,6 +967,7 @@ export function EditorPage({ site }: { site: SiteRecord }) {
         <ModalDialog title={t("editor.published")} className="publish-preflight" width={520} onClose={closePublishSuccess} actions={
           <>
             <RetroButton data-autofocus onClick={copyPublishedUrl}>{t("editor.copyUrl")}</RetroButton>
+            {typeof navigator.share === "function" ? <RetroButton onClick={sharePublishedUrl}>{t("editor.shareUrl")}</RetroButton> : null}
             {publishSuccess.retryable && !upgradeRequired ? <RetroButton onClick={async () => {
               if (upgradePaused.current) return;
               const isCurrentSession = captureSaveSession();

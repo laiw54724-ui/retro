@@ -72,3 +72,8 @@
     min-height: 42px;
   }
 }
+
+.details { flex-basis: 100%; font-size: 12px; }
+.details summary { cursor: pointer; width: fit-content; }
+.details p { margin: 6px 0 0; }
+.details summary:focus-visible { outline: 2px solid #000080; outline-offset: 2px; }

@@ -263,7 +263,7 @@
     "theCurrentLocalDraftJson": "현재 로컬 초안 JSON을 복사했습니다. 백업한 뒤 다시 불러올 수 있습니다.",
     "theClipboardIsntAvailablePlease": "클립보드를 사용할 수 없습니다. 아직 페이지를 새로고침하지 마세요.",
     "publicUrlCopied": "공개 URL을 복사했습니다.",
-    "couldntCopyTheUrlAutomatically": "URL을 자동으로 복사하지 못했습니다.",
+    "couldntCopyTheUrlAutomatically": "자동으로 복사하지 못했습니다. 아래 주소를 선택해 직접 복사하세요.",
     "theMigratedDraftsFormatIs": "마이그레이션된 초안의 형식이 올바르지 않습니다",
     "migratedButLegacyAssetsAre": "{{migratedCount}}개를 마이그레이션했지만 이전 소재 {{length}}개가 아직 완료되지 않았습니다. 상세 내용을 열어 확인하세요.",
     "assetsWereConvertedToPrivate": "소재를 비공개 미리보기로 변환했습니다. 게시된 버전이 아직 참조하고 있어 이전 공개 사본 {{length}}개는 일시적으로 보존됩니다.",
@@ -307,7 +307,7 @@
     "publicUrl": "공개 URL:",
     "prePublishCheckResults": "게시 전 점검 결과",
     "fixTheRedItemsFirst": "빨간색 항목을 먼저 수정한 뒤 다시 게시하세요.",
-    "yellowItemsAreSuggestionsAnd": "노란색 항목은 권장 사항이며 게시를 막지 않습니다. 게시한 뒤에도 다음 초안을 계속 편집할 수 있습니다.",
+    "yellowItemsAreSuggestionsAnd": "노란색 항목은 권장 사항이며 게시를 막지 않습니다. 이후 수정 사항은 초안에 저장됩니다. 다시 게시하기 전까지 방문자에게는 기존 게시 버전이 표시됩니다.",
     "publishing": "게시 중",
     "cancel": "취소",
     "publishing2": "게시 중…",
@@ -323,7 +323,11 @@
     "migrationDraftRetained": "자료를 이전하는 동안 새 로컬 변경 사항이 생겼습니다. 초안과 실행 취소 기록을 유지했습니다.",
     "reloadReplacesLocal": "다시 불러오면 현재 로컬 초안과 실행 취소 기록이 바뀝니다. 먼저 JSON을 복사하거나 다운로드하여 백업하세요.",
     "publishedAssetsRefreshFailed": "게시는 완료되었지만 자료 목록을 새로 고치지 못했습니다. 다시 게시하지 않고 자료를 다시 확인할 수 있습니다.",
-    "copyingLocalJson": "로컬 초안 JSON을 복사하고 있습니다…"
+    "copyingLocalJson": "로컬 초안 JSON을 복사하고 있습니다…",
+    "addressAfterPublishing": "게시 후 주소:",
+    "linkAvailableAfterPublishing": "아직 공개되지 않은 주소입니다. 게시 후 확인 화면에서 링크를 복사하거나 공유할 수 있습니다.",
+    "shareUrl": "링크 공유",
+    "shareUnavailable": "공유할 수 없습니다. URL 복사를 사용하거나 아래 주소를 선택해 복사하세요."
   },
   "inspectorContent": {
     "loading": "불러오는 중…",
@@ -525,7 +529,8 @@
     "hasUnpublishedChanges": "게시되지 않은 변경 사항이 있음 · 게시 후의 모습입니다(아직 온라인이 아닙니다)",
     "sameAsPublished": "게시된 버전과 같습니다",
     "backToSamples": "‹ 샘플로 돌아가기",
-    "sampleFictionalNotice": "가상 예시: 이 데모의 인물, 팔로워 수, 좋아요, 댓글은 모두 가상이며 실제 사용자나 활동이 아닙니다."
+    "sampleFictionalNotice": "가상 예시: 이 데모의 인물, 팔로워 수, 좋아요, 댓글은 모두 가상이며 실제 사용자나 활동이 아닙니다.",
+    "sampleInteractionHelp": "데스크톱 아이콘이나 시작 메뉴에서 앱을 여세요. 미리보기의 좋아요와 방명록 글은 저장되지 않습니다. 외부 링크는 Retro를 벗어납니다. 화면 맞춤은 전체 데스크톱을 보여 주며 100%에서는 스크롤하여 자세히 볼 수 있습니다."
   },
   "sidebarToggle": {
     "leftToolbar": "왼쪽 도구 모음",
@@ -663,7 +668,22 @@
     "workExe": "작품.exe",
     "contactExe": "연락처.exe",
     "captionConceptArt": "설정화: {{title}}",
-    "captionWork": "작품: {{title}}"
+    "captionWork": "작품: {{title}}",
+    "demoCatSource": "고양이 사진 출처 (CC0)",
+    "demoRetroSource": "Retro 소스 코드",
+    "demoPixelSource": "픽셀 아트 출처 · Commons",
+    "demoMoonSource": "달 이미지 출처 (CC0)",
+    "demoNeonSource": "네온 사진 출처 (CC0)",
+    "demoMoonSurface": "달 표면",
+    "demoLibraryCollection": "소장 도서",
+    "demoStarrySky": "별이 빛나는 하늘",
+    "demoManuscript": "원고",
+    "demoNightLight": "야간 조명",
+    "demoCoffee": "커피",
+    "demoOcReferenceAlt": "달 도서관 분위기 참고: {{title}}",
+    "demoOcReferenceCaption": "{{title}} · CC0 분위기 참고 자료 (캐릭터 원화가 아님)",
+    "demoPortfolioReferenceAlt": "Ren의 {{title}} 테마를 위한 라이선스 사진 참고",
+    "demoPortfolioReferenceCaption": "{{title}} · CC0 참고 자료 (실제 고객 작업물이 아님)"
   },
   "p2Appearance": {
     "windowColors": "창 색상",

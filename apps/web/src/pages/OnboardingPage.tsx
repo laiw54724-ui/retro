@@ -3,7 +3,9 @@ import { createLocalizedDocument } from "../i18n/localizedDefaults";
 import { themeLabel } from "../i18n/themeNames";
 import { useTranslation } from "react-i18next";
 import { createTemplateDocument, THEME_PRESETS, UsernameSchema, type StarterTemplate } from "@retrodesk/shared";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { publicSiteLabel } from "../lib/publicSiteUrl";
+import { usernameIssue } from "../lib/usernameIssue";
 import { api, ApiError } from "../lib/api";
 import { RetroButton } from "../components/RetroButton";
 
@@ -22,6 +24,8 @@ export function OnboardingPage() {
   const busyRef = useRef(false);
   const [createError, setCreateError] = useState<"username" | "validation" | "auth" | "general" | null>(null);
   const validUsername = useMemo(() => UsernameSchema.safeParse(username), [username]);
+  const usernameError = usernameIssue(username);
+  const urlError = !!username && (!validUsername.success || availability === "taken" || availability === "failed");
   const validSiteName = siteName.trim().length > 0 && siteName.trim().length <= 120;
 
   useEffect(() => {
@@ -82,6 +86,7 @@ export function OnboardingPage() {
         <div className="onboarding-body">
           <aside>
             <b>Retro Desktop</b>
+            <Link className="onboarding-exit" to="/auth" aria-disabled={busy} onClick={(event) => { if (busy) event.preventDefault(); }}>{tr("onboarding.backToDesktops")}</Link>
             <ol>
               <li className={step === 1 ? "current" : ""}>{tr("onboarding.urlAndName")}</li>
               <li className={step === 2 ? "current" : ""}>{tr("onboarding.startingTheme")}</li>
@@ -95,8 +100,8 @@ export function OnboardingPage() {
                 <label>
                   {tr("onboarding.yourUrl")}
                   <div className="url-input">
-                    <span>retrodesk.me/</span>
-                    <input aria-describedby="url-availability" value={username} onChange={(event) => {
+                    <span>{publicSiteLabel("")}</span>
+                    <input aria-describedby="url-rules url-availability" aria-invalid={urlError || undefined} autoCapitalize="none" autoCorrect="off" spellCheck={false} value={username} onChange={(event) => {
                       const nextUsername = event.target.value.toLowerCase().replace(/\s+/g, "-");
                       if (nextUsername === username) return;
                       // Invalidate before effect cleanup, so even an already-queued response
@@ -108,18 +113,20 @@ export function OnboardingPage() {
                     }} placeholder="your-name" />
                   </div>
                 </label>
-                <p id="url-availability" role="status" aria-live="polite" className={availability === "taken" || availability === "failed" ? "status bad" : "status"}>
-                  {!username
-                    ? tr("onboarding.n320CharactersLowercaseLetters")
+                <p id="url-rules" className="url-rules">{tr("onboarding.n320CharactersLowercaseLetters")}</p>
+                <p id="url-availability" role="status" aria-live="polite" className={`status ${urlError ? "bad" : availability === "available" ? "good" : "neutral"}`}>
+                  <span aria-hidden="true">{urlError ? "⚠ " : availability === "available" ? "✓ " : ""}</span>
+                  <span>{!username
+                    ? ""
                     : !validUsername.success
-                      ? tr("onboarding.theUrlFormatIsntAllowed")
+                      ? tr(`onboarding.urlRules.${usernameError ?? "characters"}`)
                       : availability === "taken"
                         ? tr("onboarding.thisUrlIsAlreadyTaken")
                         : availability === "available"
                           ? tr("onboarding.thisUrlIsAvailable")
                           : availability === "failed"
                             ? tr("onboarding.availabilityFailed")
-                            : tr("onboarding.checking")}
+                            : tr("onboarding.checking")}</span>
                 </p>
                 {availability === "failed" ? <RetroButton style={{ minHeight: 44 }} onClick={retryAvailability}>{tr("onboarding.retryAvailability")}</RetroButton> : null}
                 <label>{tr("onboarding.desktopName")}<input value={siteName} maxLength={120} onChange={(event) => { setSiteName(event.target.value); setCreateError(null); }} /></label>
@@ -161,7 +168,7 @@ export function OnboardingPage() {
                 </div>
                 <div className="starter-summary">
                   <strong>{siteName}</strong>
-                  <span>/@{username}</span>
+                  <span>{publicSiteLabel(username)}</span>
                   <span>{themeLabel(THEME_PRESETS[themeId])}</span>
                 </div>
                 {createError ? <div className="status bad" role="alert">

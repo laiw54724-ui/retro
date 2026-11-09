@@ -40,3 +40,7 @@ rights and terms. They are not relicensed by Retro's MIT License.
 
 See [`docs/THIRD_PARTY_ASSETS.md`](docs/THIRD_PARTY_ASSETS.md) for the audited
 asset boundary and installation policy.
+
+## Remote fictional demo media
+
+The four landing-page samples load a curated set of **Wikimedia Commons CC0 / public-domain images**. These images are hosted remotely, not bundled into Retro, and are not subject to the repository MIT license. The specific asset names, creators, and source/license links are in [Demo media provenance](docs/DEMO_MEDIA.md). Visitors' browsers request these images from Wikimedia's servers.

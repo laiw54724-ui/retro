@@ -5,6 +5,8 @@ import { useAuth } from "../app/AuthProvider";
 import { api, type SiteListRecord } from "../lib/api";
 import { supabase } from "../lib/supabase";
 import { RetroButton } from "../components/RetroButton";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
+import { ExternalLink } from "../components/ExternalLink";
 import { DesktopHub } from "../features/sites/DesktopHub";
 
 function readOAuthError() {
@@ -67,11 +69,19 @@ export function AuthPage() {
           <DesktopHub email={user.email ?? tr("auth.signedIn")} sites={sites} loading={sitesLoading} error={error} notice={notice} onRetry={() => void loadDesktops()} onSignOut={signOut} />
         ) : (
           <>
+            <div className="auth-introduction">
+              <LanguageSwitcher compact />
+              <h1>{tr("auth.welcome")}</h1>
+              <p>{tr("auth.purpose")}</p>
+              <p id="google-sign-in-help">{tr("auth.googleExplanation")}</p>
+              <ExternalLink href="https://github.com/laiw54724-ui/retro/blob/main/PRIVACY.md">{tr("landing.privacyDataDeletion")}</ExternalLink>
+            </div>
             {error ? <p className="error-box">{tr("auth.signInFailed", { error })}</p> : null}
             <div className="button-row oauth-row">
-              <RetroButton type="button" className="primary" disabled={busy} onClick={signInWithGoogle}>{tr("auth.continueWithGoogle")}</RetroButton>
+              <RetroButton type="button" className="primary" disabled={busy} aria-describedby="google-sign-in-help" onClick={signInWithGoogle}>{tr("auth.continueWithGoogle")}</RetroButton>
             </div>
             <div className="button-row end">
+              <Link className="retro-link" to="/#examples">{tr("auth.browseFirst")}</Link>
               <Link className="retro-link" to="/">{tr("auth.back")}</Link>
             </div>
           </>

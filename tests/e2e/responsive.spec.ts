@@ -176,6 +176,12 @@ for (const width of [320, 375, 390, 430, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/");
     await expect(page.getByRole("heading", { name: /把你的小宇宙/ })).toBeVisible();
+    if (width < 768) {
+      for (const grid of [".steps-grid", ".example-grid"]) {
+        const columns = await page.locator(grid).evaluate((node) => getComputedStyle(node).gridTemplateColumns.split(" "));
+        expect(columns).toHaveLength(1);
+      }
+    }
     await expectNoHorizontalOverflow(page);
   });
 }

@@ -719,3 +719,50 @@ textarea.ie { field-sizing: content; resize: none; line-height: 1.6; }
 .tour-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .tour-spacer { flex: 1; }
 .tour-actions .w98-btn { min-height: 44px; }
+
+/* Public onboarding: retain the system-window styling and clear keyboard targets. */
+.landing-navigation { padding: 12px 16px 0; display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: flex-start; }
+.landing-navigation nav { display: flex; flex-wrap: wrap; gap: 4px 16px; flex: 1 1 320px; }
+.landing-navigation nav a { display: inline-flex; align-items: center; min-height: 36px; color: #000080; }
+.landing-navigation > div { flex: 0 1 330px; }
+.landing-copy .landing-sign-in-note { font-size: 13px; }
+.demo-taskbar { height: 40px; }
+.landing-shell h2.landing-titlebar { margin: 0; font-size: 16px; }
+.landing-section-copy { margin: 14px 16px 0; line-height: 1.6; }
+.landing-faq, .landing-footer { width: min(1000px, 100%); padding: 3px; scroll-margin-top: 16px; }
+.landing-faq-list { padding: 8px 16px 16px; }
+.landing-faq details { border-bottom: 1px solid #808080; }
+.landing-faq summary { padding: 14px 0; font-weight: bold; cursor: pointer; }
+.landing-faq details p { margin: 0 0 14px; line-height: 1.7; }
+.landing-footer { padding: 16px; }
+.landing-footer h2 { margin: 0 0 12px; font-size: 16px; }
+.landing-footer nav { display: flex; flex-wrap: wrap; gap: 12px 22px; }
+.landing-footer p { font-size: 12px; line-height: 1.6; margin: 14px 0 0; }
+.public-external-link { color: #000080; overflow-wrap: anywhere; }
+.external-link-note { font-size: 12px; white-space: nowrap; }
+.landing-shell a:focus-visible, .landing-shell summary:focus-visible, .auth-window a:focus-visible { outline: 2px solid #000080; outline-offset: 3px; }
+.auth-introduction { margin: 16px 12px 0; line-height: 1.6; }
+.auth-introduction h1 { font-size: 22px; margin: 16px 0 8px; }
+.auth-introduction p { margin: 8px 0 12px; }
+@media (max-width: 767px) {
+  .landing-navigation { gap: 12px; }
+  .landing-navigation nav a { min-height: 44px; }
+  .landing-faq summary { min-height: 44px; }
+}
+
+/* The complete public address must not squeeze the editable handle on phones. */
+.onboarding-exit { display: block; margin-top: 12px; color: #fff; line-height: 1.5; }
+.onboarding-exit[aria-disabled="true"] { cursor: not-allowed; }
+.url-input { flex-wrap: wrap; }
+.url-input > span { flex: 0 1 auto; max-width: 100%; overflow-wrap: anywhere; }
+.url-input > input { flex: 1 1 140px; }
+.url-rules { margin: 8px 12px; color: #333; font-size: 13px; line-height: 1.5; }
+.status.neutral { color: #333; }
+.status.good { color: #14532d; }
+.status.bad { color: #8a0018; }
+
+/* Visible keyboard focus and legible disabled controls on gray and navy faces. */
+.editor-app .w98-btn:focus-visible, .modal-card .w98-btn:focus-visible, .w98-btn:focus-visible { outline: 2px solid #000080; outline-offset: 2px; }
+.editor-app .w98-btn.primary:focus-visible, .modal-card .w98-btn.primary:focus-visible, .w98-btn.primary:focus-visible { outline: 3px solid #ffea00; outline-offset: -5px; }
+.w98-btn:disabled { opacity: 1; color: #444; text-shadow: none; }
+.w98-btn.primary:disabled { background: #c0c0c0 !important; color: #444 !important; }

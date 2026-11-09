@@ -71,3 +71,42 @@ describe("author-supplied site names are never translated", () => {
     expect(doc.windows.map((window) => window.title)).toContain("About me");
   });
 });
+
+describe("licensed demo media localization", () => {
+  it.each(SUPPORTED_LOCALES)("localizes source and rights labels in %s without changing image/source URLs", async (locale) => {
+    // Japanese and Korean are preview locales. Exercise their real catalogs here,
+    // rather than silently testing the English fallback used in release builds.
+    const supported = i18n.options.supportedLngs;
+    const previous = i18n.language;
+    try {
+      await i18n.init({ ...i18n.options, supportedLngs: [...SUPPORTED_LOCALES], lng: locale });
+      expect(i18n.resolvedLanguage).toBe(locale);
+      const expected = resources[locale].editor.defaults;
+      const sourceDocs = (["card", "ig", "oc", "portfolio"] as const).map(createDemoDocument);
+      const [card, ig, oc, portfolio] = sourceDocs.map(localizeDefaults);
+      const cardLinks = card.windows.find((window) => window.type === "links")!;
+      if (cardLinks.type !== "links") throw new Error("missing card links");
+      expect(cardLinks.content.links.map((link) => link.label)).toEqual([expected.demoCatSource, expected.demoRetroSource]);
+      const profile = ig.windows[0];
+      if (profile.type !== "instagram") throw new Error("missing profile");
+      expect(profile.content.profile.linkLabel).toBe(expected.demoPixelSource);
+      const ocGallery = oc.windows.find((window) => window.type === "gallery")!;
+      if (ocGallery.type !== "gallery") throw new Error("missing OC gallery");
+      expect(ocGallery.content.images[0].title).toBe(expected.demoMoonSurface);
+      expect(ocGallery.content.images[5].title).toBe(expected.demoCoffee);
+      expect(ocGallery.content.images[0].alt).toBe(expected.demoOcReferenceAlt.replace("{{title}}", expected.demoMoonSurface));
+      expect(ocGallery.content.images[0].caption).toBe(expected.demoOcReferenceCaption.replace("{{title}}", expected.demoMoonSurface));
+      const portfolioGallery = portfolio.windows.find((window) => window.type === "gallery")!;
+      if (portfolioGallery.type !== "gallery") throw new Error("missing portfolio gallery");
+      expect(portfolioGallery.content.images[0].alt).toBe(expected.demoPortfolioReferenceAlt.replace("{{title}}", "Logo"));
+      expect(portfolioGallery.content.images[0].caption).toBe(expected.demoPortfolioReferenceCaption.replace("{{title}}", "Logo"));
+      for (const [index, doc] of [card, ig, oc, portfolio].entries()) {
+        const urls = (value: unknown) => strings(value).filter((text) => /^https?:\/\//.test(text));
+        expect(urls(doc)).toEqual(urls(sourceDocs[index]));
+        expect(JSON.stringify(doc)).toContain("CC0");
+      }
+    } finally {
+      await i18n.init({ ...i18n.options, supportedLngs: supported, lng: previous });
+    }
+  });
+});

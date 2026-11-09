@@ -10,7 +10,8 @@
   },
   "actions": {
     "close": "Close",
-    "home": "Home"
+    "home": "Home",
+    "opensNewTab": "↗ New tab"
   },
   "language": {
     "label": "Interface language",
@@ -18,7 +19,9 @@
     "zhHansNote": "Simplified Chinese is not available yet; Simplified Chinese preferences use Traditional Chinese.",
     "beta": "Beta",
     "changing": "Changing language…",
-    "betaNote": "Japanese and Korean translations are in beta and still need native-speaker review."
+    "betaNote": "Japanese and Korean translations are in beta and still need native-speaker review.",
+    "shortNote": "Changes the interface language, not your content.",
+    "moreInfo": "Language details"
   },
   "desktop": {
     "start": "Start",
@@ -75,7 +78,40 @@
     },
     "fictionalNotice": "Fictional demonstration: the people, follower counts, likes and comments in these examples are invented, not real users or activity.",
     "privacyDataDeletion": "Privacy and data deletion",
-    "supportIssues": "Questions and contact: GitHub Issues"
+    "supportIssues": "Questions and contact: GitHub Issues",
+    "navigation": "Homepage navigation",
+    "howItWorks": "How it works",
+    "faqTitle": "Common questions",
+    "help": "Help & project",
+    "resources": "Project resources on GitHub",
+    "sourceCode": "Source code · GitHub",
+    "sourceLicense": "Source license · MIT",
+    "signInNote": "Try the examples without an account. Creating and saving a desktop requires Google sign-in.",
+    "tryDemo": "Start the demo →",
+    "examplesHelp": "Open a sample and click its desktop icons or Start menu. Switch between desktop and phone views to explore.",
+    "publicSupportNote": "These links open GitHub in a new tab. Issues are public: do not post account details, unpublished content or secrets.",
+    "faq": {
+      "account": {
+        "question": "Do I need an account?",
+        "answer": "You can browse the interactive examples without signing in. To create, save and publish your own desktop, continue with Google on the sign-in page."
+      },
+      "preview": {
+        "question": "Can I change the examples?",
+        "answer": "Examples are fictional, temporary previews. You can open and move windows and try supported interactions. Preview changes are not saved to an account."
+      },
+      "mobile": {
+        "question": "Can people browse on a phone?",
+        "answer": "The visitor view includes desktop and phone layouts. Use the view buttons in an example to compare them before creating your own desktop."
+      },
+      "publish": {
+        "question": "When do my changes become public?",
+        "answer": "Saving a draft and publishing are separate actions. Preview your desktop and phone layouts, then publish to update the public version. Keep secrets out of content intended for publication."
+      },
+      "deletion": {
+        "question": "How do I remove my content or account?",
+        "answer": "You can edit or remove content and publish again. This does not guarantee removal of older versions, backups or third-party copies. Self-service whole-site and account deletion is not currently available. Read the privacy and data deletion document below for the current limitations."
+      }
+    }
   },
   "auth": {
     "couldntReadYourDesktops": "Couldn't read your desktops",
@@ -85,7 +121,11 @@
     "signedIn": "Signed in",
     "signInFailed": "Sign-in failed: {{error}}",
     "continueWithGoogle": "Continue with Google",
-    "back": "Back"
+    "back": "Back",
+    "welcome": "Make a desktop of your own",
+    "purpose": "Sign in to create, save and return to your desktops. You can explore the examples first without an account.",
+    "googleExplanation": "Continuing takes you to Google to choose an account. Retro uses Supabase Auth for sign-in and displays the email associated with your account. Review the data details before continuing.",
+    "browseFirst": "Explore examples first"
   },
   "onboarding": {
     "myLittleDesktop": "My little desktop",
@@ -95,7 +135,7 @@
     "startingContent": "Starting content",
     "pickAUrlForYour": "Pick a URL for your desktop",
     "yourUrl": "Your URL",
-    "n320CharactersLowercaseLetters": "3–20 characters: lowercase letters, numbers or hyphens.",
+    "n320CharactersLowercaseLetters": "Use 3–20 lowercase letters, numbers or hyphens. Start and end with a letter or number.",
     "theUrlFormatIsntAllowed": "The URL format isn't allowed",
     "thisUrlIsAlreadyTaken": "This URL is already taken",
     "thisUrlIsAvailable": "This URL is available",
@@ -129,7 +169,15 @@
     "reviewDetails": "Review details",
     "signInAgain": "Sign in again",
     "retryCreation": "Retry creation",
-    "doneOpenTheEditor": "Done, open the editor"
+    "doneOpenTheEditor": "Done, open the editor",
+    "backToDesktops": "← Back to My desktops",
+    "urlRules": {
+      "tooShort": "Use at least 3 characters.",
+      "tooLong": "Use no more than 20 characters.",
+      "characters": "Use only lowercase letters, numbers or hyphens.",
+      "edges": "Start and end with a letter or number, not a hyphen.",
+      "reserved": "This address is reserved. Please choose another name."
+    }
   },
   "desktopHub": {
     "notPublished": "Not published",
@@ -142,7 +190,6 @@
     "collaborativeEditing": "Collaborative editing",
     "viewPrivateDraft": "View private draft",
     "loading": "Loading…",
-    "desktops": "{{length}} desktops",
     "newDesktop": "New desktop",
     "retry": "Retry",
     "loadingYourDesktops": "Loading your desktops…",
@@ -155,7 +202,9 @@
     "youCanEditTheDraft": "You can edit the draft. Publishing and member management are handled by the owner.",
     "youCanOnlyViewThe": "You can only view the private draft; nothing will be saved or published.",
     "publicHomePage": "Public home page",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "desktops_one": "{{count}} desktop",
+    "desktops_other": "{{count}} desktops"
   },
   "publicSite": {
     "thePublicDocumentFormatIs": "The public document format is invalid",
@@ -190,7 +239,8 @@
       "platformAsAudio_other": "{{count}} tracks' \"direct audio\" is actually a YouTube/Spotify page, so visitors can't play it here; change them to external links or the platform player",
       "audioNoRights_one": "{{count}} uploaded audio file has no rights note yet",
       "audioNoRights_other": "{{count}} uploaded audio files have no rights note yet",
-      "formatProblem": "There is a problem with the content format: "
+      "formatProblem": "There is a problem with the content format: ",
+      "overlappingWindows": "Windows that open automatically overlap on desktop. Preview and adjust their positions before publishing."
     },
     "imageUrl": {
       "empty": "Paste an image link.",

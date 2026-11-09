@@ -263,7 +263,7 @@
     "theCurrentLocalDraftJson": "目前本機草稿 JSON 已複製，可以先備份後再重新載入。",
     "theClipboardIsntAvailablePlease": "無法使用剪貼簿，請先不要重新整理頁面。",
     "publicUrlCopied": "公開網址已複製。",
-    "couldntCopyTheUrlAutomatically": "無法自動複製網址。",
+    "couldntCopyTheUrlAutomatically": "無法自動複製，請選取下方網址並手動複製。",
     "theMigratedDraftsFormatIs": "遷移後的草稿格式無效",
     "migratedButLegacyAssetsAre": "已遷移 {{migratedCount}} 個，但仍有 {{length}} 個舊素材未完成；請開啟明細查看。",
     "assetsWereConvertedToPrivate": "素材已轉為私有預覽；{{length}} 個舊公開副本仍因已發布版本引用而暫時保留。",
@@ -307,7 +307,7 @@
     "publicUrl": "公開網址：",
     "prePublishCheckResults": "發布前檢查結果",
     "fixTheRedItemsFirst": "請先修正紅色項目，再重新發布。",
-    "yellowItemsAreSuggestionsAnd": "黃色項目是建議，不會阻擋發布。發布後仍可繼續編輯下一版草稿。",
+    "yellowItemsAreSuggestionsAnd": "黃色項目是建議，不會阻擋發布。之後的修改會留在草稿，按「重新發布」才會更新訪客看到的版本。",
     "publishing": "發布中",
     "cancel": "取消",
     "publishing2": "發布中…",
@@ -323,7 +323,11 @@
     "migrationDraftRetained": "素材遷移期間有新的本機變更，已保留草稿與復原記錄。",
     "reloadReplacesLocal": "重新載入會取代目前本機草稿與復原記錄。請先複製或下載 JSON 備份。",
     "publishedAssetsRefreshFailed": "發布已成功，但素材清單未更新。可以重新盤點素材，無須再次發布。",
-    "copyingLocalJson": "正在複製本機草稿 JSON…"
+    "copyingLocalJson": "正在複製本機草稿 JSON…",
+    "addressAfterPublishing": "發布後的網址：",
+    "linkAvailableAfterPublishing": "這個網址尚未公開。發布成功後，可以在確認畫面複製或分享連結。",
+    "shareUrl": "分享連結",
+    "shareUnavailable": "目前無法分享，請使用「複製網址」，或選取下方網址手動複製。"
   },
   "inspectorContent": {
     "loading": "載入中…",
@@ -525,7 +529,8 @@
     "hasUnpublishedChanges": "有未發布的變更 · 這是發布後的樣子，尚未上線",
     "sameAsPublished": "與已發布版本相同",
     "backToSamples": "‹ 返回範例",
-    "sampleFictionalNotice": "虛構示意：範例中的人物、粉絲／追蹤數、按讚及留言都不是實際使用者或真實互動。"
+    "sampleFictionalNotice": "虛構示意：範例中的人物、粉絲／追蹤數、按讚及留言都不是實際使用者或真實互動。",
+    "sampleInteractionHelp": "點桌面圖示或「開始」開啟視窗。預覽中的按讚與留言不會儲存；外部連結會離開 Retro。「適合畫面」顯示完整桌面，「100%」可捲動查看細節。"
   },
   "sidebarToggle": {
     "leftToolbar": "左側工具欄",
@@ -663,7 +668,22 @@
     "workExe": "作品.exe",
     "contactExe": "聯絡.exe",
     "captionConceptArt": "設定圖：{{title}}",
-    "captionWork": "作品：{{title}}"
+    "captionWork": "作品：{{title}}",
+    "demoCatSource": "貓咪照片來源（CC0）",
+    "demoRetroSource": "Retro 原始碼",
+    "demoPixelSource": "像素圖來源 · Commons",
+    "demoMoonSource": "月球影像來源（CC0）",
+    "demoNeonSource": "霓虹攝影來源（CC0）",
+    "demoMoonSurface": "月面",
+    "demoLibraryCollection": "館藏",
+    "demoStarrySky": "星空",
+    "demoManuscript": "手稿",
+    "demoNightLight": "夜燈",
+    "demoCoffee": "咖啡",
+    "demoOcReferenceAlt": "月面圖書館的{{title}}氛圍參考",
+    "demoOcReferenceCaption": "{{title}} · CC0 氛圍參考素材（非角色原畫）",
+    "demoPortfolioReferenceAlt": "Ren {{title}} 主題的授權攝影參考",
+    "demoPortfolioReferenceCaption": "{{title}} · CC0 素材展示（非實際客戶作品）"
   },
   "p2Appearance": {
     "windowColors": "視窗色彩",

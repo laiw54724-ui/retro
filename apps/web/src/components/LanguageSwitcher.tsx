@@ -50,7 +50,7 @@ export function LanguageSwitcher({ compact = false, className = "" }: Props) {
         className={styles.select}
         value={locale}
         aria-describedby={`${id}-hint`}
-        title={`${t("language.label")}. ${hint}`}
+        title={t("language.label")}
         aria-disabled={changing}
         onChange={(event) => void selectLanguage(event.target.value)}
       >
@@ -60,7 +60,11 @@ export function LanguageSwitcher({ compact = false, className = "" }: Props) {
           </option>
         ))}
       </select>
-      <p id={`${id}-hint`} className={compact ? styles.visuallyHidden : styles.hint}>{hint}</p>
+      <p id={`${id}-hint`} className={compact ? styles.visuallyHidden : styles.hint}>{compact ? hint : t("language.shortNote")}</p>
+      {!compact ? <details className={styles.details}>
+        <summary>{t("language.moreInfo")}</summary>
+        <p>{hint}</p>
+      </details> : null}
       {changing ? <span className={styles.feedback} role="status">{t("language.changing")}</span> : null}
       {failed ? <p className={styles.error} role="alert">{errorText("languageChangeFailed")}</p> : null}
     </div>

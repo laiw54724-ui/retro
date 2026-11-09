@@ -73,3 +73,19 @@ test("desktop hub fits a 320px viewport", async ({ page }) => {
   const add = page.getByRole("link", { name: "新增桌面" });
   expect((await add.boundingBox())?.height).toBeGreaterThanOrEqual(44);
 });
+
+
+test.describe("English desktop counts", () => {
+  test.use({ locale: "en-US" });
+  for (const count of [0, 1, 2]) {
+    test(`uses the correct noun for ${count} desktops`, async ({ page }) => {
+      await signIn(page);
+      await page.route("**/api/sites", (route) => route.fulfill({ json: { sites: sites.slice(0, count) } }));
+      await page.goto("/auth");
+      const summary = page.locator(".desktop-hub-heading p");
+      await expect(summary).toContainText(`${count} ${count === 1 ? "desktop" : "desktops"}`);
+      if (count === 1) await expect(summary).not.toContainText("1 desktops");
+      await expect(summary).toHaveCSS("color", "rgb(68, 68, 68)");
+    });
+  }
+});

@@ -135,7 +135,7 @@ test("a published site with newer draft changes says so; sharing works only for 
 
 test("a never-published site never offers a share link and the top bar shows this environment's address", async ({ page }) => {
   await openEditor(page);
-  await expect(page.locator(".site-url")).toHaveText(/^127\.0\.0\.1:\d+\/@demo$/);
+  await expect(page.locator(".site-url")).toHaveText(/^發布後的網址： 127\.0\.0\.1:\d+\/@demo$/);
   await expect(page.locator(".site-url")).not.toContainText("retrodesk.me");
   await previewButton(page).click();
   const win = overlay(page).getByRole("dialog", { name: "Instagram.exe" });
