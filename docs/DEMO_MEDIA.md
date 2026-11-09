@@ -23,9 +23,11 @@ Each file below was individually checked on its Commons file-description page on
 
 ## Runtime and deployment notes
 
-- Demo images use hotlinked HTTPS images from `upload.wikimedia.org` (960px resized JPEGs, original small PNG pixel art, and an SVG sprite); no third-party image binaries are added to this repository. The existing release asset inventory covers bundled files, not remote references. Content remains reliant on Wikimedia availability, rate limits, and any upstream replacement.
-- The landing page uses `loading="lazy"` and `referrerPolicy="no-referrer"` for third-party thumbnails; images inside sample windows go through the shared reader image component. Visitors still make network requests to Wikimedia, which can reveal their IP address and user-agent to that service. Consider explicit disclosure in privacy docs before public launch.
-- A production hardening pass should download appropriately-sized verified copies, optimize them to WebP/PNG with preserved pixel edges, host them on Retro-controlled static assets, record their license provenance in `docs/assets/third-party-assets.manifest.json`, and run the asset audit. That migration is **not** done in this demo PR.
+- Images are pinned, self-hosted copies under `apps/web/public/demo-assets/commons`. JPEGs retain Commons' 960px thumbnails; the small PNGs and SVG retain the original bytes. No image generation, cropping or lossy recompression was applied.
+- Every bundled file has a source page, author, download URL, license, byte count and SHA-256 in `docs/assets/demo-media.provenance.json`. The directory and its source notice are covered by the release asset manifest and audit. Total image payload is about 1.6 MB across the whole catalog; individual demos use a subset.
+- Landing previews use same-origin paths. Sample documents resolve those paths against the current deployment origin so the document schema's existing absolute-URL requirement remains intact. The non-browser fallback is `http://localhost` for tests; there is no production-host assumption.
+- Opening examples or loading their images no longer contacts Wikimedia. Source links still lead to external Commons pages only when clicked. The images must ship with the static deployment; a missing local file fails the asset audit and browser image-load regression tests.
+- CC0 permits commercial copyright reuse but does not prove model/property releases or trademark rights. In particular, typewriter/camera photographs contain marks and a composited person. The coffee image has an uploader's own-work declaration but no independently verified creator source; its Commons description includes an unrelated promotional link, which is not included in the app. Do not imply endorsements or use these photographs as a brand logo.
 - Never replace these links with unrelated real Instagram/Behance accounts, `example.com`, `mailto:*@example.com`, or a commercial stock image without its license terms. The example buttons currently lead to genuine source pages / Retro's public repository, or are absent where no real persona account exists.
 - Exact imagery and captions remain subject to further art direction; no claim is made that a CC0 work is a character design, brand logo, or fictional portfolio deliverable.
 
@@ -43,4 +45,11 @@ links to the actual source rather than describing the house as a sunset.
 Of the original 15 image URLs, 11 returned HTTP 200, the forest returned 404,
 and neon/camera/notebook thumbnails returned HTTP 429 during this check.
 A URL-string assertion does not prove that a remote image loads successfully.
-The catalog now has 14 images, but production still needs reliable hosting.
+After respecting the rate limit and waiting, one paced GET pass retrieved all 14
+remaining image URLs with HTTP 200 and image content types. Those exact bytes
+are now bundled locally and hash-pinned. This removes the upstream availability
+and visitor privacy dependency rather than hiding failed remote loads.
+
+The coffee moodboard label was corrected from “black tea” to “coffee” in all four
+catalogs after visual inspection. Other fictional titles are moodboard themes,
+not claims that a photograph is an original character design or client project.

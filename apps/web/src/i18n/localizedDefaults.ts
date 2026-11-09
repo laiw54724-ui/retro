@@ -17,7 +17,7 @@ const DEFAULTS: Readonly<Record<string, string>> = {
   "星空": "defaults.demoStarrySky",
   "手稿": "defaults.demoManuscript",
   "夜燈": "defaults.demoNightLight",
-  "紅茶": "defaults.demoBlackTea",
+  "咖啡": "defaults.demoCoffee",
   "歡迎留下訊息。新留言會先交由站長審核。": "defaults.leaveAMessageNew",
   "圖片": "defaults.image",
   "相簿": "defaults.gallery",

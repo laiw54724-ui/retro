@@ -92,6 +92,25 @@
       "provenanceSet": "pixelarticons",
       "expectedFileCount": 166,
       "treeSha256": "d32acb618b3c1f8d40b7e1cd4c79afd75f117dcaa9ca0233f271158a44e60544"
+    },
+    {
+      "id": "commons-demo-media",
+      "paths": [
+        "apps/web/public/demo-assets/commons"
+      ],
+      "source": {
+        "url": "https://commons.wikimedia.org/",
+        "revision": "2026-11-09 Commons snapshot (individual SHA-256 pins)"
+      },
+      "authorOrRightsHolder": "Individual creators listed in NOTICE.txt and docs/assets/demo-media.provenance.json",
+      "license": "CC0-1.0",
+      "notice": "Individually reviewed Commons CC0 declarations. Source/author records are retained in NOTICE.txt and the detailed manifest. No endorsement, model/property release, or MIT relicensing is implied.",
+      "useScope": "Self-hosted reference media for the four fictional read-only examples and landing previews. Unmodified original small pixel/SVG assets and 960px JPEG thumbnails.",
+      "reviewStatus": "confirmed",
+      "detailManifest": "docs/assets/demo-media.provenance.json",
+      "provenanceSet": "commons-demo",
+      "expectedFileCount": 15,
+      "treeSha256": "f184e7f2892581620aa2600ee528e92e66e6fffc0f6ed0f381e7c5eff5cfb3c7"
     }
   ],
   "excludedCollections": [

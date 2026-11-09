@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "sets": {
+    "commons-demo": {
+      "source": {
+        "url": "https://commons.wikimedia.org/",
+        "revision": "2026-11-09 Commons snapshot (individual SHA-256 pins)"
+      },
+      "license": "CC0-1.0",
+      "outputs": [
+        {
+          "path": "apps/web/public/demo-assets/commons/cat.jpg",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Green-eyed_white_cat_looking_at_camera.jpg",
+          "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Green-eyed_white_cat_looking_at_camera.jpg/960px-Green-eyed_white_cat_looking_at_camera.jpg",
+          "authorOrRightsHolder": "Kiwiev",
+          "license": "CC0-1.0",
+          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "reviewedAt": "2026-11-09",
+          "bytes": 76774,
+          "sha256": "4522fe72645805b4b268e2ba44786ad137b9c7ad2d6b04d906af93d86df770b0",
+          "modifications": "Unmodified bytes from the listed Commons URL. JPEGs use Commons-generated 960px thumbnails; PNG/SVG files are the original source files."
+        },
+        {
+          "path": "apps/web/public/demo-assets/commons/heart.png",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Heart_pixelart.png",
+          "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/0/01/Heart_pixelart.png",
+          "authorOrRightsHolder": "El Rolo Ueeqee",
+          "license": "CC0-1.0",
+          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "reviewedAt": "2026-11-09",
+          "bytes": 822,
+          "sha256": "216e08e482b24821ceac2983efeb5f849d69cb25a4ea2e814bac494b03c68f9a",
+          "modifications": "Unmodified bytes from the listed Commons URL. JPEGs use Commons-generated 960px thumbnails; PNG/SVG files are the original source files."
+        },
+        {
+          "path": "apps/web/public/demo-assets/commons/house.png",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:House_Pixel_icon.png",
+          "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/2/23/House_Pixel_icon.png",
+          "authorOrRightsHolder": "Nanami-seven-three",
+          "license": "CC0-1.0",
+          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "reviewedAt": "2026-11-09",
+          "bytes": 4876,
+          "sha256": "3838d9d3e13817ea3db97b61b203115323ffae0ad9915857886420c6befa7414",
+          "modifications": "Unmodified bytes from the listed Commons URL. JPEGs use Commons-generated 960px thumbnails; PNG/SVG files are the original source files."
+        },
+        {
+          "path": "apps/web/public/demo-assets/commons/kenney.svg",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Kenney.nl_platformer_characters_-_player_vector.svg",
+          "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f4/Kenney.nl_platformer_characters_-_player_vector.svg",
+          "authorOrRightsHolder": "Kenney.nl",
+          "license": "CC0-1.0",
+          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "reviewedAt": "2026-11-09",
+          "bytes": 73245,
+          "sha256": "3013f9aaa0db065cf1ca286eb239408841ae0900e04319d92ef62046905fd283",
+          "modifications": "Unmodified bytes from the listed Commons URL. JPEGs use Commons-generated 960px thumbnails; PNG/SVG files are the original source files.",
+          "originalSourceUrl": "https://kenney.nl/assets/platformer-characters"
+        },
+        {
+          "path": "apps/web/public/demo-assets/commons/moon.jpg",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Photo_of_Moon.jpg",
+          "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Photo_of_Moon.jpg/960px-Photo_of_Moon.jpg",
+          "authorOrRightsHolder": "Lynredza Ravey",
+          "license": "CC0-1.0",
+          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "reviewedAt": "2026-11-09",
+          "bytes": 111301,
+          "sha256": "5766169780777df8ca247bdb763f54fbc8a4a7fd0276bc57a9db1a41b80d8d34",
+          "modifications": "Unmodified bytes from the listed Commons URL. JPEGs use Commons-generated 960px thumbnails; PNG/SVG files are the original source files."
+        },
+        {
+          "path": "apps/web/public/demo-assets/commons/books.jpg",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Old_books_in_library.jpg",
+          "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Old_books_in_library.jpg/960px-Old_books_in_library.jpg",
+          "authorOrRightsHolder": "Unknown author (PxHere)",
+          "license": "CC0-1.0",
+          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "reviewedAt": "2026-11-09",
+          "bytes": 129081,
+          "sha256": "52616ae182f3e9bc9ac6f3d2332bdcf7190a0489d1f00a77cc2dc1c416d9e9e9",
+          "modifications": "Unmodified bytes from the listed Commons URL. JPEGs use Commons-generated 960px thumbnails; PNG/SVG files are the original source files.",
+          "originalSourceUrl": "https://pxhere.com/cs/photo/939285"
+        },
+        {
+          "path": "apps/web/public/demo-assets/commons/stars.jpg",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Stars_in_the_Night_Sky.jpg",
+          "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Stars_in_the_Night_Sky.jpg/960px-Stars_in_the_Night_Sky.jpg",
+          "authorOrRightsHolder": "Wrenalicious",
+          "license": "CC0-1.0",
+          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "reviewedAt": "2026-11-09",
+          "bytes": 229600,
+          "sha256": "d6ff50c84e57596a48107d057f0a6e35bb2853ce7c51d8eb71bc8d75e310ab93",
+          "modifications": "Unmodified bytes from the listed Commons URL. JPEGs use Commons-generated 960px thumbnails; PNG/SVG files are the original source files."
+        },
+        {
+          "path": "apps/web/public/demo-assets/commons/typewriter.jpg",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Vintage_Typewriter_Composing.jpg",
+          "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Vintage_Typewriter_Composing.jpg/960px-Vintage_Typewriter_Composing.jpg",
+          "authorOrRightsHolder": "Wendelin Jacober",
+          "license": "CC0-1.0",
+          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "reviewedAt": "2026-11-09",
+          "bytes": 104737,
+          "sha256": "d610268c333f4a8c459e24ce5beb7045744c974308e4c8a83d9c9d72de12b6d8",
+          "modifications": "Unmodified bytes from the listed Commons URL. JPEGs use Commons-generated 960px thumbnails; PNG/SVG files are the original source files.",
+          "originalSourceUrl": "https://www.flickr.com/photos/91619724@N04/24084122804/",
+          "reviewNote": "Commons records a FlickreviewR 2 review on 2020-03-16 confirming cc-zero. A composited person and camera/typewriter marks do not imply endorsements or model/property releases."
+        },
+        {
+          "path": "apps/web/public/demo-assets/commons/coffee.jpg",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Coffee_Cup_on_Modern_Table.jpg",
+          "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Coffee_Cup_on_Modern_Table.jpg/960px-Coffee_Cup_on_Modern_Table.jpg",
+          "authorOrRightsHolder": "Genaro35",
+          "license": "CC0-1.0",
+          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "reviewedAt": "2026-11-09",
+          "bytes": 74769,
+          "sha256": "162810b39fa1adb494183729aee762f7d160fd7c9f67b19fece7f49e2f1cd68a",
+          "modifications": "Unmodified bytes from the listed Commons URL. JPEGs use Commons-generated 960px thumbnails; PNG/SVG files are the original source files.",
+          "reviewNote": "Own-work CC0 declaration by the Commons uploader. The description contains an unrelated promotional link; no independent creator source was established. Only the Commons source page is linked."
+        },
+        {
+          "path": "apps/web/public/demo-assets/commons/neon.jpg",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Neon_Sign.jpg",
+          "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Neon_Sign.jpg/960px-Neon_Sign.jpg",
+          "authorOrRightsHolder": "Alex Knight",
+          "license": "CC0-1.0",
+          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "reviewedAt": "2026-11-09",
+          "bytes": 51428,
+          "sha256": "5fd9405b7a8514bd4615752f4d3730283eb6092887a739bc7d27bb4c8bb9f786",
+          "modifications": "Unmodified bytes from the listed Commons URL. JPEGs use Commons-generated 960px thumbnails; PNG/SVG files are the original source files.",
+          "originalSourceUrl": "https://shotstash.com/photo/neon-sign/"
+        },
+        {
+          "path": "apps/web/public/demo-assets/commons/architecture.jpg",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_architecture.jpg",
+          "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/A_architecture.jpg/960px-A_architecture.jpg",
+          "authorOrRightsHolder": "Ranjima np",
+          "license": "CC0-1.0",
+          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "reviewedAt": "2026-11-09",
+          "bytes": 89850,
+          "sha256": "58ac1bcd7ddcc0b96b647514d1d5647f8df27266e0fd9de8993d601eda4d5a3c",
+          "modifications": "Unmodified bytes from the listed Commons URL. JPEGs use Commons-generated 960px thumbnails; PNG/SVG files are the original source files."
+        },
+        {
+          "path": "apps/web/public/demo-assets/commons/camera.jpg",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Old_school_camera.jpg",
+          "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Old_school_camera.jpg/960px-Old_school_camera.jpg",
+          "authorOrRightsHolder": "Swanie227",
+          "license": "CC0-1.0",
+          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "reviewedAt": "2026-11-09",
+          "bytes": 267063,
+          "sha256": "bcaded05725c5b4b8eeec251edc254d745365a0fc8187251e6792fe3238b5ceb",
+          "modifications": "Unmodified bytes from the listed Commons URL. JPEGs use Commons-generated 960px thumbnails; PNG/SVG files are the original source files."
+        },
+        {
+          "path": "apps/web/public/demo-assets/commons/notebook.jpg",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Horizontal_lines_on_notebook_paper_(macro_view).jpg",
+          "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Horizontal_lines_on_notebook_paper_%28macro_view%29.jpg/960px-Horizontal_lines_on_notebook_paper_%28macro_view%29.jpg",
+          "authorOrRightsHolder": "Abdurrahman Bin Asghar",
+          "license": "CC0-1.0",
+          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "reviewedAt": "2026-11-09",
+          "bytes": 25920,
+          "sha256": "a04b03677ccc744ffc0db03c23335d9c1f573b84a59747de1d8aec3907c73b93",
+          "modifications": "Unmodified bytes from the listed Commons URL. JPEGs use Commons-generated 960px thumbnails; PNG/SVG files are the original source files."
+        },
+        {
+          "path": "apps/web/public/demo-assets/commons/flowers.jpg",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Flowers_pictures.jpg",
+          "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Flowers_pictures.jpg/960px-Flowers_pictures.jpg",
+          "authorOrRightsHolder": "Sowmiyamuruganmba",
+          "license": "CC0-1.0",
+          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "reviewedAt": "2026-11-09",
+          "bytes": 370095,
+          "sha256": "eddc7e4529ca1f72af90cd7870ed5abc728bc5a4ab1bc55165a6522058618b82",
+          "modifications": "Unmodified bytes from the listed Commons URL. JPEGs use Commons-generated 960px thumbnails; PNG/SVG files are the original source files."
+        }
+      ]
+    }
+  }
+}

@@ -93,6 +93,7 @@ describe("licensed demo media localization", () => {
       const ocGallery = oc.windows.find((window) => window.type === "gallery")!;
       if (ocGallery.type !== "gallery") throw new Error("missing OC gallery");
       expect(ocGallery.content.images[0].title).toBe(expected.demoMoonSurface);
+      expect(ocGallery.content.images[5].title).toBe(expected.demoCoffee);
       expect(ocGallery.content.images[0].alt).toBe(expected.demoOcReferenceAlt.replace("{{title}}", expected.demoMoonSurface));
       expect(ocGallery.content.images[0].caption).toBe(expected.demoOcReferenceCaption.replace("{{title}}", expected.demoMoonSurface));
       const portfolioGallery = portfolio.windows.find((window) => window.type === "gallery")!;
@@ -100,7 +101,7 @@ describe("licensed demo media localization", () => {
       expect(portfolioGallery.content.images[0].alt).toBe(expected.demoPortfolioReferenceAlt.replace("{{title}}", "Logo"));
       expect(portfolioGallery.content.images[0].caption).toBe(expected.demoPortfolioReferenceCaption.replace("{{title}}", "Logo"));
       for (const [index, doc] of [card, ig, oc, portfolio].entries()) {
-        const urls = (value: unknown) => strings(value).filter((text) => /^https:\/\//.test(text));
+        const urls = (value: unknown) => strings(value).filter((text) => /^https?:\/\//.test(text));
         expect(urls(doc)).toEqual(urls(sourceDocs[index]));
         expect(JSON.stringify(doc)).toContain("CC0");
       }
