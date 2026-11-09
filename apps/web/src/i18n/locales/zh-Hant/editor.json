@@ -664,7 +664,22 @@
     "workExe": "作品.exe",
     "contactExe": "聯絡.exe",
     "captionConceptArt": "設定圖：{{title}}",
-    "captionWork": "作品：{{title}}"
+    "captionWork": "作品：{{title}}",
+    "demoCatSource": "貓咪照片來源（CC0）",
+    "demoRetroSource": "Retro 原始碼",
+    "demoPixelSource": "像素圖來源 · Commons",
+    "demoMoonSource": "月球影像來源（CC0）",
+    "demoNeonSource": "霓虹攝影來源（CC0）",
+    "demoMoonSurface": "月面",
+    "demoLibraryCollection": "館藏",
+    "demoStarrySky": "星空",
+    "demoManuscript": "手稿",
+    "demoNightLight": "夜燈",
+    "demoBlackTea": "紅茶",
+    "demoOcReferenceAlt": "月面圖書館的{{title}}氛圍參考",
+    "demoOcReferenceCaption": "{{title}} · CC0 氛圍參考素材（非角色原畫）",
+    "demoPortfolioReferenceAlt": "Ren {{title}} 主題的授權攝影參考",
+    "demoPortfolioReferenceCaption": "{{title}} · CC0 素材展示（非實際客戶作品）"
   },
   "p2Appearance": {
     "windowColors": "視窗色彩",

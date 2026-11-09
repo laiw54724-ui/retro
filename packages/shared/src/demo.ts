@@ -9,7 +9,6 @@ export type DemoKind = "card" | "ig" | "oc" | "portfolio";
 // These are remote Wikimedia Commons images, not MIT-licensed Retro artwork.
 const DEMO_MEDIA = {
   cat: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Green-eyed_white_cat_looking_at_camera.jpg/960px-Green-eyed_white_cat_looking_at_camera.jpg",
-  forest: "https://upload.wikimedia.org/wikipedia/commons/9/9c/Forest_pixel_art.png",
   heart: "https://upload.wikimedia.org/wikipedia/commons/0/01/Heart_pixelart.png",
   house: "https://upload.wikimedia.org/wikipedia/commons/2/23/House_Pixel_icon.png",
   kenney: "https://upload.wikimedia.org/wikipedia/commons/f/f4/Kenney.nl_platformer_characters_-_player_vector.svg",
@@ -26,7 +25,7 @@ const DEMO_MEDIA = {
 } as const;
 const DEMO_SOURCES = {
   cat: "https://commons.wikimedia.org/wiki/File:Green-eyed_white_cat_looking_at_camera.jpg",
-  forest: "https://commons.wikimedia.org/wiki/File:Forest_pixel_art.png",
+  house: "https://commons.wikimedia.org/wiki/File:House_Pixel_icon.png",
   moon: "https://commons.wikimedia.org/wiki/File:Photo_of_Moon.jpg",
   neon: "https://commons.wikimedia.org/wiki/File:Neon_Sign.jpg",
   kenney: "https://commons.wikimedia.org/wiki/File:Kenney.nl_platformer_characters_-_player_vector.svg",
@@ -35,7 +34,7 @@ const DEMO_SOURCES = {
 // Display two different visual references per example, rather than four identical gray placeholders.
 export const DEMO_PREVIEW_IMAGES: Record<DemoKind, readonly [string, string]> = {
   card: [DEMO_MEDIA.cat, DEMO_MEDIA.flowers],
-  ig: [DEMO_MEDIA.forest, DEMO_MEDIA.kenney],
+  ig: [DEMO_MEDIA.house, DEMO_MEDIA.kenney],
   oc: [DEMO_MEDIA.moon, DEMO_MEDIA.books],
   portfolio: [DEMO_MEDIA.neon, DEMO_MEDIA.architecture]
 };
@@ -79,9 +78,9 @@ export function createDemoDocument(kind: DemoKind): SiteDocument {
     const ig = makeWindow("instagram", 0);
     if (ig.type === "instagram") {
       ig.title = "pixel_diary";
-      ig.content.profile = { ...ig.content.profile, username: "pixel_diary", name: "Pixel 日記", alt: "（畫畫中）", bio: "每天一張像素小圖\n歡迎留言聊聊", followers: "1280", following: "86", followedBy: "followed by neko_ren and 12 others", avatar: DEMO_MEDIA.house, avatarUrl: DEMO_MEDIA.house, linkLabel: "像素圖來源 · Commons", linkUrl: DEMO_SOURCES.forest, verified: false, highlights: [makeIgHighlight({ title: "日常", src: DEMO_MEDIA.forest, srcUrl: DEMO_MEDIA.forest }), makeIgHighlight({ title: "作品", src: DEMO_MEDIA.heart, srcUrl: DEMO_MEDIA.heart })] };
+      ig.content.profile = { ...ig.content.profile, username: "pixel_diary", name: "Pixel 日記", alt: "（畫畫中）", bio: "每天一張像素小圖\n歡迎留言聊聊", followers: "1280", following: "86", followedBy: "followed by neko_ren and 12 others", avatar: DEMO_MEDIA.house, avatarUrl: DEMO_MEDIA.house, linkLabel: "像素圖來源 · Commons", linkUrl: DEMO_SOURCES.house, verified: false, highlights: [makeIgHighlight({ title: "日常", src: DEMO_MEDIA.house, srcUrl: DEMO_MEDIA.house }), makeIgHighlight({ title: "作品", src: DEMO_MEDIA.heart, srcUrl: DEMO_MEDIA.heart })] };
       ig.content.images = [
-        makeIgPost({ src: DEMO_MEDIA.forest, srcUrl: DEMO_MEDIA.forest, title: "Forest pixel art", caption: "今天的夕陽。", location: "淡水", date: "10月3日", likes: 128, comments: [makeIgComment("neko_ren", "好漂亮！"), makeIgComment("mochi", "喜歡這個配色")] }),
+        makeIgPost({ src: DEMO_MEDIA.house, srcUrl: DEMO_MEDIA.house, title: "House pixel icon", caption: "像素圖來源 · Commons", location: "", date: "10月3日", likes: 128, comments: [makeIgComment("neko_ren", "好漂亮！"), makeIgComment("mochi", "喜歡這個配色")] }),
         makeIgPost({ src: DEMO_MEDIA.kenney, srcUrl: DEMO_MEDIA.kenney, title: "CC0 character sprite sheet", caption: "新的像素角色設定。", date: "10月1日", likes: 64 }),
         makeIgPost({ src: DEMO_MEDIA.heart, srcUrl: DEMO_MEDIA.heart, title: "Pixel heart", caption: "週末塗鴉。", date: "9月28日", likes: 40 })
       ];

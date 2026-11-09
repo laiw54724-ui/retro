@@ -664,7 +664,22 @@
     "workExe": "Work.exe",
     "contactExe": "Contact.exe",
     "captionConceptArt": "Concept art: {{title}}",
-    "captionWork": "Work: {{title}}"
+    "captionWork": "Work: {{title}}",
+    "demoCatSource": "Cat photo source (CC0)",
+    "demoRetroSource": "Retro source code",
+    "demoPixelSource": "Pixel art source · Commons",
+    "demoMoonSource": "Moon image source (CC0)",
+    "demoNeonSource": "Neon photo source (CC0)",
+    "demoMoonSurface": "Moon surface",
+    "demoLibraryCollection": "Library collection",
+    "demoStarrySky": "Starry sky",
+    "demoManuscript": "Manuscript",
+    "demoNightLight": "Night light",
+    "demoBlackTea": "Black tea",
+    "demoOcReferenceAlt": "Moon Library mood reference: {{title}}",
+    "demoOcReferenceCaption": "{{title}} · CC0 mood reference (not original character art)",
+    "demoPortfolioReferenceAlt": "Licensed photo reference for Ren’s {{title}} theme",
+    "demoPortfolioReferenceCaption": "{{title}} · CC0 reference material (not actual client work)"
   },
   "p2Appearance": {
     "windowColors": "Window colors",

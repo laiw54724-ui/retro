@@ -7,6 +7,17 @@ import { i18n } from "./index";
  * author has already changed is left untouched.
  */
 const DEFAULTS: Readonly<Record<string, string>> = {
+  "貓咪照片來源（CC0）": "defaults.demoCatSource",
+  "Retro 原始碼": "defaults.demoRetroSource",
+  "像素圖來源 · Commons": "defaults.demoPixelSource",
+  "月球影像來源（CC0）": "defaults.demoMoonSource",
+  "霓虹攝影來源（CC0）": "defaults.demoNeonSource",
+  "月面": "defaults.demoMoonSurface",
+  "館藏": "defaults.demoLibraryCollection",
+  "星空": "defaults.demoStarrySky",
+  "手稿": "defaults.demoManuscript",
+  "夜燈": "defaults.demoNightLight",
+  "紅茶": "defaults.demoBlackTea",
   "歡迎留下訊息。新留言會先交由站長審核。": "defaults.leaveAMessageNew",
   "圖片": "defaults.image",
   "相簿": "defaults.gallery",
@@ -81,6 +92,10 @@ const DEFAULTS: Readonly<Record<string, string>> = {
 };
 
 const PATTERNS: ReadonlyArray<readonly [RegExp, string]> = [
+  [/^月面圖書館的(.+)氛圍參考$/s, "defaults.demoOcReferenceAlt"],
+  [/^(.+) · CC0 氛圍參考素材（非角色原畫）$/s, "defaults.demoOcReferenceCaption"],
+  [/^Ren (.+) 主題的授權攝影參考$/s, "defaults.demoPortfolioReferenceAlt"],
+  [/^(.+) · CC0 素材展示（非實際客戶作品）$/s, "defaults.demoPortfolioReferenceCaption"],
   [/^設定圖：(.+)$/s, "defaults.captionConceptArt"],
   [/^作品：(.+)$/s, "defaults.captionWork"],
 ];

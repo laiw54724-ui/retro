@@ -664,7 +664,22 @@
     "workExe": "作品.exe",
     "contactExe": "連絡.exe",
     "captionConceptArt": "設定画：{{title}}",
-    "captionWork": "作品：{{title}}"
+    "captionWork": "作品：{{title}}",
+    "demoCatSource": "猫の写真の出典（CC0）",
+    "demoRetroSource": "Retro ソースコード",
+    "demoPixelSource": "ピクセルアートの出典 · Commons",
+    "demoMoonSource": "月の画像の出典（CC0）",
+    "demoNeonSource": "ネオン写真の出典（CC0）",
+    "demoMoonSurface": "月面",
+    "demoLibraryCollection": "蔵書",
+    "demoStarrySky": "星空",
+    "demoManuscript": "原稿",
+    "demoNightLight": "夜の灯り",
+    "demoBlackTea": "紅茶",
+    "demoOcReferenceAlt": "月面図書館の雰囲気参考：{{title}}",
+    "demoOcReferenceCaption": "{{title}} · CC0 雰囲気参考素材（キャラクターの原画ではありません）",
+    "demoPortfolioReferenceAlt": "Ren の {{title}} テーマ用ライセンス付き写真参考",
+    "demoPortfolioReferenceCaption": "{{title}} · CC0 素材サンプル（実際のクライアント作品ではありません）"
   },
   "p2Appearance": {
     "windowColors": "ウィンドウの色",

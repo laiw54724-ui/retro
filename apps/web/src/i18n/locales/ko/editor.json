@@ -664,7 +664,22 @@
     "workExe": "작품.exe",
     "contactExe": "연락처.exe",
     "captionConceptArt": "설정화: {{title}}",
-    "captionWork": "작품: {{title}}"
+    "captionWork": "작품: {{title}}",
+    "demoCatSource": "고양이 사진 출처 (CC0)",
+    "demoRetroSource": "Retro 소스 코드",
+    "demoPixelSource": "픽셀 아트 출처 · Commons",
+    "demoMoonSource": "달 이미지 출처 (CC0)",
+    "demoNeonSource": "네온 사진 출처 (CC0)",
+    "demoMoonSurface": "달 표면",
+    "demoLibraryCollection": "소장 도서",
+    "demoStarrySky": "별이 빛나는 하늘",
+    "demoManuscript": "원고",
+    "demoNightLight": "야간 조명",
+    "demoBlackTea": "홍차",
+    "demoOcReferenceAlt": "달 도서관 분위기 참고: {{title}}",
+    "demoOcReferenceCaption": "{{title}} · CC0 분위기 참고 자료 (캐릭터 원화가 아님)",
+    "demoPortfolioReferenceAlt": "Ren의 {{title}} 테마를 위한 라이선스 사진 참고",
+    "demoPortfolioReferenceCaption": "{{title}} · CC0 참고 자료 (실제 고객 작업물이 아님)"
   },
   "p2Appearance": {
     "windowColors": "창 색상",

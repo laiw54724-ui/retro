@@ -7,7 +7,6 @@ Each file below was individually checked on its Commons file-description page on
 | Example | File and source / license page | Listed creator | Listed license |
 | --- | --- | --- | --- |
 | Mochi | [Green-eyed white cat looking at camera.jpg](https://commons.wikimedia.org/wiki/File:Green-eyed_white_cat_looking_at_camera.jpg) | Kiwiev | CC0 1.0 |
-| Pixel 日記 | [Forest pixel art.png](https://commons.wikimedia.org/wiki/File:Forest_pixel_art.png) | BIG DADDY Dunkleosteus | Public domain (author dedication) |
 | Pixel 日記 | [Heart pixelart.png](https://commons.wikimedia.org/wiki/File:Heart_pixelart.png) | El Rolo Ueeqee | CC0 1.0 |
 | Pixel 日記 | [House Pixel icon.png](https://commons.wikimedia.org/wiki/File:House_Pixel_icon.png) | Nanami-seven-three | CC0 1.0 |
 | Pixel 日記 | [Kenney.nl platformer characters - player vector.svg](https://commons.wikimedia.org/wiki/File:Kenney.nl_platformer_characters_-_player_vector.svg) | Kenney.nl | CC0 1.0 |
@@ -31,3 +30,17 @@ Each file below was individually checked on its Commons file-description page on
 - Exact imagery and captions remain subject to further art direction; no claim is made that a CC0 work is a character design, brand logo, or fictional portfolio deliverable.
 
 CC0 license text: https://creativecommons.org/publicdomain/zero/1.0/
+
+## Review correction (2026-11-09)
+
+The former `Forest pixel art.png` source page and image URL returned HTTP 404
+during review. It has been removed from the runtime examples. The existing
+[House Pixel icon](https://commons.wikimedia.org/wiki/File:House_Pixel_icon.png),
+by Nanami-seven-three under CC0 1.0, now fills the IG thumbnail, highlight and
+first-post slots. Its original image returned HTTP 200 (`image/png`). The caption
+links to the actual source rather than describing the house as a sunset.
+
+Of the original 15 image URLs, 11 returned HTTP 200, the forest returned 404,
+and neon/camera/notebook thumbnails returned HTTP 429 during this check.
+A URL-string assertion does not prove that a remote image loads successfully.
+The catalog now has 14 images, but production still needs reliable hosting.

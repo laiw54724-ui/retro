@@ -2,6 +2,11 @@ import { describe, expect, it } from "vitest";
 import { createDemoDocument, DEMO_EXAMPLES, DEMO_PREVIEW_IMAGES } from "../src/demo";
 
 describe("fictional sample media", () => {
+  it("does not retain the unavailable forest image or its source link", () => {
+    expect(JSON.stringify(DEMO_PREVIEW_IMAGES)).not.toContain("Forest_pixel_art");
+    expect(JSON.stringify(createDemoDocument("ig"))).not.toContain("Forest_pixel_art");
+    expect(DEMO_PREVIEW_IMAGES.ig[0]).toContain("House_Pixel_icon.png");
+  });
   it("gives all four landing examples distinct images instead of shared placeholders", () => {
     const thumbnails = DEMO_EXAMPLES.flatMap(({ kind }) => DEMO_PREVIEW_IMAGES[kind]);
     expect(thumbnails).toHaveLength(8);
