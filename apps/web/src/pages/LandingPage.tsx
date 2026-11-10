@@ -16,7 +16,7 @@ export function LandingPage() {
   const { user } = useAuth();
   const [demo, setDemo] = useState<DemoKind | null>(null);
   // Sample content follows the UI language it is opened in; it is a throwaway preview, never saved.
-  const demoDocument = useMemo(() => demo ? localizeDefaults(createDemoDocument(demo)) : null, [demo, locale]);
+  const demoDocument = useMemo(() => demo ? localizeDefaults(createDemoDocument(demo, window.location.origin)) : null, [demo, locale]);
   return (
     <main className="landing-shell" style={{ fontFamily }}>
       <section className="landing-window retro-panel">
