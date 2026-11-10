@@ -4,6 +4,7 @@ import { i18n } from "../../i18n";
 import { useTranslation } from "react-i18next";
 import { normalizeImageUrl } from "@retrodesk/shared";
 import { useAssetSourceState } from "../../lib/assetSource";
+import { useImageLoadGuard } from "../../lib/useImageLoadGuard";
 
 export const imageFailText = () => i18n.t("modules:ui.imageFailed");
 
@@ -34,11 +35,11 @@ export function FileUploadButton({ children, onFiles, multiple, disabled, classN
 /** <img> that swaps to a clear message if the URL cannot be loaded. */
 export function FallbackImage({ src, alt, className, style, compact }: { src: string; alt: string; className?: string; style?: React.CSSProperties; compact?: boolean }) {
   const { t: tr } = useTranslation("modules");
-  const [failedSource, setFailedSource] = useState<string | null>(null);
   const { source: resolved, status } = useAssetSourceState(src);
-  if (status === "failed" || (resolved && failedSource === resolved)) return <div className={"img-fail" + (compact ? " compact" : "")} role="alert">{compact ? tr("ui.cantLoad") : imageFailText()}</div>;
+  const { ref, failed } = useImageLoadGuard(resolved);
+  if (status === "failed" || failed) return <div className={"img-fail" + (compact ? " compact" : "")} role="alert">{compact ? tr("ui.cantLoad") : imageFailText()}</div>;
   if (!resolved) return <span className={className} style={style} aria-label={alt} aria-busy={status === "loading" || undefined} />;
-  return <img src={resolved} alt={alt} className={className} style={style} referrerPolicy="no-referrer" loading="lazy" decoding="async" onError={() => setFailedSource(resolved)} />;
+  return <img ref={ref} src={resolved} alt={alt} className={className} style={style} referrerPolicy="no-referrer" loading="lazy" decoding="async" />;
 }
 
 /**
