@@ -37,7 +37,7 @@ export function createDemoDocument(kind: DemoKind, assetOrigin = "https://retrod
 
   if (kind === "card") {
     const links = makeWindow("links", 1);
-    if (links.type === "links") links.content.links = [makeLink({ label: "Instagram · Example link", icon: "heart", url: "" }), makeLink({ label: "合作邀約 · Example link", icon: "mail", color: "#5b3fa8", url: "" })];
+    if (links.type === "links") links.content.links = [makeLink({ label: "Instagram · Example link", icon: "heart", url: "" }), makeLink({ label: "Example link", icon: "mail", color: "#5b3fa8", url: "" })];
     return { ...base, windows: [place(aboutWindow("Mochi 麻糬", "插畫師、貓奴。\n接商稿、做小周邊。", [["職業", "插畫師"], ["所在地", "Taipei"], ["最愛", "牛奶糖"]], "OPEN FOR COMMISSION", exampleAsset("card.svg")), 40, 30, 420, 420, 1, 0, 0), place({ ...links, title: "連結.exe" }, 484, 30, 300, 260, 2, 1, 1)] };
   }
   if (kind === "ig") {
