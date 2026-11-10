@@ -75,7 +75,28 @@
     },
     "fictionalNotice": "Fictional demonstration: the people, follower counts, likes and comments in these examples are invented, not real users or activity.",
     "privacyDataDeletion": "Privacy and data deletion",
-    "supportIssues": "Questions and contact: GitHub Issues"
+    "supportIssues": "Questions and contact: GitHub Issues",
+    "exampleBadge": "EXAMPLE",
+    "footerLinks": "Footer links",
+    "faq": {
+      "title": "FAQ",
+      "cost": {
+        "question": "Does it cost anything?",
+        "answer": "This build does not present a pricing or checkout flow. If pricing is introduced, it should be stated in the product before you choose to use it."
+      },
+      "url": {
+        "question": "What does my URL look like?",
+        "answer": "Published pages use this site's current domain followed by /@your-name."
+      },
+      "login": {
+        "question": "What happens after login?",
+        "answer": "After signing in, you can create a desktop, choose its URL, theme and starter content, then open the editor."
+      },
+      "editing": {
+        "question": "Can a page be edited or unpublished?",
+        "answer": "You can keep editing the draft after publishing. Publishing is explicit, and unpublished draft changes stay separate from the public version until you publish again."
+      }
+    }
   },
   "auth": {
     "couldntReadYourDesktops": "Couldn't read your desktops",
@@ -129,7 +150,13 @@
     "reviewDetails": "Review details",
     "signInAgain": "Sign in again",
     "retryCreation": "Retry creation",
-    "doneOpenTheEditor": "Done, open the editor"
+    "doneOpenTheEditor": "Done, open the editor",
+    "usernameErrors": {
+      "minLength": "URL must be at least 3 characters.",
+      "maxLength": "URL can be at most 20 characters.",
+      "allowedCharacters": "Use lowercase letters, numbers and hyphens; start and end with a letter or number.",
+      "reserved": "This URL name is reserved. Choose another one."
+    }
   },
   "desktopHub": {
     "notPublished": "Not published",

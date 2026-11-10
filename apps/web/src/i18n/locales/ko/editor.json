@@ -220,7 +220,8 @@
     "dragWindowsOrDesktopIcons": "창이나 데스크톱 아이콘을 끌어 이동 · 오른쪽 아래 모서리로 크기 조정",
     "autoArrangeIcons": "아이콘 자동 정렬",
     "editModeClickWindowContent": "편집 모드 · 창 내용을 눌러 바로 편집",
-    "playing": "재생 중"
+    "playing": "재생 중",
+    "tidyWindows": "창 정리"
   },
   "layout": {
     "columnCount_one": "{{count}}열",

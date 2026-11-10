@@ -75,7 +75,28 @@
     },
     "fictionalNotice": "虛構示意：範例中的人物、粉絲／追蹤數、按讚及留言都不是實際使用者或真實互動。",
     "privacyDataDeletion": "隱私與資料刪除說明",
-    "supportIssues": "問題與聯絡：GitHub Issues"
+    "supportIssues": "問題與聯絡：GitHub Issues",
+    "exampleBadge": "範例",
+    "footerLinks": "頁尾連結",
+    "faq": {
+      "title": "常見問題",
+      "cost": {
+        "question": "需要付費嗎？",
+        "answer": "目前這個版本沒有顯示方案價格或結帳流程；若未來加入收費，應在你選擇使用前於產品內清楚說明。"
+      },
+      "url": {
+        "question": "我的網址會長什麼樣子？",
+        "answer": "發布後會使用目前網站的網域，加上 /@你的網址名稱。"
+      },
+      "login": {
+        "question": "登入後會發生什麼？",
+        "answer": "登入後可以建立桌面、選擇網址、主題與起始內容，接著進入編輯器。"
+      },
+      "editing": {
+        "question": "頁面之後可以再編輯或取消發布嗎？",
+        "answer": "發布後仍可繼續編輯草稿。發布是明確操作；尚未發布的草稿修改不會改變公開版本，直到你再次發布。"
+      }
+    }
   },
   "auth": {
     "couldntReadYourDesktops": "無法讀取你的桌面",
@@ -129,7 +150,13 @@
     "reviewDetails": "檢查資料",
     "signInAgain": "重新登入",
     "retryCreation": "重試建立",
-    "doneOpenTheEditor": "完成，進入編輯器"
+    "doneOpenTheEditor": "完成，進入編輯器",
+    "usernameErrors": {
+      "minLength": "網址名稱至少需要 3 個字元。",
+      "maxLength": "網址名稱最多 20 個字元。",
+      "allowedCharacters": "只能使用英文小寫字母、數字和連字號，且開頭與結尾必須是字母或數字。",
+      "reserved": "這個網址名稱已保留，請換一個。"
+    }
   },
   "desktopHub": {
     "notPublished": "尚未發布",

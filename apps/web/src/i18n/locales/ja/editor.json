@@ -220,7 +220,8 @@
     "dragWindowsOrDesktopIcons": "ウィンドウやデスクトップアイコンをドラッグ · 右下の角でサイズ変更",
     "autoArrangeIcons": "アイコンを自動整列",
     "editModeClickWindowContent": "編集モード · ウィンドウの内容を直接クリックして編集",
-    "playing": "再生中"
+    "playing": "再生中",
+    "tidyWindows": "ウィンドウを整列"
   },
   "layout": {
     "columnCount_one": "{{count}} 列",

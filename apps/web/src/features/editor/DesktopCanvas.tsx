@@ -321,6 +321,7 @@ export function DesktopCanvas({ windowActions, actionsDock, readWindowIds, siteI
         <div className="layout-toolbar w98-window" role="toolbar" aria-label={tr("desktopCanvas.layoutMode")}>
           <strong>{tr("desktopCanvas.layoutMode2")}</strong>
           <span>{tr("desktopCanvas.dragWindowsOrDesktopIcons")}</span>
+          <button type="button" className="w98-btn small" onClick={() => store().autoArrangeWindows()}>{tr("desktopCanvas.tidyWindows")}</button>
           <button type="button" className="w98-btn small" onClick={() => store().autoArrangeIcons(rows())}>{tr("desktopCanvas.autoArrangeIcons")}</button>
           <button type="button" className={"w98-btn small" + (snap ? " on" : "")} aria-pressed={snap} onClick={() => store().toggleSnap()}>{snap ? tr("desktopCanvas.snapOn", { size: GRID }) : tr("desktopCanvas.snapOff", { size: GRID })}</button>
           <button type="button" className="w98-btn small primary" onClick={() => store().setLayoutMode(false)}>{tr("editor.done")}</button>

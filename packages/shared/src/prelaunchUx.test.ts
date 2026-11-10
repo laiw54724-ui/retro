@@ -1,0 +1,5 @@
+import { describe, expect, it } from "vitest";
+import { createDemoDocument } from "./demo";
+import { createStarterDocument } from "./site";
+const overlaps=(a:{x:number;y:number;w:number;h:number},b:{x:number;y:number;w:number;h:number})=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
+describe("pre-launch samples",()=>{it.each(["card","oc","portfolio","instagram"] as const)("%s starter windows do not overlap",(template)=>{const d=createStarterDocument("Desk","classic98",template);for(let i=0;i<d.windows.length;i++)for(let j=i+1;j<d.windows.length;j++)expect(overlaps(d.windows[i].layout.desktop,d.windows[j].layout.desktop)).toBe(false);});it.each(["card","ig","oc","portfolio"] as const)("%s demo uses bundled art, inert links and non-overlapping windows",(kind)=>{const d=createDemoDocument(kind);const s=JSON.stringify(d);expect(s).toContain("/examples/");expect(s).not.toMatch(/example\.com|instagram\.com|x\.com|behance\.net|mailto:/);for(let i=0;i<d.windows.length;i++)for(let j=i+1;j<d.windows.length;j++)expect(overlaps(d.windows[i].layout.desktop,d.windows[j].layout.desktop)).toBe(false);});});

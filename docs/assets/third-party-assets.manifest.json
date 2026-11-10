@@ -37,6 +37,23 @@
       "treeSha256": "52499493da38a471179b30f3cc22d60308578166d2ecbc5260a98ffba3534d1e"
     },
     {
+      "id": "retro-original-example-illustrations",
+      "paths": [
+        "apps/web/public/examples"
+      ],
+      "source": {
+        "url": "https://github.com/laiw54724-ui/retro",
+        "revision": "first-party"
+      },
+      "authorOrRightsHolder": "Retro project contributors",
+      "license": "MIT",
+      "notice": "Original example illustrations authored for this repository; covered by the repository MIT License and visibly labelled as examples.",
+      "useScope": "Bundled fictional example artwork for landing previews and sample desktop content.",
+      "reviewStatus": "confirmed",
+      "expectedFileCount": 10,
+      "treeSha256": "fdd2b4de0fae3f60d70f11d3f17b9e77151cb9ae38f4279ec5a0446c98e8b8b9"
+    },
+    {
       "id": "open-icons-haiku",
       "paths": [
         "apps/web/public/icon-library/haiku"
