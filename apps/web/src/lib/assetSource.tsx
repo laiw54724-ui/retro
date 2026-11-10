@@ -3,6 +3,8 @@ import { parseAssetReference } from "@retrodesk/shared";
 import { supabase } from "./supabase";
 
 const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8787").replace(/\/$/, "");
+// Includes session lookup and response-body reads, not just response headers.
+export const ASSET_LOAD_TIMEOUT_MS = 30_000;
 export type AsyncAssetResolver = (source: string) => Promise<string | null>;
 export type AssetSourceState = {
   source: string | null;
@@ -14,9 +16,9 @@ export function initialAssetSourceValue(source: string | null | undefined): stri
   return source && parseAssetReference(source) ? null : source ?? null;
 }
 
-export function createAssetResolver(input: { fetchBlob: (id: string) => Promise<Blob | null>; createUrl?: (blob: Blob) => string; revokeUrl?: (url: string) => void }) {
+export function createAssetResolver(input: { fetchBlob: (id: string, signal: AbortSignal) => Promise<Blob | null>; createUrl?: (blob: Blob) => string; revokeUrl?: (url: string) => void }) {
   const cache = new Map<string, string>();
-  const pending = new Map<string, Promise<string | null>>();
+  const pending = new Map<string, { promise: Promise<string | null>; cancel: () => void }>();
   const urls = new Set<string>();
   let disposed = false;
   const createUrl = input.createUrl ?? ((blob: Blob) => URL.createObjectURL(blob));
@@ -27,15 +29,34 @@ export function createAssetResolver(input: { fetchBlob: (id: string) => Promise<
     const cached = cache.get(id);
     if (cached) return cached;
     const active = pending.get(id);
-    if (active) return active;
-    const request = input.fetchBlob(id).then((blob) => {
-      if (!blob || disposed) return null;
+    if (active) return active.promise;
+    const controller = new AbortController();
+    let cancel!: () => void;
+    const cancelled = new Promise<null>((done) => {
+      cancel = () => { controller.abort(); done(null); };
+    });
+    const timer = setTimeout(cancel, ASSET_LOAD_TIMEOUT_MS);
+    let load: Promise<Blob | null>;
+    try { load = input.fetchBlob(id, controller.signal); }
+    catch { load = Promise.resolve(null); }
+    // Racing cancellation also settles callers when session lookup or an
+    // underlying loader ignores AbortSignal. Late bytes never reach the cache.
+    const request = Promise.race([load, cancelled]).then((blob) => {
+      if (!blob || disposed || controller.signal.aborted) return null;
       const url = createUrl(blob);
       cache.set(id, url); urls.add(url); return url;
-    }).catch(() => null).finally(() => pending.delete(id));
-    pending.set(id, request); return request;
+    }).catch(() => null).finally(() => {
+      clearTimeout(timer);
+      if (pending.get(id)?.promise === request) pending.delete(id);
+    });
+    pending.set(id, { promise: request, cancel }); return request;
   };
-  return { resolve, dispose: () => { disposed = true; for (const url of urls) revokeUrl(url); urls.clear(); cache.clear(); pending.clear(); } };
+  return { resolve, dispose: () => {
+    disposed = true;
+    for (const request of pending.values()) request.cancel();
+    for (const url of urls) revokeUrl(url);
+    urls.clear(); cache.clear(); pending.clear();
+  } };
 }
 
 export function useAssetResolver(): AsyncAssetResolver | null {
@@ -47,11 +68,11 @@ export function AssetSourceProvider({ siteId, children }: { siteId: string; chil
   useEffect(() => {
     // The effect owns the disposable resolver. StrictMode replays effect setup
     // after cleanup, so each setup needs a fresh instance with its own cache.
-    const resolver = createAssetResolver({ fetchBlob: async (id) => {
+    const resolver = createAssetResolver({ fetchBlob: async (id, signal) => {
       const { data } = await supabase.auth.getSession();
       const token = data.session?.access_token;
-      if (!token) return null;
-      const response = await fetch(`${API_URL}/api/sites/${encodeURIComponent(siteId)}/assets/${id}/content`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!token || signal.aborted) return null;
+      const response = await fetch(`${API_URL}/api/sites/${encodeURIComponent(siteId)}/assets/${id}/content`, { signal, headers: { Authorization: `Bearer ${token}` } });
       if (!response.ok) return null;
       return response.blob();
     } });
