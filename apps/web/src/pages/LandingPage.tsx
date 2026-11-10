@@ -64,7 +64,7 @@ export function LandingPage() {
         <div className="example-grid">
           {DEMO_EXAMPLES.map((example) => (
             <button type="button" className="example-card" key={example.kind} onClick={() => setDemo(example.kind)}>
-              <div className="example-thumb"><div /><div /></div>
+              <div className="example-thumb"><img src={`/examples/${example.kind === "ig" ? "ig-sunset" : example.kind === "oc" ? "oc-concept" : example.kind === "portfolio" ? "portfolio-poster" : "card"}.svg`} alt="" /><span>{t("landing.exampleBadge")}</span></div>
               <strong>{t(`landing.examplesList.${example.kind}.name`)}</strong>
               <p>{t(`landing.examplesList.${example.kind}.description`)}</p>
               <span>{t("landing.openExample")}</span>
@@ -72,11 +72,12 @@ export function LandingPage() {
           ))}
         </div>
       </section>
+      <section className="retro-panel landing-faq">
+        <header className="landing-titlebar">{t("landing.faq.title")}</header>
+        <div className="faq-grid">{(["cost", "url", "login", "editing"] as const).map((item) => <details key={item}><summary>{t(`landing.faq.${item}.question`)}</summary><p>{t(`landing.faq.${item}.answer`)}</p></details>)}</div>
+      </section>
       {demoDocument ? <VisitorPreview sample={buildSampleModel(demoDocument)} onClose={() => setDemo(null)} /> : null}
-      <footer className="retro-panel" style={{ width: "min(1000px, 100%)", padding: "12px 16px", display: "flex", flexWrap: "wrap", gap: 16 }}>
-        <a href="https://github.com/laiw54724-ui/retro/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">{t("landing.privacyDataDeletion")}</a>
-        <a href="https://github.com/laiw54724-ui/retro/issues" target="_blank" rel="noopener noreferrer">{t("landing.supportIssues")}</a>
-      </footer>
+      <footer className="retro-panel landing-footer"><span>{t("app.name")}</span><nav aria-label={t("landing.footerLinks")}><a href="https://github.com/laiw54724-ui/retro/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">{t("landing.privacyDataDeletion")}</a><a href="https://github.com/laiw54724-ui/retro/issues" target="_blank" rel="noopener noreferrer">{t("landing.supportIssues")}</a></nav></footer>
     </main>
   );
 }

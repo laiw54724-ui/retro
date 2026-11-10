@@ -301,3 +301,22 @@ describe("mobile handoff atomic reorder",()=>{
   store.undo();expect(useEditorStore.getState().versionedDocument).toEqual(before.versionedDocument);store.redo();expect(useEditorStore.getState().versionedDocument).toEqual(after.versionedDocument);
  });
 });
+
+describe("pre-launch window layout", () => {
+  it("cascades new windows and tidies them without overlap", () => {
+    const document = createStarterDocument("Desk", "classic98", "card");
+    const store = useEditorStore.getState();
+    store.setSite("site-layout", "layout", document, 1, null, null, "owner");
+    const last = document.windows.at(-1)!;
+    store.addWindow("document");
+    const added = useEditorStore.getState().document!.windows.at(-1)!;
+    expect(added.layout.desktop.x).toBe(last.layout.desktop.x + 28);
+    expect(added.layout.desktop.y).toBe(last.layout.desktop.y + 28);
+    store.autoArrangeWindows();
+    const windows = useEditorStore.getState().document!.windows;
+    for (let i=0;i<windows.length;i++) for (let j=i+1;j<windows.length;j++) {
+      const a=windows[i].layout.desktop,b=windows[j].layout.desktop;
+      expect(a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y).toBe(false);
+    }
+  });
+});

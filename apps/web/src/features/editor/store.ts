@@ -77,6 +77,7 @@ type EditorState = {
   toggleSnap: () => void;
   moveIcon: (id: string, x: number, y: number) => void;
   autoArrangeIcons: (rows: number) => void;
+  autoArrangeWindows: () => void;
 };
 
 const sameDocument = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
@@ -304,12 +305,11 @@ export const useEditorStore = create<EditorState>((set) => ({
     : {}),
   addWindow: (type) => set((state) => {
     if (!state.document || !canCreateWindowType(type)) return {};
-    const window = createWindow(type, state.document.windows.length);
-    return withHistory(
-      state,
-      { ...state.document, windows: [...state.document.windows, window] },
-      { selectedId: window.id }
-    );
+    const created = createWindow(type, state.document.windows.length);
+    const last = state.document.windows.at(-1);
+    const maxZ = Math.max(0, ...state.document.windows.map((window) => window.layout.desktop.z));
+    const window = last ? { ...created, layout: { ...created.layout, desktop: { ...created.layout.desktop, x: last.layout.desktop.x + 28, y: last.layout.desktop.y + 28, z: Math.min(9999, maxZ + 1) } } } : created;
+    return withHistory(state, { ...state.document, windows: [...state.document.windows, window] }, { selectedId: window.id });
   }),
   updateWindow: (id, recipe, historyKey) => set((state) => {
     if (!state.document) return {};
@@ -397,6 +397,18 @@ export const useEditorStore = create<EditorState>((set) => ({
       }))
     };
     return withHistory(state, document);
+  }),
+  autoArrangeWindows: () => set((state) => {
+    if (!state.document) return {};
+    const gap = 24, startX = 40, maxRowWidth = 1120;
+    let x = startX, y = 32, rowHeight = 0;
+    const windows = state.document.windows.map((window, index) => {
+      const { w, h } = window.layout.desktop;
+      if (x !== startX && x + w > maxRowWidth) { x = startX; y += rowHeight + gap; rowHeight = 0; }
+      const next = { ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, x, y, z: index + 1 } } };
+      x += w + gap; rowHeight = Math.max(rowHeight, h); return next;
+    });
+    return withHistory(state, { ...state.document, windows });
   }),
   pendingIntegrity: null,
   cancelIntegrity: () => set({ pendingIntegrity: null }),

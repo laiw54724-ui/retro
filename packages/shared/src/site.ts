@@ -609,13 +609,24 @@ const TEMPLATE_WINDOWS: Record<StarterTemplate, DesktopWindow["type"][]> = {
   instagram: ["instagram", "links"]
 };
 
+function arrangeStarterWindows(windows: DesktopWindow[]): DesktopWindow[] {
+  const maxRowWidth = 1120, gap = 24, startX = 40;
+  let x = startX, y = 32, rowHeight = 0;
+  return windows.map((window, index) => {
+    const { w, h } = window.layout.desktop;
+    if (x !== startX && x + w > maxRowWidth) { x = startX; y += rowHeight + gap; rowHeight = 0; }
+    const placed = { ...window, layout: { ...window.layout, desktop: { ...window.layout.desktop, x, y, z: index + 1 } } };
+    x += w + gap; rowHeight = Math.max(rowHeight, h); return placed;
+  });
+}
+
 export function createStarterDocument(siteName: string, themeId = "classic98", template: StarterTemplate = "card"): SiteDocument {
   const theme = THEME_PRESETS[themeId] ?? THEME_PRESETS.classic98;
   return {
     schemaVersion: 1,
     siteName,
     theme,
-    windows: TEMPLATE_WINDOWS[template].map((type, index) => makeWindow(type, index)),
+    windows: arrangeStarterWindows(TEMPLATE_WINDOWS[template].map((type, index) => makeWindow(type, index))),
     mobileColumns: 4
   };
 }

@@ -22,6 +22,16 @@ export function OnboardingPage() {
   const busyRef = useRef(false);
   const [createError, setCreateError] = useState<"username" | "validation" | "auth" | "general" | null>(null);
   const validUsername = useMemo(() => UsernameSchema.safeParse(username), [username]);
+  const usernameValidationKey = useMemo(() => {
+    if (!username || validUsername.success) return null;
+    const issue = validUsername.error.issues[0];
+    if (issue?.code === "too_small") return "onboarding.usernameErrors.minLength";
+    if (issue?.code === "too_big") return "onboarding.usernameErrors.maxLength";
+    if (issue?.message.toLowerCase().includes("reserved")) return "onboarding.usernameErrors.reserved";
+    return "onboarding.usernameErrors.allowedCharacters";
+  }, [username, validUsername]);
+  const usernameStatusClass = !username || availability === "pending" ? "status neutral" : !validUsername.success || availability === "taken" || availability === "failed" ? "status bad" : availability === "available" ? "status good" : "status neutral";
+  const usernameStatusIcon = !username || availability === "pending" ? "…" : !validUsername.success || availability === "taken" || availability === "failed" ? "✕" : availability === "available" ? "✓" : "…";
   const validSiteName = siteName.trim().length > 0 && siteName.trim().length <= 120;
 
   useEffect(() => {
@@ -108,11 +118,12 @@ export function OnboardingPage() {
                     }} placeholder="your-name" />
                   </div>
                 </label>
-                <p id="url-availability" role="status" aria-live="polite" className={availability === "taken" || availability === "failed" ? "status bad" : "status"}>
+                <p id="url-availability" role="status" aria-live="polite" className={usernameStatusClass}>
+                  <span aria-hidden="true" className="status-icon">{usernameStatusIcon}</span>{" "}
                   {!username
                     ? tr("onboarding.n320CharactersLowercaseLetters")
                     : !validUsername.success
-                      ? tr("onboarding.theUrlFormatIsntAllowed")
+                      ? tr(usernameValidationKey ?? "onboarding.theUrlFormatIsntAllowed")
                       : availability === "taken"
                         ? tr("onboarding.thisUrlIsAlreadyTaken")
                         : availability === "available"
