@@ -37,7 +37,7 @@ export function createDemoDocument(kind: DemoKind): SiteDocument {
   if (kind === "card") {
     const links = makeWindow("links", 1);
     if (links.type === "links") links.content.links = [makeLink({ label: "Instagram · Example link", icon: "heart", url: "" }), makeLink({ label: "合作邀約 · Example link", icon: "mail", color: "#5b3fa8", url: "" })];
-    return { ...base, windows: [place(aboutWindow("Mochi 麻糬", "插畫師、貓奴。\n接商稿、做小周邊。", [["職業", "插畫師"], ["所在地", "Taipei"], ["最愛", "牛奶糖"]], "OPEN FOR COMMISSION", "/examples/card.svg"), 130, 30, 420, 420, 1, 0, 0), place({ ...links, title: "連結.exe" }, 580, 60, 300, 260, 2, 1, 1)] };
+    return { ...base, windows: [place(aboutWindow("Mochi 麻糬", "插畫師、貓奴。\n接商稿、做小周邊。", [["職業", "插畫師"], ["所在地", "Taipei"], ["最愛", "牛奶糖"]], "OPEN FOR COMMISSION", "/examples/card.svg"), 40, 30, 420, 420, 1, 0, 0), place({ ...links, title: "連結.exe" }, 484, 30, 300, 260, 2, 1, 1)] };
   }
   if (kind === "ig") {
     const ig = makeWindow("instagram", 0);
@@ -57,13 +57,13 @@ export function createDemoDocument(kind: DemoKind): SiteDocument {
     if (gallery.type === "gallery") gallery.content = { columns: 3, images: ["正面", "側面", "表情", "服裝", "武器", "場景"].map((title, index) => makeGalleryImage({ src: index % 2 ? "/examples/oc-detail.svg" : "/examples/oc-concept.svg", title, caption: `設定圖：${title} · EXAMPLE` })) };
     const doc = makeWindow("document", 2);
     if (doc.type === "document") doc.content.blocks = [{ ...makeBlock("heading"), text: "世界觀" } as never, { ...makeBlock("text"), text: "月面圖書館收藏著所有被遺忘的故事。館員只在滿月時醒來。" } as never, { ...makeBlock("button"), text: "Example link", url: "" } as never];
-    return { ...base, windows: [place(aboutWindow("Luna", "月面圖書館的館員。\n看起來很兇，其實很怕黑。", [["年齡", "不明"], ["身高", "158cm"], ["喜歡", "舊書與紅茶"]], "OC · MOON LIBRARY", "/examples/oc-avatar.svg"), 30, 24, 380, 400, 1, 0, 0), place({ ...gallery, title: "設定圖" }, 300, 70, 420, 360, 2, 1, 1), place({ ...doc, title: "世界觀.txt" }, 560, 30, 340, 300, 3, 2, 2)] };
+    return { ...base, windows: [place(aboutWindow("Luna", "月面圖書館的館員。\n看起來很兇，其實很怕黑。", [["年齡", "不明"], ["身高", "158cm"], ["喜歡", "舊書與紅茶"]], "OC · MOON LIBRARY", "/examples/oc-avatar.svg"), 24, 24, 380, 400, 1, 0, 0), place({ ...gallery, title: "設定圖" }, 428, 24, 420, 360, 2, 1, 1), place({ ...doc, title: "世界觀.txt" }, 24, 448, 340, 300, 3, 2, 2)] };
   }
   const gallery = makeWindow("gallery", 1);
   if (gallery.type === "gallery") gallery.content = { columns: 3, images: ["Logo", "Poster", "Web", "App", "Zine", "Photo"].map((title, index) => makeGalleryImage({ src: index % 2 ? "/examples/portfolio-grid.svg" : "/examples/portfolio-poster.svg", title, caption: `作品：${title} · EXAMPLE` })) };
   const links = makeWindow("links", 2);
   if (links.type === "links") links.content.links = [makeLink({ label: "Behance · Example link", icon: "star", url: "" }), makeLink({ label: "Email · Example link", icon: "mail", color: "#1f7a5c", url: "" })];
-  return { ...base, windows: [place(aboutWindow("Ren", "平面設計師，喜歡把東西做得小小的。", [["專長", "品牌 / 插畫"], ["接案", "開放中"]], "", "/examples/portfolio-avatar.svg"), 30, 24, 360, 380, 1, 0, 0), place({ ...gallery, title: "作品.exe" }, 330, 60, 440, 380, 2, 1, 1), place({ ...links, title: "聯絡.exe" }, 640, 40, 280, 240, 3, 2, 2)] };
+  return { ...base, windows: [place(aboutWindow("Ren", "平面設計師，喜歡把東西做得小小的。", [["專長", "品牌 / 插畫"], ["接案", "開放中"]], "", "/examples/portfolio-avatar.svg"), 24, 24, 360, 380, 1, 0, 0), place({ ...gallery, title: "作品.exe" }, 408, 24, 440, 380, 2, 1, 1), place({ ...links, title: "聯絡.exe" }, 24, 428, 280, 240, 3, 2, 2)] };
 }
 
 export function createTemplateDocument(siteName: string, themeId: string, template: StarterTemplate | "ig"): SiteDocument {
