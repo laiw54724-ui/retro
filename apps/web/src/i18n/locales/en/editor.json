@@ -220,7 +220,8 @@
     "dragWindowsOrDesktopIcons": "Drag windows or desktop icons · resize at the bottom-right corner",
     "autoArrangeIcons": "Auto-arrange icons",
     "editModeClickWindowContent": "Edit mode · click window content to edit directly",
-    "playing": "Playing"
+    "playing": "Playing",
+    "tidyWindows": "Tidy windows"
   },
   "layout": {
     "columnCount_one": "{{count}} column",

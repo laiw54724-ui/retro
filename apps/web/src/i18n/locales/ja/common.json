@@ -75,7 +75,28 @@
     },
     "fictionalNotice": "架空のデモ：人物、フォロワー数、いいね、コメントはすべて架空であり、実在の利用者や反応ではありません。",
     "privacyDataDeletion": "プライバシーとデータ削除",
-    "supportIssues": "問い合わせ：GitHub Issues"
+    "supportIssues": "問い合わせ：GitHub Issues",
+    "exampleBadge": "サンプル",
+    "footerLinks": "フッターリンク",
+    "faq": {
+      "title": "よくある質問",
+      "cost": {
+        "question": "料金はかかりますか？",
+        "answer": "このビルドには料金表示や決済フローはありません。今後料金が導入される場合は、利用を選ぶ前に製品内で明示されるべきです。"
+      },
+      "url": {
+        "question": "URL はどのようになりますか？",
+        "answer": "公開ページは現在のサイトのドメインに /@your-name を付けた形式です。"
+      },
+      "login": {
+        "question": "ログイン後はどうなりますか？",
+        "answer": "ログイン後、デスクトップを作成し、URL・テーマ・初期コンテンツを選んでエディターを開けます。"
+      },
+      "editing": {
+        "question": "公開後も編集できますか？",
+        "answer": "公開後も下書きを編集できます。公開は明示的な操作で、未公開の変更は再度公開するまで公開版とは分けて保持されます。"
+      }
+    }
   },
   "auth": {
     "couldntReadYourDesktops": "デスクトップを読み取れません",
@@ -129,7 +150,13 @@
     "reviewDetails": "入力内容を確認",
     "signInAgain": "再ログイン",
     "retryCreation": "作成を再試行",
-    "doneOpenTheEditor": "完了してエディターを開く"
+    "doneOpenTheEditor": "完了してエディターを開く",
+    "usernameErrors": {
+      "minLength": "URL は3文字以上にしてください。",
+      "maxLength": "URL は20文字以内にしてください。",
+      "allowedCharacters": "英小文字・数字・ハイフンのみ使用でき、先頭と末尾は英数字にしてください。",
+      "reserved": "この URL 名は予約されています。別の名前を選んでください。"
+    }
   },
   "desktopHub": {
     "notPublished": "未公開",

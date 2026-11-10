@@ -220,7 +220,8 @@
     "dragWindowsOrDesktopIcons": "拖曳視窗或桌面圖示 · 右下角縮放",
     "autoArrangeIcons": "圖示自動排列",
     "editModeClickWindowContent": "編輯模式 · 直接點視窗內容編輯",
-    "playing": "播放中"
+    "playing": "播放中",
+    "tidyWindows": "整理視窗"
   },
   "layout": {
     "columnCount_one": "{{count}} 欄",
