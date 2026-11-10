@@ -55,13 +55,13 @@ export function createDemoDocument(kind: DemoKind, assetOrigin = "https://retrod
   }
   if (kind === "oc") {
     const gallery = makeWindow("gallery", 1);
-    if (gallery.type === "gallery") gallery.content = { columns: 3, images: ["正面", "側面", "表情", "服裝", "武器", "場景"].map((title, index) => makeGalleryImage({ src: index % 2 ? exampleAsset("oc-detail.svg") : exampleAsset("oc-concept.svg"), title, caption: `設定圖：${title} · EXAMPLE` })) };
+    if (gallery.type === "gallery") gallery.content = { columns: 3, images: ["正面", "側面", "表情", "服裝", "武器", "場景"].map((title, index) => makeGalleryImage({ src: index % 2 ? exampleAsset("oc-detail.svg") : exampleAsset("oc-concept.svg"), title, caption: `設定圖：${title}` })) };
     const doc = makeWindow("document", 2);
     if (doc.type === "document") doc.content.blocks = [{ ...makeBlock("heading"), text: "世界觀" } as never, { ...makeBlock("text"), text: "月面圖書館收藏著所有被遺忘的故事。館員只在滿月時醒來。" } as never, { ...makeBlock("button"), text: "Example link", url: "" } as never];
     return { ...base, windows: [place(aboutWindow("Luna", "月面圖書館的館員。\n看起來很兇，其實很怕黑。", [["年齡", "不明"], ["身高", "158cm"], ["喜歡", "舊書與紅茶"]], "OC · MOON LIBRARY", exampleAsset("oc-avatar.svg")), 24, 24, 380, 400, 1, 0, 0), place({ ...gallery, title: "設定圖" }, 428, 24, 420, 360, 2, 1, 1), place({ ...doc, title: "世界觀.txt" }, 24, 448, 340, 300, 3, 2, 2)] };
   }
   const gallery = makeWindow("gallery", 1);
-  if (gallery.type === "gallery") gallery.content = { columns: 3, images: ["Logo", "Poster", "Web", "App", "Zine", "Photo"].map((title, index) => makeGalleryImage({ src: index % 2 ? exampleAsset("portfolio-grid.svg") : exampleAsset("portfolio-poster.svg"), title, caption: `作品：${title} · EXAMPLE` })) };
+  if (gallery.type === "gallery") gallery.content = { columns: 3, images: ["Logo", "Poster", "Web", "App", "Zine", "Photo"].map((title, index) => makeGalleryImage({ src: index % 2 ? exampleAsset("portfolio-grid.svg") : exampleAsset("portfolio-poster.svg"), title, caption: `作品：${title}` })) };
   const links = makeWindow("links", 2);
   if (links.type === "links") links.content.links = [makeLink({ label: "Behance · Example link", icon: "star", url: "" }), makeLink({ label: "Email · Example link", icon: "mail", color: "#1f7a5c", url: "" })];
   return { ...base, windows: [place(aboutWindow("Ren", "平面設計師，喜歡把東西做得小小的。", [["專長", "品牌 / 插畫"], ["接案", "開放中"]], "", exampleAsset("portfolio-avatar.svg")), 24, 24, 360, 380, 1, 0, 0), place({ ...gallery, title: "作品.exe" }, 408, 24, 440, 380, 2, 1, 1), place({ ...links, title: "聯絡.exe" }, 24, 428, 280, 240, 3, 2, 2)] };
